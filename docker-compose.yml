@@ -1,0 +1,37 @@
+version: '3'
+services: 
+    serve_model:
+        container_name: ml-api-service-1
+        restart: always
+        build: 
+            context: .
+            dockerfile: Dockerfile
+        ports: 
+            - "3000:3000"
+        environment:
+            - APP_ENV=development
+            - DEFAULT_MODEL_PATH=./trained_model/ling_reg_california_housing_model.joblib
+        volumes:
+            - .:/app
+        command: >
+            gunicorn
+            -k uvicorn.workers.UvicornWorker
+            --worker-class=uvicorn.workers.UvicornWorker
+            --bind=0.0.0.0:3000
+            --workers=1
+            --max-requests=3000
+            --max-requests-jitter=1000
+            app.main:app
+
+    unit-tests:
+        container_name: ml-api-unittests
+        build:
+            context: .
+            dockerfile: tests/Dockerfile
+        ports:
+            - "3000:3000"
+        environment:
+            - APP_ENV=development
+            - DEFAULT_MODEL_PATH=./trained_model/lin_reg_california_housing_model.joblib
+        volumes:
+          - .:/app

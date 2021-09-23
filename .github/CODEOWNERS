@@ -1,0 +1,2 @@
+*.tf @shipt/devops
+/terraform/*/dba.tf @shipt/dba

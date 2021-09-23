@@ -1,0 +1,36 @@
+.
+├── app
+│   ├── __init__.py
+│   ├── api                      # API related code
+│   │   ├── __init__.py
+│   │   └── routes               # All routes provided by the API
+│   │       ├── __init__.py
+│   │       ├── heartbeat.py     # Route to check if the server is up
+│   │       ├── prediction.py    # Route to predict using trained ML model
+│   │       └── router.py        # Main router to serve the routes
+│   ├── core                     # Server related functions
+│   │   ├── __init__.py
+│   │   ├── config.py            # Server configuration helper
+│   │   ├── event_handlers.py    # Handle server startup/shutdown
+│   │   └── messages.py          # Shared messages/resources
+│   ├── data_models              # Pydantic data models
+│   │   ├── __init__.py
+│   │   ├── heartbeat.py         # Data model for heartbeat response
+│   │   ├── kafka_message.py     # Data model for Kafka message
+│   │   ├── payload.py           # Data model for prediction route input
+│   │   └── prediction.py        # Data model for prediction route output
+│   ├── main.py                  # App entrypoint
+│   └── services                 # Services the API provides
+│       ├── __init__.py
+│       ├── interface_model.py
+│       ├── kafka_helper.py      # Kafka class to handle producing message(s)
+│       ├── models.py
+│       ├── post_process.py      # Handles post processing model predict output such as applying heuristics
+│       ├── pre_process.py       # Handles pre processing model predict input such as feature store retrieval
+│       └── predict.py           # Trained model object predict method
+├──trained_model
+│   ├── lin_reg_california_housing_model.joblib # Serialized ML model object
+│   └── model_description.md     # Description of the ML model including inputs/outputs
+
+
+

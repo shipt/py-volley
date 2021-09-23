@@ -1,0 +1,40 @@
+# Please check https://github.com/shipt/lookout for more info
+team: "machine-learning" # Use `/eng-list-teams` in slack to see list of teams
+service:
+  - name: "production-5xx"
+    type: "5xx"
+    comparison: "GreaterThanThreshold"
+    period: "5m"
+    threshold: 0.5
+    team: machine-learning
+    priority: p1
+    region:
+      - "us-east-1"
+    environment:
+      - "production"
+  - name: "staging-5xx"
+    type: "5xx"
+    comparison: "GreaterThanThreshold"
+    period: "5m"
+    threshold: 0.5
+    team: machine-learning
+    priority: p3
+    region:
+      - "us-east-1"
+    environment:
+      - "staging"
+
+# Please ensure your project exists in Rollbar and have configured a Webhook for the project and an Opsgenie Rollbar integration has been created for the project. Use naming convention team-name-priority-rollbar e.g(search-engineering-p3-rollbar) when creating the Rollbar integration in Opsgenie. Please reach out to #ask-site-reliability channel for any queries regarding the setting up webhook or creating the rollbar integration in Opsgenie
+# rollbar:
+#   - title: "Entire string or substring of the error message"
+#     counter: 123 #Refers to error counter number in Rollbar for the specific error message e.g: https://rollbar.com/ShiptLLC/shipt-elasticsearch-products/items/159/ where 159 is the counter
+#     environment: ["staging", "production"]
+#     priority: "p3"
+#     team: "machine-learning"
+#   - title: "Entire string or substring of the error message"
+#     counter: 123 #Refers to error counter number in Rollbar for the specific error message e.g: https://rollbar.com/ShiptLLC/shipt-elasticsearch-products/items/159/ where 159 is the counter
+#     environment: ["staging", "production"]
+#     priority: "p3"
+#     team: "machine-learning"
+#     threshold: 10 #Refers to number of times the error has to occur before firing the alert
+#     duration: 300 #Refers the window period in seconds within which the number of times the error must occur(threshold) for alert to fire

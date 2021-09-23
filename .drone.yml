@@ -1,0 +1,50 @@
+kind: pipeline
+name: test
+
+trigger:
+  event:
+    - push
+    - pull_request
+    - tag
+
+steps:
+  - name: unit-tests
+    image: python:3.8
+    commands:
+      - pip3 install --no-cache -r requirements-dev.txt
+      - coverage run -m pytest && codecov
+    environment:
+      APP_ENV: 'development'
+      SEED_DIR: './seed'
+      DEFAULT_MODEL_PATH: "./trained_model/my_trained_model.pkl"
+      CODECOV_TOKEN:
+        from_secret: CODECOV_TOKEN
+
+  - name: lints
+    image: python:3.8
+    commands:
+      - pip3 install --no-cache --no-deps -r requirements-dev.txt
+      - flake8 --ignore=DAR,E203,W503 model_serving tests
+
+  - name: formatting
+    image: python:3.8
+    commands:
+      - pip3 install --no-cache --no-deps -r requirements-dev.txt
+      - isort --check-only model_serving tests
+      - black --check model_serving tests
+
+  - name: docker-prep
+    image: harbor.shipttech.com/plugins/dockerspec
+    pull: always
+
+  - name: docker-build-and-push
+    image: plugins/docker
+    environment:
+      GITHUB_TOKEN:
+        from_secret: github_token
+    settings:
+      build_args_from_env:
+        - GITHUB_TOKEN
+      registry: harbor.shipttech.com
+      env_file: "docker_args"
+

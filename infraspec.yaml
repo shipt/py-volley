@@ -1,0 +1,68 @@
+language: python
+team: machine-learning
+metadata:
+  description: This api accepts post requests and responds with predicted values
+deploy:
+  pipeline: harbor
+  chart: default
+  group: ds
+  environments:
+  - name: production
+    releaseStrategy:
+      branch: main
+      tagFormat: semver
+  - name: staging
+    releaseStrategy:
+      branch: main
+  deployLocations:
+  - provider: gcp
+    region: us-central1
+roles:
+  webserver:
+    autoscale:
+      enabled: false
+      maxReplicas: 10
+      minReplicas: 2
+      threshold: 30
+      trigger: RPS
+    command: >
+      gunicorn
+      -k uvicorn.workers.UvicornWorker
+      --bind=0.0.0.0:3000
+      --workers=2
+      --max-requests=3000
+      --max-requests-jitter=1000
+      app.main:app
+    healthcheck: /api/health/heartbeat
+    port: 3000
+    retryPolicy:
+      count: 3
+      perTryTimeout: 150ms
+    replicaCount: 2
+    resources:
+      cpu: 50m
+      memory: 1Gi
+    telemetry:
+      graphite:
+        enabled: true
+      honeycomb:
+        enabled: true
+      prometheus:
+        enabled: true
+        port: 3000
+datastores:
+  options:
+    workspace: SPLIT
+  kafka:
+    topics:
+      - name: prediction
+        config:
+          partitionCount: 24
+        configVar: PREDICTION_TOPIC
+        nameAttributes:
+          domain: ml-predictions
+          messageType: BUS
+          version: v1
+          event:
+            type: BUSINESS
+            eventDescription: ml_predictions_to_kafka

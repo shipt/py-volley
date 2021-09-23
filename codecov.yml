@@ -1,0 +1,4 @@
+ignore:
+  - "tests"
+  - "**/__init__.py"
+  - "setup.py"

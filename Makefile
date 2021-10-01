@@ -1,4 +1,4 @@
-PROJECT=ml-api
+PROJECT=ml-bundle-engine
 PYTHON_VERSION=3.8
 
 SOURCE_OBJECTS=app tests

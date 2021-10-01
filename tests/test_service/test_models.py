@@ -33,4 +33,5 @@ def test_prediction() -> None:
 
 def test_no_payload() -> None:
     with pytest.raises(ValueError):
-        pre_processed_array = PreProcess.convert_to_np_array(payload=None)
+        pre_processed_array = PreProcess.convert_to_np_array(payload=None)  # type:ignore
+        assert pre_processed_array

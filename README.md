@@ -9,7 +9,6 @@ To experiment and get a feeling on how to use this scaffolding, a sample regress
 ## Maintainer(s)
  - @Jason
  - @AdamH
- - @damon
 
 ## Requirements
 Python 3.8+

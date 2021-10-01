@@ -6,8 +6,8 @@ import numpy as np
 from fastapi import APIRouter, BackgroundTasks, Header
 from starlette.requests import Request
 
-from app.data_models.payload import HousePredictionPayload
 from app.data_models.kafka_message import KafkaMessage
+from app.data_models.payload import HousePredictionPayload
 from app.data_models.prediction import HousePredictionResult
 from app.services.kafka_helper import KafkaProducer
 from app.services.post_process import PostProcess

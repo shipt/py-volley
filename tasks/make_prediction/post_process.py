@@ -1,6 +1,6 @@
 import numpy as np
 
-from app.data_models.prediction import HousePredictionResult
+from data_models.prediction import HousePredictionResult
 
 
 class PostProcess:
@@ -11,10 +11,8 @@ class PostProcess:
     def format_prediction_result(prediction: np.ndarray) -> HousePredictionResult:
         """
         Format prediction result to Pydantic data model
-
         Args:
             prediction (np.ndarray): Output from models predict method
-
         Returns:
             HousePredictionResult: Expected data model returned to requestor
         """

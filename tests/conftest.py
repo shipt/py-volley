@@ -1,11 +1,14 @@
 import pytest
-from starlette.testclient import TestClient
 
-from app.main import get_app
+from tasks.bundle_requests.tasks import BundleTasks
+from tasks.optimization_triage.tasks import OptimizationTasks
 
 
 @pytest.fixture()
-def test_client():
-    app = get_app()
-    with TestClient(app) as test_client:
-        yield test_client
+def bundle_worker():
+    yield BundleTasks
+
+
+@pytest.fixture()
+def optimization_worker():
+    yield OptimizationTasks

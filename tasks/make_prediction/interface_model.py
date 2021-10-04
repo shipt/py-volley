@@ -5,5 +5,5 @@ class IModel(ABC):
     @abstractmethod
     def predict():
         """
-        Saved/Serialized model predict method
+        Serialized model's .predict method
         """

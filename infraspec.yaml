@@ -33,5 +33,3 @@ datastores:
     - name: redis-queue
       configVar: ML_BUNDLE_QUEUE_URL
       size: 1
-options:
-  workspace: SPLIT

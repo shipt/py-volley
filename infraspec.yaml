@@ -19,15 +19,18 @@ deploy:
     region: us-central1
 roles:
   worker:
-    - name: process-fifo1-queue
-      command: rq worker --url=$ML_BUNDLE_QUEUE_URL fifo-1
+    - name: dummy
+      command: python3 print("Need redis")
       replicaCount: 1
-    - name: make-predictions-fifo-2
-      command: rq worker --url=$ML_BUNDLE_QUEUE_URL fifo-2
-      replicaCount: 1
-    - name: triage-optimizations
-      command: rq worker --url=$ML_BUNDLE_QUEUE_URL fifo-3
-      replicaCount: 1
+    # - name: process-fifo1-queue
+    #   command: rq worker --url=$ML_BUNDLE_QUEUE_URL fifo-1
+    #   replicaCount: 1
+    # - name: make-predictions-fifo-2
+    #   command: rq worker --url=$ML_BUNDLE_QUEUE_URL fifo-2
+    #   replicaCount: 1
+    # - name: triage-optimizations
+    #   command: rq worker --url=$ML_BUNDLE_QUEUE_URL fifo-3
+    #   replicaCount: 1
 datastores:
   memoryStore:
     - name: redis-queue

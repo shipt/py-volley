@@ -1,10 +1,5 @@
-# ML Model API Scaffolding
+# ML Bundle Engine
 
-Serving machine learning models production-ready, fast, easy and secure powered by FastAPI by [Sebastián Ramírez](https://github.com/tiangolo).
-
-This directory contains a starter ML API which can be used to speed-up your next machine learning project. 
-
-To experiment and get a feeling on how to use this scaffolding, a sample regression model for house price prediction is included in this project. Follow the installation and setup instructions to run the sample model and serve it as a RESTful API.
 
 ## Maintainer(s)
  - @Jason

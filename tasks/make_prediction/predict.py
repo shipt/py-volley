@@ -1,12 +1,14 @@
 import joblib
 import numpy as np
 
-from app.services.interface_model import IModel
+from tasks.make_prediction.interface_model import IModel
 
 
 class HousePriceModel(IModel):
-    def __init__(self, path):
+    def __init__(self, path: str, name: str, version: str):
         self.path = path
+        self.name = name
+        self.version = version
         self._load_local_model()
 
     def _load_local_model(self):
@@ -15,10 +17,8 @@ class HousePriceModel(IModel):
     def predict(self, features: np.ndarray) -> np.ndarray:
         """
         Serialized models "predict" method
-
         Args:
             features (np.ndarray): Feature vector need to make prediction
-
         Returns:
             np.ndarray: Array of predicted feature results
         """

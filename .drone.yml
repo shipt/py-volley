@@ -16,7 +16,7 @@ steps:
     environment:
       APP_ENV: 'development'
       SEED_DIR: './seed'
-      DEFAULT_MODEL_PATH: "./trained_model/my_trained_model.pkl"
+      DEFAULT_MODEL_PATH: './trained_model/lin_reg_california_housing_model.joblib'
       CODECOV_TOKEN:
         from_secret: CODECOV_TOKEN
 
@@ -24,14 +24,14 @@ steps:
     image: python:3.8
     commands:
       - pip3 install --no-cache --no-deps -r requirements-dev.txt
-      - flake8 --ignore=DAR,E203,W503 app tests
+      - flake8 --ignore=DAR,E203,W503 tasks tests
 
   - name: formatting
     image: python:3.8
     commands:
       - pip3 install --no-cache --no-deps -r requirements-dev.txt
-      - isort --check-only app tests
-      - black --check app tests
+      - isort --check-only tasks tests
+      - black --check tasks tests
 
   - name: docker-prep
     image: harbor.shipttech.com/plugins/dockerspec

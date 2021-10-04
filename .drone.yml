@@ -16,7 +16,7 @@ steps:
     environment:
       APP_ENV: 'development'
       SEED_DIR: './seed'
-      DEFAULT_MODEL_PATH: "./trained_model/my_trained_model.pkl"
+      DEFAULT_MODEL_PATH: './trained_model/lin_reg_california_housing_model.joblib'
       CODECOV_TOKEN:
         from_secret: CODECOV_TOKEN
 

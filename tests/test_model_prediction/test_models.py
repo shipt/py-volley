@@ -1,15 +1,16 @@
 import pytest
 
-from app.core import config
-from app.data_models.payload import HousePredictionPayload
-from app.data_models.prediction import HousePredictionResult
-from app.services.post_process import PostProcess
-from app.services.pre_process import PreProcess
-from app.services.predict import HousePriceModel
+from data_models.payload import HousePredictionPayload
+from data_models.prediction import HousePredictionResult
+from tasks.make_prediction.post_process import PostProcess
+from tasks.make_prediction.pre_process import PreProcess
+from tasks.make_prediction.predict import HousePriceModel
 
 
 def test_prediction() -> None:
-    model_path = config.DEFAULT_MODEL_PATH
+    model_path = "./trained_model/lin_reg_california_housing_model.joblib"
+    model_name = "test-model"
+    model_version = "test-version"
     hpp = HousePredictionPayload.parse_obj(
         {
             "median_income_in_block": 8.3252,
@@ -23,15 +24,16 @@ def test_prediction() -> None:
         }
     )
 
-    hpm = HousePriceModel(model_path)
+    hpm = HousePriceModel(path=model_path, name=model_name, version=model_version)
     pre_processed_array = PreProcess.convert_to_np_array(payload=hpp)
     result = hpm.predict(pre_processed_array)
     post_processed_result = PostProcess.format_prediction_result(result)
-
     assert isinstance(post_processed_result, HousePredictionResult)
 
 
 def test_no_payload() -> None:
     with pytest.raises(ValueError):
-        pre_processed_array = PreProcess.convert_to_np_array(payload=None)  # type:ignore
+        pre_processed_array = PreProcess.convert_to_np_array(
+            payload=None
+        )  # type:ignore
         assert pre_processed_array

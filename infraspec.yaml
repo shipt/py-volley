@@ -1,7 +1,7 @@
 language: python
 team: machine-learning
 metadata:
-  description: This api accepts post requests and responds with predicted values
+  description: The bundle engine consists of workers + queues to process incoming bundle requests from Kafka and optimize
 deploy:
   pipeline: harbor
   chart: default
@@ -18,51 +18,20 @@ deploy:
   - provider: gcp
     region: us-central1
 roles:
-  webserver:
-    autoscale:
-      enabled: false
-      maxReplicas: 10
-      minReplicas: 2
-      threshold: 30
-      trigger: RPS
-    command: >
-      gunicorn
-      -k uvicorn.workers.UvicornWorker
-      --bind=0.0.0.0:3000
-      --workers=2
-      --max-requests=3000
-      --max-requests-jitter=1000
-      app.main:app
-    healthcheck: /api/health/heartbeat
-    port: 3000
-    retryPolicy:
-      count: 3
-      perTryTimeout: 150ms
-    replicaCount: 2
-    resources:
-      cpu: 50m
-      memory: 1Gi
-    telemetry:
-      graphite:
-        enabled: true
-      honeycomb:
-        enabled: true
-      prometheus:
-        enabled: true
-        port: 3000
+  worker:
+    - name: process-fifo1-queue
+      command: rq worker --url=$ML_BUNDLE_QUEUE_URL fifo-1
+      replicaCount: 1
+    - name: make-predictions-fifo-2
+      command: rq worker --url=$ML_BUNDLE_QUEUE_URL fifo-2
+      replicaCount: 1
+    - name: triage-optimizations
+      command: rq worker --url=$ML_BUNDLE_QUEUE_URL fifo-3
+      replicaCount: 1
 datastores:
-  options:
-    workspace: SPLIT
-  kafka:
-    topics:
-      - name: prediction
-        config:
-          partitionCount: 24
-        configVar: PREDICTION_TOPIC
-        nameAttributes:
-          domain: ml-predictions
-          messageType: BUS
-          version: v1
-          event:
-            type: BUSINESS
-            eventDescription: ml_predictions_to_kafka
+  memoryStore:
+    - name: redis-queue
+      configVar: ML_BUNDLE_QUEUE_URL
+      size: 1
+options:
+  workspace: SPLIT

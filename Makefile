@@ -1,7 +1,7 @@
 PROJECT=ml-bundle-engine
 PYTHON_VERSION=3.8
 
-SOURCE_OBJECTS=app tests
+SOURCE_OBJECTS=tasks tests
 
 deploy.requirements:
 	poetry export -f requirements.txt -o requirements.txt

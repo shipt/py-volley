@@ -1,173 +1,24 @@
 [tool.poetry]
-name = "ml-experiment-template"
-version = "2.13.0"
-description = ""
-authors = ["Jason Eisele <jeisele@shipt.com>"]
+name = "ml-bundle-engine"
+version = "0.1.0"
+description = "ML driven bundle engine consisting of workers & queues"
+authors = ["jeisele <jeisele@shipt.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.8.0"
-autodynatrace = ">=1.0.81"
-boto3 = "^1.17.55"
-fastapi = "^0.61.1"
-loguru = "^0.5.3"
-numpy = "^1.19.1"
-pandas = "^1.1.2"
+python = "^3.8"
+redis = "^3.5.3"
+rq = "^1.10.0"
+scikit-learn = "^1.0"
 pydantic = "^1.8.2"
-pytz = "^2020.1"
-scikit-learn = "0.22.2.post1"
-starlette = "^0.13.6"
-graphyte = "^1.6.0"
-prometheus-fastapi-instrumentator = "^5.7.1"
-mkdocs-material = "^7.1.8"
-dvc = "^2.3.0"
-confluent-kafka = "^1.7.0"
-colorama = "^0.4.4"
-Cython = "^0.29.24"
-gunicorn = "^20.1.0"
-uvicorn = {extras = ["standard"], version = "^0.14.0"}
-rollbar = "^0.16.1"
 
 [tool.poetry.dev-dependencies]
-black = "^21.4b1"
-codecov = "^2.1.4"
-coverage = {extras = ["toml"], version = "^5.5"}
-darglint = "^1.8.0"
-isort = "^5.8.0"
-mypy = "^0.812"
-pytest = "^6.1.1"
-pylint = "^2.8.2"
-pep8-naming = "^0.11.1"
-pytest-cov = "^2.11.1"
-requests = "^2.24.0"
-graphyte = "^1.6.0"
-dvc = "^2.4.1"
-rollbar = "^0.16.1"
-
-[tool.black]
-line-length = 120
-target-version = ['py36']
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | _build
-  | buck-out
-  | build
-  | dist
-)/
-'''
-
-[tool.coverage.paths]
-source = ["app", "*/site-packages"]
-
-[tool.coverage.run]
-branch = true
-source = ["app"]
-
-[tool.coverage.report]
-show_missing = true
-fail_under = 90
-
-[tool.darglint]
-# Just a doc placeholder see setup.cfg
-# ignore private methods
-ignore_regex = "^_(.*)"
-# one liners are ok, longer pls doc everything
-strictness = "short"
-
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-line_length = 120
-
-[tool.flake8]
-# This section is just a doc placeholder..see setup.cfg
-#   https://gitlab.com/pycqa/flake8/-/issues/428#note_251982786
-max-complexity = 10
-format = "pylint"
-statistics = "True"
-max-line-length = 120
-# ignore non-PEP8 lints
-ignore = ["E203", "W503"]
-
-[tool.pytest]
-# Just a doc placeholder see setup.cfg
-junit_family = "xunit2"
-
-[tool.mypy]
-# Just a doc placeholder see setup.cfg
-#
-# source: https://github.com/psf/black/blob/master/mypy.ini
-#  with modifications
-# Specify the target platform details in config, so your developers are
-# free to run mypy on Windows, Linux, or macOS and get consistent
-# results.
-python_version = 3.6
-platform = "linux"
-
-# flake8-mypy expects the two following for sensible formatting
-show_column_numbers = "True"
-
-# show error messages from unrelated files
-follow_imports = "normal"
-
-# suppress errors about unsatisfied imports
-ignore_missing_imports = "True"
-
-# be strict
-disallow_untyped_calls = "True"
-warn_return_any = "True"
-strict_optional = "True"
-warn_no_return = "True"
-warn_redundant_casts = "True"
-warn_unused_ignores = "True"
-disallow_any_generics = "True"
-
-# The following are off by default.  Flip them on if you feel
-# adventurous.
-disallow_untyped_defs = "True"
-check_untyped_defs = "True"
-
-# No incremental mode
-cache_dir = "/dev/null"
-
-[tool.mypy-aiohttp]
-# Just a doc placeholder see setup.cfg
-follow_imports = "skip"
-
-[tool.mypy-_version]
-# Just a doc placeholder see setup.cfg
-follow_imports = "skip"
-
-[tool.pylint.master]
-load-plugins="pylint.extensions.docparams"
-
-[tool.pylint.messages_control]
-disable = "all"
-enable = """
-abstract-method,
-arguments-differ,
-invalid-overridden-method,
-protected-access,
-signature-differs,
-super-init-not-called,
-multiple-constructor-doc,
-missing-raises-doc,
-redundant-returns-doc,
-redundant-yields-doc,
-missing-return-doc,
-missing-return-type-doc,
-missing-yield-doc,
-missing-yield-type-doc,
-missing-param-doc,
-differing-param-doc,
-differing-type-doc
-"""
+flake8 = "^3.9.2"
+mypy = "^0.910"
+coverage = "^6.0"
+black = "^21.9b0"
+pytest = "^6.2.5"
+isort = "^5.9.3"
+pydantic = "^1.8.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -1,37 +1,23 @@
 version: '3'
-services: 
-    serve_model:
-        container_name: ml-api-service-1
-        restart: always
-        build: 
-            context: .
-            dockerfile: Dockerfile
-        ports: 
-            - "3000:3000"
-        environment:
-            - APP_ENV=development
-            - DEFAULT_MODEL_PATH=./trained_model/ling_reg_california_housing_model.joblib
-        volumes:
-            - .:/app
-        command: >
-            gunicorn
-            -k uvicorn.workers.UvicornWorker
-            --worker-class=uvicorn.workers.UvicornWorker
-            --bind=0.0.0.0:3000
-            --workers=1
-            --max-requests=3000
-            --max-requests-jitter=1000
-            app.main:app
-
+services:
     unit-tests:
-        container_name: ml-api-unittests
+        container_name: worker-unittests
         build:
             context: .
             dockerfile: tests/Dockerfile
-        ports:
-            - "3000:3000"
+        # depends_on:
+        #     - redis
         environment:
             - APP_ENV=development
             - DEFAULT_MODEL_PATH=./trained_model/lin_reg_california_housing_model.joblib
-        volumes:
-          - .:/app
+    
+    redis:
+        container_name: redis
+        image: redis:latest
+        ports:
+            - 6379:6379
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 5s
+            timeout: 30s
+            retries: 50

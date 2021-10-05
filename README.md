@@ -1,5 +1,8 @@
 # ML Bundle Engine
+The ML bundle engine is an event driven series of processes & queues. 
+The engine intakes a Kafka message from the bundle request topic, makes a prediction with an ML model, runs an optimizer and outputs to a Kafka topic.
 
+![Engine Architecture](./docs/assets/ml-bundling-architecture.png)
 
 ## Maintainer(s)
  - @Jason
@@ -17,19 +20,17 @@ pip install -r requirements
 ## Setup
 There is a Makefile provided to _make_ your life easier. Simply run ```make setup```
 
-## Local API testing
+## Local Engine testing
 
-Launch the API locally via `docker compose up serve_model -d`
+Launch the engine locally via `docker compose up run-engine -d`
 
-Check the API running by opening a browser and going to `http://localhost:3000/docs` to access the swagger documentation
+- [ ] TODO: Add script to pub a Kafka message to dummy topic (simulate intake)
    
-You can use the sample payload from the `docs/sample_payload.json` file when trying out the house price prediction model using the API.
+- [ ] TODO: Add script to sub to a Kafka message to dummy topic (simulate outbound)
 
-![Prediction with example payload](./docs/assets/sample_payload.png)
+## Engine Project Structure
 
-## API Project Structure
-
-![API structure](./docs/assets/tree_structure.png)
+ - [ ] TODO: Run ```tree`` and elaborate after component diag/dir finalized
 
 ### Testing
 

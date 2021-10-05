@@ -10,6 +10,15 @@ services:
         environment:
             - APP_ENV=development
             - DEFAULT_MODEL_PATH=./trained_model/lin_reg_california_housing_model.joblib
+
+    run-engine:
+        container_name: ml-bundle-engine
+        build:
+            context: .
+            dockerfile: Dockerfile
+        depends_on:
+            - redis
+            - kafka
     
     redis:
         container_name: redis
@@ -21,3 +30,45 @@ services:
             interval: 5s
             timeout: 30s
             retries: 50
+
+    # Zookeeper required for Kafka broker at this time
+    zookeeper:
+        image: confluentinc/cp-zookeeper:latest
+        ports:
+            - "2181:2181"
+        environment:
+            ZOOKEEPER_CLIENT_PORT: 2181
+            ZOOKEEPER_TICK_TIME: 2000
+            KAFKA_JMX_PORT: 39999
+
+    # Kakfa container required for unit testing
+    kafka:
+        image: confluentinc/cp-kafka:latest
+        container_name: kafka
+        restart: always
+        depends_on:
+            - zookeeper
+        ports:
+            - "9092:9092"
+            - "7071:7071"
+            - "49999:49999"
+        # https://rmoff.net/2018/08/02/kafka-listeners-explained/
+        environment:
+            KAFKA_BROKER_ID: 1
+            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+            KAFKA_JMX_PORT: 49999
+    
+    kafka-manager:
+        image: kafkamanager/kafka-manager
+        restart: always
+        depends_on:
+            - zookeeper
+            - kafka
+        ports:
+            - "9000:9000"
+        environment:
+            ZK_HOSTS: "zookeeper:2181"

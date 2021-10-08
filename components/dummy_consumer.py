@@ -18,4 +18,4 @@ def main():
             print(message.error())
         else:
             consumed_message = json.loads(message.value().decode("utf-8"))
-            logger.info(f"consumed: {consumed_message}")
+            logger.info(f"## WIN!:  {consumed_message} ##")

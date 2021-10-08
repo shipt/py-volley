@@ -14,4 +14,3 @@ if __name__ == "__main__":
     elif component == "dummy_consumer":
         from components.dummy_consumer import main
     main()
-        

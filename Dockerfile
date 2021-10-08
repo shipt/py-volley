@@ -1,9 +1,20 @@
-FROM python:3.8 as base
 
-COPY ./requirements.txt /app/requirements.txt
+FROM python:3.9.4
+
+ARG SHIPT_PYPI_USERNAME
+ARG SHIPT_PYPI_PASSWORD
+
+ENV POETRY_HTTP_BASIC_SHIPT_USERNAME=$SHIPT_PYPI_USERNAME
+ENV POETRY_HTTP_BASIC_SHIPT_PASSWORD=$SHIPT_PYPI_PASSWORD
+
 WORKDIR /app
-RUN pip3 install --no-cache --no-deps -r requirements.txt
-COPY . /app
 
-# Define the default command to run when starting the container, this gets overridden with infraspec
-CMD ["rq", "worker", "fifo-1", "fifo-2", "fifo-3"]
+
+COPY poetry.lock pyproject.toml /app/
+
+RUN pip3 install poetry==1.1.10
+
+RUN poetry config virtualenvs.create false \
+    &&  poetry install
+
+COPY . /app/

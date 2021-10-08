@@ -12,18 +12,23 @@ class Collector(Component):
         super().__init__(*args, **kwargs)
     
     def process(self, msg: dict[str, Any]) -> dict[str, Any]:
-        msg["collector_data"] = {"collector": 123}
-        return msg
+        message = msg["message"]
+        message["collector_data"] = {"collector": 123}
+        return message
 
 
-input_comp: Collector = Collector(qname=INPUT_QUEUE)
 
-p = KafkaProducer()
 
-while True:
-    try:
-        msg = input_comp.consume()
-    except Exception:
-        continue
-    processes_msg = input_comp.process(msg)
-    p.publish(topic=OUTPUT_QUEUE, value=processes_msg)
+def main():
+    input_comp: Collector = Collector(qname=INPUT_QUEUE)
+
+    p = KafkaProducer()
+
+    while True:
+        try:
+            msg = input_comp.consume()
+        except Exception:
+            continue
+        processes_msg = input_comp.process(msg)
+        p.publish(topic=OUTPUT_QUEUE, value=processes_msg)
+        input_comp.delete_msg(msg)

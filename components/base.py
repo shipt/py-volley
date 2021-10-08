@@ -1,7 +1,8 @@
 from abc import abstractmethod
-from pprint import pprint
 import time
 import os
+import json
+
 
 from rsmq import RedisSMQ
 
@@ -25,7 +26,7 @@ class Component:
         # TODO: is this "create if not exists. will this cause problems?"
         # TODO: vt probably should be configurable
         self.queue.createQueue(delay=0).vt(30).exceptions(False).execute()
-
+        logger.info(f"CREATED_QUEUE: {self.host}:{qname}")
     
     def publish(self, msg: dict[str, Any]) -> str:
         # TODO: this should publish to either kafka or redis
@@ -41,16 +42,23 @@ class Component:
         msg = None
         while not isinstance(msg, dict):
             msg: dict[str, Any] = self.queue\
-                    .receiveMessage()\
+                    .receiveMessage(quiet=True)\
                     .exceptions(False)\
                     .execute()
             if not isinstance(msg, dict):
                 time.sleep(poll_interval)
+        
+        msg["message"] = json.loads(msg["message"])
         return msg
 
     def delete_msg(self, msg: dict[str, Any]) -> None:
-        self.queue.deleteMessage(id=msg['id'])
-
+        msg_id = msg["id"]
+        event_id = msg["message"]["event_id"]
+        logger.info(f"DELETE: {msg_id}: {event_id}: {self.qname}")
+        result = self.queue.deleteMessage(qname=self.qname, id=msg_id)
+        if not result:
+            raise KeyError
+            
     @abstractmethod
     def process(self) -> None:
         raise NotImplementedError

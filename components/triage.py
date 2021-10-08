@@ -1,7 +1,8 @@
 import os
 
-from components.base import Component, logger
+from components.base import Component
 from typing import Any
+from core.logging import logger
 
 INPUT_QUEUE = os.environ["INPUT_QUEUE"]
 OUTPUT_QUEUE = os.environ["OUTPUT_QUEUE"]

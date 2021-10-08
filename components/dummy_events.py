@@ -8,7 +8,7 @@ from pyshipt_streams import KafkaProducer
 
 p = KafkaProducer()
 
-from components.base import logger
+from core.logging import logger
 
 def main():
     i = 0

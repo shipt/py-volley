@@ -3,7 +3,7 @@ import os
 import json
 
 INPUT_QUEUE = os.environ["INPUT_QUEUE"]
-from components.base import logger
+from core.logging import logger
 from pyshipt_streams import KafkaConsumer
 
 c = KafkaConsumer(consumer_group="group1")
@@ -15,7 +15,7 @@ def main():
         if message is None:
             continue
         if message.error():
-            print(message.error())
+            logger.error(message.error())
         else:
             consumed_message = json.loads(message.value().decode("utf-8"))
-            print(f"## WIN!:  {consumed_message} ##")
+            logger.info(f"## WIN!:  {consumed_message} ##")

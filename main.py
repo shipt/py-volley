@@ -6,7 +6,7 @@ if __name__ == "__main__":
     if component == "dummy_events":
         from components.dummy_events import main
     elif component == "features":
-        from components.feature_generator import main
+        from components.features import main
     elif component == "triage":
         from components.triage import main
     elif component == "collector":

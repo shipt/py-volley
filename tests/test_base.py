@@ -1,7 +1,10 @@
 import os
+from unittest.mock import patch
+
+from _typeshed import OpenTextModeUpdating
 
 from components.base import Component
-from unittest.mock import patch
+
 
 @patch("components.base.RedisSMQ")
 def test_base_component(mocked_rsmq) -> None:
@@ -11,4 +14,5 @@ def test_base_component(mocked_rsmq) -> None:
     in_q = Component(qname=input_q)
     out_q = Component(qname=output_q)
 
-
+    assert in_q
+    assert out_q

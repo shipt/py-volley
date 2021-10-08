@@ -8,63 +8,27 @@ The engine intakes a Kafka message from the bundle request topic, makes a predic
  - @Jason
  - @AdamH
 
-## Requirements
-Python 3.8+
+## Run locally
+Acquire creds to pypi.shipt.com #ask-machine-learning
 
-## Installation
-Install the required packages in your local environment (ideally virtualenv, conda, etc.).
+Add these to your shell
+
 ```bash
-pip install -r requirements
-``` 
+export POETRY_HTTP_BASIC_SHIPT_USERNAME=your_username
+export POETRY_HTTP_BASIC_SHIPT_PASSWORD=your_password
+```
 
-## Setup
-There is a Makefile provided to _make_ your life easier. Simply run ```make setup```
+`docker-compose up`
 
-## Local Engine testing
+- dummy_events: components/dummy_events.py - produces dummy kafka messages to an `input-topic` kafka
+- features: components/feature_generator.py - reads from `input-topic` kafka, publishes to `triage` queue
+- triage: components/triage.py - reads from `triage` queue, publishes to `collector` queue
+- collector: components/collector.py - reads from `collector` queue and publishes to `output-topic` kafka
+- dummy_consumer: components/dummy_consimer.py - reads from `output-topic` kafka and logs to stddout
 
-Launch the engine locally via `docker compose up run-engine -d`
-
-- [ ] TODO: Add script to pub a Kafka message to dummy topic (simulate intake)
-   
-- [ ] TODO: Add script to sub to a Kafka message to dummy topic (simulate outbound)
-
-## Engine Project Structure
-
- - [ ] TODO: Run ```tree`` and elaborate after component diag/dir finalized
-
-### Testing
-
-#### Unit testing
-
-All unit tests are in the tests directory. They can be run locally with `make test` or in docker using `docker compose up unit-tests`.
-
-
-### Environments
-
-Set the environment variable `APP_ENV` to one of the following names (all lower case).
-
-| Name        | Description       |
-|-------------|-------------------|
-| development | Local development |
-| testing     | Unit testing      |
-| staging     | Pre-prod          |
-| production  | Production        |
-
-### Updating an Existing Repo
-
-- Update `.drone.yml` based on template
-- Add `Makefile` based on template
-- Run `poetry init` to create `pyproject.toml`, or copy existing file from the template and change the project and version name
-- Add needed dependencies to `pyproject.toml` under `[tool.poetry.dependencies]`
-	- run pipreqs --print to see the deps needed, copy just the names
-	- for the dep names copied, cross reference an existing `requirements.txt` file to get the correct versions
-- copy everything from the template from `[tool.poetry.dev-dependencies]` down and add it into the pyproject toml file
-- copy `setup.cfg` file from the template
-- remove anything from `[tool.poetry.dependencies]` that exists already in `[tool.poetry.dependencies]`
-- run `poetry lock` to create the lock file
-- the `pyproject.toml` should use semantic versioning (semvar) for easy upgrading, e.g. `"pytest" = "^6.2.1"`
-- run `make setup`
-- If any of the dependencies fail on `poetry install`, add the needed dependency in the `pyproject.toml` file, remove the existing `poetry.lock` file and run `make setup.uninstall` then `make setup` again
-- run `make format` to take care of any linting
-- run `make deploy.requirements` to create/update `requirements.txt` and `requirements-dev.txt`
-- push the PR!
+# TODO
+- create components for optimizer, fallback, shadow optimizer
+- write tests, fix failing lint/quality checks
+- handle configuration for topic/queue names
+- clean up components/base.py, needs to be a generate consumer/producer for both kafka/redis
+- add input schema to whats published by dummy_producer

@@ -9,29 +9,28 @@ trigger:
 
 steps:
   - name: unit-tests
-    image: python:3.8
-    commands:
-      - pip3 install --no-cache -r requirements-dev.txt
-      - coverage run -m pytest && codecov
+    image: python:3.9.4
     environment:
-      APP_ENV: 'development'
-      SEED_DIR: './seed'
-      DEFAULT_MODEL_PATH: './trained_model/lin_reg_california_housing_model.joblib'
-      CODECOV_TOKEN:
-        from_secret: CODECOV_TOKEN
-
-  - name: lints
-    image: python:3.8
+      SHIPT_PYPI_USERNAME:
+        from_secret: SHIPT_PYPI_USERNAME
+      SHIPT_PYPI_PASSWORD:
+        from_secret: SHIPT_PYPI_PASSWORD
     commands:
-      - pip3 install --no-cache --no-deps -r requirements-dev.txt
-      - flake8 --ignore=DAR,E203,W503 tasks tests
+      - pip3 install poetry==1.1.10
+      - make test.unit
+    environment:
+      APP_ENV: 'localhost'
 
-  - name: formatting
-    image: python:3.8
+  - name: lints-quality
+    image: python:3.9.4
+    environment:
+      SHIPT_PYPI_USERNAME:
+        from_secret: SHIPT_PYPI_USERNAME
+      SHIPT_PYPI_PASSWORD:
+        from_secret: SHIPT_PYPI_PASSWORD
     commands:
-      - pip3 install --no-cache --no-deps -r requirements-dev.txt
-      - isort --check-only tasks tests
-      - black --check tasks tests
+      - pip3 install poetry==1.1.10
+      - make lints.strict
 
   - name: docker-prep
     image: harbor.shipttech.com/plugins/dockerspec
@@ -42,9 +41,15 @@ steps:
     environment:
       GITHUB_TOKEN:
         from_secret: github_token
+      SHIPT_PYPI_USERNAME:
+        from_secret: SHIPT_PYPI_USERNAME
+      SHIPT_PYPI_PASSWORD:
+        from_secret: SHIPT_PYPI_PASSWORD
     settings:
       build_args_from_env:
         - GITHUB_TOKEN
       registry: harbor.shipttech.com
       env_file: "docker_args"
-
+    depends_on:
+      - unit-tests
+      - lints-quality

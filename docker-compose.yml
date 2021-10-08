@@ -1,25 +1,111 @@
 version: '3'
 services:
-    unit-tests:
-        container_name: worker-unittests
-        build:
-            context: .
-            dockerfile: tests/Dockerfile
-        # depends_on:
-        #     - redis
+    dummy_events:
+        container_name: dummy_events
         environment:
-            - APP_ENV=development
-            - DEFAULT_MODEL_PATH=./trained_model/lin_reg_california_housing_model.joblib
-
-    run-engine:
-        container_name: ml-bundle-engine
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - OUTPUT_QUEUE=input-topic
+            - KAFKA_BROKERS=kafka:29092
         build:
             context: .
             dockerfile: Dockerfile
+            args:
+                SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
+                SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        volumes:
+            - ./:/app/
         depends_on:
             - redis
             - kafka
-    
+        command: python main.py dummy_events
+    features:
+        container_name: features
+        environment:
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - INPUT_QUEUE=input-topic
+            - OUTPUT_QUEUE=triage
+            - KAFKA_BROKERS=kafka:29092
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
+                SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        volumes:
+            - ./:/app/
+        # ports:
+        #     - 5678:5678
+        depends_on:
+            - redis
+            - kafka
+        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py features
+        command: python main.py features
+    triage:
+        container_name: triage
+        environment:
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - INPUT_QUEUE=triage
+            - OUTPUT_QUEUE=collector
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
+                SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        volumes:
+            - ./:/app/
+        depends_on:
+            - redis
+            - kafka
+        # ports:
+        #     - 5678:5678
+        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py triage
+        command: python main.py triage
+    collector:
+        container_name: collector
+        environment:
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - INPUT_QUEUE=collector
+            - OUTPUT_QUEUE=output-topic
+            - KAFKA_BROKERS=kafka:29092
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
+                SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        volumes:
+            - ./:/app/
+        depends_on:
+            - redis
+            - kafka
+        command: python main.py collector
+    consumer:
+        container_name: dummy_consumer
+        environment:
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - INPUT_QUEUE=output-topic
+            - KAFKA_BROKERS=kafka:29092
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
+                SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        volumes:
+            - ./:/app/
+        depends_on:
+            - redis
+            - kafka
+        # ports:
+        #     - 5678:5678
+        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py dummy_consumer
+        command: python main.py dummy_consumer
     redis:
         container_name: redis
         image: redis:latest
@@ -61,14 +147,3 @@ services:
             KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
             KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
             KAFKA_JMX_PORT: 49999
-    
-    kafka-manager:
-        image: kafkamanager/kafka-manager
-        restart: always
-        depends_on:
-            - zookeeper
-            - kafka
-        ports:
-            - "9000:9000"
-        environment:
-            ZK_HOSTS: "zookeeper:2181"

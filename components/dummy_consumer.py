@@ -1,0 +1,21 @@
+import os
+
+import json
+
+INPUT_QUEUE = os.environ["INPUT_QUEUE"]
+from components.base import logger
+from pyshipt_streams import KafkaConsumer
+
+c = KafkaConsumer(consumer_group="group1")
+c.subscribe([INPUT_QUEUE])
+
+def main():
+    while True:
+        message = c.poll(0.25)
+        if message is None:
+            continue
+        if message.error():
+            print(message.error())
+        else:
+            consumed_message = json.loads(message.value().decode("utf-8"))
+            logger.info(f"consumed: {consumed_message}")

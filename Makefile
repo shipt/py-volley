@@ -1,5 +1,5 @@
 PROJECT=ml_bundle_engine
-PYTHON_VERSION=3.9
+PYTHON_VERSION=3.9.4
 
 SOURCE_OBJECTS=tasks tests
 
@@ -69,4 +69,8 @@ test.shell:
 test.shell.debug:
 	docker-compose run --entrypoint /bin/bash unit-tests
 test.unit: setup
-	poetry run coverage run -m pytest
+	poetry run coverage run -m pytest \
+			--ignore=tests/integration \
+            --cov=./ \
+            --cov-report=xml:cov.xml \
+            --cov-report term

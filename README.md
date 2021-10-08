@@ -8,8 +8,7 @@ The engine intakes a Kafka message from the bundle request topic, makes a predic
  - @Jason
  - @AdamH
 
-## Notes
+## Run locally
 
-# Visibility timeout - how long until the message should be placed back on the queue. This is basically the timeout for the component to do its thing. Example, vt=10, if component pulls the message off and doesnt delete the message within 10 seconds, the message will go back onto the queue and another worker can pull it off.
+`docker-compose up`
 
-# Delay - how long to wait before doing the actual action

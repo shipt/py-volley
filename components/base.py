@@ -8,16 +8,14 @@ from rsmq import RedisSMQ
 
 from typing import Any
 
-from pyshipt_logging.logger import ShiptLogging
-
-
-logger = ShiptLogging.get_default_logger()
-
+from core.logging import logger
 
 class Component:
 
     def __init__(self, qname: str, host: str=None) -> None:
-        # TODO: needs to be able to hand two queues, input and output
+        # TODO: needs to be able to hand two queues, input and outpu
+        # can probably make a generate queue controller and specify queue name for all
+        # operations, i.e. sendMessage(qname="queue1"), deleteMessage(qname="queue1")
         self.host = host
         if self.host is None:
             self.host = os.environ["REDIS_HOST"]
@@ -52,7 +50,6 @@ class Component:
 
     def delete_msg(self, msg: dict[str, Any]) -> None:
         msg_id = msg["id"]
-        event_id = msg["message"]["event_id"]
         result = self.queue\
                 .deleteMessage(qname=self.qname, id=msg_id)\
                 .execute()

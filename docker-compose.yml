@@ -1,16 +1,5 @@
 version: '3'
 services:
-    # unit-tests:
-    #     container_name: worker-unittests
-    #     build:
-    #         context: .
-    #         dockerfile: tests/Dockerfile
-    #         args:
-    #             SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
-    #             SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
-    #     environment:
-    #         - APP_ENV=localhost
-
     dummy_events:
         container_name: dummy_events
         environment:
@@ -113,10 +102,10 @@ services:
         depends_on:
             - redis
             - kafka
-        ports:
-            - 5678:5678
-        command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py dummy_consumer
-        # command: python main.py dummy_consumer
+        # ports:
+        #     - 5678:5678
+        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py dummy_consumer
+        command: python main.py dummy_consumer
     redis:
         container_name: redis
         image: redis:latest

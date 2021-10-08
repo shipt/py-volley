@@ -19,17 +19,26 @@ deploy:
     region: us-central1
 roles:
   worker:
-    - name: process-fifo1-queue
-      command: rq worker --url=redis://$ML_BUNDLE_QUEUE_URL fifo-1
+    - name: features
+      command: python main.py features
       replicaCount: 1
-    - name: make-predictions-fifo-2
-      command: rq worker --url=redis://$ML_BUNDLE_QUEUE_URL fifo-2
+      environment:
+      - INPUT_QUEUE=input_kafka_topic_name
+      - OUTPUT_QUEUE=triage
+    - name: triage
+      command: python main.py triage
       replicaCount: 1
-    - name: triage-optimizations
-      command: rq worker --url=redis://$ML_BUNDLE_QUEUE_URL fifo-3
+      environment:
+      - INPUT_QUEUE=triage
+      - OUTPUT_QUEUE=collector
+    - name: collector
+      command: python main.py collector
       replicaCount: 1
+      environment:
+      - INPUT_QUEUE=collector
+      - OUTPUT_QUEUE=output_kafka_topic_name
 datastores:
   memoryStore:
     - name: redis-queue
-      configVar: ML_BUNDLE_QUEUE_URL
+      configVar: REDIS_HOST
       size: 1

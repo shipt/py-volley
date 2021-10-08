@@ -1,4 +1,4 @@
-PROJECT=ml-bundle-engine
+PROJECT=ml_bundle_engine
 PYTHON_VERSION=3.9
 
 SOURCE_OBJECTS=tasks tests

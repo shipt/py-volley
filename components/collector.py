@@ -1,8 +1,9 @@
 from pyshipt_streams import KafkaProducer
 
 import os
-from components.base import Component, logger
+from components.base import Component
 from typing import Any
+
 
 INPUT_QUEUE = os.environ["INPUT_QUEUE"]
 OUTPUT_QUEUE = os.environ["OUTPUT_QUEUE"]

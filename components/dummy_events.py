@@ -11,9 +11,10 @@ p = KafkaProducer()
 from components.base import logger
 
 def main():
+    i = 0
     while True:
         msg = {
-            "event_id": 123,
+            "event_id": i,
             "order": str(uuid4()),
             }
         p.publish(
@@ -21,4 +22,5 @@ def main():
             msg
         )
         logger.info(f"EVENT: {msg}")
-        time.sleep(5)
+        time.sleep(10)
+        i += 1

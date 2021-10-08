@@ -1,11 +1,15 @@
 PROJECT=ml-bundle-engine
-PYTHON_VERSION=3.8
+PYTHON_VERSION=3.9
 
 SOURCE_OBJECTS=tasks tests
 
+# remove extra-index-urls - they break when auth is required
 deploy.requirements:
-	poetry export -f requirements.txt -o requirements.txt
-	poetry export --dev -f requirements.txt -o requirements-dev.txt
+	poetry export --without-hashes -f requirements.txt -o requirements.txt
+	poetry export --without-hashes --dev -f requirements.txt -o requirements-dev.txt
+	sed -i.bak -e '/^--extra-index-url/d' -e '/^$$/d' requirements.txt && rm requirements.txt.bak
+	sed -i.bak -e '/^--extra-index-url/d' -e '/^$$/d' requirements-dev.txt && rm requirements-dev.txt.bak
+
 deploy:
 	poetry build
 

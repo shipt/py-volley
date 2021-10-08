@@ -51,7 +51,7 @@ uvloop = ["uvloop (>=0.15.2)"]
 name = "certifi"
 version = "2021.5.30"
 description = "Python package for providing Mozilla's CA Bundle."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -59,7 +59,7 @@ python-versions = "*"
 name = "charset-normalizer"
 version = "2.0.6"
 description = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5.0"
 
@@ -98,6 +98,22 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
+name = "confluent-kafka"
+version = "1.7.0"
+description = "Confluent's Python client for Apache Kafka"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.extras]
+avro = ["requests", "fastavro (>=0.23.0,<1.0)", "avro (==1.10.0)", "fastavro (>=1.0)", "avro-python3 (==1.10.0)"]
+dev = ["pytest-timeout", "flake8", "requests", "pytest (==4.6.4)", "fastavro (>=0.23.0,<1.0)", "avro (==1.10.0)", "fastavro (>=1.0)", "avro-python3 (==1.10.0)", "pytest"]
+doc = ["sphinx", "sphinx-rtd-theme", "requests", "fastavro (>=0.23.0,<1.0)", "avro (==1.10.0)", "fastavro (>=1.0)", "avro-python3 (==1.10.0)"]
+json = ["jsonschema", "requests", "pyrsistent (==0.16.1)", "pyrsistent"]
+protobuf = ["protobuf", "requests"]
+schema-registry = ["requests"]
+
+[[package]]
 name = "coverage"
 version = "6.0"
 description = "Code coverage measurement for Python"
@@ -107,6 +123,14 @@ python-versions = ">=3.6"
 
 [package.extras]
 toml = ["tomli"]
+
+[[package]]
+name = "debugpy"
+version = "1.5.0"
+description = "An implementation of the Debug Adapter Protocol for Python"
+category = "dev"
+optional = false
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*"
 
 [[package]]
 name = "flake8"
@@ -125,7 +149,7 @@ pyflakes = ">=2.3.0,<2.4.0"
 name = "idna"
 version = "3.2"
 description = "Internationalized Domain Names in Applications (IDNA)"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.5"
 
@@ -291,6 +315,52 @@ optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
+name = "pyrsmq"
+version = "0.4.5"
+description = "Python Implementation of Redis SMQ"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+redis = "*"
+
+[[package]]
+name = "pyshipt-logging"
+version = "0.0.2"
+description = "Common logging interface for Python"
+category = "main"
+optional = false
+python-versions = ">=3.8,<4.0"
+
+[package.dependencies]
+python-json-logger = ">=2.0.2,<3.0.0"
+rollbar = ">=0.16.1,<0.17.0"
+
+[package.source]
+type = "legacy"
+url = "https://pypi.shipt.com/simple"
+reference = "shipt"
+
+[[package]]
+name = "pyshipt-streams"
+version = "0.1.2"
+description = "Python interface to kafka and other streaming data technologies"
+category = "main"
+optional = false
+python-versions = ">=3.8,<4.0"
+
+[package.dependencies]
+confluent-kafka = ">=1.7.0,<2.0.0"
+pydantic = ">=1.8.2,<2.0.0"
+pyshipt-logging = ">=0.0.2,<0.0.3"
+
+[package.source]
+type = "legacy"
+url = "https://pypi.shipt.com/simple"
+reference = "shipt"
+
+[[package]]
 name = "pytest"
 version = "6.2.5"
 description = "pytest: simple powerful testing with Python"
@@ -310,6 +380,14 @@ toml = "*"
 
 [package.extras]
 testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xmlschema"]
+
+[[package]]
+name = "python-json-logger"
+version = "2.0.2"
+description = "A python library adding a json log formatter"
+category = "main"
+optional = false
+python-versions = ">=3.5"
 
 [[package]]
 name = "redis"
@@ -334,7 +412,7 @@ python-versions = "*"
 name = "requests"
 version = "2.26.0"
 description = "Python HTTP for Humans."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 
@@ -347,6 +425,18 @@ urllib3 = ">=1.21.1,<1.27"
 [package.extras]
 socks = ["PySocks (>=1.5.6,!=1.5.7)", "win-inet-pton"]
 use_chardet_on_py3 = ["chardet (>=3.0.2,<5)"]
+
+[[package]]
+name = "rollbar"
+version = "0.16.2"
+description = "Easy and powerful exception tracking with Rollbar. Send messages and exceptions with arbitrary context, get back aggregates, and debug production issues quickly."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+requests = {version = ">=0.12.1", markers = "python_version >= \"3.6\""}
+six = ">=1.9.0"
 
 [[package]]
 name = "rq"
@@ -392,6 +482,14 @@ python-versions = ">=3.7"
 numpy = ">=1.16.5"
 
 [[package]]
+name = "six"
+version = "1.16.0"
+description = "Python 2 and 3 compatibility utilities"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
+
+[[package]]
 name = "threadpoolctl"
 version = "3.0.0"
 description = "threadpoolctl"
@@ -427,7 +525,7 @@ python-versions = "*"
 name = "urllib3"
 version = "1.26.7"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4"
 
@@ -439,7 +537,7 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "971e993fba24a934f9a5dbecf4cebde157526ec34bf269bcc5d46d8e632b2064"
+content-hash = "45c66b19f11d6fbd191f96d515d06142254cc48d84d0bb1a92ab0bb262c24e44"
 
 [metadata.files]
 atomicwrites = [
@@ -474,6 +572,28 @@ codecov = [
 colorama = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
     {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
+]
+confluent-kafka = [
+    {file = "confluent-kafka-1.7.0.tar.gz", hash = "sha256:80e01b4791513c27eded8517af847530dfdf04c43d99ff132ed9c3085933b75b"},
+    {file = "confluent_kafka-1.7.0-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:1246f3c674357630b078bbc76824eabea87ac5a9ca270886abca9c7f052381da"},
+    {file = "confluent_kafka-1.7.0-cp27-cp27m-manylinux2010_x86_64.whl", hash = "sha256:f98fa8982da1a960e6c1bfca49b235f8de45c8af83d6b741d78f96f346748488"},
+    {file = "confluent_kafka-1.7.0-cp27-cp27mu-manylinux2010_x86_64.whl", hash = "sha256:aa5f2905783b1a4e560e4172e228e2174a077090cbdf91a5448dd8deac02b2a9"},
+    {file = "confluent_kafka-1.7.0-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:2b4d8d53148a26f0cafcb42e9483f76473120bc091fa0ede497caf8cc8db6f88"},
+    {file = "confluent_kafka-1.7.0-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:bbba1f144992fbd920cb10c7c2450e82fc8936e04272d36be3a3567bfbf768d4"},
+    {file = "confluent_kafka-1.7.0-cp36-cp36m-win32.whl", hash = "sha256:f2628f3ebffe05d346f0456c566d5519a59bd0aa88179a9b7408c1808415c102"},
+    {file = "confluent_kafka-1.7.0-cp36-cp36m-win_amd64.whl", hash = "sha256:8bb0d7e28deac58b234f7481184a60f743838c4e06309fbcca9484b93697c33b"},
+    {file = "confluent_kafka-1.7.0-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:aad712996e1465e806f7e027ad248b2474d2140a3985d5f7789a5ff68e5dba8a"},
+    {file = "confluent_kafka-1.7.0-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:415c23e7ccf948e50de616191febd4ec299b1d748ae0abdab3888f0ec0915ea9"},
+    {file = "confluent_kafka-1.7.0-cp37-cp37m-win32.whl", hash = "sha256:bc2ad89e6cc4e05c5855dfbee2838a699861943ab3ea62ff2b914d72fcd1a6c6"},
+    {file = "confluent_kafka-1.7.0-cp37-cp37m-win_amd64.whl", hash = "sha256:11173733e0540a98e493c91a05686ba4e777883c2cda756d47848fce84e06b30"},
+    {file = "confluent_kafka-1.7.0-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:5d9c75822c0b1cb7787fc60a78b3f249bfd56b3a692dd079d9d7510ffefe2c99"},
+    {file = "confluent_kafka-1.7.0-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:ee3f33077e3534b33cec9825843cd705ede458c585cfab2a052813391fb73291"},
+    {file = "confluent_kafka-1.7.0-cp38-cp38-win32.whl", hash = "sha256:5e044e5c5fce78c87aedd56dbd7bd5c046dbf7a0bc9a0eff32229766be8808a5"},
+    {file = "confluent_kafka-1.7.0-cp38-cp38-win_amd64.whl", hash = "sha256:c0b3fc70c31f636562464e905c2b75a2705d3d53bb4687fd48b574dee2a7fa51"},
+    {file = "confluent_kafka-1.7.0-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:1e8e7770eaf2f6df0a3620f0bfc5dc2293e6ca3ac1e14c4babe6fefc03f50e18"},
+    {file = "confluent_kafka-1.7.0-cp39-cp39-manylinux2010_x86_64.whl", hash = "sha256:33c32de2357ddcd3f8a98a96591c69c7ada76215e051ed5dbb17b763921f376a"},
+    {file = "confluent_kafka-1.7.0-cp39-cp39-win32.whl", hash = "sha256:955de681f2bc7241d580ebb43d7516f825950518bfaf2c8e6bc3c88d22be4f08"},
+    {file = "confluent_kafka-1.7.0-cp39-cp39-win_amd64.whl", hash = "sha256:9f5ff838f2ca87e467aa992f9fcb8bbdd222097690fe6b15aa733025a1613532"},
 ]
 coverage = [
     {file = "coverage-6.0-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:3dfb23cc180b674a11a559183dff9655beb9da03088f3fe3c4f3a6d200c86f05"},
@@ -511,6 +631,29 @@ coverage = [
     {file = "coverage-6.0-pp36-none-any.whl", hash = "sha256:82b58d37c47d93a171be9b5744bcc96a0012cbf53d5622b29a49e6be2097edd7"},
     {file = "coverage-6.0-pp37-none-any.whl", hash = "sha256:fff04bfefb879edcf616f1ce5ea6f4a693b5976bdc5e163f8464f349c25b59f0"},
     {file = "coverage-6.0.tar.gz", hash = "sha256:17983f6ccc47f4864fd16d20ff677782b23d1207bf222d10e4d676e4636b0872"},
+]
+debugpy = [
+    {file = "debugpy-1.5.0-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:098753d30232d1e4264eee37e1ddd5d106dc5c4bc6d8d7f4dadad9e44736cd48"},
+    {file = "debugpy-1.5.0-cp310-cp310-win32.whl", hash = "sha256:33e8a9b4949be8b4f5fcfff07e24bd63c565060659f1c79773c08d19eee012f2"},
+    {file = "debugpy-1.5.0-cp310-cp310-win_amd64.whl", hash = "sha256:ef71eb8eb276370f8e74ab3f8c7648bbdc9aabac814a5b2840c8dd38a7bc7251"},
+    {file = "debugpy-1.5.0-cp36-cp36m-macosx_10_15_x86_64.whl", hash = "sha256:dd0e8d5e099444c22b27511dafd48e8bdcd7051b811ddd0ab2062965fe36ac80"},
+    {file = "debugpy-1.5.0-cp36-cp36m-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:990228f15de4ccbc52c2accf41a63b3b8d0a01e3de9876e02e77e487c4b1ffab"},
+    {file = "debugpy-1.5.0-cp36-cp36m-win32.whl", hash = "sha256:77b5233b23a248cd930bf03ecd684da065c6e7d2a57d137516b6fa1698a58317"},
+    {file = "debugpy-1.5.0-cp36-cp36m-win_amd64.whl", hash = "sha256:c3184666cfe1768bf110f8075bafea59d2afce3cc54f4c501f2371c7238bc69d"},
+    {file = "debugpy-1.5.0-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:1283e418f595262d11abc5fae6a3ac629c5fc3b44d3988511ea755414aab3062"},
+    {file = "debugpy-1.5.0-cp37-cp37m-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:a03051ba4fdf6720ee83a42e9f803e3a0b69a48b00436b97d16aeda49d28a8bf"},
+    {file = "debugpy-1.5.0-cp37-cp37m-win32.whl", hash = "sha256:cdaf6baaf8176644e752aed321b3f810dcf8b0439709f7edd9ae542f849a639b"},
+    {file = "debugpy-1.5.0-cp37-cp37m-win_amd64.whl", hash = "sha256:be7ca2baef5a634dfbd086d9c1d6b5e0783c6d0f6d0a004b43d36f625d4fc0a9"},
+    {file = "debugpy-1.5.0-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:72093ea83226d5264b3697b948c07a3cfcc4953da14a78a50c4e623a2bb99ad8"},
+    {file = "debugpy-1.5.0-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:ce0794d50391c87813bb148548c34dc638fb4d58198d275334968f63c088aa69"},
+    {file = "debugpy-1.5.0-cp38-cp38-win32.whl", hash = "sha256:de56775b3dbbfc02bc9fb0682da4a960e0a5bada699eac5e22e0723c4107ec9f"},
+    {file = "debugpy-1.5.0-cp38-cp38-win_amd64.whl", hash = "sha256:82c4fa1293981a28c435d196a3714e06df761daff0da3336234475ceff1b042c"},
+    {file = "debugpy-1.5.0-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:8e7391a08a351adce6e5154ed35e4cf90c5f3c10dbf7c8f6a234faef300588d6"},
+    {file = "debugpy-1.5.0-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:dacdb0a3377063d638bd8736c80b7274ae341ce778fec0f883ef1cbb79538bf2"},
+    {file = "debugpy-1.5.0-cp39-cp39-win32.whl", hash = "sha256:fda623aa1036b34d554a1225a09cae6bf02b06c0ad903a9f0b8ac3cb74eddc15"},
+    {file = "debugpy-1.5.0-cp39-cp39-win_amd64.whl", hash = "sha256:9f3bed64027bd80a8fe1f35491ec0ec2d2c85f1e63dac7c0311e400bfe58cf05"},
+    {file = "debugpy-1.5.0-py2.py3-none-any.whl", hash = "sha256:f058c204341fd7ff800ee0edafc106ca0fb1c9857e8a8895a6e04cca3ddcb7bf"},
+    {file = "debugpy-1.5.0.zip", hash = "sha256:86febd61fc351cee926060eef008e242b7259957d71d25eef82860d0cc59b4dc"},
 ]
 flake8 = [
     {file = "flake8-3.9.2-py2.py3-none-any.whl", hash = "sha256:bf8fd333346d844f616e8d47905ef3a3384edae6b4e9beb0c5101e25e3110907"},
@@ -651,9 +794,25 @@ pyparsing = [
     {file = "pyparsing-2.4.7-py2.py3-none-any.whl", hash = "sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b"},
     {file = "pyparsing-2.4.7.tar.gz", hash = "sha256:c203ec8783bf771a155b207279b9bccb8dea02d8f0c9e5f8ead507bc3246ecc1"},
 ]
+pyrsmq = [
+    {file = "PyRSMQ-0.4.5-py3-none-any.whl", hash = "sha256:ed2cd1a11021f04f5a23996bc1f9f5dfae181e6b4e0ded7e731678c5adcfdcb7"},
+    {file = "PyRSMQ-0.4.5.tar.gz", hash = "sha256:2cd1883029fc3bcedd6fdfd98529146ce218818a5073cae5e2e117881e077d4f"},
+]
+pyshipt-logging = [
+    {file = "pyshipt_logging-0.0.2-py3-none-any.whl", hash = "sha256:da7ad81f4490cdaeae3faf2015115f42dc071c54c35f54081473839273ee5282"},
+    {file = "pyshipt_logging-0.0.2.tar.gz", hash = "sha256:d77fd1ac18f3fcf623cfb4e560a6c7258e184edb6f468f7afbb8628f9862b205"},
+]
+pyshipt-streams = [
+    {file = "pyshipt_streams-0.1.2-py3-none-any.whl", hash = "sha256:1ee0833e29c228c369799be760b3804ae50827df6a841554406fa48f7c636fb0"},
+    {file = "pyshipt_streams-0.1.2.tar.gz", hash = "sha256:d3a460aa1719d095e0ab3259b90fd60bb8da6c5b0e60e80f38a3e7e71dd85cc9"},
+]
 pytest = [
     {file = "pytest-6.2.5-py3-none-any.whl", hash = "sha256:7310f8d27bc79ced999e760ca304d69f6ba6c6649c0b60fb0e04a4a77cacc134"},
     {file = "pytest-6.2.5.tar.gz", hash = "sha256:131b36680866a76e6781d13f101efb86cf674ebb9762eb70d3082b6f29889e89"},
+]
+python-json-logger = [
+    {file = "python-json-logger-2.0.2.tar.gz", hash = "sha256:202a4f29901a4b8002a6d1b958407eeb2dd1d83c18b18b816f5b64476dde9096"},
+    {file = "python_json_logger-2.0.2-py3-none-any.whl", hash = "sha256:99310d148f054e858cd5f4258794ed6777e7ad2c3fd7e1c1b527f1cba4d08420"},
 ]
 redis = [
     {file = "redis-3.5.3-py2.py3-none-any.whl", hash = "sha256:432b788c4530cfe16d8d943a09d40ca6c16149727e4afe8c2c9d5580c59d9f24"},
@@ -706,6 +865,9 @@ requests = [
     {file = "requests-2.26.0-py2.py3-none-any.whl", hash = "sha256:6c1246513ecd5ecd4528a0906f910e8f0f9c6b8ec72030dc9fd154dc1a6efd24"},
     {file = "requests-2.26.0.tar.gz", hash = "sha256:b8aa58f8cf793ffd8782d3d8cb19e66ef36f7aba4353eec859e74678b01b07a7"},
 ]
+rollbar = [
+    {file = "rollbar-0.16.2.tar.gz", hash = "sha256:aa3b570062dd8dfb0e11537ba858f9e1633a604680e062a525434b8245540f87"},
+]
 rq = [
     {file = "rq-1.10.0-py2.py3-none-any.whl", hash = "sha256:92950a3e60863de48dd1800882939bbaf089a37497ebf9f2ecf7c9fd0a4c4a95"},
     {file = "rq-1.10.0.tar.gz", hash = "sha256:be09ec43fae9a75a4d26ea3cd520e5fa3ea2ea8cf481be33e6ec9416f0369cac"},
@@ -757,6 +919,10 @@ scipy = [
     {file = "scipy-1.6.1-cp39-cp39-win32.whl", hash = "sha256:8e403a337749ed40af60e537cc4d4c03febddcc56cd26e774c9b1b600a70d3e4"},
     {file = "scipy-1.6.1-cp39-cp39-win_amd64.whl", hash = "sha256:a5193a098ae9f29af283dcf0041f762601faf2e595c0db1da929875b7570353f"},
     {file = "scipy-1.6.1.tar.gz", hash = "sha256:c4fceb864890b6168e79b0e714c585dbe2fd4222768ee90bc1aa0f8218691b11"},
+]
+six = [
+    {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
+    {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
 ]
 threadpoolctl = [
     {file = "threadpoolctl-3.0.0-py3-none-any.whl", hash = "sha256:4fade5b3b48ae4b1c30f200b28f39180371104fccc642e039e0f2435ec8cc211"},

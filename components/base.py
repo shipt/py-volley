@@ -31,8 +31,7 @@ class Component:
     def publish(self, msg: dict[str, Any]) -> str:
         # TODO: this should publish to either kafka or redis
         msg_id: str = self.queue\
-                .sendMessage()\
-                .message(msg)\
+                .sendMessage(qname=self.qname, message=msg)\
                 .execute()
         return msg_id
 
@@ -54,8 +53,9 @@ class Component:
     def delete_msg(self, msg: dict[str, Any]) -> None:
         msg_id = msg["id"]
         event_id = msg["message"]["event_id"]
-        logger.info(f"DELETE: {msg_id}: {event_id}: {self.qname}")
-        result = self.queue.deleteMessage(qname=self.qname, id=msg_id)
+        result = self.queue\
+                .deleteMessage(qname=self.qname, id=msg_id)\
+                .execute()
         if not result:
             raise KeyError
             

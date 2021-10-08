@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "ml-bundle-engine"
+name = "ml_bundle_engine"
 version = "0.1.0"
 description = "ML driven bundle engine consisting of workers & queues"
 authors = ["jeisele <jeisele@shipt.com>"]

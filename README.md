@@ -28,5 +28,7 @@ export POETRY_HTTP_BASIC_SHIPT_PASSWORD=your_password
 
 # TODO
 - create components for optimizer, fallback, shadow optimizer
+- write tests
 - handle configuration for topic/queue names
 - clean up components/base.py, needs to be a generate consumer/producer for both kafka/redis
+- add input schema to whats published by dummy_producer

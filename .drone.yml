@@ -41,6 +41,10 @@ steps:
     environment:
       GITHUB_TOKEN:
         from_secret: github_token
+      SHIPT_PYPI_USERNAME:
+        from_secret: SHIPT_PYPI_USERNAME
+      SHIPT_PYPI_PASSWORD:
+        from_secret: SHIPT_PYPI_PASSWORD
     settings:
       build_args_from_env:
         - GITHUB_TOKEN

@@ -1,23 +1,22 @@
-from pyshipt_streams import KafkaProducer
-
 import os
-from components.base import Component
 from typing import Any
 
+from pyshipt_streams import KafkaProducer
+
+from components.base import Component
 
 INPUT_QUEUE = os.environ["INPUT_QUEUE"]
 OUTPUT_QUEUE = os.environ["OUTPUT_QUEUE"]
 
+
 class Collector(Component):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-    
+
     def process(self, msg: dict[str, Any]) -> dict[str, Any]:
         message = msg["message"]
         message["collector_data"] = {"collector": 123}
         return message
-
-
 
 
 def main():

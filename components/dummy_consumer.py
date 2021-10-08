@@ -1,13 +1,14 @@
+import json
 import os
 
-import json
-
 INPUT_QUEUE = os.environ["INPUT_QUEUE"]
-from core.logging import logger
 from pyshipt_streams import KafkaConsumer
+
+from core.logging import logger
 
 c = KafkaConsumer(consumer_group="group1")
 c.subscribe([INPUT_QUEUE])
+
 
 def main():
     while True:

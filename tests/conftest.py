@@ -1,6 +1,6 @@
-import pytest
-
 import os
+
+import pytest
 
 os.environ["INPUT_QUEUE"] = "input"
 os.environ["OUTPUT_QUEUE"] = "output"

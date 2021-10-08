@@ -30,8 +30,8 @@ lints.mypy:
 	poetry run mypy ${SOURCE_OBJECTS}
 lints.pylint:
 	poetry run pylint --rcfile pyproject.toml  ${SOURCE_OBJECTS}
-lints: lints.flake8
-lints.strict: lints lints.pylint lints.flake8.strict lints.mypy
+lints: lints.flake8 
+lints.strict: lints lints.pylint lints.flake8.strict lints.mypy lints.format.check
 
 
 setup: setup.python setup.sysdep.poetry setup.project
@@ -68,5 +68,5 @@ test.shell:
 	docker-compose run unit-tests /bin/bash
 test.shell.debug:
 	docker-compose run --entrypoint /bin/bash unit-tests
-test.local: setup
+test.unit: setup
 	poetry run coverage run -m pytest

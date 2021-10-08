@@ -1,11 +1,15 @@
-PROJECT=ml-bundle-engine
-PYTHON_VERSION=3.8
+PROJECT=ml_bundle_engine
+PYTHON_VERSION=3.9.4
 
-SOURCE_OBJECTS=tasks tests
+SOURCE_OBJECTS=components tests
 
+# remove extra-index-urls - they break when auth is required
 deploy.requirements:
-	poetry export -f requirements.txt -o requirements.txt
-	poetry export --dev -f requirements.txt -o requirements-dev.txt
+	poetry export --without-hashes -f requirements.txt -o requirements.txt
+	poetry export --without-hashes --dev -f requirements.txt -o requirements-dev.txt
+	sed -i.bak -e '/^--extra-index-url/d' -e '/^$$/d' requirements.txt && rm requirements.txt.bak
+	sed -i.bak -e '/^--extra-index-url/d' -e '/^$$/d' requirements-dev.txt && rm requirements-dev.txt.bak
+
 deploy:
 	poetry build
 
@@ -26,8 +30,8 @@ lints.mypy:
 	poetry run mypy ${SOURCE_OBJECTS}
 lints.pylint:
 	poetry run pylint --rcfile pyproject.toml  ${SOURCE_OBJECTS}
-lints: lints.flake8
-lints.strict: lints lints.pylint lints.flake8.strict lints.mypy
+lints: lints.flake8 
+lints.strict: lints lints.pylint lints.flake8.strict lints.mypy lints.format.check
 
 
 setup: setup.python setup.sysdep.poetry setup.project
@@ -64,5 +68,9 @@ test.shell:
 	docker-compose run unit-tests /bin/bash
 test.shell.debug:
 	docker-compose run --entrypoint /bin/bash unit-tests
-test.local: setup
-	poetry run coverage run -m pytest
+test.unit: setup
+	poetry run coverage run -m pytest \
+			--ignore=tests/integration \
+            --cov=./ \
+            --cov-report=xml:cov.xml \
+            --cov-report term

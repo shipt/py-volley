@@ -10,6 +10,11 @@ trigger:
 steps:
   - name: unit-tests
     image: python:3.9.4
+    environment:
+      SHIPT_PYPI_USERNAME:
+        from_secret: SHIPT_PYPI_USERNAME
+      SHIPT_PYPI_PASSWORD:
+        from_secret: SHIPT_PYPI_PASSWORD
     commands:
       - pip3 install poetry==1.1.10
       - make test.unit
@@ -18,6 +23,11 @@ steps:
 
   - name: lints-quality
     image: python:3.9.4
+    environment:
+      SHIPT_PYPI_USERNAME:
+        from_secret: SHIPT_PYPI_USERNAME
+      SHIPT_PYPI_PASSWORD:
+        from_secret: SHIPT_PYPI_PASSWORD
     commands:
       - pip3 install poetry==1.1.10
       - make lints.strict

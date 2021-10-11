@@ -3,11 +3,11 @@ module "ml_bundle_engine_redis_queue_memory_store" {
   version        = "1.0.3"
   memory_size_gb = "1"
   name           = "uc1-ml-bundle-engine-redis-queue"
-  project        = "shipt-core-stg-redis"
+  project        = "shipt-core-prd-redis"
   redis_version  = "REDIS_5_0"
   region         = "us-central1"
   labels = {
-    environment = "staging"
+    environment = "production"
     managed_by  = "terraform"
     name        = "redis-queue"
     repo        = "ml-bundle-engine"
@@ -21,6 +21,6 @@ module "ml_bundle_engine_redis_queue_memory_store" {
   connect_mode  = "PRIVATE_SERVICE_ACCESS"
   application   = "ml-bundle-engine"
   group         = "ds"
-  environment   = "staging"
+  environment   = "production"
   config_region = "us-central1"
 }

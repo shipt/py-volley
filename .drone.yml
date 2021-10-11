@@ -11,26 +11,27 @@ steps:
   - name: unit-tests
     image: python:3.9.4
     environment:
-      SHIPT_PYPI_USERNAME:
+      APP_ENV: 'localhost'
+      POETRY_HTTP_BASIC_SHIPT_USERNAME:
         from_secret: SHIPT_PYPI_USERNAME
-      SHIPT_PYPI_PASSWORD:
+      POETRY_HTTP_BASIC_SHIPT_PASSWORD:
         from_secret: SHIPT_PYPI_PASSWORD
     commands:
-      - pip3 install poetry==1.1.10
+      - pip3 install poetry==1.1.11
+      - poetry install
       - make test.unit
-    environment:
-      APP_ENV: 'localhost'
 
   - name: lints-quality
     image: python:3.9.4
     environment:
-      SHIPT_PYPI_USERNAME:
+      POETRY_HTTP_BASIC_SHIPT_USERNAME:
         from_secret: SHIPT_PYPI_USERNAME
-      SHIPT_PYPI_PASSWORD:
+      POETRY_HTTP_BASIC_SHIPT_PASSWORD:
         from_secret: SHIPT_PYPI_PASSWORD
     commands:
-      - pip3 install poetry==1.1.10
-      - make lints.strict
+      - pip3 install poetry==1.1.11
+      - poetry install
+      - make lints
 
   - name: docker-prep
     image: harbor.shipttech.com/plugins/dockerspec
@@ -48,6 +49,8 @@ steps:
     settings:
       build_args_from_env:
         - GITHUB_TOKEN
+        - SHIPT_PYPI_USERNAME
+        - SHIPT_PYPI_PASSWORD
       registry: harbor.shipttech.com
       env_file: "docker_args"
     depends_on:

@@ -1,16 +1,16 @@
 import json
 import os
 
-INPUT_QUEUE = os.environ["INPUT_QUEUE"]
 from pyshipt_streams import KafkaConsumer
 
 from core.logging import logger
 
-c = KafkaConsumer(consumer_group="group1")
-c.subscribe([INPUT_QUEUE])
 
+def main() -> None:
+    INPUT_QUEUE = os.environ["INPUT_QUEUE"]
+    c = KafkaConsumer(consumer_group="group1")
+    c.subscribe([INPUT_QUEUE])
 
-def main():
     while True:
         message = c.poll(0.25)
         if message is None:
@@ -19,4 +19,7 @@ def main():
             logger.error(message.error())
         else:
             consumed_message = json.loads(message.value().decode("utf-8"))
+
+            for key in ["features", "triage", "optimizer", "collector"]:
+                assert key in consumed_message.keys()
             logger.info(f"## WIN!:  {consumed_message} ##")

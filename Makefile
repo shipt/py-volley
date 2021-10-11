@@ -30,8 +30,8 @@ lints.mypy:
 	poetry run mypy ${SOURCE_OBJECTS}
 lints.pylint:
 	poetry run pylint --rcfile pyproject.toml  ${SOURCE_OBJECTS}
-lints: lints.flake8 
-lints.strict: lints lints.pylint lints.flake8.strict lints.mypy lints.format.check
+lints: lints.flake8 lints.mypy lints.format.check
+lints.strict: lints.pylint lints.flake8.strict lints.mypy lints.format.check
 
 
 setup: setup.python setup.sysdep.poetry setup.project
@@ -74,3 +74,7 @@ test.unit: setup
             --cov=./ \
             --cov-report=xml:cov.xml \
             --cov-report term
+
+run.local:
+	docker-compose up -d
+	docker-compose logs -f dummy_events consumer

@@ -33,3 +33,23 @@ datastores:
     - name: redis-queue
       configVar: REDIS_HOST
       size: 1
+  kafka:
+    topics:
+      - name: bundle-engine-input
+        configVar: INPUT_TOPIC
+        nameAttributes:
+          domain: ds-marketplace
+          messageType: BUS
+          version: v1
+          event:
+            type: BUSINESS
+            eventDescription: bundle_engine_input
+      - name: bundle-engine-output
+        configVar: OUTPUT_TOPIC
+        nameAttributes:
+          domain: ds-marketplace
+          messageType: BUS
+          version: v1
+          event:
+            type: BUSINESS
+            eventDescription: bundle_engine_output

@@ -19,13 +19,13 @@ class BundleConsumer(Consumer):
         self.c = KafkaConsumer(consumer_group="group1")
         self.c.subscribe([self.queue_name])
 
-    def consume(self, queue_name: str=None, timeout: float=60, poll_interval: float=0) -> BundleMessage:
+    def consume(self, queue_name: str=None, timeout: float=60, poll_interval: float=0.25) -> BundleMessage:
         if queue_name is None:
             queue_name = self.queue_name
         message = None
         while message is None:
-            time.sleep(poll_interval)
-            message = self.c.poll(0.25)
+
+            message = self.c.poll(poll_interval)
             if message is None:
                 continue
             if message.error():
@@ -53,6 +53,7 @@ class BundleProducer(Producer):
         self.p = KafkaProducer()
 
     def produce(self, queue_name: str, message: Dict[str, Any]) -> bool:
+        logger.info(f"{queue_name=}")
         self.p.publish(
             topic=queue_name,
             value=message["message"]

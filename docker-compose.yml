@@ -3,9 +3,9 @@ services:
     dummy_events:
         container_name: dummy_events
         environment:
+            - APP_ENV=localhost
             - REDIS_HOST=redis
             - REDIS_PORT=6379
-            - OUTPUT_QUEUE=input-topic
             - KAFKA_BROKERS=kafka:29092
         build:
             context: .
@@ -18,14 +18,16 @@ services:
         depends_on:
             - redis
             - kafka
+        # ports:
+        #     - 5678:5678
+        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py dummy_events
         command: python main.py dummy_events
     features:
         container_name: features
         environment:
+            - APP_ENV=localhost
             - REDIS_HOST=redis
             - REDIS_PORT=6379
-            - INPUT_QUEUE=input-topic
-            - OUTPUT_QUEUE=triage
             - KAFKA_BROKERS=kafka:29092
         build:
             context: .
@@ -45,10 +47,9 @@ services:
     triage:
         container_name: triage
         environment:
+            - APP_ENV=localhost
             - REDIS_HOST=redis
             - REDIS_PORT=6379
-            - INPUT_QUEUE=triage
-            - OUTPUT_QUEUE=optimizer
         build:
             context: .
             dockerfile: Dockerfile
@@ -67,10 +68,9 @@ services:
     optimizer:
         container_name: optimizer
         environment:
+            - APP_ENV=localhost
             - REDIS_HOST=redis
             - REDIS_PORT=6379
-            - INPUT_QUEUE=optimizer
-            - OUTPUT_QUEUE=collector
         build:
             context: .
             dockerfile: Dockerfile
@@ -84,15 +84,14 @@ services:
             - kafka
         # ports:
         #     - 5678:5678
-        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py triage
+        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py optimizer
         command: python main.py optimizer
     collector:
         container_name: collector
         environment:
+            - APP_ENV=localhost
             - REDIS_HOST=redis
             - REDIS_PORT=6379
-            - INPUT_QUEUE=collector
-            - OUTPUT_QUEUE=output-topic
             - KAFKA_BROKERS=kafka:29092
         build:
             context: .
@@ -112,9 +111,9 @@ services:
     dummy_consumer:
         container_name: dummy_consumer
         environment:
+            - APP_ENV=localhost
             - REDIS_HOST=redis
             - REDIS_PORT=6379
-            - INPUT_QUEUE=output-topic
             - KAFKA_BROKERS=kafka:29092
         build:
             context: .

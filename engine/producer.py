@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 from engine.data_models import BundleMessage
 
+from core.logging import logger
 
 @dataclass  # type: ignore
 class Producer(ABC):
@@ -12,4 +13,5 @@ class Producer(ABC):
 
     @abstractmethod
     def produce(self, queue_name: str, message: BundleMessage) -> None:
+        logger.info(f"prdocing to: {queue_name=}")
         """publishes a message to any queue"""

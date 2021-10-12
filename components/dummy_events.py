@@ -1,14 +1,16 @@
-import os
 import time
 from uuid import uuid4
 
 from pyshipt_streams import KafkaProducer
 
 from core.logging import logger
+from engine.queues import available_queues
 
 
 def main() -> None:
-    OUTPUT_QUEUE = os.environ["OUTPUT_QUEUE"]
+    queues = available_queues()
+    input_topic = queues.queues["input-queue"].value
+    logger.info(f"{input_topic=}")
     p = KafkaProducer()
     i = 0
     while True:
@@ -16,7 +18,7 @@ def main() -> None:
             "event_id": i,
             "order": str(uuid4()),
         }
-        p.publish(OUTPUT_QUEUE, msg)
-        logger.info(f"EVENT: {msg}")
+        p.publish(input_topic, msg)
+        logger.info(f"{msg=}")
         time.sleep(10)
         i += 1

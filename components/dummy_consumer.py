@@ -1,15 +1,16 @@
 import json
-import os
 
 from pyshipt_streams import KafkaConsumer
 
 from core.logging import logger
+from engine.queues import available_queues
 
 
 def main() -> None:
-    INPUT_QUEUE = os.environ["INPUT_QUEUE"]
+    queues = available_queues()
+    input_topic = queues.queues["output-queue"].value
     c = KafkaConsumer(consumer_group="group1")
-    c.subscribe([INPUT_QUEUE])
+    c.subscribe([input_topic])
 
     while True:
         message = c.poll(0.25)

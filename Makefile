@@ -33,6 +33,8 @@ lints.pylint:
 lints: lints.flake8 lints.mypy lints.format.check
 lints.strict: lints.pylint lints.flake8.strict lints.mypy lints.format.check
 
+notebook:
+	poetry run jupyter notebook
 
 setup: setup.python setup.sysdep.poetry setup.project
 setup.uninstall: setup.python

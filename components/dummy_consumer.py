@@ -21,6 +21,4 @@ def main() -> None:
         else:
             consumed_message = json.loads(message.value().decode("utf-8"))
 
-            for key in ["features", "triage", "optimizer", "collector"]:
-                assert key in consumed_message.keys()
             logger.info(f"## WIN!:  {consumed_message} ##")

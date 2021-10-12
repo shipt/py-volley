@@ -55,4 +55,3 @@ steps:
       env_file: "docker_args"
     depends_on:
       - unit-tests
-      - lints-quality

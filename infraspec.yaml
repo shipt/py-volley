@@ -26,7 +26,7 @@ roles:
       command: python main.py triage
       replicaCount: 1
     - name: optimizer
-      command: python main.py collector
+      command: python main.py optimizer
       replicaCount: 1
     - name: fallback
       command: python main.py fallback

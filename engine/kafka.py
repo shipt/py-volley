@@ -16,6 +16,7 @@ from core.logging import logger
 class BundleConsumer(Consumer):
 
     def __post_init__(self) -> None:
+        # TODO: config for consumer group..env var maybe?
         self.c = KafkaConsumer(consumer_group="group1")
         self.c.subscribe([self.queue_name])
 

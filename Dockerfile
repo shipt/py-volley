@@ -14,6 +14,6 @@ COPY poetry.lock pyproject.toml /app/
 RUN pip3 install poetry==1.1.11
 
 RUN poetry config virtualenvs.create false \
-    &&  poetry install
+    &&  poetry install --no-dev
 
 COPY . /app/

@@ -27,3 +27,7 @@ export POETRY_HTTP_BASIC_SHIPT_PASSWORD=your_password
 - fallback: components/fallback.py - reads from `fallback` queue, publishes to `collector` queue
 - collector: components/collector.py - reads from `collector` queue and publishes to `output-topic` kafka
 - dummy_consumer: components/dummy_consimer.py - reads from `output-topic` kafka and logs to stddout
+
+## Simulating Staging Data
+
+`make notebook` will spin up jupyer notebook. Open `./notebooks/publish_consume.ipynb`. Publish messages to the input topic and then consume data from the output topic.

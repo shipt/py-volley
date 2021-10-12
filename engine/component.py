@@ -3,60 +3,70 @@ import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Dict, Union
+from typing import Any, Callable, Dict, Union, List
 from engine.data_models import BundleMessage
+
+from engine.queues import Queue, Queues, available_queues
 
 from functools import wraps
 
-def bundle_engine(input_type, output_type):
+def bundle_engine(input_queue: str, output_queues: List[str]):
+    queues: Queues = available_queues()
+
+    in_queue: Queue = queues.queues[input_queue]
+
+    out_queues: Dict[str, Queue] = {x: queues.queues[x] for x in output_queues}
 
     def decorator(func):
         @wraps(func)
         def run_component(*args, **kwargs):
-            if input_type == "kafka":
+            if in_queue.type == "kafka":
                 from engine.kafka import BundleConsumer
-                consumer = BundleConsumer(
+                in_queue.q = BundleConsumer(
                     host=os.environ["KAFKA_BROKERS"],
-                    queue_name=os.environ["INPUT_QUEUE"],
+                    queue_name=in_queue.value,
                 )
-            elif input_type == "rsmq":
+            elif in_queue.type == "rsmq":
                 from engine.rsmq import BundleConsumer
-                consumer = BundleConsumer(
+                in_queue.q = BundleConsumer(
                     host=os.environ["REDIS_HOST"],
-                    queue_name=os.environ["INPUT_QUEUE"],
+                    queue_name=in_queue.value,
                 )
             else:
-                raise NotImplementedError(f"{input_type=} not valid")
+                raise NotImplementedError(f"{in_queue.type=} not valid")
 
-            if output_type == "kafka":
-                from engine.kafka import BundleProducer
-                producer = BundleProducer(
-                    host=os.environ["KAFKA_BROKERS"],
-                    queue_name=os.environ["OUTPUT_QUEUE"]
-                )
-            elif output_type == "rsmq":
-                from engine.rsmq import BundleProducer
-                producer = BundleProducer(
-                    host=os.environ["REDIS_HOST"],
-                    queue_name=os.environ["OUTPUT_QUEUE"]
-                )
-            else:
-                raise NotImplementedError(f"{output_type=} not valid")
+            for qname, q in out_queues.items():
+                if q.type == "kafka":
+                    from engine.kafka import BundleProducer
+                    q.q = BundleProducer(
+                        host=os.environ["KAFKA_BROKERS"],
+                        queue_name=q.value
+                    )
+                elif q.type == "rsmq":
+                    from engine.rsmq import BundleProducer
+                    q.q = BundleProducer(
+                        host=os.environ["REDIS_HOST"],
+                        queue_name=q.value
+                    )
+                else:
+                    raise NotImplementedError(f"{q.q=} not valid")
 
             while True:
-                in_message: BundleMessage = consumer.consume(queue_name=os.environ["INPUT_QUEUE"])
+                in_message: BundleMessage = in_queue.q.consume(queue_name=in_queue.value)
 
                 # TODO: func should return a tuple of out_message, output_queue (so we can recycle messages)     
-                out_message: BundleMessage = func(in_message)
+                out_message, next_queue = func(in_message)
 
-                status = producer.produce(
-                    queue_name=os.environ["OUTPUT_QUEUE"],
+                out_queue = out_queues[next_queue]
+
+                status = out_queue.q.produce(
+                    queue_name=out_queues[next_queue].value,
                     message=out_message.dict()
                 )
 
                 if status:
-                    consumer.delete_message(
-                        queue_name=os.environ["INPUT_QUEUE"],
+                    in_queue.q.delete_message(
+                        queue_name=in_queue.value,
                         message_id=in_message.message_id
                     )
         return run_component

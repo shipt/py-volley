@@ -9,6 +9,7 @@ from engine.data_models import BundleMessage
 from engine.consumer import Consumer
 from engine.producer import Producer
 
+from core.logging import logger
 
 
 @dataclass
@@ -19,7 +20,7 @@ class BundleConsumer(Consumer):
         # TODO: visibility timeout (vt) probably be configurable
         self.queue.createQueue(delay=0).vt(60).exceptions(False).execute()
 
-    def consume(self, queue_name: str, timeout: float=30.0, poll_interval: float=0.25) -> BundleMessage:
+    def consume(self, queue_name: str, timeout: float=30.0, poll_interval: float=1) -> BundleMessage:
         msg = None
         while not isinstance(msg, dict):
             msg = self.queue\
@@ -35,7 +36,7 @@ class BundleConsumer(Consumer):
                 )
             else:
                 time.sleep(poll_interval)
-    
+
     def delete_message(self, queue_name: str, message_id: str = None) -> bool:
         result = self.queue.deleteMessage(qname=queue_name, id=message_id).execute()
         return True
@@ -49,6 +50,7 @@ class BundleProducer(Producer):
         self.queue.createQueue(delay=0).vt(60).exceptions(False).execute()
 
     def produce(self, queue_name: str, message: Dict[str, Any]) -> bool:
+        logger.info(f"queue_name - {queue_name}")
         msg_id: str = self.queue\
             .sendMessage(
                 qname=queue_name,

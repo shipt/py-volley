@@ -10,10 +10,13 @@ url = "https://pypi.shipt.com/simple/"
 secondary = true
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.9,<3.11"
 pydantic = "^1.8.2"
 PyRSMQ = "^0.4.5"
 pyshipt-streams = "^0.1.2"
+PyYAML = "^5.4.1"
+numpy = "^1.21.2"
+Jinja2 = "^3.0.2"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.2"

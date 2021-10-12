@@ -2,7 +2,7 @@
 The ML bundle engine is an event driven series of processes & queues. 
 The engine intakes a Kafka message from the bundle request topic, makes a prediction with an ML model, runs an optimizer and outputs to a Kafka topic.
 
-![Engine Architecture](./docs/assets/ml-bundling-architecture.png)
+
 
 ## Maintainer(s)
  - @Jason
@@ -23,6 +23,7 @@ export POETRY_HTTP_BASIC_SHIPT_PASSWORD=your_password
 - dummy_events: components/dummy_events.py - produces dummy kafka messages to an `input-topic` kafka
 - features: components/feature_generator.py - reads from `input-topic` kafka, publishes to `triage` queue
 - triage: components/triage.py - reads from `triage` queue, publishes to `optimizer` queue
-- optimizer: components/optimizer.py - reads from `optimizer` queue, publishes to `collector` queue
+- optimizer: components/optimizer.py - reads from `optimizer` queue, publishes to `collector` or back to `optimizer` queue
+- fallback: components/fallback.py - reads from `fallback` queue, publishes to `collector` queue
 - collector: components/collector.py - reads from `collector` queue and publishes to `output-topic` kafka
 - dummy_consumer: components/dummy_consimer.py - reads from `output-topic` kafka and logs to stddout

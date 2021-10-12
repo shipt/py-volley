@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import json
 import time
+import os
 from typing import Any, Dict
 
 from rsmq import RedisSMQ
@@ -10,6 +11,8 @@ from engine.consumer import Consumer
 from engine.producer import Producer
 
 from core.logging import logger
+
+QUIET = bool(os.getenv("DEBUG", True))
 
 
 @dataclass
@@ -24,10 +27,9 @@ class BundleConsumer(Consumer):
         msg = None
         while not isinstance(msg, dict):
             msg = self.queue\
-                    .receiveMessage(qname=queue_name, vt=timeout)\
+                    .receiveMessage(qname=queue_name, vt=timeout, quiet=QUIET)\
                     .exceptions(False)\
                     .execute()
-            
             if isinstance(msg, dict):
                 return BundleMessage(
                     message_id=msg["id"],

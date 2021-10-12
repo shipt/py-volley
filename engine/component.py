@@ -49,12 +49,11 @@ def bundle_engine(input_queue: str, output_queues: List[str]):
                         queue_name=q.value
                     )
                 else:
-                    raise NotImplementedError(f"{q.q=} not valid")
+                    raise NotImplementedError(f"{q.type=} not valid")
 
             while True:
                 in_message: BundleMessage = in_queue.q.consume(queue_name=in_queue.value)
 
-                # TODO: func should return a tuple of out_message, output_queue (so we can recycle messages)     
                 out_message, next_queue = func(in_message)
 
                 out_queue = out_queues[next_queue]

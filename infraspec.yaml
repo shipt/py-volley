@@ -25,10 +25,13 @@ roles:
     - name: triage
       command: python main.py triage
       replicaCount: 1
-    - name: collector
+    - name: optimizer
       command: python main.py collector
       replicaCount: 1
-    - name: optimizer
+    - name: fallback
+      command: python main.py fallback
+      replicaCount: 1
+    - name: collector
       command: python main.py collector
       replicaCount: 1
 datastores:

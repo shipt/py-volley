@@ -18,6 +18,25 @@ deploy:
   - provider: gcp
     region: us-central1
 roles:
+  webservers:
+    - name: metrics-server
+      routes:
+      - subdomain: bundle-engine-metrics
+      timeout: 5s
+      command: uvicorn monitoring.monitor:app
+      healthcheck: /
+      port: 8000
+      retryPolicy:
+        count: 3
+        perTryTimeout: 15s
+      replicaCount: 4
+      resources:
+        cpu: 50m
+        memory: 250M
+      telemetry:
+        prometheus:
+          enabled: true
+          port: 3000
   worker:
     - name: features
       command: python main.py features

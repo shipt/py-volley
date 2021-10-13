@@ -36,7 +36,7 @@ roles:
       telemetry:
         prometheus:
           enabled: true
-          port: 3000
+          port: 8000
   worker:
     - name: features
       command: python main.py features

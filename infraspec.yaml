@@ -23,7 +23,7 @@ roles:
       routes:
       - subdomain: bundle-engine-metrics
       timeout: 5s
-      command: uvicorn monitoring.monitor:app
+      command: uvicorn monitoring.monitoring:app
       healthcheck: /
       port: 8000
       retryPolicy:

@@ -16,7 +16,6 @@ import os
 _cur_path = Path(__file__).parent.resolve().joinpath("config.yml")
 
 
-
 class QueueType(str, Enum):
     kafka = "kafka"
     rsmq = "rsmq"
@@ -34,9 +33,15 @@ class Queues(BaseModel):
     queues: Dict[str, Queue]
 
 
-def available_queues() -> Queues:
+def load_config() -> Dict[str, List[Dict[str, str]]]:
     with _cur_path.open() as f:
         cfg: Dict[str, List[Dict[str, str]]] = yaml.load(f, Loader=Loader)
+
+    return cfg
+
+def available_queues() -> Queues:
+    cfg = load_config()
+
     kafka_env_map = {
         "production": "prd",
         "staging": "stg",

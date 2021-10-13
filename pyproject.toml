@@ -17,6 +17,8 @@ pyshipt-streams = "^0.1.2"
 PyYAML = "^5.4.1"
 numpy = "^1.21.2"
 Jinja2 = "^3.0.2"
+prometheus-client = "^0.11.0"
+uvicorn = {extras = ["standard"], version = "^0.15.0"}
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.2"

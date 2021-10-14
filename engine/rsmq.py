@@ -51,12 +51,12 @@ class BundleProducer(Producer):
         self.queue = RedisSMQ(host=self.host, qname=self.queue_name)
         self.queue.createQueue(delay=0).vt(60).exceptions(False).execute()
 
-    def produce(self, queue_name: str, message: Dict[str, Any]) -> bool:
+    def produce(self, queue_name: str, message: BundleMessage) -> bool:
         logger.info(f"queue_name - {queue_name}")
         msg_id: str = self.queue\
             .sendMessage(
                 qname=queue_name,
-                message=message["message"]
+                message=message.dict()["message"]
             )\
             .execute()
         return bool(msg_id)

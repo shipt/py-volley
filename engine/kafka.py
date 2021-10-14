@@ -53,10 +53,10 @@ class BundleProducer(Producer):
     def __post_init__(self) -> None:
         self.p = KafkaProducer()
 
-    def produce(self, queue_name: str, message: Dict[str, Any]) -> bool:
+    def produce(self, queue_name: str, message: BundleMessage) -> bool:
         logger.info(f"{queue_name=}")
         self.p.publish(
             topic=queue_name,
-            value=message["message"]
+            value=message.dict()["message"]
         )
         return True

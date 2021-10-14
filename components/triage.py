@@ -1,6 +1,4 @@
-from typing import Tuple
-
-import numpy as np
+from typing import Dict
 
 from engine.component import bundle_engine
 from engine.data_models import BundleMessage
@@ -10,8 +8,7 @@ OUTPUT_QUEUES = ["optimizer", "fallback"]  # , "shadow"]
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(message: BundleMessage) -> Tuple[BundleMessage, str]:
+def main(message: BundleMessage) -> Dict[str, BundleMessage]:
     message.message["triage"] = {"triage": ["a", "b"]}
 
-    next_queue = np.random.choice(OUTPUT_QUEUES)
-    return message, next_queue
+    return {"triage": message, "optimizer": message}

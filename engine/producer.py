@@ -12,6 +12,7 @@ class Producer(ABC):
     queue_name: str
 
     @abstractmethod
-    def produce(self, queue_name: str, message: BundleMessage) -> None:
-        logger.info(f"prdocing to: {queue_name=}")
+    def produce(self, queue_name: str, message: BundleMessage) -> bool:
         """publishes a message to any queue"""
+        logger.info(f"producing to: {queue_name=}")
+        return True

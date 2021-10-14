@@ -20,6 +20,9 @@ def bundle_engine(input_queue: str, output_queues: List[str]):
     def decorator(func):
         @wraps(func)
         def run_component(*args, **kwargs):
+            # the component function is passed in as `func`
+            # first setup the connections to the input and outputs queues that the component will need
+            # we only want to set these up once, before the component is invoked
             if in_queue.type == "kafka":
                 from engine.kafka import BundleConsumer
                 in_queue.q = BundleConsumer(
@@ -27,7 +30,7 @@ def bundle_engine(input_queue: str, output_queues: List[str]):
                     queue_name=in_queue.value,
                 )
             elif in_queue.type == "rsmq":
-                from engine.rsmq import BundleConsumer
+                from engine.rsmq import BundleConsumer  # type: ignore
                 in_queue.q = BundleConsumer(
                     host=os.environ["REDIS_HOST"],
                     queue_name=in_queue.value,
@@ -43,7 +46,7 @@ def bundle_engine(input_queue: str, output_queues: List[str]):
                         queue_name=q.value
                     )
                 elif q.type == "rsmq":
-                    from engine.rsmq import BundleProducer
+                    from engine.rsmq import BundleProducer  # type: ignore
                     q.q = BundleProducer(
                         host=os.environ["REDIS_HOST"],
                         queue_name=q.value
@@ -51,22 +54,26 @@ def bundle_engine(input_queue: str, output_queues: List[str]):
                 else:
                     raise NotImplementedError(f"{q.type=} not valid")
 
+            # queue connections were setup above. now we can start to interact with the queues
             while True:
+                
                 in_message: BundleMessage = in_queue.q.consume(queue_name=in_queue.value)
 
-                out_message, next_queue = func(in_message)
+                outputs: Dict[str, BundleMessage] = func(in_message)
 
-                out_queue = out_queues[next_queue]
+                for qname, m in outputs.items():
 
-                status = out_queue.q.produce(
-                    queue_name=out_queues[next_queue].value,
-                    message=out_message.dict()
-                )
+                    out_queue = out_queues[qname]
 
-                if status:
-                    in_queue.q.delete_message(
-                        queue_name=in_queue.value,
-                        message_id=in_message.message_id
+                    status = out_queue.q.produce(
+                        queue_name=out_queue.value,
+                        message=m.dict()
                     )
+
+                    if status:
+                        in_queue.q.delete_message(
+                            queue_name=in_queue.value,
+                            message_id=in_message.message_id
+                        )
         return run_component
     return decorator

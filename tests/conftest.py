@@ -1,4 +1,5 @@
 import os
+from typing import Dict
 from unittest.mock import patch
 
 from pytest import fixture
@@ -12,12 +13,15 @@ from engine.rsmq import BundleProducer as rsmq_producer
 os.environ["INPUT_QUEUE"] = "input"
 os.environ["OUTPUT_QUEUE"] = "output"
 os.environ["REDIS_HOST"] = "redis"
+os.environ["KAFKA_BROKERS"] = "kafka:9092"
 
 
 @fixture
 def bundle_message() -> BundleMessage:
     yield BundleMessage(
-        message_id="123", params={"timeout_seconds": 10}, message={"event_id": 123, "orders": [1, 2, 3]},
+        message_id="123",
+        params={"timeout_seconds": 10},
+        message={"event_id": 123, "orders": [1, 2, 3]},
     )
 
 
@@ -53,3 +57,9 @@ def mock_kafka_producer() -> kafka_producer:
     with patch("engine.kafka.KafkaProducer"):
         producer = kafka_producer(host="kafka", queue_name="test")
         yield producer
+
+
+@fixture
+def dummy_component(message: BundleMessage) -> Dict[str, BundleMessage]:
+    message.message["x"] = "y"
+    return {"input-queue": message.message}

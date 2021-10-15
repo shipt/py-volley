@@ -21,17 +21,17 @@ steps:
       - poetry install
       - make test.unit
 
-  # - name: lints-quality
-  #   image: python:3.9.4
-  #   environment:
-  #     POETRY_HTTP_BASIC_SHIPT_USERNAME:
-  #       from_secret: SHIPT_PYPI_USERNAME
-  #     POETRY_HTTP_BASIC_SHIPT_PASSWORD:
-  #       from_secret: SHIPT_PYPI_PASSWORD
-  #   commands:
-  #     - pip3 install poetry==1.1.11
-  #     - poetry install
-  #     - make lints
+  - name: lints-quality
+    image: python:3.9.4
+    environment:
+      POETRY_HTTP_BASIC_SHIPT_USERNAME:
+        from_secret: SHIPT_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_PASSWORD:
+        from_secret: SHIPT_PYPI_PASSWORD
+    commands:
+      - pip3 install poetry==1.1.11
+      - poetry install
+      - make lints
 
   - name: docker-prep
     image: harbor.shipttech.com/plugins/dockerspec

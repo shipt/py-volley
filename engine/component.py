@@ -94,5 +94,7 @@ def bundle_engine(input_queue: str, output_queues: List[str]):
                             queue_name=in_queue.value,
                             message_id=in_message.message_id
                         )
+        run_component.__wrapped__ = func
         return run_component
+    
     return decorator

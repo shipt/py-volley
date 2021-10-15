@@ -1,7 +1,7 @@
 PROJECT=ml_bundle_engine
 PYTHON_VERSION=3.9.4
 
-SOURCE_OBJECTS=components tests
+SOURCE_OBJECTS=components engine core tests
 
 # remove extra-index-urls - they break when auth is required
 deploy.requirements:

@@ -1,26 +1,24 @@
-from dataclasses import dataclass
 import json
-import time
-from typing import Any, Dict
+from dataclasses import dataclass
 
-from pyshipt_streams import KafkaProducer, KafkaConsumer
-
-from engine.data_models import BundleMessage
-from engine.consumer import Consumer
-from engine.producer import Producer
+from pyshipt_streams import KafkaConsumer, KafkaProducer
 
 from core.logging import logger
+from engine.consumer import Consumer
+from engine.data_models import BundleMessage
+from engine.producer import Producer
 
 
 @dataclass
 class BundleConsumer(Consumer):
-
     def __post_init__(self) -> None:
         # TODO: config for consumer group..env var maybe?
         self.c = KafkaConsumer(consumer_group="group1")
         self.c.subscribe([self.queue_name])
 
-    def consume(self, queue_name: str=None, timeout: float=60, poll_interval: float=0.25) -> BundleMessage:
+    def consume(
+        self, queue_name: str = None, timeout: float = 60, poll_interval: float = 0.25
+    ) -> BundleMessage:
         if queue_name is None:
             queue_name = self.queue_name
         message = None
@@ -37,9 +35,7 @@ class BundleConsumer(Consumer):
                     continue
                 else:
                     return BundleMessage(
-                        message_id=str(message.offset()),
-                        params={},
-                        message=msg
+                        message_id=str(message.offset()), params={}, message=msg
                     )
 
     def delete_message(self, queue_name: str, message_id: str = None) -> bool:
@@ -47,15 +43,12 @@ class BundleConsumer(Consumer):
         print("no message to delete!")
         return True
 
+
 @dataclass
 class BundleProducer(Producer):
-
     def __post_init__(self) -> None:
         self.p = KafkaProducer()
 
     def produce(self, queue_name: str, message: BundleMessage) -> bool:
-        self.p.publish(
-            topic=queue_name,
-            value=message.dict()["message"]
-        )
+        self.p.publish(topic=queue_name, value=message.dict()["message"])
         return True

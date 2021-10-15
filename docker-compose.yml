@@ -161,7 +161,7 @@ services:
             - ./:/app/
         depends_on:
             - redis
-        command: uvicorn monitoring.monitor:app
+        command: uvicorn monitoring.monitoring:app
     redis:
         container_name: redis
         image: redis:latest

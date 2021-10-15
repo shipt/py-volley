@@ -2,7 +2,7 @@ import json
 import os
 
 import requests
-from typing import Tuple
+from typing import Dict
 
 from core.logging import logger
 from engine.component import bundle_engine
@@ -20,9 +20,8 @@ def fp_url_based_on_env() -> str:
     return FLIGHT_PLAN_URL[os.getenv("APP_ENV", "localhost")]
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(message: BundleMessage) -> Tuple[BundleMessage, str]:
+def main(message: BundleMessage) -> Dict[str, BundleMessage]:
     message.message["features"] = {"feature": "random"}
-
     fp_url = fp_url_based_on_env()
     with open("./seed/fp_payload.json", "r") as file:
         data = json.load(file)
@@ -32,5 +31,4 @@ def main(message: BundleMessage) -> Tuple[BundleMessage, str]:
     message.message["flight_plan_estimate"] = response.json()
 
     next_queue = OUTPUT_QUEUES[0]
-    return message, next_queue
-
+    return {"triage": message}

@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Dict
 
 from engine.component import bundle_engine
 from engine.data_models import BundleMessage
@@ -8,8 +8,7 @@ OUTPUT_QUEUES = ["collector"]
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(message: BundleMessage) -> Tuple[BundleMessage, str]:
+def main(message: BundleMessage) -> Dict[str, BundleMessage]:
     message.message["fallback"] = {"fallback_solution": "random"}
 
-    next_queue = OUTPUT_QUEUES[0]
-    return message, next_queue
+    return {"collector": message}

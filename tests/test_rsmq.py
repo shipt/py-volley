@@ -5,4 +5,5 @@ from engine.rsmq import BundleProducer
 def test_rsmq_producer(
     mock_rsmq_producer: BundleProducer, bundle_message: BundleMessage
 ) -> None:
-    mock_rsmq_producer.produce(queue_name="test", message=bundle_message.dict())
+
+    assert mock_rsmq_producer.produce(queue_name="test", message=bundle_message)

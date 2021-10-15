@@ -1,4 +1,4 @@
-from engine.queues import available_queues, Queue
+from engine.queues import Queue, available_queues
 
 
 def test_available_queues() -> None:

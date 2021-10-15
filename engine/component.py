@@ -21,7 +21,7 @@ def get_consumer(queue_type: str, queue_name: str) -> Consumer:
             queue_name=queue_name,
         )
     elif queue_type == "rsmq":
-        from engine.rsmq import BundleConsumer
+        from engine.rsmq import BundleConsumer  # type: ignore
 
         return BundleConsumer(
             host=os.environ["REDIS_HOST"],
@@ -37,7 +37,7 @@ def get_producer(queue_type: str, queue_name: str) -> Producer:
 
         return BundleProducer(host=os.environ["KAFKA_BROKERS"], queue_name=queue_name)
     elif queue_type == "rsmq":
-        from engine.rsmq import BundleProducer
+        from engine.rsmq import BundleProducer  # type: ignore
 
         return BundleProducer(host=os.environ["REDIS_HOST"], queue_name=queue_name)
     else:
@@ -82,7 +82,8 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:
                             f"{qname} is not defined in this component's output queue list"
                         )
 
-                    status = out_queue.q.produce(queue_name=out_queue.value, message=m)
+                    # typing of engine.queues.Queue.q makes this ambiguous and potentially error prone
+                    status = out_queue.q.produce(queue_name=out_queue.value, message=m)  # type: ignore
 
                     if status:
                         in_queue.q.delete_message(

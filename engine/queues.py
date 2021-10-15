@@ -24,6 +24,8 @@ class Queue(BaseModel):
     type: QueueType
 
     # queue connection
+    # TODO: figure out a good place for this to live
+    # it should probably never take on a None value
     q: Optional[Union[Consumer, Producer]] = None
 
 

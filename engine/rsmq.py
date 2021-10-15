@@ -3,7 +3,7 @@ import os
 import time
 from dataclasses import dataclass
 
-from rsmq import RedisSMQ  # type: ignore
+from rsmq import RedisSMQ
 
 from core.logging import logger
 from engine.consumer import Consumer

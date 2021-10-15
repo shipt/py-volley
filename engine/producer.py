@@ -1,13 +1,14 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
+from core.logging import logger
 from engine.data_models import BundleMessage
 
-from core.logging import logger
 
 @dataclass  # type: ignore
 class Producer(ABC):
     """Basic protocol for a producer (kafka or rsmq)"""
+
     host: str
     queue_name: str
 

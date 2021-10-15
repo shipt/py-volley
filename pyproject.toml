@@ -19,6 +19,7 @@ numpy = "^1.21.2"
 Jinja2 = "^3.0.2"
 prometheus-client = "^0.11.0"
 uvicorn = {extras = ["standard"], version = "^0.15.0"}
+types-requests = "^2.25.11"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.2"

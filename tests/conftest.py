@@ -17,7 +17,7 @@ os.environ["REDIS_HOST"] = "redis"
 @fixture
 def bundle_message() -> BundleMessage:
     yield BundleMessage(
-        message_id="123", params={}, message={"event_id": 123, "orders": [1, 2, 3]}
+        message_id="123", params={"timeout_seconds": 10}, message={"event_id": 123, "orders": [1, 2, 3]},
     )
 
 

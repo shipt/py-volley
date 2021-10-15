@@ -11,4 +11,4 @@ OUTPUT_QUEUES = ["optimizer", "fallback"]  # , "shadow"]
 def main(message: BundleMessage) -> Dict[str, BundleMessage]:
     message.message["triage"] = {"triage": ["a", "b"]}
 
-    return {"triage": message, "optimizer": message}
+    return {"optimizer": message, "fallback": message}

@@ -172,6 +172,12 @@ services:
             interval: 5s
             timeout: 30s
             retries: 50
+    postgres:
+        restart: always
+        image: postgres:12.3
+        container_name: postgres
+        environment:
+            POSTGRES_PASSWORD: password
 
     # Zookeeper required for Kafka broker at this time
     zookeeper:

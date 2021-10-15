@@ -1,72 +1,96 @@
-
 import os
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from enum import Enum
-from typing import Any, Callable, Dict, Union, List
-from engine.data_models import BundleMessage
+from functools import wraps
+from typing import Any, Dict, List
 
+from core.logging import logger
+from engine.consumer import Consumer
+from engine.data_models import BundleMessage
+from engine.producer import Producer
 from engine.queues import Queue, Queues, available_queues
 
-from functools import wraps
+# enables mocking the infinite loop to finite
+RUN = True
 
-def bundle_engine(input_queue: str, output_queues: List[str]):
+
+def get_consumer(queue_type: str, queue_name: str) -> Consumer:
+    if queue_type == "kafka":
+        from engine.kafka import BundleConsumer
+
+        return BundleConsumer(
+            host=os.environ["KAFKA_BROKERS"],
+            queue_name=queue_name,
+        )
+    elif queue_type == "rsmq":
+        from engine.rsmq import BundleConsumer  # type: ignore
+
+        return BundleConsumer(
+            host=os.environ["REDIS_HOST"],
+            queue_name=queue_name,
+        )
+    else:
+        raise KeyError(f"{queue_type=} not valid")
+
+
+def get_producer(queue_type: str, queue_name: str) -> Producer:
+    if queue_type == "kafka":
+        from engine.kafka import BundleProducer
+
+        return BundleProducer(host=os.environ["KAFKA_BROKERS"], queue_name=queue_name)
+    elif queue_type == "rsmq":
+        from engine.rsmq import BundleProducer  # type: ignore
+
+        return BundleProducer(host=os.environ["REDIS_HOST"], queue_name=queue_name)
+    else:
+        raise KeyError(f"{queue_type=} not valid")
+
+
+def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:
     queues: Queues = available_queues()
 
     in_queue: Queue = queues.queues[input_queue]
 
     out_queues: Dict[str, Queue] = {x: queues.queues[x] for x in output_queues}
 
-    def decorator(func):
+    def decorator(func):  # type: ignore
         @wraps(func)
-        def run_component(*args, **kwargs):
-            if in_queue.type == "kafka":
-                from engine.kafka import BundleConsumer
-                in_queue.q = BundleConsumer(
-                    host=os.environ["KAFKA_BROKERS"],
-                    queue_name=in_queue.value,
-                )
-            elif in_queue.type == "rsmq":
-                from engine.rsmq import BundleConsumer
-                in_queue.q = BundleConsumer(
-                    host=os.environ["REDIS_HOST"],
-                    queue_name=in_queue.value,
-                )
-            else:
-                raise NotImplementedError(f"{in_queue.type=} not valid")
+        def run_component(*args, **kwargs) -> None:  # type: ignore
+            # the component function is passed in as `func`
+            # first setup the connections to the input and outputs queues that the component will need
+            # we only want to set these up once, before the component is invoked
+            in_queue.q = get_consumer(
+                queue_type=in_queue.type, queue_name=in_queue.value
+            )
 
             for qname, q in out_queues.items():
-                if q.type == "kafka":
-                    from engine.kafka import BundleProducer
-                    q.q = BundleProducer(
-                        host=os.environ["KAFKA_BROKERS"],
-                        queue_name=q.value
-                    )
-                elif q.type == "rsmq":
-                    from engine.rsmq import BundleProducer
-                    q.q = BundleProducer(
-                        host=os.environ["REDIS_HOST"],
-                        queue_name=q.value
-                    )
-                else:
-                    raise NotImplementedError(f"{q.type=} not valid")
+                q.q = get_producer(queue_name=q.value, queue_type=q.type)
 
-            while True:
-                in_message: BundleMessage = in_queue.q.consume(queue_name=in_queue.value)
+            # queue connections were setup above. now we can start to interact with the queues
+            while RUN:
 
-                out_message, next_queue = func(in_message)
-
-                out_queue = out_queues[next_queue]
-
-                status = out_queue.q.produce(
-                    queue_name=out_queues[next_queue].value,
-                    message=out_message.dict()
+                in_message: BundleMessage = in_queue.q.consume(
+                    queue_name=in_queue.value
                 )
 
-                if status:
-                    in_queue.q.delete_message(
-                        queue_name=in_queue.value,
-                        message_id=in_message.message_id
-                    )
+                outputs: Dict[str, BundleMessage] = func(in_message)
+
+                for qname, m in outputs.items():
+
+                    try:
+                        out_queue = out_queues[qname]
+                    except KeyError:
+                        logger.exception(
+                            f"{qname} is not defined in this component's output queue list"
+                        )
+
+                    # typing of engine.queues.Queue.q makes this ambiguous and potentially error prone
+                    status = out_queue.q.produce(queue_name=out_queue.value, message=m)  # type: ignore
+
+                    if status:
+                        in_queue.q.delete_message(
+                            queue_name=in_queue.value, message_id=in_message.message_id
+                        )
+
+        run_component.__wrapped__ = func  # type: ignore  # used for unit testing
         return run_component
+
     return decorator

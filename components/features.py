@@ -1,8 +1,8 @@
 import json
 import os
+from typing import Dict
 
 import requests
-from typing import Dict
 
 from core.logging import logger
 from engine.component import bundle_engine
@@ -13,11 +13,13 @@ OUTPUT_QUEUES = ["triage"]
 FLIGHT_PLAN_URL = {
     "localhost": "https://flight-plan-calculator.us-east-1.staging.shipt.com/calculate",
     "staging": "https://flight-plan-calculator.us-east-1.staging.shipt.com/calculate",
-    "production": "https://flight-plan-calculator.us-east-1.shipt.com/calculate", 
+    "production": "https://flight-plan-calculator.us-east-1.shipt.com/calculate",
 }
+
 
 def fp_url_based_on_env() -> str:
     return FLIGHT_PLAN_URL[os.getenv("APP_ENV", "localhost")]
+
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
 def main(message: BundleMessage) -> Dict[str, BundleMessage]:
@@ -27,8 +29,7 @@ def main(message: BundleMessage) -> Dict[str, BundleMessage]:
         data = json.load(file)
     response = requests.post(fp_url, data=json.dumps(data))
     logger.info(f"Flight Plan Calculator response: {response.json()}")
-    
+
     message.message["flight_plan_estimate"] = response.json()
 
-    next_queue = OUTPUT_QUEUES[0]
     return {"triage": message}

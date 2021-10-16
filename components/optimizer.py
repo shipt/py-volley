@@ -1,20 +1,26 @@
+import time
+from datetime import datetime
 from typing import Dict
-
-import numpy as np
+from uuid import uuid4
 
 from engine.component import bundle_engine
-from engine.data_models import BundleMessage
+from engine.data_models import BundleMessage, CollectorMessage
 
 INPUT_QUEUE = "optimizer"
-OUTPUT_QUEUES = ["triage", "collector"]
+OUTPUT_QUEUES = ["collector"]
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
 def main(message: BundleMessage) -> Dict[str, BundleMessage]:
-    message.message["optimizer"] = {"result": ["a", "b"]}
+    c = CollectorMessage(
+        engine_event_id=message.message["engine_event_id"],
+        bundle_event_id=message.message["bundle_event_id"],
+        optimizer_id=str(uuid4()),
+        optimizer_finish=str(datetime.now()),
+        optimizer_results={"optimizer_solution": "random"},
+    )
+    message.message = c.optimizer_dict()
 
-    if np.random.choice([0, 1]):
-        _next = {"collector": message}
-    else:
-        _next = {"triage": message}
-    return _next
+    # artificially longer optimizer than other components
+    time.sleep(10)
+    return {"collector": message}

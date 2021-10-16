@@ -17,6 +17,9 @@ queues:
   - name: collector
     value: collector
     type: rsmq
+  - name: publisher
+    value: publisher
+    type: postgres
   - name: output-queue
     value: "{{ env }}.bus.ds-marketplace.v1.bundle_engine_output"
     type: kafka

@@ -17,6 +17,7 @@ _cur_path = Path(__file__).parent.resolve().joinpath("config.yml")
 class QueueType(str, Enum):
     kafka = "kafka"
     rsmq = "rsmq"
+    postgres = "postgres"
 
 
 class Queue(BaseModel):

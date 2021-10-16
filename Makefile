@@ -77,6 +77,20 @@ test.unit: setup
             --cov-report=xml:cov.xml \
             --cov-report term
 
-run.local:
-	docker-compose up -d
-	docker-compose logs -f dummy_events consumer
+run.components:
+	docker compose up -d
+	docker compose logs -f
+
+run.datastores:
+	docker compose -f data-stores.yml up -d
+
+run.local: run.datastores run.components
+
+stop.components:
+	docker compose down
+
+stop.datastores:
+	docker compose -f data-stores.yml down
+
+stop:
+	docker compose -f data-stores.yml -f docker-compose.yml down --remove-orphans

@@ -176,6 +176,8 @@ services:
         restart: always
         image: postgres:12.3
         container_name: postgres
+        ports:
+            - 5432:5432
         environment:
             POSTGRES_PASSWORD: password
 

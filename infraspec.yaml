@@ -53,6 +53,9 @@ roles:
     - name: collector
       command: python main.py collector
       replicaCount: 1
+    - name: publisher
+      command: python main.py publisher
+      replicaCount: 1
 datastores:
   memoryStore:
     - name: redis-queue

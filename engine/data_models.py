@@ -50,7 +50,7 @@ class CollectorMessage(BaseModel):
         }
 
 
-class PublisherMessage(BaseModel):
+class OutputMessage(BaseModel):
     engine_event_id: str
     bundle_event_id: str
     store_id: str

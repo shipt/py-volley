@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict
+from typing import List, Tuple
 from uuid import uuid4
 
 from engine.component import bundle_engine
@@ -10,7 +10,7 @@ OUTPUT_QUEUES = ["collector"]
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(message: BundleMessage) -> Dict[str, BundleMessage]:
+def main(message: BundleMessage) -> List[Tuple[str, BundleMessage]]:
 
     c = CollectorMessage(
         engine_event_id=message.message["engine_event_id"],
@@ -20,4 +20,4 @@ def main(message: BundleMessage) -> Dict[str, BundleMessage]:
         fallback_results={"fallback_solution": "random"},
     )
     message.message = c.fallback_dict()
-    return {"collector": message}
+    return [("collector", message)]

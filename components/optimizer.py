@@ -1,6 +1,6 @@
 import time
 from datetime import datetime
-from typing import Dict
+from typing import List, Tuple
 from uuid import uuid4
 
 from engine.component import bundle_engine
@@ -11,7 +11,7 @@ OUTPUT_QUEUES = ["collector"]
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(message: BundleMessage) -> Dict[str, BundleMessage]:
+def main(message: BundleMessage) -> List[Tuple[str, BundleMessage]]:
     c = CollectorMessage(
         engine_event_id=message.message["engine_event_id"],
         bundle_event_id=message.message["bundle_event_id"],
@@ -23,4 +23,4 @@ def main(message: BundleMessage) -> Dict[str, BundleMessage]:
 
     # artificially longer optimizer than other components
     time.sleep(10)
-    return {"collector": message}
+    return [("collector", message)]

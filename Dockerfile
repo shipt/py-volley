@@ -17,5 +17,3 @@ RUN poetry config virtualenvs.create false \
     &&  poetry install --no-dev
 
 COPY . /app/
-
-RUN pip3 install debugpy

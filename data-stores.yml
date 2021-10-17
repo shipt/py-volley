@@ -55,6 +55,24 @@ services:
             KAFKA_JMX_PORT: 49999
         networks:
             - bundle-engine-net
+    metrics:
+        networks:
+            - bundle-engine-net
+        container_name: metrics
+        environment:
+            - APP_ENV=localhost
+            - REDIS_HOST=redis
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
+                SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        volumes:
+            - ./:/app/
+        depends_on:
+            - redis
+        command: uvicorn monitoring.monitoring:app
 networks:
   bundle-engine-net:
     driver: bridge

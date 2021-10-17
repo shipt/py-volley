@@ -1,6 +1,7 @@
 from dataclasses import dataclass
+from datetime import datetime
 
-from sqlalchemy import update
+from sqlalchemy import or_, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.engine.base import Engine
 
@@ -22,9 +23,19 @@ class PGConsumer(Consumer):
         metadata_obj.create_all(self.engine)
 
     def consume(
-        self, queue_name: str = None, timeout: float = 60, poll_interval: float = 0.25
+        self, queue_name: str = None, timeout: float = 60, poll_interval: float = 1
     ) -> BundleMessage:
-        pass
+        now = str(datetime.now())
+        conn = self.engine.connect()
+        query = select(collector).filter(
+            or_(collector.c.timeout >= now, collector.c.optimizer_id != None)
+        )
+        records = [row._mapping for row in conn.execute(query)]
+
+        for r in records:
+            print(r)
+
+        conn.close()
 
     def delete_message(self, queue_name: str, message_id: str = None) -> bool:
         return True

@@ -16,6 +16,8 @@ if __name__ == "__main__":
         from components.fallback import main
     elif component == "collector":
         from components.collector import main
+    elif component == "publisher":
+        from components.publisher import main
     elif component == "dummy_consumer":
         from components.dummy_consumer import main
     else:

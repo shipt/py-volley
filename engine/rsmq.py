@@ -52,6 +52,6 @@ class BundleProducer(Producer):
 
     def produce(self, queue_name: str, message: BundleMessage) -> bool:
         m = message.dict()["message"]
-        logger.info(f"queue_name - {queue_name} - {m}")
+        logger.info(f"queue_name - {queue_name}")
         msg_id: str = self.queue.sendMessage(qname=queue_name, message=m).execute()
         return bool(msg_id)

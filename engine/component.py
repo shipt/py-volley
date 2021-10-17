@@ -1,6 +1,6 @@
 import os
 from functools import wraps
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 from core.logging import logger
 from engine.consumer import Consumer
@@ -85,10 +85,9 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
                     queue_name=in_queue.value
                 )
 
-                outputs: Dict[str, BundleMessage] = func(in_message)
+                outputs: List[Tuple[str, BundleMessage]] = func(in_message)
 
-                for qname, m in outputs.items():
-
+                for qname, m in outputs:
                     try:
                         out_queue = out_queues[qname]
                     except KeyError:

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -48,3 +48,12 @@ class CollectorMessage(BaseModel):
             "optimizer_results": self.optimizer_results,
             "optimizer_finish": self.optimizer_finish,
         }
+
+
+class PublisherMessage(BaseModel):
+    engine_event_id: str
+    bundle_event_id: str
+    store_id: str
+    # TODO: List[Orders] or Dict[bundle_id: str, List[Orders]]
+
+    bundles: List[Any]

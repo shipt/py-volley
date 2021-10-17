@@ -27,6 +27,13 @@ def get_consumer(queue_type: str, queue_name: str) -> Consumer:
             host=os.environ["REDIS_HOST"],
             queue_name=queue_name,
         )
+    elif queue_type == "postgres":
+        from engine.stateful.postgres import PGConsumer  # type: ignore
+
+        return PGConsumer(
+            host=os.getenv("PG_HOST", "postgres"),
+            queue_name=queue_name,
+        )
     else:
         raise KeyError(f"{queue_type=} not valid")
 

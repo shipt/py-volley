@@ -84,7 +84,7 @@ run.components:
 run.datastores:
 	docker compose -f data-stores.yml up -d
 
-run.local: run.datastores run.components
+run: run.datastores run.components
 
 stop.components:
 	docker compose down

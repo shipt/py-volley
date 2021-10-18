@@ -1,6 +1,6 @@
 import os
 from functools import wraps
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 from core.logging import logger
 from engine.consumer import Consumer
@@ -27,6 +27,13 @@ def get_consumer(queue_type: str, queue_name: str) -> Consumer:
             host=os.environ["REDIS_HOST"],
             queue_name=queue_name,
         )
+    elif queue_type == "postgres":
+        from engine.stateful.postgres import PGConsumer
+
+        return PGConsumer(  # type: ignore
+            host=os.getenv("PG_HOST", "postgres"),
+            queue_name=queue_name,
+        )
     else:
         raise KeyError(f"{queue_type=} not valid")
 
@@ -36,15 +43,22 @@ def get_producer(queue_type: str, queue_name: str) -> Producer:
         from engine.kafka import BundleProducer
 
         return BundleProducer(host=os.environ["KAFKA_BROKERS"], queue_name=queue_name)
-    elif queue_type == "rsmq":
-        from engine.rsmq import BundleProducer  # type: ignore
 
-        return BundleProducer(host=os.environ["REDIS_HOST"], queue_name=queue_name)
+    elif queue_type == "rsmq":
+        from engine.rsmq import BundleProducer as RsmqProducer
+
+        return RsmqProducer(host=os.environ["REDIS_HOST"], queue_name=queue_name)
+
+    elif queue_type == "postgres":
+        from engine.stateful.postgres import PGProducer
+
+        return PGProducer(host=os.getenv("PG_HOST", "postgres"), queue_name=queue_name)  # type: ignore
+
     else:
         raise KeyError(f"{queue_type=} not valid")
 
 
-def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:
+def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C901
     queues: Queues = available_queues()
 
     in_queue: Queue = queues.queues[input_queue]
@@ -71,10 +85,9 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:
                     queue_name=in_queue.value
                 )
 
-                outputs: Dict[str, BundleMessage] = func(in_message)
+                outputs: List[Tuple[str, BundleMessage]] = func(in_message)
 
-                for qname, m in outputs.items():
-
+                for qname, m in outputs:
                     try:
                         out_queue = out_queues[qname]
                     except KeyError:
@@ -83,12 +96,17 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:
                         )
 
                     # typing of engine.queues.Queue.q makes this ambiguous and potentially error prone
-                    status = out_queue.q.produce(queue_name=out_queue.value, message=m)  # type: ignore
-
+                    try:
+                        status = out_queue.q.produce(queue_name=out_queue.value, message=m)  # type: ignore
+                    except Exception:
+                        logger.exception("failed producing message")
+                        status = False
                     if status:
                         in_queue.q.delete_message(
                             queue_name=in_queue.value, message_id=in_message.message_id
                         )
+                    else:
+                        in_queue.q.on_fail()
 
         run_component.__wrapped__ = func  # type: ignore  # used for unit testing
         return run_component

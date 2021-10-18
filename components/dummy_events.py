@@ -15,8 +15,9 @@ def main() -> None:
     i = 0
     while True:
         msg = {
-            "event_id": i,
-            "order": str(uuid4()),
+            "bundle_event_id": i,
+            "store_id": str(uuid4()),
+            "order": ["order_a", "order_b"],
         }
         p.publish(input_topic, msg)
         logger.info(f"{msg=}")

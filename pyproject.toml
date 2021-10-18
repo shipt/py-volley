@@ -19,7 +19,9 @@ numpy = "^1.21.2"
 Jinja2 = "^3.0.2"
 prometheus-client = "^0.11.0"
 uvicorn = {extras = ["standard"], version = "^0.15.0"}
-types-requests = "^2.25.11"
+psycopg2-binary = "^2.9.1"
+SQLAlchemy = "^1.4.25"
+sqlmodel = "^0.0.4"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.2"
@@ -34,6 +36,10 @@ debugpy = "^1.5.0"
 pytest-cov = "^3.0.0"
 pylint = "^2.11.1"
 jupyter = "^1.0.0"
+types-requests = "^2.25.11"
+
+[tool.isort]
+profile = "black"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -41,4 +47,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 80
+fail_under = 75

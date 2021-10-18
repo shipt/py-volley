@@ -26,7 +26,7 @@ def fp_url_based_on_env() -> str:
 def main(message: BundleMessage) -> List[Tuple[str, BundleMessage]]:
     fp_responses = [
         requests.post(fp_url_based_on_env(), data=json.dumps(order))
-        for order in message.message.get("orders")
+        for order in message.message.get("orders")  # type: ignore
     ]
     logger.info(
         f"Flight Plan Calculator estimates: {[response.json() for response in fp_responses]}"

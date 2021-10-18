@@ -1,6 +1,6 @@
+import time
 from dataclasses import dataclass
 from datetime import datetime
-import time
 from typing import List
 
 from sqlalchemy import text, update
@@ -49,7 +49,7 @@ class PGConsumer(Consumer):
                 LIMIT {BATCH_SIZE}
                 FOR UPDATE SKIP LOCKED
             ) q
-            WHERE q.engine_event_id = {PG_SCHEMA}.{queue_name}.engine_event_id RETURNING {PG_SCHEMA}.{queue_name}.*;
+            WHERE q.engine_event_id = {PG_SCHEMA}.{queue_name}.engine_event_idRETURNING {PG_SCHEMA}.{queue_name}.*;
         """
 
         records: List[RowMapping] = []

@@ -1,4 +1,6 @@
-from sqlalchemy import create_engine, Column, DateTime, MetaData, String, Table, text
+import os
+
+from sqlalchemy import Column, DateTime, MetaData, String, Table, create_engine, text
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.sql.sqltypes import JSON
 
@@ -8,7 +10,6 @@ PG_USER = "postgres"
 PG_PASS = "password"
 PG_HOST = "postgres"
 PG_PORT = 5432
-
 
 metadata_obj = MetaData(schema=PG_SCHEMA)
 

@@ -17,7 +17,7 @@ format.black:
 	poetry run black ${SOURCE_OBJECTS}
 format.isort:
 	poetry run isort --atomic ${SOURCE_OBJECTS}
-format: format.isort format.black
+format: format.black format.isort 
 
 lints.format.check:
 	poetry run black --check ${SOURCE_OBJECTS}
@@ -30,7 +30,7 @@ lints.mypy:
 	poetry run mypy ${SOURCE_OBJECTS}
 lints.pylint:
 	poetry run pylint --rcfile pyproject.toml  ${SOURCE_OBJECTS}
-lints: lints.flake8 lints.mypy lints.format.check
+lints: lints.flake8 lints.format.check lints.mypy 
 lints.strict: lints.pylint lints.flake8.strict lints.mypy lints.format.check
 
 notebook:

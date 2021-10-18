@@ -24,15 +24,18 @@ def fp_url_based_on_env() -> str:
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
 def main(message: BundleMessage) -> List[Tuple[str, BundleMessage]]:
-
-    fp_url = fp_url_based_on_env()
-    with open("./seed/fp_payload.json", "r") as file:
-        data = json.load(file)
-    response = requests.post(fp_url, data=json.dumps(data))
-    logger.info(f"Flight Plan Calculator response: {response.json()}")
+    fp_responses = [
+        requests.post(fp_url_based_on_env(), data=json.dumps(order))
+        for order in message.message.get("orders")  # type: ignore
+    ]
+    logger.info(
+        f"Flight Plan Calculator estimates: {[response.json() for response in fp_responses]}"
+    )
 
     message.message["features"] = {"feature": "random"}
     message.message["engine_event_id"] = str(uuid4())
-    message.message["flight_plan_estimate"] = response.json()
+    message.message["flight_plan_estimates"] = [
+        response.json() for response in fp_responses
+    ]
 
     return [("triage", message)]

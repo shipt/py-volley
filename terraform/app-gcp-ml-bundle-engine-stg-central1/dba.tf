@@ -39,7 +39,7 @@ module "ml_bundle_engine_bundle_engine_cloudSql_module" {
   repo_name      = "ml-bundle-engine"
   network        = "projects/shipt-core-stg-host/global/networks/core-stg-host"
   cloud_provider = "gcp"
-  slack_channel  = ""
+  slack_channel  = "bundling-engine"
   team           = "machine-learning"
   project_id     = "shipt-ds-stg-psql"
   name           = "bundle-engine"

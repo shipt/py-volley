@@ -18,7 +18,11 @@ export POETRY_HTTP_BASIC_SHIPT_USERNAME=your_username
 export POETRY_HTTP_BASIC_SHIPT_PASSWORD=your_password
 ```
 
-`docker-compose up`
+Start all services and data stores
+`make run`
+
+Stop all services and data stores
+`make stop`
 
 - dummy_events: components/dummy_events.py - produces dummy kafka messages to an `input-topic` kafka
 - features: components/feature_generator.py - reads from `input-topic` kafka, publishes to `triage` queue

@@ -1,11 +1,11 @@
 import os
 from typing import Any, Callable
-from prometheus_client import make_wsgi_app, Gauge
-import redis
 from wsgiref.simple_server import make_server
 
-from engine.queues import load_config
+import redis
+from prometheus_client import Gauge, make_wsgi_app
 
+from engine.queues import load_config
 
 all_queues = [x["value"] for x in load_config()["queues"] if x["type"] == "rsmq" ]
 

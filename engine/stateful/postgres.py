@@ -1,3 +1,4 @@
+import os
 import time
 from dataclasses import dataclass
 from datetime import datetime
@@ -28,8 +29,8 @@ class PGConsumer(Consumer):
 
     def __post_init__(self) -> None:
         self.engine: Engine = get_eng()
-        init_schema(self.engine)
-        # TODO: are there implications of "if not exists"?
+        if os.getenv("APP_ENV") == "localhost":
+            init_schema(self.engine)
         metadata_obj.create_all(self.engine)
         self.session = Session(self.engine)
 
@@ -85,7 +86,8 @@ class PGProducer(Producer):
     def __post_init__(self) -> None:
         # TODO: are there implications of "if not exists"?
         self.engine: Engine = get_eng()
-        init_schema(self.engine)
+        if os.getenv("APP_ENV") == "localhost":
+            init_schema(self.engine)
         metadata_obj.create_all(self.engine)
 
     def produce(self, queue_name: str, message: BundleMessage) -> bool:

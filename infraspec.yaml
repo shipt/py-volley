@@ -55,7 +55,7 @@ roles:
       replicaCount: 1
 datastores:
   cloudSql:
-    - name: bundle-engine
+    - name: ml-bundle-engine
       configVar: CLOUDSQL_DATABASE_URL
       size:
         storage: 10 GB

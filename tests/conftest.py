@@ -1,12 +1,13 @@
 import json
 import os
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 from pytest import fixture
 
-from engine.data_models import BundleMessage
+from engine.data_models import BundleMessage, CollectorMessage
 from engine.kafka import BundleConsumer as kafka_consumer
 from engine.kafka import BundleProducer as kafka_producer
 from engine.rsmq import BundleConsumer as rsmq_consumer
@@ -19,11 +20,32 @@ os.environ["KAFKA_BROKERS"] = "kafka:9092"
 
 
 @fixture
+def collector_message() -> CollectorMessage:
+    return CollectorMessage(
+        engine_event_id="123",
+        bundle_event_id="abc",
+        store_id="store_a",
+        timeout=str(datetime.now() + timedelta(minutes=10)),
+        fallback_id="id_1",
+        fallback_results={"bundles": ["bundle_a", "bundle_b"]},
+        fallback_finish=str(datetime.now() + timedelta(minutes=2)),
+        optimizer_i="id_2",
+        optimizer_results={"bundles": ["bundle_a", "bundle_b"]},
+        optimizer_finish=str(datetime.now() + timedelta(minutes=4)),
+    )
+
+
+@fixture
 def bundle_message() -> BundleMessage:
     return BundleMessage(
         message_id="123",
         params={"timeout_seconds": 10},
-        message={"event_id": 123, "orders": [1, 2, 3]},
+        message={
+            "engine_event_id": "123",
+            "bundle_event_id": "abc",
+            "store_id": "store_a",
+            "orders": [1, 2, 3],
+        },
     )
 
 

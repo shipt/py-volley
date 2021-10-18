@@ -1,3 +1,4 @@
+import json
 import time
 from uuid import uuid4
 
@@ -14,10 +15,12 @@ def main() -> None:
     p = KafkaProducer()
     i = 0
     while True:
+        with open("./seed/fp_payload.json", "r") as file:
+            data = json.load(file)
         msg = {
             "bundle_event_id": i,
             "store_id": str(uuid4()),
-            "order": ["order_a", "order_b"],
+            "orders": [data],
         }
         p.publish(input_topic, msg)
         logger.info(f"{msg=}")

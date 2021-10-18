@@ -2,6 +2,7 @@ import json
 import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from typing import Dict, Any
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -104,3 +105,10 @@ def mock_kafka_producer() -> kafka_producer:
     with patch("engine.kafka.KafkaProducer"):
         producer = kafka_producer(host="kafka", queue_name="test")
         return producer
+
+
+@fixture
+def fp_response() -> Dict[str, Any]:
+    with open("./tests/fixtures/fp_payload.json", "r") as file:
+        data = json.load(file)
+    yield data

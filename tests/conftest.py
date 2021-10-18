@@ -109,6 +109,6 @@ def mock_kafka_producer() -> kafka_producer:
 
 @fixture
 def fp_response() -> Dict[str, Any]:
-    with open("./tests/fixtures/fp_payload.json", "r") as file:
+    with open("./tests/fixtures/fp_response.json", "r") as file:
         data = json.load(file)
     yield data

@@ -4,12 +4,7 @@ from sqlalchemy import Column, DateTime, MetaData, String, Table, create_engine,
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.sql.sqltypes import JSON
 
-PG_DATABASE = "postgres"
 PG_SCHEMA = "bundle_engine"
-PG_USER = "postgres"
-PG_PASS = "password"
-PG_HOST = "postgres"
-PG_PORT = 5432
 
 metadata_obj = MetaData(schema=PG_SCHEMA)
 
@@ -44,10 +39,10 @@ publisher = Table(
 )
 
 
-def get_eng(timeout: int = 2) -> Engine:
-    connection_str = "{}://{}:{}@{}:{}/{}".format(
-        "postgresql", PG_USER, PG_PASS, PG_HOST, PG_PORT, PG_DATABASE
-    )
-    return create_engine(
-        connection_str, connect_args={"connect_timeout": timeout}, pool_pre_ping=True
-    )
+def get_eng(environment: str) -> Engine:
+    if not (connection_str := os.getenv("CLOUDSQL_DATABASE_URL")):
+        # CLOUDSQL_DATABASE_URL is the configVar in kubedashian
+        connection_str = "{}://{}:{}@{}:{}/{}".format(
+            "postgresql", "postgres", "password", "postgres", 5432, "postgres"
+        )
+    return create_engine(connection_str, pool_pre_ping=True)

@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 from uuid import uuid4
 
 import requests
@@ -35,4 +35,4 @@ def main(message: BundleMessage) -> List[Tuple[str, BundleMessage]]:
     message.message["engine_event_id"] = str(uuid4())
     message.message["flight_plan_estimate"] = response.json()
 
-    return {"triage": message}
+    return [("triage", message)]

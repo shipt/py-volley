@@ -2,7 +2,7 @@ import json
 import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
 import numpy as np

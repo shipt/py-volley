@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any
 
 from engine.data_models import BundleMessage
 
@@ -19,5 +19,9 @@ class Consumer(ABC):
         """consumes a message to any queue. decodes from queue's data type to BaseMessage schema"""
 
     @abstractmethod
-    def delete_message(self, queue_name: str, message_id: Optional[str] = None) -> bool:
+    def delete_message(self, queue_name: str, message_id: Any = None) -> bool:
         """deletes a message from a queue"""
+
+    @abstractmethod
+    def on_fail(self) -> None:
+        """perform some action when downstream operation fails"""

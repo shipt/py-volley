@@ -43,6 +43,9 @@ class BundleConsumer(Consumer):
         ).execute()
         return result
 
+    def on_fail(self) -> None:
+        pass
+
 
 @dataclass
 class BundleProducer(Producer):
@@ -51,8 +54,7 @@ class BundleProducer(Producer):
         self.queue.createQueue(delay=0).vt(60).exceptions(False).execute()
 
     def produce(self, queue_name: str, message: BundleMessage) -> bool:
+        m = message.dict()["message"]
         logger.info(f"queue_name - {queue_name}")
-        msg_id: str = self.queue.sendMessage(
-            qname=queue_name, message=message.dict()["message"]
-        ).execute()
+        msg_id: str = self.queue.sendMessage(qname=queue_name, message=m).execute()
         return bool(msg_id)

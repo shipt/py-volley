@@ -43,6 +43,9 @@ class BundleConsumer(Consumer):
         print("no message to delete!")
         return True
 
+    def on_fail(self) -> None:
+        pass
+
 
 @dataclass
 class BundleProducer(Producer):

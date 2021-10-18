@@ -1,6 +1,7 @@
 import json
 import os
-from typing import Dict
+from typing import List, Tuple
+from uuid import uuid4
 
 import requests
 
@@ -22,14 +23,16 @@ def fp_url_based_on_env() -> str:
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(message: BundleMessage) -> Dict[str, BundleMessage]:
-    message.message["features"] = {"feature": "random"}
+def main(message: BundleMessage) -> List[Tuple[str, BundleMessage]]:
+
     fp_url = fp_url_based_on_env()
     with open("./seed/fp_payload.json", "r") as file:
         data = json.load(file)
     response = requests.post(fp_url, data=json.dumps(data))
     logger.info(f"Flight Plan Calculator response: {response.json()}")
 
+    message.message["features"] = {"feature": "random"}
+    message.message["engine_event_id"] = str(uuid4())
     message.message["flight_plan_estimate"] = response.json()
 
-    return {"triage": message}
+    return [("triage", message)]

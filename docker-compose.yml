@@ -129,8 +129,6 @@ services:
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
         volumes:
             - ./:/app/
-        depends_on:
-            - redis
         # ports:
         #     - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py collector
@@ -173,8 +171,6 @@ services:
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
         volumes:
             - ./:/app/
-        depends_on:
-            - kafka
         # ports:
         #     - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py dummy_consumer

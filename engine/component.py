@@ -28,9 +28,9 @@ def get_consumer(queue_type: str, queue_name: str) -> Consumer:
             queue_name=queue_name,
         )
     elif queue_type == "postgres":
-        from engine.stateful.postgres import PGConsumer  # type: ignore
+        from engine.stateful.postgres import PGConsumer
 
-        return PGConsumer(
+        return PGConsumer(  # type: ignore
             host=os.getenv("PG_HOST", "postgres"),
             queue_name=queue_name,
         )
@@ -101,11 +101,12 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
                     except Exception:
                         logger.exception("failed producing message")
                         status = False
-
                     if status:
                         in_queue.q.delete_message(
                             queue_name=in_queue.value, message_id=in_message.message_id
                         )
+                    else:
+                        in_queue.q.on_fail()
 
         run_component.__wrapped__ = func  # type: ignore  # used for unit testing
         return run_component

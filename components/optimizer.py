@@ -12,12 +12,19 @@ OUTPUT_QUEUES = ["collector"]
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
 def main(message: BundleMessage) -> List[Tuple[str, BundleMessage]]:
+
+    # TODO: data model for opt results
+    opt_solution = {
+        "bundles": ["order_1", "order2", "order_5", "order3"],
+        "other_data": "abc",
+    }
+
     c = CollectorMessage(
         engine_event_id=message.message["engine_event_id"],
         bundle_event_id=message.message["bundle_event_id"],
         optimizer_id=str(uuid4()),
         optimizer_finish=str(datetime.now()),
-        optimizer_results={"optimizer_solution": "random"},
+        optimizer_results=opt_solution,
     )
     message.message = c.optimizer_dict()
 

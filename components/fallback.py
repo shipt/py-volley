@@ -12,12 +12,16 @@ OUTPUT_QUEUES = ["collector"]
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
 def main(message: BundleMessage) -> List[Tuple[str, BundleMessage]]:
 
+    falback_solution = {
+        "bundles": ["order_1", "order2", "order_5", "order3"],
+        "other_data": "abc",
+    }
     c = CollectorMessage(
         engine_event_id=message.message["engine_event_id"],
         bundle_event_id=message.message["bundle_event_id"],
         fallback_id=str(uuid4()),
         fallback_finish=str(datetime.now()),
-        fallback_results={"fallback_solution": "random"},
+        fallback_results=falback_solution,
     )
     message.message = c.fallback_dict()
     return [("collector", message)]

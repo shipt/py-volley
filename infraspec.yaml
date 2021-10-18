@@ -57,6 +57,12 @@ roles:
       command: python main.py publisher
       replicaCount: 1
 datastores:
+  cloudSql:
+    - name: ml-bundle-engine
+      configVar: CLOUDSQL_DATABASE_URL
+      size:
+        storage: 10 GB
+        ram: 4 GB
   memoryStore:
     - name: redis-queue
       configVar: REDIS_HOST

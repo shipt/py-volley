@@ -8,7 +8,7 @@ from engine.data_models import BundleMessage, CollectorMessage
 from engine.queues import available_queues
 
 
-def test_vaid_(bundle_message: BundleMessage) -> None:
+def test_vaid__names(bundle_message: BundleMessage) -> None:
     queues = available_queues().queues
     valid_queue_names = [x for x, y in queues.items()]
     for component in [features, triage, fallback, optimizer]:
@@ -20,10 +20,23 @@ def test_vaid_(bundle_message: BundleMessage) -> None:
             assert qname in valid_queue_names
 
 
-def test_collector(collector_message: CollectorMessage) -> None:
+def test_collector_publisher(collector_message: CollectorMessage) -> None:
     f = collector.__wrapped__(collector_message.fallback_dict())
     o = collector.__wrapped__(collector_message.optimizer_dict())
     t = collector.__wrapped__(collector_message.triage_dict())
     for i in [f, o, t]:
         for _i in i:
             assert _i[0] == "publisher"
+
+
+def test_publisher(bundle_message: BundleMessage) -> None:
+    bundle_message.message["results"] = [
+        {
+            "optimizer_results": {"bundles": [1, 2, 3]},
+            "engine_event_id": "abc",
+            "bundle_event_id": "abc",
+            "store_id": "store_a",
+        }
+    ]
+    p = publisher.__wrapped__(bundle_message)
+    assert p[0][0] == "output-queue"

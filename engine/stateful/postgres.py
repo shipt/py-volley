@@ -1,6 +1,6 @@
-import time
 from dataclasses import dataclass
 from datetime import datetime
+import time
 from typing import List
 
 from sqlalchemy import text, update

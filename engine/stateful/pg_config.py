@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, MetaData, String, Table, create_engine, text
+from sqlalchemy import create_engine, Column, DateTime, MetaData, String, Table, text
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.sql.sqltypes import JSON
 

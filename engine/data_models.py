@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 class BundleMessage(BaseModel):
     # standardized across a kafka message and rsmq
     # rsmq has its own schema and kafka has headers, etc.
-    message_id: str = Field(
+    message_id: Any = Field(
         description="identifier for the message in the queue. e.g. kafka Offset"
     )
     params: Dict[str, Any]
@@ -49,11 +49,21 @@ class CollectorMessage(BaseModel):
             "optimizer_finish": self.optimizer_finish,
         }
 
+    def triage_dict(self) -> Dict[str, Any]:
+        return {
+            "engine_event_id": self.engine_event_id,
+            "bundle_event_id": self.bundle_event_id,
+            "store_id": self.store_id,
+            "timeout": self.timeout,
+        }
+
 
 class OutputMessage(BaseModel):
     engine_event_id: str
     bundle_event_id: str
     store_id: str
-    # TODO: List[Orders] or Dict[bundle_id: str, List[Orders]]
+    optimizer_type: str
 
+    # TODO: List[Orders] or Dict[bundle_id: str, List[Orders]]
+    # data model for output
     bundles: List[Any]

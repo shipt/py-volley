@@ -43,6 +43,9 @@ class BundleConsumer(Consumer):
         ).execute()
         return result
 
+    def on_fail(self) -> None:
+        pass
+
 
 @dataclass
 class BundleProducer(Producer):

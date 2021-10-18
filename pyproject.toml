@@ -36,6 +36,7 @@ debugpy = "^1.5.0"
 pytest-cov = "^3.0.0"
 pylint = "^2.11.1"
 jupyter = "^1.0.0"
+types-requests = "^2.25.11"
 
 [tool.isort]
 profile = "black"

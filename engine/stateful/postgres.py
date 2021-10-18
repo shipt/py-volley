@@ -1,15 +1,25 @@
+import time
 from dataclasses import dataclass
 from datetime import datetime
+from typing import List
 
-from sqlalchemy import or_, select, update
+from sqlalchemy import text, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.engine.base import Engine
+from sqlalchemy.engine.row import RowMapping
+from sqlalchemy.orm import Session
 
 from core.logging import logger
 from engine.consumer import Consumer
 from engine.data_models import BundleMessage
 from engine.producer import Producer
-from engine.stateful.pg_config import collector, get_eng, init_schema, metadata_obj
+from engine.stateful.pg_config import (
+    PG_SCHEMA,
+    get_eng,
+    init_schema,
+    metadata_obj,
+    publisher,
+)
 
 
 @dataclass
@@ -21,24 +31,53 @@ class PGConsumer(Consumer):
         init_schema(self.engine)
         # TODO: are there implications of "if not exists"?
         metadata_obj.create_all(self.engine)
+        self.session = Session(self.engine)
 
     def consume(
-        self, queue_name: str = None, timeout: float = 60, poll_interval: float = 1
+        self, queue_name: str = None, timeout: float = 60, poll_interval: float = 2
     ) -> BundleMessage:
         now = str(datetime.now())
-        conn = self.engine.connect()
-        query = select(collector).filter(
-            or_(collector.c.timeout >= now, collector.c.optimizer_id != None)
-        )
-        records = [row._mapping for row in conn.execute(query)]
+        BATCH_SIZE = 1
+        sql = f"""
+            BEGIN;
+            DELETE FROM
+                {PG_SCHEMA}.{queue_name}
+            USING (
+                SELECT *
+                FROM {PG_SCHEMA}.{queue_name}
+                WHERE (timeout >= '{now}' OR optimizer_id IS NOT NULL)
+                LIMIT {BATCH_SIZE}
+                FOR UPDATE SKIP LOCKED
+            ) q
+            WHERE q.engine_event_id = {PG_SCHEMA}.{queue_name}.engine_event_id RETURNING {PG_SCHEMA}.{queue_name}.*;
+        """
 
-        for r in records:
-            print(r)
+        records: List[RowMapping] = []
+        while not records:
+            records = [r._mapping for r in self.session.execute(text(sql))]
+            if not records:
+                logger.info(f"No records - waiting {poll_interval}")
+                time.sleep(poll_interval)
 
-        conn.close()
+        # conn = self.engine.connect()
+        # query = delete(publisher)\
+        #         .with_for_update(skip_locked=False)\
+        #         .filter(
+        #             or_(publisher.c.timeout >= now, publisher.c.optimizer_id != None)
+        #         )
+        # session.execute(query)
+        # records = [row._mapping for row in conn.execute(query)]
+        # conn.close()
+        return BundleMessage(message_id="None", params={}, message={"results": records})
 
-    def delete_message(self, queue_name: str, message_id: str = None) -> bool:
+    def delete_message(self, queue_name: str, message_id: str) -> bool:  # type: ignore
+        # if all succeeds, commit the transaction
+        self.session.commit()
+        self.session.close()
         return True
+
+    def on_fail(self) -> None:
+        self.session.close()
 
 
 @dataclass
@@ -55,78 +94,15 @@ class PGProducer(Producer):
         engine_event_id = m["engine_event_id"]
         logger.info(m)
         if event_type == "triage":
-            insert_stmt = insert(collector).values(**m)
+            insert_stmt = insert(publisher).values(**m)
             with self.engine.begin() as c:
                 c.execute(insert_stmt)
         elif event_type in ["fallback", "optimizer"]:
             update_stmt = (
-                update(collector)
-                .where(collector.c.engine_event_id == engine_event_id)
+                update(publisher)
+                .where(publisher.c.engine_event_id == engine_event_id)
                 .values(**m)
             )
             with self.engine.begin() as c:
                 c.execute(update_stmt)
         return True
-
-
-# def get_triage_data() -> BundleMessage:
-#     return BundleMessage(
-#         message_id = str(uuid4()),
-#         params = {},
-#         message = {
-#             "event_type": "triage",
-#             "engine_event_id": str(uuid4()),
-#             "bundle_event_id": str(uuid4()),
-#             "store_id": str(uuid4()),
-#             "timeout": datetime.now() + timedelta(minutes=10),
-#         }
-#     )
-
-
-# def get_opt_data(triage_data: dict) -> BundleMessage:
-#     return BundleMessage(
-#         message_id = str(uuid4()),
-#         params = {},
-#         message = {
-#             "event_type": "optimizer",
-#             "engine_event_id": triage_data["message"]["engine_event_id"],
-#             "optimizer_id": str(uuid4()),
-#             "optimizer_results": {"opt": "results"},
-#             "optimizer_finish": datetime.now(),
-#         }
-#     )
-
-
-# def get_fallback_data(triage_data: dict) -> BundleMessage:
-#     return BundleMessage(
-#         message_id = str(uuid4()),
-#         params = {},
-#         message = {
-#             "event_type": "fallback",
-#             "engine_event_id": triage_data["message"]["engine_event_id"],
-#             "fallback_id": str(uuid4()),
-#             "fallback_results": {"fallback": "results"},
-#             "fallback_finish": datetime.now(),
-#         }
-#     )
-
-
-# p = PGProducer()
-
-# while True:
-#     t = get_triage_data()
-#     f = get_fallback_data(t.dict())
-#     o = get_opt_data(t.dict())
-
-#     # TRIAGE (insert only)
-#     p.produce(queue_name="", message=t)
-#     time.sleep(5)
-
-#     # FALLBACK (update only)
-#     p.produce(queue_name="", message=f)
-#     time.sleep(5)
-
-#     # OPTIMIZER (update only)
-#     p.produce(queue_name="", message=o)
-
-#     time.sleep(5)

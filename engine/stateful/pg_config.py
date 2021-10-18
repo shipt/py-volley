@@ -24,7 +24,7 @@ def init_schema(engine: Engine) -> None:
         )
 
 
-collector = Table(
+publisher = Table(
     "publisher",
     metadata_obj,
     # triage inserts

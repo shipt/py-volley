@@ -3,7 +3,7 @@ module "ml_bundle_engine_redis_queue_memory_store" {
   version        = "1.0.3"
   memory_size_gb = "1"
   name           = "uc1-ml-bundle-engine-redis-queue"
-  project        = "shipt-ds-stg-redis"
+  project        = "shipt-core-stg-redis"
   redis_version  = "REDIS_5_0"
   region         = "us-central1"
   labels = {

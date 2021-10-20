@@ -150,10 +150,10 @@ services:
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
         volumes:
             - ./:/app/
-        ports:
-            - 5678:5678
-        command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py publisher
-        # command: python main.py publisher
+        # ports:
+        #     - 5678:5678
+        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py publisher
+        command: python main.py publisher
     dummy_consumer:
         networks:
             - ml-bundle-engine_bundle-engine-net

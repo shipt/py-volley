@@ -1,14 +1,14 @@
 from typing import List, Tuple
 
+from components.data_models import OutputMessage, QueueMessage
 from engine.component import bundle_engine
-from engine.data_models import BundleMessage, OutputMessage
 
 INPUT_QUEUE = "publisher"
 OUTPUT_QUEUES = ["output-queue"]
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(message: BundleMessage) -> List[Tuple[str, BundleMessage]]:
+def main(message: QueueMessage) -> List[Tuple[str, QueueMessage]]:
     result_set = []
     for m in message.message["results"]:
         # TODO: data model for results

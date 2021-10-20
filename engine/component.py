@@ -2,9 +2,9 @@ import os
 from functools import wraps
 from typing import Any, Dict, List, Tuple
 
+from components.data_models import QueueMessage
 from core.logging import logger
 from engine.consumer import Consumer
-from engine.data_models import BundleMessage
 from engine.producer import Producer
 from engine.queues import Queue, Queues, available_queues
 
@@ -81,11 +81,9 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
             # queue connections were setup above. now we can start to interact with the queues
             while RUN:
 
-                in_message: BundleMessage = in_queue.q.consume(
-                    queue_name=in_queue.value
-                )
+                in_message: QueueMessage = in_queue.q.consume(queue_name=in_queue.value)
 
-                outputs: List[Tuple[str, BundleMessage]] = func(in_message)
+                outputs: List[Tuple[str, QueueMessage]] = func(in_message)
 
                 for qname, m in outputs:
                     try:

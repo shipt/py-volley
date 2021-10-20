@@ -1,14 +1,14 @@
 from components.collector import main as collector
+from components.data_models import CollectorMessage, QueueMessage
 from components.fallback import main as fallback
 from components.features import main as features
 from components.optimizer import main as optimizer
 from components.publisher import main as publisher
 from components.triage import main as triage
-from engine.data_models import BundleMessage, CollectorMessage
 from engine.queues import available_queues
 
 
-def test_vaid__names(bundle_message: BundleMessage) -> None:
+def test_vaid__names(bundle_message: QueueMessage) -> None:
     queues = available_queues().queues
     valid_queue_names = [x for x, y in queues.items()]
     for component in [features, triage, fallback, optimizer]:
@@ -16,7 +16,7 @@ def test_vaid__names(bundle_message: BundleMessage) -> None:
         outputs = component.__wrapped__(b)
         for qname, message in outputs:
             assert isinstance(qname, str)
-            assert isinstance(message, BundleMessage)
+            assert isinstance(message, QueueMessage)
             assert qname in valid_queue_names
 
 
@@ -29,7 +29,7 @@ def test_collector_publisher(collector_message: CollectorMessage) -> None:
             assert _i[0] == "publisher"
 
 
-def test_publisher(bundle_message: BundleMessage) -> None:
+def test_publisher(bundle_message: QueueMessage) -> None:
     bundle_message.message["results"] = [
         {
             "optimizer_results": {"bundles": [1, 2, 3]},

@@ -1,7 +1,8 @@
 from typing import List, Tuple
 
-from components.data_models import OutputMessage, QueueMessage
+from components.data_models import OutputMessage
 from engine.component import bundle_engine
+from engine.data_models import QueueMessage
 
 INPUT_QUEUE = "publisher"
 OUTPUT_QUEUES = ["output-queue"]

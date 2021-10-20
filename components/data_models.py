@@ -4,15 +4,6 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
 
-class QueueMessage(BaseModel):
-    # standardized across a kafka message and rsmq
-    # rsmq has its own schema and kafka has headers, etc.
-    message_id: Any = Field(
-        description="identifier for the message in the queue. e.g. kafka Offset"
-    )
-    message: Dict[str, Any]
-
-
 class CollectorMessage(BaseModel):
     # TODO: should explore sharing pydantic model w/ SqlAlchemy
     # triage inserts

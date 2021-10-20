@@ -5,9 +5,9 @@ from dataclasses import dataclass
 
 from rsmq import RedisSMQ
 
-from components.data_models import QueueMessage
 from core.logging import logger
 from engine.consumer import Consumer
+from engine.data_models import QueueMessage
 from engine.producer import Producer
 
 QUIET = bool(os.getenv("DEBUG", True))

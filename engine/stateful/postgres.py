@@ -10,9 +10,9 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.engine.row import RowMapping
 from sqlalchemy.orm import Session
 
-from components.data_models import QueueMessage
 from core.logging import logger
 from engine.consumer import Consumer
+from engine.data_models import QueueMessage
 from engine.producer import Producer
 from engine.stateful.pg_config import (
     PG_SCHEMA,

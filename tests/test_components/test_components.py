@@ -1,10 +1,11 @@
 from components.collector import main as collector
-from components.data_models import CollectorMessage, QueueMessage
+from components.data_models import CollectorMessage
 from components.fallback import main as fallback
 from components.features import main as features
 from components.optimizer import main as optimizer
 from components.publisher import main as publisher
 from components.triage import main as triage
+from engine.data_models import QueueMessage
 from engine.queues import available_queues
 
 

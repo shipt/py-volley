@@ -3,9 +3,9 @@ from dataclasses import dataclass
 
 from pyshipt_streams import KafkaConsumer, KafkaProducer
 
-from components.data_models import QueueMessage
 from core.logging import logger
 from engine.consumer import Consumer
+from engine.data_models import QueueMessage
 from engine.producer import Producer
 
 

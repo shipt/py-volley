@@ -3,15 +3,15 @@ from datetime import datetime
 from typing import List, Tuple
 from uuid import uuid4
 
+from components.data_models import CollectorMessage, QueueMessage
 from engine.component import bundle_engine
-from engine.data_models import BundleMessage, CollectorMessage
 
 INPUT_QUEUE = "optimizer"
 OUTPUT_QUEUES = ["collector"]
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(message: BundleMessage) -> List[Tuple[str, BundleMessage]]:
+def main(message: QueueMessage) -> List[Tuple[str, QueueMessage]]:
 
     # TODO: data model for opt results
     opt_solution = {

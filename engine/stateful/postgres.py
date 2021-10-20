@@ -10,9 +10,9 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.engine.row import RowMapping
 from sqlalchemy.orm import Session
 
+from components.data_models import QueueMessage
 from core.logging import logger
 from engine.consumer import Consumer
-from engine.data_models import BundleMessage
 from engine.producer import Producer
 from engine.stateful.pg_config import (
     PG_SCHEMA,
@@ -36,7 +36,7 @@ class PGConsumer(Consumer):
 
     def consume(
         self, queue_name: str = None, timeout: float = 60, poll_interval: float = 2
-    ) -> BundleMessage:
+    ) -> QueueMessage:
         now = str(datetime.now())
         BATCH_SIZE = 1
         sql = f"""
@@ -70,7 +70,7 @@ class PGConsumer(Consumer):
         # session.execute(query)
         # records = [row._mapping for row in conn.execute(query)]
         # conn.close()
-        return BundleMessage(message_id="None", params={}, message={"results": records})
+        return QueueMessage(message_id="None", message={"results": records})
 
     def delete_message(self, queue_name: str, message_id: str) -> bool:  # type: ignore
         # if all succeeds, commit the transaction
@@ -91,7 +91,7 @@ class PGProducer(Producer):
             init_schema(self.engine)
         metadata_obj.create_all(self.engine)
 
-    def produce(self, queue_name: str, message: BundleMessage) -> bool:
+    def produce(self, queue_name: str, message: QueueMessage) -> bool:
         m = message.message
         event_type = m.pop("event_type")
         engine_event_id = m["engine_event_id"]

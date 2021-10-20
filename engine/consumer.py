@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any
 
-from engine.data_models import BundleMessage
+from components.data_models import QueueMessage
 
 
 @dataclass  # type: ignore
@@ -15,8 +15,8 @@ class Consumer(ABC):
     @abstractmethod
     def consume(
         self, queue_name: str, timeout: float = 30, poll_interval: float = 1
-    ) -> BundleMessage:
-        """consumes a message to any queue. decodes from queue's data type to BaseMessage schema"""
+    ) -> QueueMessage:
+        """consumes a message to any queue. decodes from queue's data type to QueueMessage schema"""
 
     @abstractmethod
     def delete_message(self, queue_name: str, message_id: Any = None) -> bool:

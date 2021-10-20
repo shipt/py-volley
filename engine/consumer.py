@@ -7,7 +7,7 @@ from engine.data_models import QueueMessage
 
 @dataclass  # type: ignore
 class Consumer(ABC):
-    """Base for a consumer (kafka or rsmq)"""
+    """Base for a consumer (kafka, rsmq, postgres)"""
 
     host: str
     queue_name: str

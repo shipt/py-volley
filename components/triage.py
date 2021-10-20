@@ -2,8 +2,8 @@ from datetime import datetime, timedelta
 from typing import List, Tuple
 
 from components.data_models import CollectorMessage
-from engine.engine import bundle_engine
 from engine.data_models import QueueMessage
+from engine.engine import bundle_engine
 
 INPUT_QUEUE = "triage"
 OUTPUT_QUEUES = ["optimizer", "fallback", "collector"]  # , "shadow"]

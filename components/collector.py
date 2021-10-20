@@ -1,7 +1,7 @@
 from typing import List, Tuple
 
-from engine.engine import bundle_engine
 from engine.data_models import QueueMessage
+from engine.engine import bundle_engine
 
 INPUT_QUEUE = "collector"
 OUTPUT_QUEUES = ["publisher"]

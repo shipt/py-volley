@@ -1,13 +1,13 @@
 import json
 import os
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 from uuid import uuid4
 
 import requests
 
 from core.logging import logger
-from engine.engine import bundle_engine
 from engine.data_models import QueueMessage
+from engine.engine import bundle_engine
 
 INPUT_QUEUE = "input-queue"
 OUTPUT_QUEUES = ["triage"]
@@ -23,19 +23,17 @@ def fp_url_based_on_env() -> str:
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(message: QueueMessage) -> List[Tuple[str, QueueMessage]]:
+def main(message: Dict[str, Any]) -> List[Tuple[str, QueueMessage]]:
     fp_responses = [
         requests.post(fp_url_based_on_env(), data=json.dumps(order))
-        for order in message.message.get("orders")  # type: ignore
+        for order in message.get("orders")  # type: ignore
     ]
     logger.info(
         f"Flight Plan Calculator estimates: {[response.json() for response in fp_responses]}"
     )
 
-    message.message["features"] = {"feature": "random"}
-    message.message["engine_event_id"] = str(uuid4())
-    message.message["flight_plan_estimates"] = [
-        response.json() for response in fp_responses
-    ]
+    message["features"] = {"feature": "random"}
+    message["engine_event_id"] = str(uuid4())
+    message["flight_plan_estimates"] = [response.json() for response in fp_responses]
 
     return [("triage", message)]

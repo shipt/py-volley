@@ -4,6 +4,12 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
 
+class InputMessage:
+    """input messages coming off kafka"""
+
+    orders: str
+
+
 class CollectorMessage(BaseModel):
     # TODO: should explore sharing pydantic model w/ SqlAlchemy
     # triage inserts

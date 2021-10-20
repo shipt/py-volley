@@ -22,6 +22,7 @@ class QueueType(str, Enum):
 
 class Queue(BaseModel):
     value: str
+    model_schema: str
     type: QueueType
 
     # queue connection
@@ -60,7 +61,7 @@ def available_queues() -> Queues:
             _value = _t.render(env=kafka_env)
         else:
             _value = q["value"]
-        meta = Queue(value=_value, type=q["type"])
+        meta = Queue(value=_value, type=q["type"], model_schema=q["schema"])
         queues[q["name"]] = meta
 
     return Queues(queues=queues)

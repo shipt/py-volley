@@ -40,13 +40,10 @@ services:
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
         volumes:
             - ./:/app/
-        depends_on:
-            - redis
-            - kafka
-        # ports:
-        #     - 5678:5678
-        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py features  kafka rsmq
-        command: python main.py features
+        ports:
+            - 5678:5678
+        command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py features  kafka rsmq
+        # command: python main.py features
     triage:
         networks:
             - ml-bundle-engine_bundle-engine-net

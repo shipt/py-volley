@@ -6,7 +6,7 @@ from uuid import uuid4
 import requests
 
 from core.logging import logger
-from engine.component import bundle_engine
+from engine.engine import bundle_engine
 from engine.data_models import QueueMessage
 
 INPUT_QUEUE = "input-queue"

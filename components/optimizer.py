@@ -4,7 +4,7 @@ from typing import List, Tuple
 from uuid import uuid4
 
 from components.data_models import CollectorMessage
-from engine.component import bundle_engine
+from engine.engine import bundle_engine
 from engine.data_models import QueueMessage
 
 INPUT_QUEUE = "optimizer"

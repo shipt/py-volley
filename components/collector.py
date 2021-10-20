@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-from engine.component import bundle_engine
+from engine.engine import bundle_engine
 from engine.data_models import QueueMessage
 
 INPUT_QUEUE = "collector"

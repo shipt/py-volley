@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-from components.data_models import QueueMessage
 from core.logging import logger
+from engine.data_models import QueueMessage
 
 
 @dataclass  # type: ignore

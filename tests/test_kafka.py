@@ -1,5 +1,5 @@
-from components.data_models import QueueMessage
 from engine.consumer import Consumer
+from engine.data_models import QueueMessage
 from engine.producer import Producer
 
 

@@ -5,9 +5,9 @@ from uuid import uuid4
 
 import requests
 
-from components.data_models import QueueMessage
 from core.logging import logger
 from engine.component import bundle_engine
+from engine.data_models import QueueMessage
 
 INPUT_QUEUE = "input-queue"
 OUTPUT_QUEUES = ["triage"]

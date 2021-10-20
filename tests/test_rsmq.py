@@ -1,4 +1,4 @@
-from components.data_models import QueueMessage
+from engine.data_models import QueueMessage
 from engine.rsmq import BundleConsumer, BundleProducer
 
 

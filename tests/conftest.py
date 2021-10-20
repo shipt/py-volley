@@ -8,7 +8,8 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 from pytest import fixture
 
-from components.data_models import CollectorMessage, QueueMessage
+from components.data_models import CollectorMessage
+from engine.data_models import QueueMessage
 from engine.kafka import BundleConsumer as kafka_consumer
 from engine.kafka import BundleProducer as kafka_producer
 from engine.rsmq import BundleConsumer as rsmq_consumer

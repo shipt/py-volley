@@ -2,9 +2,9 @@ import os
 from functools import wraps
 from typing import Any, Dict, List, Tuple
 
-from components.data_models import QueueMessage
 from core.logging import logger
 from engine.consumer import Consumer
+from engine.data_models import QueueMessage
 from engine.producer import Producer
 from engine.queues import Queue, Queues, available_queues
 

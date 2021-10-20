@@ -3,8 +3,8 @@ from typing import List, Tuple
 from uuid import uuid4
 
 from components.data_models import CollectorMessage
-from engine.engine import bundle_engine
 from engine.data_models import QueueMessage
+from engine.engine import bundle_engine
 
 INPUT_QUEUE = "fallback"
 OUTPUT_QUEUES = ["collector"]

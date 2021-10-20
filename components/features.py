@@ -7,7 +7,7 @@ import requests
 
 from core.logging import logger
 from engine.component import bundle_engine
-from engine.data_models import BundleMessage
+from engine.data_models import QueueMessage
 
 INPUT_QUEUE = "input-queue"
 OUTPUT_QUEUES = ["triage"]
@@ -23,7 +23,7 @@ def fp_url_based_on_env() -> str:
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(message: BundleMessage) -> List[Tuple[str, BundleMessage]]:
+def main(message: QueueMessage) -> List[Tuple[str, QueueMessage]]:
     fp_responses = [
         requests.post(fp_url_based_on_env(), data=json.dumps(order))
         for order in message.message.get("orders")  # type: ignore

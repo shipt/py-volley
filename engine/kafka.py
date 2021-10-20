@@ -5,7 +5,7 @@ from pyshipt_streams import KafkaConsumer, KafkaProducer
 
 from core.logging import logger
 from engine.consumer import Consumer
-from engine.data_models import BundleMessage
+from engine.data_models import QueueMessage
 from engine.producer import Producer
 
 
@@ -18,7 +18,7 @@ class BundleConsumer(Consumer):
 
     def consume(
         self, queue_name: str = None, timeout: float = 60, poll_interval: float = 0.25
-    ) -> BundleMessage:
+    ) -> QueueMessage:
         if queue_name is None:
             queue_name = self.queue_name
         message = None
@@ -34,9 +34,7 @@ class BundleConsumer(Consumer):
                 if msg is None:
                     continue
                 else:
-                    return BundleMessage(
-                        message_id=str(message.offset()), params={}, message=msg
-                    )
+                    return QueueMessage(message_id=str(message.offset()), message=msg)
 
     def delete_message(self, queue_name: str, message_id: str = None) -> bool:
         # TODO: should we hard-commit here?
@@ -52,6 +50,6 @@ class BundleProducer(Producer):
     def __post_init__(self) -> None:
         self.p = KafkaProducer()
 
-    def produce(self, queue_name: str, message: BundleMessage) -> bool:
+    def produce(self, queue_name: str, message: QueueMessage) -> bool:
         self.p.publish(topic=queue_name, value=message.dict()["message"])
         return True

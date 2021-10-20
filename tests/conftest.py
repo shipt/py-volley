@@ -8,7 +8,8 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 from pytest import fixture
 
-from engine.data_models import BundleMessage, CollectorMessage
+from components.data_models import CollectorMessage
+from engine.data_models import QueueMessage
 from engine.kafka import BundleConsumer as kafka_consumer
 from engine.kafka import BundleProducer as kafka_producer
 from engine.rsmq import BundleConsumer as rsmq_consumer
@@ -37,10 +38,9 @@ def collector_message() -> CollectorMessage:
 
 
 @fixture
-def bundle_message() -> BundleMessage:
-    return BundleMessage(
+def bundle_message() -> QueueMessage:
+    return QueueMessage(
         message_id="123",
-        params={"timeout_seconds": 10},
         message={
             "engine_event_id": "123",
             "bundle_event_id": "abc",

@@ -7,7 +7,7 @@ from rsmq import RedisSMQ
 
 from core.logging import logger
 from engine.consumer import Consumer
-from engine.data_models import BundleMessage
+from engine.data_models import QueueMessage
 from engine.producer import Producer
 
 QUIET = bool(os.getenv("DEBUG", True))
@@ -22,7 +22,7 @@ class BundleConsumer(Consumer):
 
     def consume(
         self, queue_name: str, timeout: float = 30.0, poll_interval: float = 1
-    ) -> BundleMessage:
+    ) -> QueueMessage:
         msg = None
         while not isinstance(msg, dict):
             msg = (
@@ -31,8 +31,8 @@ class BundleConsumer(Consumer):
                 .execute()
             )
             if isinstance(msg, dict):
-                return BundleMessage(
-                    message_id=msg["id"], params={}, message=json.loads(msg["message"])
+                return QueueMessage(
+                    message_id=msg["id"], message=json.loads(msg["message"])
                 )
             else:
                 time.sleep(poll_interval)
@@ -53,7 +53,7 @@ class BundleProducer(Producer):
         self.queue = RedisSMQ(host=self.host, qname=self.queue_name)
         self.queue.createQueue(delay=0).vt(60).exceptions(False).execute()
 
-    def produce(self, queue_name: str, message: BundleMessage) -> bool:
+    def produce(self, queue_name: str, message: QueueMessage) -> bool:
         m = message.dict()["message"]
         logger.info(f"queue_name - {queue_name}")
         msg_id: str = self.queue.sendMessage(qname=queue_name, message=m).execute()

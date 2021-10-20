@@ -1,15 +1,16 @@
 from datetime import datetime, timedelta
 from typing import List, Tuple
 
+from components.data_models import CollectorMessage
 from engine.component import bundle_engine
-from engine.data_models import BundleMessage, CollectorMessage
+from engine.data_models import QueueMessage
 
 INPUT_QUEUE = "triage"
 OUTPUT_QUEUES = ["optimizer", "fallback", "collector"]  # , "shadow"]
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(message: BundleMessage) -> List[Tuple[str, BundleMessage]]:
+def main(message: QueueMessage) -> List[Tuple[str, QueueMessage]]:
     opt_message = message.copy()
     opt_message.message["triage"] = {"triage": ["a", "b"]}
 

@@ -2,15 +2,16 @@ from datetime import datetime
 from typing import List, Tuple
 from uuid import uuid4
 
+from components.data_models import CollectorMessage
 from engine.component import bundle_engine
-from engine.data_models import BundleMessage, CollectorMessage
+from engine.data_models import QueueMessage
 
 INPUT_QUEUE = "fallback"
 OUTPUT_QUEUES = ["collector"]
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(message: BundleMessage) -> List[Tuple[str, BundleMessage]]:
+def main(message: QueueMessage) -> List[Tuple[str, QueueMessage]]:
 
     falback_solution = {
         "bundles": ["order_1", "order2", "order_5", "order3"],

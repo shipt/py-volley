@@ -3,9 +3,7 @@ from engine.data_models import QueueMessage
 from engine.producer import Producer
 
 
-def test_kafka_producer(
-    mock_kafka_producer: Producer, bundle_message: QueueMessage
-) -> None:
+def test_kafka_producer(mock_kafka_producer: Producer, bundle_message: QueueMessage) -> None:
 
     assert mock_kafka_producer.produce(queue_name="test", message=bundle_message)
 

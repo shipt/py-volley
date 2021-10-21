@@ -17,7 +17,10 @@ class BundleConsumer(Consumer):
         self.c.subscribe([self.queue_name])
 
     def consume(
-        self, queue_name: str = None, timeout: float = 60, poll_interval: float = 0.25
+        self,
+        queue_name: str = None,
+        timeout: float = 60,
+        poll_interval: float = 0.25,
     ) -> QueueMessage:
         if queue_name is None:
             queue_name = self.queue_name

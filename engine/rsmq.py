@@ -20,27 +20,17 @@ class BundleConsumer(Consumer):
         # TODO: visibility timeout (vt) probably be configurable
         self.queue.createQueue(delay=0).vt(60).exceptions(False).execute()
 
-    def consume(
-        self, queue_name: str, timeout: float = 30.0, poll_interval: float = 1
-    ) -> QueueMessage:
+    def consume(self, queue_name: str, timeout: float = 30.0, poll_interval: float = 1) -> QueueMessage:
         msg = None
         while not isinstance(msg, dict):
-            msg = (
-                self.queue.receiveMessage(qname=queue_name, vt=timeout, quiet=QUIET)
-                .exceptions(False)
-                .execute()
-            )
+            msg = self.queue.receiveMessage(qname=queue_name, vt=timeout, quiet=QUIET).exceptions(False).execute()
             if isinstance(msg, dict):
-                return QueueMessage(
-                    message_id=msg["id"], message=json.loads(msg["message"])
-                )
+                return QueueMessage(message_id=msg["id"], message=json.loads(msg["message"]))
             else:
                 time.sleep(poll_interval)
 
     def delete_message(self, queue_name: str, message_id: str = None) -> bool:
-        result: bool = self.queue.deleteMessage(
-            qname=queue_name, id=message_id
-        ).execute()
+        result: bool = self.queue.deleteMessage(qname=queue_name, id=message_id).execute()
         return result
 
     def on_fail(self) -> None:

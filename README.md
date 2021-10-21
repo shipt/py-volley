@@ -1,14 +1,10 @@
-# ML Bundle Engine
-The ML bundle engine is an event driven series of processes & queues. 
-The engine intakes a Kafka message from the bundle request topic, makes a prediction with an ML model, runs an optimizer and outputs to a Kafka topic.
-
 [![Build Status](https://drone.shipt.com/api/badges/shipt/ml-bundle-engine/status.svg)](https://drone.shipt.com/shipt/ml-bundle-engine)
 
-## Maintainer(s)
- - @Jason
- - @AdamH
+# ML Bundle Engine
+The ML bundle engine is an event driven series of processes & queues. 
+The engine consumes a Kafka message containing a list of orders from the bundle request topic, enriches the orders by calling various machine learning models, then using one or more optimization services to group the orders into bundles. The bundles are produced to another Kafka topic.
 
-## Run locally
+# Run locally
 Acquire creds to pypi.shipt.com #ask-machine-learning
 
 Add these to your shell
@@ -37,7 +33,7 @@ Stop all services and data stores
 `make notebook` will spin up jupyer notebook. Open `./notebooks/publish_consume.ipynb`. Publish messages to the input topic and then consume data from the output topic.
 
 
-## Components
+# Components
 
 Components get implemented as a function decorated with the `bundle_engine`. A component consumes from one queue and can publish to one or many queues. 
 
@@ -94,12 +90,12 @@ class MessageB(ComponentMessage):
 
 import numpy as np
 
-@bundle_engine(input_queue="my_input", output_queues = ["queue_a", "queue_b"])
+@bundle_engine(input_queue="my_input", output_queues=["queue_a", "queue_b"])
 def my_component_function(input_object: ComponentMessage) -> List[(str, ComponentMessage)]
     """component function that computes some basics stats on a list of values
     
     Consumes from a queue named "my_input".
-    Publishes to two queues, "p
+    Publishes to two queues, "queue_a", "queue_b"
     """
 
     mean_value = np.mean(input_object.list_of_values)
@@ -107,12 +103,26 @@ def my_component_function(input_object: ComponentMessage) -> List[(str, Componen
 
     # queue_a expects an object of type MessageA
     output_a = MessageA(mean_value=mean_value)
+
     # queue_b expects an object of type MessageB
     output_b = MessageB(max_value=max_value)
 
     # send the messages to the specificed queues
     return [
-        ("output_a", output_a),
-        ("output_b", output_b)
+        ("queue_a", output_a),
+        ("queue_b", output_b)
     ]
+```
+
+Components are run as stand-alone workers.
+
+```python
+# main.py
+from components import my_component_function
+my_component_function()
+```
+
+Any be run by invoking the function.
+```bash
+python main.py
 ```

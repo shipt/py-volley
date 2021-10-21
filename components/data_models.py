@@ -3,20 +3,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from engine.data_models import ComponentMessage
 
-class InputMessage:
+
+class InputMessage(ComponentMessage):
     """input messages coming off kafka"""
 
     orders: str
 
 
-class CollectorMessage(BaseModel):
+class TriageMessage(ComponentMessage):
+    """message read in by the Triage component"""
+
+
+class CollectorMessage(ComponentMessage):
     # TODO: should explore sharing pydantic model w/ SqlAlchemy
     # triage inserts
     engine_event_id: str
     bundle_event_id: Optional[str]
     store_id: Optional[str]
     timeout: Optional[str]  # only used in Triage
+    event_type: Optional[str]  # enum values - [triage, fallback, optimizer]
 
     # fallback updates
     fallback_id: Optional[str] = None
@@ -31,6 +38,7 @@ class CollectorMessage(BaseModel):
     def fallback_dict(self) -> Dict[str, Any]:
         return {
             "event_type": "fallback",
+            "bundle_event_id": self.bundle_event_id,
             "engine_event_id": self.engine_event_id,
             "fallback_id": self.fallback_id,
             "fallback_results": self.fallback_results,
@@ -40,6 +48,7 @@ class CollectorMessage(BaseModel):
     def optimizer_dict(self) -> Dict[str, Any]:
         return {
             "event_type": "optimizer",
+            "bundle_event_id": self.bundle_event_id,
             "engine_event_id": self.engine_event_id,
             "optimizer_id": self.optimizer_id,
             "optimizer_results": self.optimizer_results,
@@ -55,10 +64,9 @@ class CollectorMessage(BaseModel):
         }
 
 
-class OutputMessage(BaseModel):
+class OutputMessage(ComponentMessage):
     engine_event_id: str
     bundle_event_id: str
-    store_id: str
     optimizer_type: str
 
     # TODO: List[Orders] or Dict[bundle_id: str, List[Orders]]
@@ -66,14 +74,7 @@ class OutputMessage(BaseModel):
     bundles: List[Any]
 
 
-class BaseMessage(BaseModel):
-    """base for messages that component functions read in. each message has at least"""
-
-    engine_event_id: str
-    bundle_event_id: Optional[str]
-
-
-class PublisherMessage(BaseMessage):
+class PublisherMessage(ComponentMessage):
     """schema for the message on the publisher queue (postgres) and read by the publisher component"""
 
     # TODO: should explore sharing pydantic model w/ SqlAlchemy

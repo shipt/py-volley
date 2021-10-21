@@ -1,13 +1,11 @@
 import importlib
 import os
 from functools import wraps
-from typing import Any, Dict, List, Tuple
-
-from pydantic.main import BaseModel
+from typing import Any, Dict, List, Tuple, Union
 
 from core.logging import logger
 from engine.consumer import Consumer
-from engine.data_models import QueueMessage
+from engine.data_models import ComponentMessage, QueueMessage
 from engine.producer import Producer
 from engine.queues import Queue, Queues, available_queues
 
@@ -85,11 +83,9 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
             # the component function is passed in as `func`
             # first setup the connections to the input and outputs queues that the component will need
             # we only want to set these up once, before the component is invoked
-            in_queue.q = get_consumer(
-                queue_type=in_queue.type, queue_name=in_queue.value
-            )
+            in_queue.q = get_consumer(queue_type=in_queue.type, queue_name=in_queue.value)
 
-            input_data_class: Any = load_schema_class(in_queue)
+            input_data_class: Union[Dict[str, Any], ComponentMessage] = load_schema_class(in_queue)
 
             for qname, q in out_queues.items():
                 q.q = get_producer(queue_name=q.value, queue_type=q.type)
@@ -101,13 +97,15 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
 
                 # convert in_message.message to the appropriate data model
                 if isinstance(input_data_class, dict):
-                    # if there's no schema, do nothing. leave the message as a dict
+                    # the queue/component expect a dict, do nothing. leave the message as a dict
                     continue
                 else:
                     # otherwise serialize to the components data model
-                    in_message.message = input_data_class(**in_message.message)
+                    serialized_message: Union[Dict[str, Any], ComponentMessage] = input_data_class(
+                        **in_message.message
+                    )  # type: ignore
 
-                outputs: List[Tuple[str, QueueMessage]] = func(in_message.message)
+                outputs: List[Tuple[str, QueueMessage]] = func(serialized_message)
 
                 for qname, m in outputs:
                     m = QueueMessage(message_id="", message=m.dict())
@@ -115,9 +113,7 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
                     try:
                         out_queue = out_queues[qname]
                     except KeyError:
-                        logger.exception(
-                            f"{qname} is not defined in this component's output queue list"
-                        )
+                        logger.exception(f"{qname} is not defined in this component's output queue list")
 
                     # typing of engine.queues.Queue.q makes this ambiguous and potentially error prone
                     try:
@@ -127,7 +123,8 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
                         status = False
                     if status:
                         in_queue.q.delete_message(
-                            queue_name=in_queue.value, message_id=in_message.message_id
+                            queue_name=in_queue.value,
+                            message_id=in_message.message_id,
                         )
                     else:
                         in_queue.q.on_fail()

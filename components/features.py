@@ -1,11 +1,12 @@
 import json
 import os
-from typing import Any, Dict, List, Tuple
+from typing import List, Tuple
 from uuid import uuid4
 
 import requests
 
 from core.logging import logger
+from engine.data_models import ComponentMessage
 from engine.engine import bundle_engine
 
 INPUT_QUEUE = "input-queue"
@@ -22,7 +23,8 @@ def fp_url_based_on_env() -> str:
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(message: Dict[str, Any]) -> List[Tuple[str, Dict[str, Any]]]:
+def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
+    message = in_message.dict()
     fp_responses = [
         requests.post(fp_url_based_on_env(), data=json.dumps(order)) for order in message.get("orders")  # type: ignore
     ]
@@ -30,6 +32,6 @@ def main(message: Dict[str, Any]) -> List[Tuple[str, Dict[str, Any]]]:
     # TODO: extract shop time from FP result and append to each order
     message["bundle_event_id"] = message["bundle_request_id"]
     message["engine_event_id"] = str(uuid4())
-    message["flight_plan_estimates"] = [response.json() for response in fp_responses]
 
-    return [("triage", message)]
+    output_message = ComponentMessage(**message)
+    return [("triage", output_message)]

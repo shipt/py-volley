@@ -1,7 +1,7 @@
 import importlib
 import os
 from functools import wraps
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple
 
 from core.logging import logger
 from engine.consumer import Consumer
@@ -85,7 +85,7 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
             # we only want to set these up once, before the component is invoked
             in_queue.q = get_consumer(queue_type=in_queue.type, queue_name=in_queue.value)
 
-            input_data_class: Union[Dict[str, Any], ComponentMessage] = load_schema_class(in_queue)
+            input_data_class: ComponentMessage = load_schema_class(in_queue)
 
             for qname, q in out_queues.items():
                 q.q = get_producer(queue_name=q.value, queue_type=q.type)
@@ -95,15 +95,7 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
 
                 in_message: QueueMessage = in_queue.q.consume(queue_name=in_queue.value)
 
-                # convert in_message.message to the appropriate data model
-                if isinstance(input_data_class, dict):
-                    # the queue/component expect a dict, do nothing. leave the message as a dict
-                    continue
-                else:
-                    # otherwise serialize to the components data model
-                    serialized_message: Union[Dict[str, Any], ComponentMessage] = input_data_class(
-                        **in_message.message
-                    )  # type: ignore
+                serialized_message: ComponentMessage = input_data_class(**in_message.message)  # type: ignore
 
                 outputs: List[Tuple[str, QueueMessage]] = func(serialized_message)
 

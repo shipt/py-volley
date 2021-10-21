@@ -13,9 +13,7 @@ class Consumer(ABC):
     queue_name: str
 
     @abstractmethod
-    def consume(
-        self, queue_name: str, timeout: float = 30, poll_interval: float = 1
-    ) -> QueueMessage:
+    def consume(self, queue_name: str, timeout: float = 30, poll_interval: float = 1) -> QueueMessage:
         """consumes a message to any queue. decodes from queue's data type to QueueMessage schema"""
 
     @abstractmethod

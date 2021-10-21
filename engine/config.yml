@@ -2,7 +2,7 @@ queues:
   - name: input-queue
     value: "{{ env }}.bus.ds-marketplace.v1.bundle_engine_input"
     type: kafka
-    schema: components.data_models.InputMessage
+    schema: dict
   - name: triage
     value: triage
     type: rsmq

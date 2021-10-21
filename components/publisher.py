@@ -1,7 +1,6 @@
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from components.data_models import OutputMessage
-from engine.data_models import QueueMessage
 from engine.engine import bundle_engine
 
 INPUT_QUEUE = "publisher"
@@ -9,11 +8,11 @@ OUTPUT_QUEUES = ["output-queue"]
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(message: QueueMessage) -> List[Tuple[str, QueueMessage]]:
+def main(message: Dict[str, Any]) -> List[Tuple[str, Dict[str, Any]]]:
     result_set = []
-    for m in message.message["results"]:
+    for m in message["results"]:
         # TODO: data model for results
-        if m["optimizer_results"]:
+        if m.get("optimizer_results"):
             name = "optimizer"
             bundled = m["optimizer_results"]["bundles"]
         else:
@@ -23,13 +22,9 @@ def main(message: QueueMessage) -> List[Tuple[str, QueueMessage]]:
         pm = OutputMessage(
             engine_event_id=m["engine_event_id"],
             bundle_event_id=m["bundle_event_id"],
-            store_id=m["store_id"],
             bundles=bundled,
             optimizer_type=name,
         )
 
-        bm = message.copy()
-        bm.message = pm.dict()
-
-        result_set.append(("output-queue", bm))
+        result_set.append(("output-queue", pm.dict()))
     return result_set

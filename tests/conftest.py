@@ -2,7 +2,7 @@ import json
 import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -19,6 +19,12 @@ os.environ["INPUT_QUEUE"] = "input"
 os.environ["OUTPUT_QUEUE"] = "output"
 os.environ["REDIS_HOST"] = "redis"
 os.environ["KAFKA_BROKERS"] = "kafka:9092"
+
+
+@fixture
+def input_message() -> Dict[str, Any]:
+    with open("./seed/input_message.json", "r") as f:
+        return json.load(f)  # type: ignore
 
 
 @fixture
@@ -62,7 +68,10 @@ def mock_rsmq_producer() -> rsmq_producer:
 
 @fixture
 def mock_rsmq_consumer() -> rsmq_consumer:
-    msg = {"id": "abc123", "message": json.dumps({"kafka": "message"}).encode("utf-8")}
+    msg = {
+        "id": "abc123",
+        "message": json.dumps({"kafka": "message"}).encode("utf-8"),
+    }
     with patch("engine.rsmq.RedisSMQ"):
         c = rsmq_consumer(
             host="redis",

@@ -99,6 +99,8 @@ class PGProducer(Producer):
             m = message.message
         else:
             m = message.message.dict()
+        # remove nulls
+        m = {k: v for k, v in m.items() if v is not None}
         event_type = m.pop("event_type")
         engine_event_id = m["engine_event_id"]
         logger.info(m)

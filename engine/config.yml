@@ -2,19 +2,19 @@ queues:
   - name: input-queue
     value: "{{ env }}.bus.ds-marketplace.v1.bundle_engine_input"
     type: kafka
-    schema: dict
+    schema: components.data_models.InputMessage
   - name: triage
     value: triage
     type: rsmq
-    schema: dict
+    schema: components.data_models.TriageMessage
   - name: optimizer
     value: optimizer
     type: rsmq
-    schema: dict
+    schema: components.data_models.ComponentMessage
   - name: fallback
     value: fallback
     type: rsmq
-    schema: dict
+    schema: components.data_models.ComponentMessage
   - name: collector
     value: collector
     type: rsmq

@@ -1,10 +1,13 @@
 from typing import Any, Dict, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Extra, Field
 
 
 class ComponentMessage(BaseModel):
     """base class for all inputs/outputs from a componet"""
+
+    class Config:
+        extra = Extra.allow
 
 
 class QueueMessage(BaseModel):

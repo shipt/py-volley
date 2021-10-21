@@ -1,14 +1,15 @@
 {
+    "before_claim": true,
     "order": {
         "id": "55668880",
-        "claimed_at": "1999-11-19T12:41:20.244Z",
+        "claimed_at": "2020-11-19T12:41:20.244Z",
         "created_at": "2020-11-19T12:04:13.373Z",
         "customer_address": {
             "id": 16108021
         },
         "customer_id": 11813524,
         "driver": {
-            "id": 999999
+            "id": 518564
         },
         "is_external_platform_order": true,
         "metro_id": 2,
@@ -196,5 +197,4 @@
         "updated_at": "2020-11-19T13:38:27.013161737Z",
         "zone_id": 1427
     },
-    "before_claim": false
 }

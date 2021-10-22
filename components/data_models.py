@@ -47,6 +47,23 @@ class CollectTriage(CollectorMessage):
     timeout: str
 
 
+class Bundle(BaseModel):
+    """defines an individual bundle"""
+
+    group_id: str
+    orders: List[str]
+
+    class Config:
+        schema_extra = {
+            "examples": [
+                {
+                    "group_id": "group_a",
+                    "orders": ["15855965", "158559635", "15812355965"],
+                }
+            ]
+        }
+
+
 class CollectOptimizer(CollectorMessage):
     """contains attributes for finished optimizers
     optimizer publishes its results to the collector in this format
@@ -54,7 +71,7 @@ class CollectOptimizer(CollectorMessage):
 
     event_type: str = "optimizer"
     optimizer_id: str
-    optimizer_results: Dict[str, Any]
+    optimizer_results: Dict[str, List[Bundle]]
     optimizer_finish: str
 
 
@@ -65,7 +82,7 @@ class CollectFallback(CollectorMessage):
 
     event_type: str = "fallback"
     fallback_id: str
-    fallback_results: Dict[str, Any]
+    fallback_results: Dict[str, List[Bundle]]
     fallback_finish: str
 
 
@@ -86,23 +103,6 @@ class PublisherMessage(ComponentMessage):
     # TODO: should explore sharing pydantic model w/ SqlAlchemy
     # triage inserts
     results: List[CollectorMessage]
-
-
-class Bundle(BaseModel):
-    """defines an individual bundle"""
-
-    group_id: str
-    orders: List[str]
-
-    class Config:
-        schema_extra = {
-            "examples": [
-                {
-                    "group_id": "group_a",
-                    "orders": ["15855965", "158559635", "15812355965"],
-                }
-            ]
-        }
 
 
 class OutputMessage(ComponentMessage):

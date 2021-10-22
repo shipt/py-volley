@@ -36,7 +36,6 @@ class CollectorMessage(ComponentMessage):
     # TODO: should explore sharing pydantic model w/ SqlAlchemy
     engine_event_id: str
     bundle_event_id: str
-    store_id: Optional[str]
 
 
 class CollectTriage(CollectorMessage):
@@ -73,7 +72,6 @@ class CollectFallback(CollectorMessage):
 class PublisherInput(ComponentMessage):
     engine_event_id: str
     bundle_event_id: str
-    store_id: Optional[str]
     optimizer_id: Optional[str]
     optimizer_results: Optional[Dict[str, Any]]
     optimizer_finish: Optional[str]
@@ -143,7 +141,6 @@ class Order(BaseModel):
     delivery_longitude: float = Field(example=-85.53964)
     total_items: int = Field(example="0")
     metro_id: str = Field(example="")
-    store_id: str = Field(example="")
     store_location_id: int = Field(example=2110)
     store_latitude: float = Field(example=42.99678)
     store_longitude: float = Field(example=-85.59336)

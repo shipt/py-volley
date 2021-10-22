@@ -5,7 +5,7 @@ The ML bundle engine is an event driven series of processes & queues.
 The engine consumes a Kafka message containing a list of orders from the bundle request topic, enriches the orders by calling various machine learning models, then using one or more optimization services to group the orders into bundles. The bundles are produced to another Kafka topic.
 
 # Run locally
-1. Install poetry with `pip install poetry` or following [poetry's official documentaton](https://python-poetry.org/docs/#osx--linux--bashonwindows-install-instructions)
+1. Install poetry with `pip install poetry` or follow [poetry's official documentaton](https://python-poetry.org/docs/#osx--linux--bashonwindows-install-instructions)
 
 2. Acquire creds to pypi.shipt.com #ask-machine-learning
 

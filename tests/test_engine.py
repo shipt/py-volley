@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from engine.component import get_consumer, get_producer
+from engine.engine import get_consumer, get_producer
 
 
 @patch("engine.kafka.KafkaConsumer")

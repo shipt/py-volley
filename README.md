@@ -5,28 +5,34 @@ The ML bundle engine is an event driven series of processes & queues.
 The engine consumes a Kafka message containing a list of orders from the bundle request topic, enriches the orders by calling various machine learning models, then using one or more optimization services to group the orders into bundles. The bundles are produced to another Kafka topic.
 
 # Run locally
-Acquire creds to pypi.shipt.com #ask-machine-learning
+1. Install poetry with `pip install poetry` or following [poetry's official documentaton](https://python-poetry.org/docs/#osx--linux--bashonwindows-install-instructions)
 
-Add these to your shell
+2. Acquire creds to pypi.shipt.com #ask-machine-learning
+
+3. Export these to your shell
 
 ```bash
 export POETRY_HTTP_BASIC_SHIPT_USERNAME=your_username
 export POETRY_HTTP_BASIC_SHIPT_PASSWORD=your_password
 ```
 
-Start all services and data stores
-`make run`
+4. Ensure [docker](https://docs.docker.com/get-docker/) is installed in your local environment.
 
-Stop all services and data stores
-`make stop`
+Start all services and data stores:
+
+`make run` - this spins up all the components listed below along with local instances of Kafka, Redis, and Postgres all running in Docker.
 
 - dummy_events: components/dummy_events.py - produces dummy kafka messages to an `input-topic` kafka
 - features: components/feature_generator.py - reads from `input-topic` kafka, publishes to `triage` queue
 - triage: components/triage.py - reads from `triage` queue, publishes to `optimizer` queue
 - optimizer: components/optimizer.py - reads from `optimizer` queue, publishes to `collector` or back to `optimizer` queue
 - fallback: components/fallback.py - reads from `fallback` queue, publishes to `collector` queue
-- collector: components/collector.py - reads from `collector` queue and publishes to `output-topic` kafka
+- collector: components/collector.py - reads from `collector` queue and publishes to `publisher` table in postgres
+- publisher: components/publisher.py - reads from the `publisher` table in postgre and produces to `output-topic` kafka
 - dummy_consumer: components/dummy_consimer.py - reads from `output-topic` kafka and logs to stddout
+
+Stop all services and data stores
+`make stop`
 
 ## Simulating Staging Data
 

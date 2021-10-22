@@ -1,29 +1,36 @@
 from datetime import datetime, timedelta
 from typing import List, Tuple
 
-from components.data_models import CollectorMessage
-from engine.component import bundle_engine
-from engine.data_models import QueueMessage
+from components.data_models import CollectTriage
+from engine.data_models import ComponentMessage
+from engine.engine import bundle_engine
 
 INPUT_QUEUE = "triage"
 OUTPUT_QUEUES = ["optimizer", "fallback", "collector"]  # , "shadow"]
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(message: QueueMessage) -> List[Tuple[str, QueueMessage]]:
-    opt_message = message.copy()
-    opt_message.message["triage"] = {"triage": ["a", "b"]}
+def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
+    message = in_message.dict()
 
-    c = CollectorMessage(
-        engine_event_id=message.message["engine_event_id"],
-        bundle_event_id=message.message["bundle_event_id"],
-        store_id=message.message["store_id"],
+    in_message.triage = {"triage": ["a", "b"]}  # type: ignore
+
+    t = CollectTriage(
+        engine_event_id=message["engine_event_id"],
+        bundle_event_id=message["bundle_event_id"],
+        store_id=message["store_id"],
         timeout=str(datetime.now() + timedelta(minutes=5)),
     )
-    message.message = c.dict()
-    message.message["event_type"] = "triage"
+
     return [
-        ("optimizer", opt_message),
-        ("fallback", opt_message),
-        ("collector", message),
+        ("optimizer", in_message),
+        ("fallback", in_message),
+        ("collector", t),
     ]
+
+
+# message = {
+#     "engine_event_id": "abc",
+#     "bundle_event_id": "abc123",
+#     "store_id": "store_a",
+# }

@@ -35,7 +35,10 @@ class PGConsumer(Consumer):
         self.session = Session(self.engine)
 
     def consume(
-        self, queue_name: str = None, timeout: float = 60, poll_interval: float = 2
+        self,
+        queue_name: str = None,
+        timeout: float = 60,
+        poll_interval: float = 2,
     ) -> QueueMessage:
         now = str(datetime.now())
         BATCH_SIZE = 1
@@ -92,7 +95,12 @@ class PGProducer(Producer):
         metadata_obj.create_all(self.engine)
 
     def produce(self, queue_name: str, message: QueueMessage) -> bool:
-        m = message.message
+        if isinstance(message.message, dict):
+            m = message.message
+        else:
+            m = message.message.dict()
+        # remove nulls
+        m = {k: v for k, v in m.items() if v is not None}
         event_type = m.pop("event_type")
         engine_event_id = m["engine_event_id"]
         logger.info(m)
@@ -101,11 +109,7 @@ class PGProducer(Producer):
             with self.engine.begin() as c:
                 c.execute(insert_stmt)
         elif event_type in ["fallback", "optimizer"]:
-            update_stmt = (
-                update(publisher)
-                .where(publisher.c.engine_event_id == engine_event_id)
-                .values(**m)
-            )
+            update_stmt = update(publisher).where(publisher.c.engine_event_id == engine_event_id).values(**m)
             with self.engine.begin() as c:
                 c.execute(update_stmt)
         return True

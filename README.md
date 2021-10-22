@@ -126,3 +126,11 @@ Any be run by invoking the function.
 ```bash
 python main.py
 ```
+
+# TODO: Engine Design
+## Queues
+
+## Producers/Consumers
+## Connectors
+
+## Data Stores

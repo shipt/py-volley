@@ -62,6 +62,8 @@ services:
         environment:
             - APP_ENV=localhost
             - REDIS_HOST=redis
+        ports:
+        - 8000:8000
         build:
             context: .
             dockerfile: Dockerfile

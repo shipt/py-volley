@@ -9,6 +9,21 @@ from engine.data_models import ComponentMessage
 class InputMessage(ComponentMessage):
     """input messages coming off kafka"""
 
+    bundle_request_id: str
+
+    # list of order id
+    orders: List[str]
+
+    class Config:
+        schema_extra = {
+            "examples": [
+                {
+                    "bundle_request_id": "request-id-1234",
+                    "orders": ["15855965", "158559635", "15812355965"],
+                }
+            ]
+        }
+
 
 class TriageMessage(ComponentMessage):
     """message read in by the Triage component"""
@@ -75,23 +90,42 @@ class PublisherMessage(ComponentMessage):
     results: List[CollectorMessage]
 
 
+class Bundle(BaseModel):
+    """defines an individual bundle"""
+
+    group_id: str
+    orders: List[str]
+
+    class Config:
+        schema_extra = {
+            "examples": [
+                {
+                    "group_id": "group_a",
+                    "orders": ["15855965", "158559635", "15812355965"],
+                }
+            ]
+        }
+
+
 class OutputMessage(ComponentMessage):
     """schema for messages leaving the bundle-engine and going to kafka for backend engineering"""
 
     engine_event_id: str
     bundle_event_id: str
-    optimizer_type: str
 
-    # TODO: List[Orders] or Dict[bundle_id: str, List[Orders]]
     # data model for output
-    bundles: List[Any]
+    bundles: List[Bundle]
 
-
-class Bundle(BaseModel):
-    """defines an individual bundle"""
-
-    group_id: str
-    orders: List[int]
+    class Config:
+        schema_extra = {
+            "examples": [
+                {
+                    "bundle_request_id": "request-id-1234",
+                    "engine_request_id": "uuid4-engine-internal",
+                    "bundles": [Bundle.schema()["examples"][0]],
+                }
+            ]
+        }
 
 
 class Order(BaseModel):

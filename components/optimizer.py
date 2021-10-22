@@ -15,10 +15,10 @@ OUTPUT_QUEUES = ["collector"]
 def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
     message = in_message.dict()
 
-    # TODO: data model for opt results
-    opt_solution = {
-        "bundles": ["order_1", "order2", "order_5", "order3"],
-        "other_data": "abc",
+    optimizer_solution = {
+        "bundles": [
+            {"group_id_1": ["order_1", "order2", "order_4"], "group_id_2": ["order_3"]},
+        ]
     }
 
     c = CollectOptimizer(
@@ -26,7 +26,7 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
         bundle_event_id=message["bundle_event_id"],
         optimizer_id=str(uuid4()),
         optimizer_finish=str(datetime.now()),
-        optimizer_results=opt_solution,
+        optimizer_results=optimizer_solution,
     )
 
     # artificially longer optimizer than other components

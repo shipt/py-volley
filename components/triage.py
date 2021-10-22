@@ -18,7 +18,6 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
     t = CollectTriage(
         engine_event_id=message["engine_event_id"],
         bundle_event_id=message["bundle_event_id"],
-        store_id=message["store_id"],
         timeout=str(datetime.now() + timedelta(minutes=5)),
     )
 
@@ -27,10 +26,3 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
         ("fallback", in_message),
         ("collector", t),
     ]
-
-
-# message = {
-#     "engine_event_id": "abc",
-#     "bundle_event_id": "abc123",
-#     "store_id": "store_a",
-# }

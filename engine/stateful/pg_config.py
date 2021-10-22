@@ -44,4 +44,4 @@ def get_eng() -> Engine:
         connection_str = "{}://{}:{}@{}:{}/{}".format(
             "postgresql", "postgres", "password", "postgres", 5432, "postgres"
         )
-    return create_engine(connection_str)
+    return create_engine(connection_str, connect_args={"connect_timeout": 2}, pool_pre_ping=True)

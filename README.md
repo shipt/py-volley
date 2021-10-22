@@ -93,6 +93,7 @@ class MessageB(ComponentMessage):
 
 ```python
 # components/my_component.py
+from engine.engine import bundle_engine
 
 import numpy as np
 
@@ -132,7 +133,7 @@ from components import my_component_function
 my_component_function()
 ```
 
-Any be run by invoking the function.
+And are run by invoking the function.
 ```bash
 python main.py
 ```

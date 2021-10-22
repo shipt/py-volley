@@ -26,7 +26,6 @@ publisher = Table(
     # triage inserts
     Column("engine_event_id", String(40), unique=True, nullable=False),
     Column("bundle_event_id", String(40), nullable=False),
-    Column("store_id", String(40), nullable=False),
     Column("timeout", DateTime, nullable=False),
     # fallback updates
     Column("fallback_id", String(40)),

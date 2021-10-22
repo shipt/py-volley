@@ -3,6 +3,7 @@ import time
 
 from pyshipt_streams import KafkaProducer
 
+from components.data_models import InputMessage
 from core.logging import logger
 from engine.queues import available_queues
 
@@ -14,8 +15,7 @@ def main() -> None:
     p = KafkaProducer()
     i = 0
     while True:
-        with open("./seed/input_message.json", "r") as file:
-            data = json.load(file)
+        data = InputMessage.schema()["examples"][0]
         p.publish(input_topic, data)
         logger.info(f"{data=}")
         time.sleep(10)

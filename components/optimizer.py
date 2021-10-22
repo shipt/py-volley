@@ -17,7 +17,8 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
 
     optimizer_solution = {
         "bundles": [
-            {"group_id_1": ["order_1", "order2", "order_4"], "group_id_2": ["order_3"]},
+            {"group_id": "g1234", "orders": ["order_1", "order2", "order_4"]},
+            {"group_id": "g1235", "orders": ["order_3"]},
         ]
     }
 

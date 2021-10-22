@@ -98,8 +98,12 @@ def my_component_function(input_object: ComponentMessage) -> List[(str, Componen
     Publishes to two queues, "queue_a", "queue_b"
     """
 
+    # we can access the input models attributes like any other pydantic model
     mean_value = np.mean(input_object.list_of_values)
-    max_value = max(input_object.list_of_values)
+
+    # or convert to a dict
+    input_dict = input_object.dict()
+    max_value = max(input_object["list_of_values"])
 
     # queue_a expects an object of type MessageA
     output_a = MessageA(mean_value=mean_value)

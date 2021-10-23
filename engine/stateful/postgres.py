@@ -31,8 +31,12 @@ class PGConsumer(Consumer):
         self.engine: Engine = get_eng()
         if os.getenv("APP_ENV") == "localhost":
             init_schema(self.engine)
+
+        # close make sure table is created
         metadata_obj.create_all(self.engine)
         self.session = Session(self.engine)
+        # close the session and transaction
+        self.session.close()
 
     def consume(
         self,
@@ -62,27 +66,19 @@ class PGConsumer(Consumer):
             records = [r._mapping for r in self.session.execute(text(sql))]
             if not records:
                 logger.info(f"No records - waiting {poll_interval}")
+                self.session.execute(text("ROLLBACK;"))
                 time.sleep(poll_interval)
 
-        # conn = self.engine.connect()
-        # query = delete(publisher)\
-        #         .with_for_update(skip_locked=False)\
-        #         .filter(
-        #             or_(publisher.c.timeout >= now, publisher.c.optimizer_id != None)
-        #         )
-        # session.execute(query)
-        # records = [row._mapping for row in conn.execute(query)]
-        # conn.close()
         return QueueMessage(message_id="None", message={"results": records})
 
     def delete_message(self, queue_name: str, message_id: str) -> bool:  # type: ignore
         # if all succeeds, commit the transaction
-        self.session.commit()
-        self.session.close()
+        self.session.execute(text("COMMIT;"))
         return True
 
     def on_fail(self) -> None:
-        self.session.close()
+        # rollback the DELETE transaction
+        self.session.execute(text("ROLLBACK;"))
 
 
 @dataclass

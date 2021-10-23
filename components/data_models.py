@@ -9,6 +9,21 @@ from engine.data_models import ComponentMessage
 class InputMessage(ComponentMessage):
     """input messages coming off kafka"""
 
+    bundle_request_id: str
+
+    # list of order id
+    orders: List[str]
+
+    class Config:
+        schema_extra = {
+            "examples": [
+                {
+                    "bundle_request_id": "request-id-1234",
+                    "orders": ["15855965", "158559635", "15812355965"],
+                }
+            ]
+        }
+
 
 class TriageMessage(ComponentMessage):
     """message read in by the Triage component"""
@@ -21,7 +36,6 @@ class CollectorMessage(ComponentMessage):
     # TODO: should explore sharing pydantic model w/ SqlAlchemy
     engine_event_id: str
     bundle_event_id: str
-    store_id: Optional[str]
 
 
 class CollectTriage(CollectorMessage):
@@ -33,6 +47,23 @@ class CollectTriage(CollectorMessage):
     timeout: str
 
 
+class Bundle(BaseModel):
+    """defines an individual bundle"""
+
+    group_id: str
+    orders: List[str]
+
+    class Config:
+        schema_extra = {
+            "examples": [
+                {
+                    "group_id": "group_a",
+                    "orders": ["15855965", "158559635", "15812355965"],
+                }
+            ]
+        }
+
+
 class CollectOptimizer(CollectorMessage):
     """contains attributes for finished optimizers
     optimizer publishes its results to the collector in this format
@@ -40,7 +71,7 @@ class CollectOptimizer(CollectorMessage):
 
     event_type: str = "optimizer"
     optimizer_id: str
-    optimizer_results: Dict[str, Any]
+    optimizer_results: Dict[str, List[Bundle]]
     optimizer_finish: str
 
 
@@ -51,14 +82,13 @@ class CollectFallback(CollectorMessage):
 
     event_type: str = "fallback"
     fallback_id: str
-    fallback_results: Dict[str, Any]
+    fallback_results: Dict[str, List[Bundle]]
     fallback_finish: str
 
 
 class PublisherInput(ComponentMessage):
     engine_event_id: str
     bundle_event_id: str
-    store_id: Optional[str]
     optimizer_id: Optional[str]
     optimizer_results: Optional[Dict[str, Any]]
     optimizer_finish: Optional[str]
@@ -80,18 +110,20 @@ class OutputMessage(ComponentMessage):
 
     engine_event_id: str
     bundle_event_id: str
-    optimizer_type: str
 
-    # TODO: List[Orders] or Dict[bundle_id: str, List[Orders]]
     # data model for output
-    bundles: List[Any]
+    bundles: List[Bundle]
 
-
-class Bundle(BaseModel):
-    """defines an individual bundle"""
-
-    group_id: str
-    orders: List[int]
+    class Config:
+        schema_extra = {
+            "examples": [
+                {
+                    "bundle_request_id": "request-id-1234",
+                    "engine_request_id": "uuid4-engine-internal",
+                    "bundles": [Bundle.schema()["examples"][0]],
+                }
+            ]
+        }
 
 
 class Order(BaseModel):
@@ -109,7 +141,6 @@ class Order(BaseModel):
     delivery_longitude: float = Field(example=-85.53964)
     total_items: int = Field(example="0")
     metro_id: str = Field(example="")
-    store_id: str = Field(example="")
     store_location_id: int = Field(example=2110)
     store_latitude: float = Field(example=42.99678)
     store_longitude: float = Field(example=-85.59336)

@@ -26,7 +26,6 @@ publisher = Table(
     # triage inserts
     Column("engine_event_id", String(40), unique=True, nullable=False),
     Column("bundle_event_id", String(40), nullable=False),
-    Column("store_id", String(40), nullable=False),
     Column("timeout", DateTime, nullable=False),
     # fallback updates
     Column("fallback_id", String(40)),
@@ -45,4 +44,4 @@ def get_eng() -> Engine:
         connection_str = "{}://{}:{}@{}:{}/{}".format(
             "postgresql", "postgres", "password", "postgres", 5432, "postgres"
         )
-    return create_engine(connection_str)
+    return create_engine(connection_str, connect_args={"connect_timeout": 2}, pool_pre_ping=True)

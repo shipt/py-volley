@@ -29,8 +29,7 @@ os.environ["KAFKA_BROKERS"] = "kafka:9092"
 
 @fixture
 def input_message() -> InputMessage:
-    with open("./seed/input_message.json", "r") as f:
-        d = json.load(f)
+    d = InputMessage.schema()["examples"][0]
     return InputMessage(**d)
 
 
@@ -39,7 +38,6 @@ def collector_triage_message() -> CollectTriage:
     return CollectTriage(
         engine_event_id="123",
         bundle_event_id="abc",
-        store_id="store_a",
         timeout=str(datetime.now() + timedelta(minutes=10)),
     )
 
@@ -49,9 +47,8 @@ def collector_fallback_message() -> CollectFallback:
     return CollectFallback(
         engine_event_id="123",
         bundle_event_id="abc",
-        store_id="store_a",
         fallback_id="id_1",
-        fallback_results={"bundles": ["bundle_a", "bundle_b"]},
+        fallback_results={"bundles": [{"group_id": "group_a", "orders": ["bundle_a", "bundle_b"]}]},
         fallback_finish=str(datetime.now() + timedelta(minutes=2)),
     )
 
@@ -61,9 +58,8 @@ def collector_optimizer_message() -> CollectOptimizer:
     return CollectOptimizer(
         engine_event_id="123",
         bundle_event_id="abc",
-        store_id="store_a",
         optimizer_id="id_2",
-        optimizer_results={"bundles": ["bundle_a", "bundle_b"]},
+        optimizer_results={"bundles": [{"group_id": "group_a", "orders": ["bundle_a", "bundle_b"]}]},
         optimizer_finish=str(datetime.now() + timedelta(minutes=4)),
     )
 
@@ -80,8 +76,7 @@ def bundle_message() -> QueueMessage:
         message={
             "engine_event_id": "123",
             "bundle_event_id": "abc",
-            "store_id": "store_a",
-            "orders": [1, 2, 3],
+            "orders": ["1", "2", "3"],
         },
     )
 

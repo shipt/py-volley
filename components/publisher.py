@@ -1,6 +1,8 @@
+from datetime import datetime
 from typing import List, Tuple
 
 from components.data_models import OutputMessage
+from core.logging import logger
 from engine.data_models import ComponentMessage
 from engine.engine import bundle_engine
 
@@ -10,6 +12,10 @@ INPUT_QUEUE = "publisher"
 OUTPUT_QUEUES = ["output-queue"]
 
 
+class TimeoutError(Exception):
+    pass
+
+
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
 def main(in_message: ComponentMessage) -> List[Tuple[str, OutputMessage]]:
     message = in_message.dict()
@@ -17,13 +23,21 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, OutputMessage]]:
     result_set = []
 
     for m in message["results"]:
-        # TODO: data model for results
+        engine_event_id = m["engine_event_id"]
+        bundle_request_id = m["bundle_event_id"]
+
         if m.get("optimizer_results"):
             name = "optimizer"
             bundled = m["optimizer_results"]["bundles"]
-        else:
+        elif m.get("fallback_results"):
             name = "fallback"
             bundled = m["fallback_results"]["bundles"]
+        else:
+            now = datetime.now()
+            if now > m["timeout"]:
+                msg = f"{engine_event_id=} - {bundle_request_id} expired without results"
+                logger.error(msg)
+                raise TimeoutError(msg)
 
         pm = OutputMessage(
             engine_event_id=m["engine_event_id"],

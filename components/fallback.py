@@ -15,8 +15,10 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
     message = in_message.dict()
 
     falback_solution = {
-        "bundles": ["order_1", "order2", "order_5", "order3"],
-        "other_data": "abc",
+        "bundles": [
+            {"group_id": "g1234", "orders": ["order_1", "order2", "order_4"]},
+            {"group_id": "g1235", "orders": ["order_3"]},
+        ]
     }
     c = CollectFallback(
         engine_event_id=message["engine_event_id"],

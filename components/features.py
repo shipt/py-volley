@@ -12,9 +12,9 @@ from engine.engine import bundle_engine
 INPUT_QUEUE = "input-queue"
 OUTPUT_QUEUES = ["triage"]
 FLIGHT_PLAN_URL = {
-    "localhost": "https://flight-plan-calculator.us-east-1.staging.shipt.com/calculate",
-    "staging": "https://flight-plan-calculator.us-east-1.staging.shipt.com/calculate",
-    "production": "https://flight-plan-calculator.us-east-1.shipt.com/calculate",
+    "localhost": "https://flight-plan-service.us-east-1.staging.shipt.com/v1/orders",
+    "staging": "https://flight-plan-service.us-east-1.staging.shipt.com/v1/orders",
+    "production": "https://flight-plan-service.us-east-1.shipt.com/v1/orders",
 }
 
 
@@ -26,7 +26,7 @@ def fp_url_based_on_env() -> str:
 def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
     message = in_message.dict()
     fp_responses = [
-        requests.post(fp_url_based_on_env(), data=json.dumps(order)) for order in message.get("orders")  # type: ignore
+        requests.get(f"{fp_url_based_on_env()}/{order}") for order in message.get("orders")  # type: ignore
     ]
     logger.info(f"Flight Plan Calculator estimates: {[response.json() for response in fp_responses]}")
     # TODO: extract shop time from FP result and append to each order

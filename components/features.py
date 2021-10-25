@@ -24,9 +24,7 @@ def fp_url_based_on_env() -> str:
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
 def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
     message = in_message.dict()
-    fp_responses = [
-        requests.get(f"{fp_url_based_on_env()}/{order}") for order in message.get("orders")  # type: ignore
-    ]
+    fp_responses = [requests.get(f"{fp_url_based_on_env()}/{order}") for order in message.get("orders")]  # type: ignore
     logger.info(f"Flight Plan Calculator estimates: {[response.json() for response in fp_responses]}")
     # TODO: extract shop time from FP result and append to each order
     message["bundle_event_id"] = message["bundle_request_id"]

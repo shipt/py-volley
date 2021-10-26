@@ -24,17 +24,29 @@ def fp_url_based_on_env() -> str:
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
 def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
     message = in_message.dict()
-    fp_responses = [requests.get(f"{fp_url_based_on_env()}/{order}") for order in message.get("orders")]  # type: ignore
-    logger.info(f"Flight Plan Calculator estimates: {[response.json() for response in fp_responses]}")
+
+    orders: List[int] = message["orders"]
+
+    results = {}
+    for order in orders:
+        resp = requests.get(f"{fp_url_based_on_env()}/{order}")
+        if resp.status_code == 200:
+            try:
+                fp_shop_time = resp.json()["before_claim"]["shop"]["minutes"]
+            except KeyError:
+                # TODO: add rollbar exception
+                logger.exception(f"No flight plan data for order: {order}")
+        else:
+            logger.exception(f"No flight plan for order: {order} using default shop time")
+            fp_shop_time = 20
+
+        _ = {"order_id": order, "shop_time": fp_shop_time}
+
+        results.update(_)
 
     message["bundle_event_id"] = message["bundle_request_id"]
     message["engine_event_id"] = str(uuid4())
-    message["enriched_orders"] = [
-        {
-            "order_id": response.json().get("order_id"),
-            "shop_time": response.json().get("before_claim").get("shop").get("minutes"),
-        }
-        for response in fp_responses
-    ]
+    message["enriched_orders"] = results
+
     output_message = ComponentMessage(**message)
     return [("triage", output_message)]

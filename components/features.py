@@ -32,8 +32,9 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
     message["enriched_orders"] = [
         {
             "order_id": response.json().get("order_id"),
-            "shop_time": response.json().get("before_claim").get("shop").get("minutes")
-        } for response in fp_responses
+            "shop_time": response.json().get("before_claim").get("shop").get("minutes"),
+        }
+        for response in fp_responses
     ]
     output_message = ComponentMessage(**message)
     return [("triage", output_message)]

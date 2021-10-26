@@ -26,9 +26,14 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
     message = in_message.dict()
     fp_responses = [requests.get(f"{fp_url_based_on_env()}/{order}") for order in message.get("orders")]  # type: ignore
     logger.info(f"Flight Plan Calculator estimates: {[response.json() for response in fp_responses]}")
-    # TODO: extract shop time from FP result and append to each order
+
     message["bundle_event_id"] = message["bundle_request_id"]
     message["engine_event_id"] = str(uuid4())
-
+    message["enriched_orders"] = [
+        {
+            "order_id": response.json().get("order_id"),
+            "shop_time": response.json().get("before_claim").get("shop").get("minutes")
+        } for response in fp_responses
+    ]
     output_message = ComponentMessage(**message)
     return [("triage", output_message)]

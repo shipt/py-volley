@@ -46,7 +46,6 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
             rollbar.report_exc_info()
             raise Exception(f"No flight plan for order: {order}")
 
-
     message["bundle_event_id"] = message["bundle_request_id"]
     message["engine_event_id"] = str(uuid4())
     message["enriched_orders"] = results

@@ -9,7 +9,7 @@ The engine consumes a Kafka message containing a list of orders from the bundle 
 
 2. Acquire creds to pypi.shipt.com #ask-machine-learning
 
-3. Export these to your shell
+3. Export these to your shell 
 
 ```bash
 export POETRY_HTTP_BASIC_SHIPT_USERNAME=your_username

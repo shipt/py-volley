@@ -3,6 +3,7 @@ from typing import List, Tuple
 from uuid import uuid4
 
 import requests
+import rollbar
 
 from core.logging import logger
 from engine.data_models import ComponentMessage
@@ -34,11 +35,12 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
             try:
                 fp_shop_time = resp.json()["before_claim"]["shop"]["minutes"]
             except KeyError:
-                # TODO: add rollbar exception
                 logger.exception(f"No flight plan data for order: {order}")
+                rollbar.report_exc_info()
         else:
-            logger.exception(f"No flight plan for order: {order} using default shop time")
-            fp_shop_time = 20
+            # NOTE: fail hard if we do not get details from flight plan service
+            rollbar.report_exc_info()
+            raise Exception(f"No flight plan for order: {order} using default shop time")
 
         _ = {"order_id": order, "shop_time": fp_shop_time}
 

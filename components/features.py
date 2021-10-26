@@ -37,14 +37,15 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
             except KeyError:
                 logger.exception(f"No flight plan data for order: {order}")
                 rollbar.report_exc_info()
+                continue
+            finally:
+                _ = {"order_id": order, "shop_time": fp_shop_time}
+                results.update(_)
         else:
             # NOTE: fail hard if we do not get details from flight plan service
             rollbar.report_exc_info()
-            raise Exception(f"No flight plan for order: {order} using default shop time")
+            raise Exception(f"No flight plan for order: {order}")
 
-        _ = {"order_id": order, "shop_time": fp_shop_time}
-
-        results.update(_)
 
     message["bundle_event_id"] = message["bundle_request_id"]
     message["engine_event_id"] = str(uuid4())

@@ -19,7 +19,7 @@ class InputMessage(ComponentMessage):
             "examples": [
                 {
                     "bundle_request_id": "request-id-1234",
-                    "orders": ["15855965", "16578146", "1"],
+                    "orders": ["15855965", "16578146",],
                 }
             ]
         }

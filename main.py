@@ -1,6 +1,10 @@
+import os
 import sys
 
+import rollbar
+
 if __name__ == "__main__":
+    rollbar.init(os.getenv("ROLLBAR_TOKEN"), os.getenv("APP_ENV"))
     # TODO: can we get rid of this file entirely? just call each component.py directly? 
     component = sys.argv[1]
 

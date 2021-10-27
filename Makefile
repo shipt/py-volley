@@ -71,7 +71,7 @@ test.shell:
 test.shell.debug:
 	docker-compose run --entrypoint /bin/bash unit-tests
 test.unit: setup
-	poetry run coverage run -m pytest \
+	poetry run coverage run -m pytest -s \
 			--ignore=tests/integration \
             --cov=./ \
             --cov-report=xml:cov.xml \

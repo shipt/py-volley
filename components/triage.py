@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import List, Tuple
 
-from components.data_models import CollectTriage
+from components.data_models import CollectTriage, TriageMessage
 from engine.data_models import ComponentMessage
 from engine.engine import bundle_engine
 
@@ -12,7 +12,7 @@ OPT_TIMEOUT_SECONDS = 60
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
+def main(in_message: TriageMessage) -> List[Tuple[str, ComponentMessage]]:
     message = in_message.dict()
 
     in_message.triage = {"triage": ["a", "b"]}  # type: ignore

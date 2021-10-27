@@ -24,7 +24,7 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, OutputMessage]]:
 
     for m in message["results"]:
         engine_event_id = m["engine_event_id"]
-        bundle_request_id = m["bundle_event_id"]
+        bundle_request_id = m["bundle_request_id"]
 
         if m.get("optimizer_results"):
             name = "optimizer"
@@ -38,10 +38,12 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, OutputMessage]]:
                 msg = f"{engine_event_id=} - {bundle_request_id} expired without results"
                 logger.error(msg)
                 raise TimeoutError(msg)
+            else:
+                continue
 
         pm = OutputMessage(
             engine_event_id=m["engine_event_id"],
-            bundle_event_id=m["bundle_event_id"],
+            bundle_request_id=m["bundle_request_id"],
             bundles=bundled,
             optimizer_type=name,
         )

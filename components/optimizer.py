@@ -24,7 +24,7 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
 
     c = CollectOptimizer(
         engine_event_id=message["engine_event_id"],
-        bundle_event_id=message["bundle_event_id"],
+        bundle_request_id=message["bundle_request_id"],
         optimizer_id=str(uuid4()),
         optimizer_finish=str(datetime.now()),
         optimizer_results=optimizer_solution,

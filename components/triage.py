@@ -10,6 +10,7 @@ OUTPUT_QUEUES = ["optimizer", "fallback", "collector"]  # , "shadow"]
 
 OPT_TIMEOUT_SECONDS = 60
 
+
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
 def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
     message = in_message.dict()

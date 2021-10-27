@@ -29,7 +29,14 @@ class InputMessage(ComponentMessage):
 
 
 class TriageMessage(ComponentMessage):
-    """message read in by the Triage component"""
+    """message read in by the Triage component
+
+    Currently output by Features component
+    """
+
+    enriched_orders: List[Dict[str, Any]]
+    bundle_request_id: str
+    engine_event_id: str
 
 
 # COLLECTOR

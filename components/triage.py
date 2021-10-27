@@ -8,6 +8,7 @@ from engine.engine import bundle_engine
 INPUT_QUEUE = "triage"
 OUTPUT_QUEUES = ["optimizer", "fallback", "collector"]  # , "shadow"]
 
+OPT_TIMEOUT_SECONDS = 60
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
 def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
@@ -17,8 +18,8 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
 
     t = CollectTriage(
         engine_event_id=message["engine_event_id"],
-        bundle_event_id=message["bundle_event_id"],
-        timeout=str(datetime.now() + timedelta(minutes=5)),
+        bundle_request_id=message["bundle_request_id"],
+        timeout=str(datetime.now() + timedelta(seconds=OPT_TIMEOUT_SECONDS)),
     )
 
     return [

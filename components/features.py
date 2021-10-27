@@ -30,7 +30,6 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
     ]
     logger.info(f"Flight Plan Calculator estimates: {[response.json() for response in fp_responses]}")
     # TODO: extract shop time from FP result and append to each order
-    message["bundle_event_id"] = message["bundle_request_id"]
     message["engine_event_id"] = str(uuid4())
 
     output_message = ComponentMessage(**message)

@@ -28,6 +28,12 @@ os.environ["KAFKA_BROKERS"] = "kafka:9092"
 
 
 @fixture
+def bunk_input_message() -> InputMessage:
+    f = InputMessage(bundle_request_id="a1234", orders=["1"])
+    return f
+
+
+@fixture
 def input_message() -> InputMessage:
     d = InputMessage.schema()["examples"][0]
     return InputMessage(**d)

@@ -34,13 +34,12 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
         if resp.status_code == 200:
             try:
                 fp_shop_time = resp.json()["before_claim"]["shop"]["minutes"]
+                _ = {"order_id": order, "shop_time": fp_shop_time}
+                results.update(_)
             except KeyError:
                 logger.exception(f"No flight plan data for order: {order}")
                 rollbar.report_exc_info()
                 continue
-            finally:
-                _ = {"order_id": order, "shop_time": fp_shop_time}
-                results.update(_)
         else:
             # NOTE: fail hard if we do not get details from flight plan service
             rollbar.report_exc_info()

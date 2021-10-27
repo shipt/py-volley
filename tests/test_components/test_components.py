@@ -1,4 +1,7 @@
 from typing import Any, Dict
+from unittest.mock import patch
+
+import pytest
 
 from components.collector import main as collector
 from components.data_models import (
@@ -22,6 +25,20 @@ def test_features(input_message: InputMessage) -> None:
     for qname, message in outputs:
         assert qname == "triage"
         assert isinstance(message, ComponentMessage)
+
+
+def test_bunk_order_id(bunk_input_message: InputMessage) -> None:
+    with pytest.raises(Exception):
+        outputs = features.__wrapped__(bunk_input_message)  # NOQA: F841
+
+
+def test_bunk_fp_response(input_message: InputMessage, capfd) -> None:  # type: ignore
+    with patch("components.features.requests.get") as bunk_fp_response:
+        bunk_fp_response.return_value.status_code = 200
+        bunk_fp_response.return_value.json = lambda: {"order_id": 1}
+        outputs = features.__wrapped__(input_message)  # NOQA: F841
+        out, err = capfd.readouterr()
+        assert "No flight plan data for order: 15855965" in out
 
 
 def test_triage(input_message: InputMessage) -> None:

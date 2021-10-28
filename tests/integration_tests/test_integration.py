@@ -48,3 +48,5 @@ def test_end_to_end() -> None:
     for _id in request_ids:
         # assert all ids we produced were in the list we consumed
         assert _id in conusumed_ids
+    
+    assert len(request_ids) == len(conusumed_ids)

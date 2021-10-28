@@ -1,0 +1,94 @@
+version: '3'
+services:
+    features:
+        container_name: features
+        environment:
+            - APP_ENV=localhost
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - KAFKA_BROKERS=kafka:29092
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
+                SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        volumes:
+            - ./:/app/
+        command: python main.py features
+    triage:
+        container_name: triage
+        environment:
+            - APP_ENV=localhost
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
+                SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        volumes:
+            - ./:/app/
+        command: python main.py triage
+    optimizer:
+        container_name: optimizer
+        environment:
+            - APP_ENV=localhost
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
+                SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        volumes:
+            - ./:/app/
+        command: python main.py optimizer
+    fallback:
+        container_name: fallback
+        environment:
+            - APP_ENV=localhost
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
+                SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        volumes:
+            - ./:/app/
+        command: python main.py fallback
+    collector:
+        container_name: collector
+        environment:
+            - APP_ENV=localhost
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
+                SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        volumes:
+            - ./:/app/
+        command: python main.py collector
+    publisher:
+        container_name: publisher
+        environment:
+            - APP_ENV=localhost
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - KAFKA_BROKERS=kafka:29092
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
+                SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        volumes:
+            - ./:/app/
+        command: python main.py publisher

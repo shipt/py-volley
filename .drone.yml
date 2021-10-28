@@ -49,6 +49,7 @@ steps:
     commands:
     - apk add make
     - sed -i -e "/volumes:/d" -e "/^.*\/app/d" docker-compose.yml
+    - cat docker-compose.yml
     - make test.integration
 
   - name: docker-prep

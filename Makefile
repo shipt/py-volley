@@ -84,10 +84,10 @@ run.dummy.components:
 	docker compose up -d dummy_events dummy_consumer
 
 run.components:
-	docker compose up -d features triage optimizer fallback collector publisher
+	docker-compose up -d features triage optimizer fallback collector publisher
 
 run.datastores:
-	docker compose up -d postgres redis kafka zookeeper
+	docker-compose up -d postgres redis kafka zookeeper
 
 run:
 	docker compose up --build -d

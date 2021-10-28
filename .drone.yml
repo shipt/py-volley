@@ -47,7 +47,7 @@ steps:
     commands:
     - docker-compose -f test-compose.yml up --build -d
     - sleep 10
-    - docker-compose exec -T features pytest tests/integration_tests/test_integration.py
+    - docker-compose exec -f test-compose.yml -T features pytest tests/integration_tests/test_integration.py
     - docker-compose down
 
   - name: docker-prep

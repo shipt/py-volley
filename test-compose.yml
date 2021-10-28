@@ -3,7 +3,6 @@ services:
     setup:
         networks:
         - src_bundle-engine-net
-        container_name: features
         environment:
             - APP_ENV=localhost
             - KAFKA_BROKERS=kafka:29092
@@ -17,7 +16,6 @@ services:
     features:
         networks:
         - src_bundle-engine-net
-        container_name: features
         environment:
             - APP_ENV=localhost
             - REDIS_HOST=redis
@@ -33,7 +31,6 @@ services:
     triage:
         networks:
         - src_bundle-engine-net
-        container_name: triage
         environment:
             - APP_ENV=localhost
             - REDIS_HOST=redis
@@ -48,7 +45,6 @@ services:
     optimizer:
         networks:
         - src_bundle-engine-net
-        container_name: optimizer
         environment:
             - APP_ENV=localhost
             - REDIS_HOST=redis
@@ -63,7 +59,6 @@ services:
     fallback:
         networks:
         - src_bundle-engine-net
-        container_name: fallback
         environment:
             - APP_ENV=localhost
             - REDIS_HOST=redis
@@ -78,7 +73,6 @@ services:
     collector:
         networks:
         - src_bundle-engine-net
-        container_name: collector
         environment:
             - APP_ENV=localhost
             - REDIS_HOST=redis
@@ -93,7 +87,6 @@ services:
     publisher:
         networks:
         - src_bundle-engine-net
-        container_name: publisher
         environment:
             - APP_ENV=localhost
             - REDIS_HOST=redis

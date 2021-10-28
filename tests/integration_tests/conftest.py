@@ -1,9 +1,14 @@
 import logging
+import time
+
 import os
 
 import confluent_kafka.admin
 
 logger = logging.getLogger(__name__)
+
+# time for Kafka broker to init
+time.sleep(10)
 
 input_topic = "localhost.bus.ds-marketplace.v1.bundle_engine_input"
 output_topic = "localhost.bus.ds-marketplace.v1.bundle_engine_output"

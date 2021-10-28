@@ -45,6 +45,7 @@ steps:
       POETRY_HTTP_BASIC_SHIPT_PASSWORD:
         from_secret: SHIPT_PYPI_PASSWORD
     commands:
+    - docker-compose -f data-stores.yml -f test-compose.yml down --remove-orphans
     - docker-compose -f data-stores.yml up -d zookeeper kafka redis postgres
     - docker-compose -f test-compose.yml up --build -d
     - sleep 2

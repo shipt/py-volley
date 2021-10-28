@@ -94,7 +94,6 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
             while RUN:
 
                 in_message: QueueMessage = in_queue.q.consume(queue_name=in_queue.value)
-
                 serialized_message: ComponentMessage = input_data_class(**in_message.message)  # type: ignore
 
                 outputs: List[Tuple[str, QueueMessage]] = func(serialized_message)

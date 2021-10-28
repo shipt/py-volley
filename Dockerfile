@@ -13,11 +13,12 @@ COPY poetry.lock pyproject.toml /app/
 
 RUN pip3 install poetry==1.1.11
 
+RUN poetry config virtualenvs.create false
+
 FROM base as prod
-RUN poetry config virtualenvs.create false \
-    &&  poetry install --no-dev
+RUN poetry install --no-dev
 COPY . /app/
 
-FROM prod as dev
-RUN poetry config virtualenvs.create false \
-    &&  poetry install
+FROM base as dev
+RUN poetry install
+COPY . /app/

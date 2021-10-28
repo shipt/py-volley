@@ -1,8 +1,6 @@
 version: '3.5'
 services:
     dummy_events:
-        networks:
-            - bundle-engine
         container_name: dummy_events
         environment:
             - APP_ENV=localhost
@@ -16,15 +14,16 @@ services:
             args:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        depends_on:
+            - kafka
         volumes:
             - ./:/app/ 
         # ports:
         #     - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py dummy_events
         command: python main.py dummy_events
+
     features:
-        networks:
-            - bundle-engine
         container_name: features
         environment:
             - APP_ENV=localhost
@@ -38,15 +37,17 @@ services:
             args:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        depends_on:
+            - kafka
+            - redis
         volumes:
             - ./:/app/
 #         ports:
 #             - 5678:5678
 #         command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py features  kafka rsmq
         command: python main.py features
+
     triage:
-        networks:
-            - bundle-engine
         container_name: triage
         environment:
             - APP_ENV=localhost
@@ -59,15 +60,16 @@ services:
             args:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        depends_on:
+            - redis
         volumes:
             - ./:/app/
         # ports:
         #     - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py triage
         command: python main.py triage
+
     optimizer:
-        networks:
-            - bundle-engine
         container_name: optimizer
         environment:
             - APP_ENV=localhost
@@ -80,15 +82,16 @@ services:
             args:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        depends_on:
+            - redis
         volumes:
             - ./:/app/
         # ports:
         #     - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py optimizer
         command: python main.py optimizer
+
     fallback:
-        networks:
-            - bundle-engine
         container_name: fallback
         environment:
             - APP_ENV=localhost
@@ -103,13 +106,14 @@ services:
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
         volumes:
             - ./:/app/
+        depends_on:
+            - redis
         # ports:
         #     - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py fallback
         command: python main.py fallback
+
     collector:
-        networks:
-            - bundle-engine
         container_name: collector
         environment:
             - APP_ENV=localhost
@@ -122,15 +126,17 @@ services:
             args:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        depends_on:
+            - redis
+            - postgres
         volumes:
             - ./:/app/
         # ports:
         #     - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py collector
         command: python main.py collector
+
     publisher:
-        networks:
-            - bundle-engine
         container_name: publisher
         environment:
             - APP_ENV=localhost
@@ -146,14 +152,15 @@ services:
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
         volumes:
             - ./:/app/
+        depends_on:
+            - postgres
+            - kafka
         # ports:
         #     - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py publisher
         command: python main.py publisher
+
     dummy_consumer:
-        
-        networks:
-            - bundle-engine
         container_name: dummy_consumer
         environment:
             - APP_ENV=localhost
@@ -169,10 +176,78 @@ services:
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
         volumes:
             - ./:/app/
+        depends_on:
+            - kafka
         # ports:
         #     - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py dummy_consumer
         command: python main.py dummy_consumer
-networks:
-  bundle-engine:
-    external: true
+
+    redis:
+        container_name: redis
+        image: redis:latest
+        ports:
+            - 6379:6379
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 5s
+            timeout: 30s
+            retries: 50
+
+    postgres:
+        restart: always
+        image: postgres:12.3
+        container_name: postgres
+        ports:
+            - 5432:5432
+        environment:
+            POSTGRES_PASSWORD: password
+
+    zookeeper:
+        image: confluentinc/cp-zookeeper:latest
+        ports:
+            - "2181:2181"
+        environment:
+            ZOOKEEPER_CLIENT_PORT: 2181
+            ZOOKEEPER_TICK_TIME: 2000
+            KAFKA_JMX_PORT: 39999
+
+    kafka:
+        image: confluentinc/cp-kafka:latest
+        container_name: kafka
+        restart: always
+        depends_on:
+            - zookeeper
+        ports:
+            - "9092:9092"
+            - "7071:7071"
+            - "49999:49999"
+        # https://rmoff.net/2018/08/02/kafka-listeners-explained/
+        environment:
+            KAFKA_BROKER_ID: 1
+            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+            KAFKA_JMX_PORT: 49999
+
+    metrics:
+        container_name: metrics
+        environment:
+            - APP_ENV=localhost
+            - REDIS_HOST=redis
+        ports:
+        - 8000:8000
+        build:
+            target: prod
+            context: .
+            dockerfile: Dockerfile
+            args:
+                SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
+                SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        volumes:
+            - ./:/app/
+        depends_on:
+            - redis
+        command: uvicorn monitoring.monitoring:app

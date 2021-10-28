@@ -1,6 +1,8 @@
 version: '3'
 services:
     features:
+        networks:
+        - src_bundle-engine-net
         container_name: features
         environment:
             - APP_ENV=localhost
@@ -15,6 +17,8 @@ services:
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
         command: python main.py features
     triage:
+        networks:
+        - src_bundle-engine-net
         container_name: triage
         environment:
             - APP_ENV=localhost
@@ -28,6 +32,8 @@ services:
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
         command: python main.py triage
     optimizer:
+        networks:
+        - src_bundle-engine-net
         container_name: optimizer
         environment:
             - APP_ENV=localhost
@@ -41,6 +47,8 @@ services:
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
         command: python main.py optimizer
     fallback:
+        networks:
+        - src_bundle-engine-net
         container_name: fallback
         environment:
             - APP_ENV=localhost
@@ -54,6 +62,8 @@ services:
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
         command: python main.py fallback
     collector:
+        networks:
+        - src_bundle-engine-net
         container_name: collector
         environment:
             - APP_ENV=localhost
@@ -67,6 +77,8 @@ services:
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
         command: python main.py collector
     publisher:
+        networks:
+        - src_bundle-engine-net
         container_name: publisher
         environment:
             - APP_ENV=localhost
@@ -80,3 +92,6 @@ services:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
         command: python main.py publisher
+networks:
+  src_bundle-engine-net:
+    external: true

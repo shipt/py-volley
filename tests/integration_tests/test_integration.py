@@ -17,15 +17,15 @@ def test_end_to_end() -> None:
     i = 0
     data = InputMessage.schema()["examples"][0]
     test_messages = 5
-    request_ids = [str(uuid4()) for x in range(test_messages)]
+    request_ids = [f"test_{x}_{str(uuid4())[:5]}" for x in range(test_messages)]
     for req_id in request_ids:
         data["bundle_request_id"] = req_id
         p.publish(produce_topic, data)
 
     consume_topic = queues.queues["output-queue"].value
     logger.info(f"{consume_topic=}")
-    c = KafkaConsumer(consumer_group="group1")
-
+    c = KafkaConsumer(consumer_group="int-test-group")
+    c.subscribe([consume_topic])
     start = time.time()
     # wait 30 seconds max for messages to reach output topic
     consumed_messages = []

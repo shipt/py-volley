@@ -100,6 +100,8 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
                 outputs: List[Tuple[str, QueueMessage]] = func(serialized_message)
 
                 for qname, m in outputs:
+                    if m is None:
+                        continue
                     m = QueueMessage(message_id="", message=m.dict())
 
                     try:

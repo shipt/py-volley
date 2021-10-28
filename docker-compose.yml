@@ -1,8 +1,8 @@
-version: '3'
+version: '3.5'
 services:
     dummy_events:
         networks:
-            - ml-bundle-engine_bundle-engine-net
+            - bundle-engine
         container_name: dummy_events
         environment:
             - APP_ENV=localhost
@@ -16,16 +16,14 @@ services:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
         volumes:
-            - ./:/app/
-        depends_on:
-            - kafka
+            - ./:/app/ 
         # ports:
         #     - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py dummy_events
         command: python main.py dummy_events
     features:
         networks:
-            - ml-bundle-engine_bundle-engine-net
+            - bundle-engine
         container_name: features
         environment:
             - APP_ENV=localhost
@@ -46,7 +44,7 @@ services:
         command: python main.py features
     triage:
         networks:
-            - ml-bundle-engine_bundle-engine-net
+            - bundle-engine
         container_name: triage
         environment:
             - APP_ENV=localhost
@@ -60,15 +58,13 @@ services:
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
         volumes:
             - ./:/app/
-        depends_on:
-            - redis
         # ports:
         #     - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py triage
         command: python main.py triage
     optimizer:
         networks:
-            - ml-bundle-engine_bundle-engine-net
+            - bundle-engine
         container_name: optimizer
         environment:
             - APP_ENV=localhost
@@ -82,15 +78,13 @@ services:
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
         volumes:
             - ./:/app/
-        depends_on:
-            - redis
         # ports:
         #     - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py optimizer
         command: python main.py optimizer
     fallback:
         networks:
-            - ml-bundle-engine_bundle-engine-net
+            - bundle-engine
         container_name: fallback
         environment:
             - APP_ENV=localhost
@@ -104,15 +98,13 @@ services:
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
         volumes:
             - ./:/app/
-        depends_on:
-            - redis
         # ports:
         #     - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py fallback
         command: python main.py fallback
     collector:
         networks:
-            - ml-bundle-engine_bundle-engine-net
+            - bundle-engine
         container_name: collector
         environment:
             - APP_ENV=localhost
@@ -132,7 +124,7 @@ services:
         command: python main.py collector
     publisher:
         networks:
-            - ml-bundle-engine_bundle-engine-net
+            - bundle-engine
         container_name: publisher
         environment:
             - APP_ENV=localhost
@@ -153,7 +145,7 @@ services:
         command: python main.py publisher
     dummy_consumer:
         networks:
-            - ml-bundle-engine_bundle-engine-net
+            - bundle-engine
         container_name: dummy_consumer
         environment:
             - APP_ENV=localhost
@@ -173,5 +165,5 @@ services:
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py dummy_consumer
         command: python main.py dummy_consumer
 networks:
-  ml-bundle-engine_bundle-engine-net:
+  bundle-engine:
     external: true

@@ -9,7 +9,7 @@ services:
             - KAFKA_BROKERS=kafka:29092
         build:
             context: .
-            dockerfile: Dockerfile
+            dockerfile: tests/Dockerfile.test
             args:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
@@ -24,7 +24,7 @@ services:
             - REDIS_PORT=6379
         build:
             context: .
-            dockerfile: Dockerfile
+            dockerfile: tests/Dockerfile.test
             args:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
@@ -39,7 +39,7 @@ services:
             - REDIS_PORT=6379
         build:
             context: .
-            dockerfile: Dockerfile
+            dockerfile: tests/Dockerfile.test
             args:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
@@ -54,7 +54,7 @@ services:
             - REDIS_PORT=6379
         build:
             context: .
-            dockerfile: Dockerfile
+            dockerfile: tests/Dockerfile.test
             args:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
@@ -69,7 +69,7 @@ services:
             - REDIS_PORT=6379
         build:
             context: .
-            dockerfile: Dockerfile
+            dockerfile: tests/Dockerfile.test
             args:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
@@ -85,7 +85,7 @@ services:
             - KAFKA_BROKERS=kafka:29092
         build:
             context: .
-            dockerfile: Dockerfile
+            dockerfile: tests/Dockerfile.test
             args:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}

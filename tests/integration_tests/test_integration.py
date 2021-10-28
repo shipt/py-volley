@@ -1,5 +1,6 @@
 import json
 import time
+from typing import List
 from uuid import uuid4
 
 from pyshipt_streams import KafkaConsumer, KafkaProducer
@@ -14,10 +15,9 @@ def test_end_to_end() -> None:
     produce_topic = queues.queues["input-queue"].value
     logger.info(f"{produce_topic=}")
     p = KafkaProducer()
-    i = 0
     data = InputMessage.schema()["examples"][0]
     test_messages = 5
-    request_ids = [f"test_{x}_{str(uuid4())[:5]}" for x in range(test_messages)]
+    request_ids: List[str] = [f"test_{x}_{str(uuid4())[:5]}" for x in range(test_messages)]
     for req_id in request_ids:
         data["bundle_request_id"] = req_id
         p.publish(produce_topic, data)
@@ -45,6 +45,6 @@ def test_end_to_end() -> None:
         assert _id in request_ids
         conusumed_ids.append(_id)
 
-    for i in request_ids:
+    for _id in request_ids:
         # assert all ids we produced were in the list we consumed
-        assert i in conusumed_ids
+        assert _id in conusumed_ids

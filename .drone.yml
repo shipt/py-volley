@@ -33,6 +33,17 @@ steps:
       - poetry install
       - make lints
 
+  - name: integration-test
+    image: compose:1.23.2
+    volumes:
+    - name: docker_sock
+      path: /var/run/docker.sock
+    commands:
+    - pwd
+    - make lints
+    - up -f /drone/src/data-stores.yml -d
+    - up -f /drone/src/docker-compose.yml -d
+
   - name: docker-prep
     image: harbor.shipttech.com/plugins/dockerspec
     pull: always
@@ -55,3 +66,9 @@ steps:
       env_file: "docker_args"
     depends_on:
       - unit-tests
+      - integration-test
+
+volumes:
+  - name: docker_sock
+    host:
+      path: /var/run/docker.sock

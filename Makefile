@@ -66,10 +66,17 @@ test.clean:
 	docker-compose down
 	-docker images -a | grep ${PROJECT} | awk '{print $3}' | xargs docker rmi
 	-docker image prune -f
+test.integration:
+	docker-compose -f data-stores.yml -f test-compose.yml down --remove-orphans
+	docker-compose -f data-stores.yml up -d zookeeper kafka redis postgres
+	docker-compose -f test-compose.yml up --build -d
+	sleep 2
+	docker-compose -f test-compose.yml exec -T features pytest tests/integration_tests/test_integration.py
+	docker-compose -f data-stores.yml -f test-compose.yml down --remove-orphans
 test.shell:
-	docker-compose run unit-tests /bin/bash
+	docker compose run unit-tests /bin/bash
 test.shell.debug:
-	docker-compose run --entrypoint /bin/bash unit-tests
+	docker compose run --entrypoint /bin/bash unit-tests
 test.unit: setup
 	poetry run coverage run -m pytest -s \
 			--ignore=tests/integration_tests \

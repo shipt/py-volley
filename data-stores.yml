@@ -1,4 +1,4 @@
-version: '3'
+version: '3.5'
 services:
     redis:
         container_name: redis
@@ -11,7 +11,7 @@ services:
             timeout: 30s
             retries: 50
         networks:
-            - bundle-engine-net
+            - bundle-engine
     postgres:
         restart: always
         image: postgres:12.3
@@ -21,7 +21,7 @@ services:
         environment:
             POSTGRES_PASSWORD: password
         networks:
-            - bundle-engine-net
+            - bundle-engine
     # Zookeeper required for Kafka broker at this time
     zookeeper:
         image: confluentinc/cp-zookeeper:latest
@@ -32,7 +32,7 @@ services:
             ZOOKEEPER_TICK_TIME: 2000
             KAFKA_JMX_PORT: 39999
         networks:
-            - bundle-engine-net
+            - bundle-engine
     # Kakfa container required for unit testing
     kafka:
         image: confluentinc/cp-kafka:latest
@@ -54,10 +54,10 @@ services:
             KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
             KAFKA_JMX_PORT: 49999
         networks:
-            - bundle-engine-net
+            - bundle-engine
     metrics:
         networks:
-            - bundle-engine-net
+            - bundle-engine
         container_name: metrics
         environment:
             - APP_ENV=localhost
@@ -76,5 +76,6 @@ services:
             - redis
         command: uvicorn monitoring.monitoring:app
 networks:
-  bundle-engine-net:
+  bundle-engine:
     driver: bridge
+    name: bundle-engine

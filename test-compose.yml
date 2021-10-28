@@ -1,5 +1,19 @@
 version: '3'
 services:
+    setup:
+        networks:
+        - src_bundle-engine-net
+        container_name: features
+        environment:
+            - APP_ENV=localhost
+            - KAFKA_BROKERS=kafka:29092
+        build:
+            context: .
+            dockerfile: tests/Dockerfile.test
+            args:
+                SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
+                SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        command: python tests/integration_tests/conftest.py
     features:
         networks:
         - src_bundle-engine-net

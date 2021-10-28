@@ -33,7 +33,7 @@ steps:
       - poetry install
       - make lints
 
-  - name: integration-tests
+  - name: integration-test
     image: docker/compose
     volumes:
       - name: docker_socket

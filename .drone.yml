@@ -46,6 +46,7 @@ steps:
         from_secret: SHIPT_PYPI_PASSWORD
     commands:
     - docker-compose -f test-compose.yml up --build -d
+    - sleep 10
     - docker-compose exec -T features pytest tests/integration_tests/test_integration.py
     - docker-compose down
 

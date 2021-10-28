@@ -67,6 +67,8 @@ test.clean:
 	-docker images -a | grep ${PROJECT} | awk '{print $3}' | xargs docker rmi
 	-docker image prune -f
 test.integration: run.datastores run.components
+	sleep 5
+	docker-compose logs
 	docker-compose exec -T features pytest tests/integration_tests/test_integration.py
 	docker-compose down
 test.shell:

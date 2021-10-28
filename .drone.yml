@@ -45,12 +45,14 @@ steps:
       POETRY_HTTP_BASIC_SHIPT_PASSWORD:
         from_secret: SHIPT_PYPI_PASSWORD
     commands:
-    - docker-compose -f data-stores.yml -f test-compose.yml down --remove-orphans
-    - docker-compose -f data-stores.yml up -d zookeeper kafka redis postgres
-    - docker-compose -f test-compose.yml up --build -d
-    - sleep 2
-    - docker-compose -f test-compose.yml exec -T features pytest tests/integration_tests/test_integration.py
-    - docker-compose -f data-stores.yml -f test-compose.yml down --remove-orphans
+    - apk add make
+    - make test.integration
+    # - docker-compose -f data-stores.yml -f test-compose.yml down --remove-orphans
+    # - docker-compose -f data-stores.yml up -d zookeeper kafka redis postgres
+    # - docker-compose -f test-compose.yml up --build -d
+    # - sleep 2
+    # - docker-compose -f test-compose.yml exec -T features pytest tests/integration_tests/test_integration.py
+    # - docker-compose -f data-stores.yml -f test-compose.yml down --remove-orphans
 
   - name: docker-prep
     image: harbor.shipttech.com/plugins/dockerspec

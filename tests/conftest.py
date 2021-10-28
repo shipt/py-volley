@@ -2,7 +2,7 @@ import json
 import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -43,7 +43,7 @@ def input_message() -> InputMessage:
 def collector_triage_message() -> CollectTriage:
     return CollectTriage(
         engine_event_id="123",
-        bundle_event_id="abc",
+        bundle_request_id="abc",
         timeout=str(datetime.now() + timedelta(minutes=10)),
     )
 
@@ -52,7 +52,7 @@ def collector_triage_message() -> CollectTriage:
 def collector_fallback_message() -> CollectFallback:
     return CollectFallback(
         engine_event_id="123",
-        bundle_event_id="abc",
+        bundle_request_id="abc",
         fallback_id="id_1",
         fallback_results={"bundles": [{"group_id": "group_a", "orders": ["bundle_a", "bundle_b"]}]},
         fallback_finish=str(datetime.now() + timedelta(minutes=2)),
@@ -63,7 +63,7 @@ def collector_fallback_message() -> CollectFallback:
 def collector_optimizer_message() -> CollectOptimizer:
     return CollectOptimizer(
         engine_event_id="123",
-        bundle_event_id="abc",
+        bundle_request_id="abc",
         optimizer_id="id_2",
         optimizer_results={"bundles": [{"group_id": "group_a", "orders": ["bundle_a", "bundle_b"]}]},
         optimizer_finish=str(datetime.now() + timedelta(minutes=4)),
@@ -81,7 +81,7 @@ def bundle_message() -> QueueMessage:
         message_id="123",
         message={
             "engine_event_id": "123",
-            "bundle_event_id": "abc",
+            "bundle_request_id": "abc",
             "orders": ["1", "2", "3"],
         },
     )
@@ -148,7 +148,14 @@ def mock_kafka_producer() -> kafka_producer:
 
 
 @fixture
-def fp_response() -> Any:
-    with open("./tests/fixtures/fp_response.json", "r") as file:
+def fp_calculator_response() -> Any:
+    with open("./tests/fixtures/fp_calculator_response.json", "r") as file:
         data = json.load(file)
+    return data
+
+
+@fixture
+def fp_service_response() -> Dict[str, Any]:
+    with open("./tests/fixtures/fp_service_response.json", "r") as f:
+        data: Dict[str, Any] = json.load(f)
     return data

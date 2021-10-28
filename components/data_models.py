@@ -29,7 +29,14 @@ class InputMessage(ComponentMessage):
 
 
 class TriageMessage(ComponentMessage):
-    """message read in by the Triage component"""
+    """message read in by the Triage component
+
+    Currently output by Features component
+    """
+
+    enriched_orders: List[Dict[str, Any]]
+    bundle_request_id: str
+    engine_event_id: str
 
 
 # COLLECTOR
@@ -38,7 +45,7 @@ class CollectorMessage(ComponentMessage):
 
     # TODO: should explore sharing pydantic model w/ SqlAlchemy
     engine_event_id: str
-    bundle_event_id: str
+    bundle_request_id: str
 
 
 class CollectTriage(CollectorMessage):
@@ -91,7 +98,7 @@ class CollectFallback(CollectorMessage):
 
 class PublisherInput(ComponentMessage):
     engine_event_id: str
-    bundle_event_id: str
+    bundle_request_id: str
     optimizer_id: Optional[str]
     optimizer_results: Optional[Dict[str, Any]]
     optimizer_finish: Optional[str]
@@ -112,7 +119,7 @@ class OutputMessage(ComponentMessage):
     """schema for messages leaving the bundle-engine and going to kafka for backend engineering"""
 
     engine_event_id: str
-    bundle_event_id: str
+    bundle_request_id: str
 
     # data model for output
     bundles: List[Bundle]

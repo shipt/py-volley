@@ -22,7 +22,7 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
     }
     c = CollectFallback(
         engine_event_id=message["engine_event_id"],
-        bundle_event_id=message["bundle_event_id"],
+        bundle_request_id=message["bundle_request_id"],
         fallback_id=str(uuid4()),
         fallback_finish=str(datetime.now()),
         fallback_results=falback_solution,

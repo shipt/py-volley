@@ -33,16 +33,22 @@ steps:
       - poetry install
       - make lints
 
-  - name: integration-test
-    image: compose:1.23.2
+  - name: integration-tests
+    image: docker/compose
     volumes:
-    - name: docker_sock
-      path: /var/run/docker.sock
+      - name: docker_socket
+        path: /var/run/docker.sock
+    environment:
+      APP_ENV: localhost
+      SHIPT_PYPI_USERNAME:
+        from_secret: SHIPT_PYPI_USERNAME
+      SHIPT_PYPI_PASSWORD:
+        from_secret: SHIPT_PYPI_PASSWORD
     commands:
     - pwd
     - make lints
-    - up -f /drone/src/data-stores.yml -d
-    - up -f /drone/src/docker-compose.yml -d
+    - docker compose up -f data-stores.yml -d
+    - docker compose up -f docker-compose.yml -d
 
   - name: docker-prep
     image: harbor.shipttech.com/plugins/dockerspec
@@ -67,8 +73,3 @@ steps:
     depends_on:
       - unit-tests
       - integration-test
-
-volumes:
-  - name: docker_sock
-    host:
-      path: /var/run/docker.sock

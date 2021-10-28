@@ -1,5 +1,5 @@
 
-FROM python:3.9.4
+FROM python:3.9.4 as base
 
 ARG SHIPT_PYPI_USERNAME
 ARG SHIPT_PYPI_PASSWORD
@@ -13,7 +13,11 @@ COPY poetry.lock pyproject.toml /app/
 
 RUN pip3 install poetry==1.1.11
 
+FROM base as prod
 RUN poetry config virtualenvs.create false \
     &&  poetry install --no-dev
-
 COPY . /app/
+
+FROM prod as dev
+RUN poetry config virtualenvs.create false \
+    &&  poetry install

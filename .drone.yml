@@ -45,8 +45,8 @@ steps:
       POETRY_HTTP_BASIC_SHIPT_PASSWORD:
         from_secret: SHIPT_PYPI_PASSWORD
     commands:
-    - docker-compose up -d
-    - docker-compose logs
+    - docker-compose -f data-stores.yml up -d
+    - docker-compose -f data-stores.yml logs
     - sleep 2
     - docker-compose -f test-compose.yml up --build -d
     - sleep 10

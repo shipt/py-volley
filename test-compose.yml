@@ -13,8 +13,6 @@ services:
             args:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
-        volumes:
-            - ${PWD}:/app/
         command: python main.py features
     triage:
         container_name: triage
@@ -28,8 +26,6 @@ services:
             args:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
-        volumes:
-            - ${PWD}:/app/
         command: python main.py triage
     optimizer:
         container_name: optimizer
@@ -43,8 +39,6 @@ services:
             args:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
-        volumes:
-            - ${PWD}:/app/
         command: python main.py optimizer
     fallback:
         container_name: fallback
@@ -58,8 +52,6 @@ services:
             args:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
-        volumes:
-            - ${PWD}:/app/
         command: python main.py fallback
     collector:
         container_name: collector
@@ -73,8 +65,6 @@ services:
             args:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
-        volumes:
-            - ${PWD}:/app/
         command: python main.py collector
     publisher:
         container_name: publisher
@@ -89,6 +79,4 @@ services:
             args:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
-        volumes:
-            - ${PWD}:/app/
         command: python main.py publisher

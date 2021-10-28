@@ -66,13 +66,9 @@ test.clean:
 	docker-compose down
 	-docker images -a | grep ${PROJECT} | awk '{print $3}' | xargs docker rmi
 	-docker image prune -f
-test.integration:
-	docker-compose -f data-stores.yml -f test-compose.yml down --remove-orphans
-	docker-compose -f data-stores.yml up -d zookeeper kafka redis postgres
-	docker-compose -f test-compose.yml up --build -d
-	sleep 2
-	docker-compose -f test-compose.yml exec -T features pytest tests/integration_tests/test_integration.py
-	docker-compose -f data-stores.yml -f test-compose.yml down --remove-orphans
+test.integration: run.datastores run.components
+	docker-compose exec -T features pytest tests/integration_tests/test_integration.py
+	docker-compose down
 test.shell:
 	docker compose run unit-tests /bin/bash
 test.shell.debug:
@@ -84,20 +80,20 @@ test.unit: setup
             --cov-report=xml:cov.xml \
             --cov-report term
 
+run.dummy.components:
+	docker compose up -d dummy_events dummy_consumer
+
 run.components:
-	docker compose up -d
-	docker compose logs -f
+	docker compose up -d features triage optimizer fallback collector publisher
 
 run.datastores:
-	docker compose -f data-stores.yml up -d
+	docker compose up -d postgres redis kafka zookeeper
 
-run: run.datastores run.components
+run:
+	docker compose up --build -d
 
 stop.components:
 	docker compose down
 
-stop.datastores:
-	docker compose -f data-stores.yml down
-
 stop:
-	docker compose -f data-stores.yml -f docker-compose.yml down --remove-orphans
+	docker compose down --remove-orphans

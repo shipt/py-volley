@@ -45,8 +45,7 @@ steps:
       SHIPT_PYPI_PASSWORD:
         from_secret: SHIPT_PYPI_PASSWORD
     commands:
-    - pwd
-    - make lints
+    - ls -alh
     - docker compose up -f data-stores.yml -d
     - docker compose up -f docker-compose.yml -d
 

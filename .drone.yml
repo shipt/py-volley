@@ -6,6 +6,8 @@ trigger:
     - push
     - pull_request
     - tag
+  branch:
+    - main
 
 steps:
   - name: unit-tests

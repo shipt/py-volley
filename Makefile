@@ -72,7 +72,7 @@ test.shell.debug:
 	docker-compose run --entrypoint /bin/bash unit-tests
 test.unit: setup
 	poetry run coverage run -m pytest -s \
-			--ignore=tests/integration \
+			--ignore=tests/integration_tests \
             --cov=./ \
             --cov-report=xml:cov.xml \
             --cov-report term

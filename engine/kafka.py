@@ -31,7 +31,9 @@ class BundleConsumer(Consumer):
             if message is None:
                 continue
             if message.error():
-                logger.info(message.error())
+                logger.warning(message.error())
+                message = None
+                continue
             else:
                 msg = json.loads(message.value().decode("utf-8"))
                 if msg is None:

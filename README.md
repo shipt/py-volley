@@ -145,11 +145,22 @@ python main.py
 ```
 
 # Engine Design
-## Queues
 
-Queues are the broker and backend that maintains messages. The bundle engine has three types of queues; [pyRSMQ](https://github.com/mlasevich/PyRSMQ), Kafka, and Postgres. Each technology can be used as a first-in-first-out basis but also have some additional features and limitations.
+## Engine
 
-RSMQ is the python implementation of the [RSMQ](https://github.com/smrchy/rsmq) project. It is lightweight but full features message queue system built on Redis. It provides clean interface to producing and consuming messages from a queue. It only supports strict FIFO - you cannot modify or update a message on the queue once it is produced. The number of messages that can exist in the queue is limited by the amount of memory available to Redis.
+The engine itself is a python decorator that wraps a component worker and runs as headless services. The engine interacts with `Connectors`, `QueueMessages`, and the component function that it wraps.
+
+On initialization:
+- setup connections to the queues using the connectors specified by the components inputs and outputs
+- determines the data type required by the component
+
+Once the engine has initialized, it will continuously poll the input queue for new messages. When it receives a message, it will process the message and pass it to the wrapped component function. It takes the output of the component function and produces it to the output queues. It will repeat this process until terminated.
+
+## Connectors
+
+Connectors are specific implementations of producers and consumers. There are currently connectors for pyRSMQ, Postgres, and Kafka. For example - `produce` in a Postgres connector handles inserting a row to a table, while `produce` in a Kafka connector handles producing a message to a topic.
+
+Consumers and producers handle converting the `QueueMessage` objects to whichever data type and serialization is implemented in the specfic queue. For example, the pyRSMQ implementation stores messages as `JSON`, so the pyRSMQ producer converts the message in `QueueMessage` to JSON, then places the message on the queue. Likewise, pyRMSQ consumer read from JSON and convert to `QueueMessage`.
 
 ## Producers/Consumers
 
@@ -165,18 +176,13 @@ Consumers:
 - `delete` - delete a message on the queue.
 
 - `on_fail` - operation to conduct if a component worker fails processing a message. For example, place the message back on the queue, rollback a transaction, etc.
-## Connectors
 
-Connectors are specific implementations of producers and consumers. There are currently connectors for pyRSMQ, Postgres, and Kafka. For example - `produce` in a Postgres connector handles inserting a row to a table, while `produce` in a Kafka connector handles producing a message to a topic.
+## Queues
 
-Consumers and produces handle converting the `QueueMessage` objects to whichever data type and serialization is implemented in the specfic queue. For example, the pyRSMQ implementation stores messages as `JSON`, so the pyRSMQ producer converts the message in `QueueMessage` to JSON, then places the message on the queue. Likewise, pyRMSQ consumer read from JSON and convert to `QueueMessage`.
+Queues are the broker and backend that handle messages. The bundle engine supports types of queues; [pyRSMQ](https://github.com/mlasevich/PyRSMQ), Kafka, and Postgres. Each technology can be used as a first-in-first-out basis but also have unique features and limitations.
 
-## Engine
+RSMQ is the python implementation of the [RSMQ](https://github.com/smrchy/rsmq) project. It is lightweight but full features message queue system built on Redis. It provides clean interface to producing and consuming messages from a queue. It only supports strict FIFO - you cannot modify or update a message on the queue once it is produced. The number of messages that can exist in the queue is limited by the amount of memory available to Redis.
 
-The engine itself is a python decorator that wraps a component worker and runs as headless services. The engine interacts with `Connectors`, `QueueMessages`, and the component function that it wraps.
+Kafka - TODO
 
-On initialization:
-- setup connections to the queues using the connectors specified by the components inputs and outputs
-- determines the data type required by the component
-
-Once the engine has initialized, it will continuously poll the input queue for new messages. When it receives a message, it will process the message and pass it to the wrapped component function. It takes the output of the component function and produces it to the output queues. It will repeat this process until terminated.
+Postgres - TODO

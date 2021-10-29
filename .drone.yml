@@ -48,6 +48,8 @@ steps:
         from_secret: SHIPT_PYPI_PASSWORD
     commands:
     - apk add make
+    - sed -i -e '/volumes:/,+1d' docker-compose.yml
+    - cat docker-compose.yml
     - make test.integration
 
   - name: docker-prep
@@ -64,6 +66,7 @@ steps:
       SHIPT_PYPI_PASSWORD:
         from_secret: SHIPT_PYPI_PASSWORD
     settings:
+      target: prod
       build_args_from_env:
         - GITHUB_TOKEN
         - SHIPT_PYPI_USERNAME

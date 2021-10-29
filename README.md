@@ -34,6 +34,12 @@ Start all services and data stores:
 Stop all services and data stores
 `make stop`
 
+## Testing
+
+`make test.unit` Runs unit tests on individual components with mocked responses dependencies external to the code. Docker is not involved in this process.
+
+`make test.integration` Runs all components, Postgres, Kafka, and Redis in locally running Docker containers. Validates messages published to input topic successfully reach the output topic.
+
 ## Simulating Staging Data
 
 `make notebook` will spin up jupyer notebook. Open `./notebooks/publish_consume.ipynb`. Publish messages to the input topic and then consume data from the output topic.

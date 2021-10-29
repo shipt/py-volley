@@ -87,10 +87,10 @@ services:
             - ./:/app/
         depends_on:
             - redis
-        # ports:
-        #     - 5678:5678
-        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py optimizer
-        command: python main.py optimizer
+        ports:
+            - 5678:5678
+        command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py optimizer
+        # command: python main.py optimizer
     fallback:
         networks:
             - ml-bundle-engine_bundle-engine-net

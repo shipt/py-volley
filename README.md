@@ -22,8 +22,6 @@ Start all services and data stores:
 
 `make run` - this spins up all the components listed below along with local instances of Kafka, Redis, and Postgres all running in Docker.
 
-`make test.integration` Validates messages published to input topic successfully reach the output topic.
-
 - dummy_events: components/dummy_events.py - produces dummy kafka messages to an `input-topic` kafka
 - features: components/feature_generator.py - reads from `input-topic` kafka, publishes to `triage` queue
 - triage: components/triage.py - reads from `triage` queue, publishes to `optimizer` queue
@@ -35,6 +33,12 @@ Start all services and data stores:
 
 Stop all services and data stores
 `make stop`
+
+## Testing
+
+`make test.unit` Runs unit tests on individual components with mocked responses dependencies external to the code. Docker is not involved in this process.
+
+`make test.integration` Runs all components, Postgres, Kafka, and Redis in locally running Docker containers. Validates messages published to input topic successfully reach the output topic.
 
 ## Simulating Staging Data
 

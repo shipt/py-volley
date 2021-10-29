@@ -14,6 +14,16 @@ def main(message: QueueMessage) -> List[Tuple[str, QueueMessage]]:
     opt_message = message.copy()
     opt_message.message["triage"] = {"triage": ["a", "b"]}
 
+    # # GROUP ORDERS BY TIME WINDOW
+    # order_lst = message.message.get("order_list")
+    # orders = pd.concat(orders_lst)
+    # orders['TW_HR'] = pd.to_datetime(orders['delivery_start_time']).dt.hour
+    # orders = orders.sort_values('TW_HR')
+    # grouped_orders = []
+    # for hours in orders['TW_HR']:
+    #     orders = orders[orders['TW_HR'] == hours]
+    #     grouped_orders.append(orders)
+
     c = CollectorMessage(
         engine_event_id=message.message["engine_event_id"],
         bundle_event_id=message.message["bundle_event_id"],

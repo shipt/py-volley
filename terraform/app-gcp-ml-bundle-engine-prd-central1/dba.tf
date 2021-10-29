@@ -3,7 +3,7 @@ module "ml_bundle_engine_redis_queue_memory_store" {
   version        = "1.0.3"
   memory_size_gb = "1"
   name           = "uc1-ml-bundle-engine-redis-queue"
-  project        = "shipt-core-prd-redis"
+  project        = "shipt-ds-prd-redis"
   redis_version  = "REDIS_5_0"
   region         = "us-central1"
   labels = {
@@ -23,4 +23,24 @@ module "ml_bundle_engine_redis_queue_memory_store" {
   group         = "ds"
   environment   = "production"
   config_region = "us-central1"
+}
+module "ml_bundle_engine_ml_bundle_engine_cloudSql_module" {
+  source      = "app.terraform.io/shipt/cloud-sql/google"
+  version     = "0.1.3"
+  application = "ml-bundle-engine"
+  environment = "production"
+  size = {
+    ram     = "4 GB"
+    storage = "10 GB"
+  }
+  group          = "ds"
+  region         = "us-central1"
+  config_var     = "CLOUDSQL_DATABASE_URL"
+  repo_name      = "ml-bundle-engine"
+  network        = "projects/shipt-core-prd-host/global/networks/core-prd-host"
+  cloud_provider = "gcp"
+  slack_channel  = ""
+  team           = "machine-learning"
+  project_id     = "shipt-ds-prd-psql"
+  name           = "ml-bundle-engine"
 }

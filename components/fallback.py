@@ -2,27 +2,30 @@ from datetime import datetime
 from typing import List, Tuple
 from uuid import uuid4
 
-from components.data_models import CollectorMessage
-from engine.component import bundle_engine
-from engine.data_models import QueueMessage
+from components.data_models import CollectFallback
+from engine.data_models import ComponentMessage
+from engine.engine import bundle_engine
 
 INPUT_QUEUE = "fallback"
 OUTPUT_QUEUES = ["collector"]
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(message: QueueMessage) -> List[Tuple[str, QueueMessage]]:
+def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
+    message = in_message.dict()
 
     falback_solution = {
-        "bundles": ["order_1", "order2", "order_5", "order3"],
-        "other_data": "abc",
+        "bundles": [
+            {"group_id": "g1234", "orders": ["order_1", "order2", "order_4"]},
+            {"group_id": "g1235", "orders": ["order_3"]},
+        ]
     }
-    c = CollectorMessage(
-        engine_event_id=message.message["engine_event_id"],
-        bundle_event_id=message.message["bundle_event_id"],
+    c = CollectFallback(
+        engine_event_id=message["engine_event_id"],
+        bundle_request_id=message["bundle_request_id"],
         fallback_id=str(uuid4()),
         fallback_finish=str(datetime.now()),
         fallback_results=falback_solution,
     )
-    message.message = c.fallback_dict()
-    return [("collector", message)]
+
+    return [("collector", c)]

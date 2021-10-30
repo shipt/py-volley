@@ -7,11 +7,13 @@ import jsonschema as js
 from datetime import datetime
 from typing import List, Tuple
 from uuid import uuid4
+
 from core.logging import logger
-from components.data_models import CollectorMessage
-from engine.component import bundle_engine
-from engine.data_models import QueueMessage
+from components.data_models import CollectOptimizer, CollectorMessage
+from engine.engine import bundle_engine
+from engine.data_models import ComponentMessage
 # from components.data_models import Bundle
+
 
 INPUT_QUEUE = "optimizer"
 OUTPUT_QUEUES = ["collector"]
@@ -37,8 +39,7 @@ bundle_schema = {"bundles": [{
 #     orders: List[int]
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(message: QueueMessage) -> List[Tuple[str, QueueMessage]]:
-    # TODO: data model for opt results
+def main(message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
     print('OPTIMIZER INPUT MESSAGE: ', message)
 
     # from ex_opt_data import ex_opt_data
@@ -68,25 +69,19 @@ def main(message: QueueMessage) -> List[Tuple[str, QueueMessage]]:
             print('Bundling optimizer validation error.')
             print(resp.json())
 
-    opt_solution = [response.json() for response in bundles]
+    opt_solution = {
+        "bundles": [response.json() for response in bundles]
+    }
     logger.info(
         f"Optimized Bundles: {[response.json() for response in bundles]}"
     )
 
-    # opt_solution = {
-    #     "bundles": ["order_1", "order2", "order_5", "order3"],
-    #     "other_data": "abc",
-    # }
-
-    c = CollectorMessage(
-        engine_event_id=message.message["engine_event_id"],
-        bundle_event_id=message.message["bundle_event_id"],
+    c = CollectOptimizer(
+        engine_event_id=message.engine_event_id,
+        bundle_request_id=message.bundle_request_id,
         optimizer_id=str(uuid4()),
         optimizer_finish=str(datetime.now()),
         optimizer_results=opt_solution,
     )
-    message.message = c.optimizer_dict()
 
-    # artificially longer optimizer than other components
-    time.sleep(10)
-    return [("collector", message)]
+    return [("collector", c)]

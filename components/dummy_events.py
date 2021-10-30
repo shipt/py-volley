@@ -1,9 +1,8 @@
-import json
 import time
-from uuid import uuid4
 
 from pyshipt_streams import KafkaProducer
 
+from components.data_models import InputMessage
 from core.logging import logger
 from engine.queues import available_queues
 
@@ -15,14 +14,8 @@ def main() -> None:
     p = KafkaProducer()
     i = 0
     while True:
-        with open("./seed/fp_payload.json", "r") as file:
-            data = json.load(file)
-        msg = {
-            "bundle_event_id": i,
-            "store_id": str(uuid4()),
-            "orders": [data],
-        }
-        p.publish(input_topic, msg)
-        logger.info(f"{msg=}")
+        data = InputMessage.schema()["examples"][0]
+        p.publish(input_topic, data)
+        logger.info(f"{data=}")
         time.sleep(10)
         i += 1

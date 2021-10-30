@@ -1,18 +1,20 @@
 from datetime import datetime, timedelta
 from typing import List, Tuple
 
-from components.data_models import CollectorMessage
-from engine.component import bundle_engine
-from engine.data_models import QueueMessage
+from components.data_models import CollectTriage, TriageMessage
+from engine.data_models import ComponentMessage
+from engine.engine import bundle_engine
 
 INPUT_QUEUE = "triage"
 OUTPUT_QUEUES = ["optimizer", "fallback", "collector"]  # , "shadow"]
 
+OPT_TIMEOUT_SECONDS = 60
+
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(message: QueueMessage) -> List[Tuple[str, QueueMessage]]:
-    opt_message = message.copy()
-    opt_message.message["triage"] = {"triage": ["a", "b"]}
+def main(in_message: TriageMessage) -> List[Tuple[str, ComponentMessage]]:
+    message = in_message.copy()
+    message.message["triage"] = {"triage": ["a", "b"]}
 
     # # GROUP ORDERS BY TIME WINDOW
     # order_lst = message.message.get("order_list")
@@ -24,16 +26,14 @@ def main(message: QueueMessage) -> List[Tuple[str, QueueMessage]]:
     #     orders = orders[orders['TW_HR'] == hours]
     #     grouped_orders.append(orders)
 
-    c = CollectorMessage(
-        engine_event_id=message.message["engine_event_id"],
-        bundle_event_id=message.message["bundle_event_id"],
-        store_id=message.message["store_id"],
-        timeout=str(datetime.now() + timedelta(minutes=5)),
+    t = CollectTriage(
+        engine_event_id=message["engine_event_id"],
+        bundle_request_id=message["bundle_request_id"],
+        timeout=str(datetime.now() + timedelta(seconds=OPT_TIMEOUT_SECONDS)),
     )
-    message.message = c.dict()
-    message.message["event_type"] = "triage"
+
     return [
-        ("optimizer", opt_message),
-        ("fallback", opt_message),
-        ("collector", message),
+        ("optimizer", in_message),
+        ("fallback", in_message),
+        ("collector", t),
     ]

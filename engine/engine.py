@@ -1,10 +1,11 @@
+import importlib
 import os
 from functools import wraps
 from typing import Any, Dict, List, Tuple
 
 from core.logging import logger
 from engine.consumer import Consumer
-from engine.data_models import QueueMessage
+from engine.data_models import ComponentMessage, QueueMessage
 from engine.producer import Producer
 from engine.queues import Queue, Queues, available_queues
 
@@ -58,6 +59,17 @@ def get_producer(queue_type: str, queue_name: str) -> Producer:
         raise KeyError(f"{queue_type=} not valid")
 
 
+def load_schema_class(q: Queue) -> Any:
+    if q.model_schema in ["dict"]:
+        return dict
+    else:
+        modules = q.model_schema.split(".")
+        class_obj = modules[-1]
+        pathmodule = ".".join(modules[:-1])
+        module = importlib.import_module(pathmodule)
+        return getattr(module, class_obj)
+
+
 def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C901
     queues: Queues = available_queues()
 
@@ -71,9 +83,9 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
             # the component function is passed in as `func`
             # first setup the connections to the input and outputs queues that the component will need
             # we only want to set these up once, before the component is invoked
-            in_queue.q = get_consumer(
-                queue_type=in_queue.type, queue_name=in_queue.value
-            )
+            in_queue.q = get_consumer(queue_type=in_queue.type, queue_name=in_queue.value)
+
+            input_data_class: ComponentMessage = load_schema_class(in_queue)
 
             for qname, q in out_queues.items():
                 q.q = get_producer(queue_name=q.value, queue_type=q.type)
@@ -82,16 +94,19 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
             while RUN:
 
                 in_message: QueueMessage = in_queue.q.consume(queue_name=in_queue.value)
+                serialized_message: ComponentMessage = input_data_class(**in_message.message)  # type: ignore
 
-                outputs: List[Tuple[str, QueueMessage]] = func(in_message)
+                outputs: List[Tuple[str, QueueMessage]] = func(serialized_message)
 
                 for qname, m in outputs:
+                    if m is None:
+                        continue
+                    m = QueueMessage(message_id="", message=m.dict())
+
                     try:
                         out_queue = out_queues[qname]
                     except KeyError:
-                        logger.exception(
-                            f"{qname} is not defined in this component's output queue list"
-                        )
+                        logger.exception(f"{qname} is not defined in this component's output queue list")
 
                     # typing of engine.queues.Queue.q makes this ambiguous and potentially error prone
                     try:
@@ -101,7 +116,8 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
                         status = False
                     if status:
                         in_queue.q.delete_message(
-                            queue_name=in_queue.value, message_id=in_message.message_id
+                            queue_name=in_queue.value,
+                            message_id=in_message.message_id,
                         )
                     else:
                         in_queue.q.on_fail()

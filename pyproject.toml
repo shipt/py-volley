@@ -22,6 +22,7 @@ uvicorn = {extras = ["standard"], version = "^0.15.0"}
 psycopg2-binary = "^2.9.1"
 SQLAlchemy = "^1.4.25"
 sqlmodel = "^0.0.4"
+rollbar = "^0.16.2"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.2"
@@ -48,3 +49,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.coverage.report]
 show_missing = true
 fail_under = 75
+
+[tool.black]
+line-length = 120
+target-version = ['py39']

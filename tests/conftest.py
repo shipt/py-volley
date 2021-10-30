@@ -2,13 +2,19 @@ import json
 import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 from pytest import fixture
 
-from components.data_models import CollectorMessage
+from components.data_models import (
+    CollectFallback,
+    CollectOptimizer,
+    CollectTriage,
+    InputMessage,
+    PublisherMessage,
+)
 from engine.data_models import QueueMessage
 from engine.kafka import BundleConsumer as kafka_consumer
 from engine.kafka import BundleProducer as kafka_producer
@@ -22,19 +28,51 @@ os.environ["KAFKA_BROKERS"] = "kafka:9092"
 
 
 @fixture
-def collector_message() -> CollectorMessage:
-    return CollectorMessage(
+def bunk_input_message() -> InputMessage:
+    f = InputMessage(bundle_request_id="a1234", orders=["1"])
+    return f
+
+
+@fixture
+def input_message() -> InputMessage:
+    d = InputMessage.schema()["examples"][0]
+    return InputMessage(**d)
+
+
+@fixture
+def collector_triage_message() -> CollectTriage:
+    return CollectTriage(
         engine_event_id="123",
-        bundle_event_id="abc",
-        store_id="store_a",
+        bundle_request_id="abc",
         timeout=str(datetime.now() + timedelta(minutes=10)),
+    )
+
+
+@fixture
+def collector_fallback_message() -> CollectFallback:
+    return CollectFallback(
+        engine_event_id="123",
+        bundle_request_id="abc",
         fallback_id="id_1",
-        fallback_results={"bundles": ["bundle_a", "bundle_b"]},
+        fallback_results={"bundles": [{"group_id": "group_a", "orders": ["bundle_a", "bundle_b"]}]},
         fallback_finish=str(datetime.now() + timedelta(minutes=2)),
-        optimizer_i="id_2",
-        optimizer_results={"bundles": ["bundle_a", "bundle_b"]},
+    )
+
+
+@fixture
+def collector_optimizer_message() -> CollectOptimizer:
+    return CollectOptimizer(
+        engine_event_id="123",
+        bundle_request_id="abc",
+        optimizer_id="id_2",
+        optimizer_results={"bundles": [{"group_id": "group_a", "orders": ["bundle_a", "bundle_b"]}]},
         optimizer_finish=str(datetime.now() + timedelta(minutes=4)),
     )
+
+
+@fixture
+def publisher_message(collector_optimizer_message: CollectOptimizer) -> PublisherMessage:
+    return PublisherMessage(results=[collector_optimizer_message])
 
 
 @fixture
@@ -43,9 +81,8 @@ def bundle_message() -> QueueMessage:
         message_id="123",
         message={
             "engine_event_id": "123",
-            "bundle_event_id": "abc",
-            "store_id": "store_a",
-            "orders": [1, 2, 3],
+            "bundle_request_id": "abc",
+            "orders": ["1", "2", "3"],
         },
     )
 
@@ -62,7 +99,10 @@ def mock_rsmq_producer() -> rsmq_producer:
 
 @fixture
 def mock_rsmq_consumer() -> rsmq_consumer:
-    msg = {"id": "abc123", "message": json.dumps({"kafka": "message"}).encode("utf-8")}
+    msg = {
+        "id": "abc123",
+        "message": json.dumps({"kafka": "message"}).encode("utf-8"),
+    }
     with patch("engine.rsmq.RedisSMQ"):
         c = rsmq_consumer(
             host="redis",
@@ -108,7 +148,14 @@ def mock_kafka_producer() -> kafka_producer:
 
 
 @fixture
-def fp_response() -> Any:
-    with open("./tests/fixtures/fp_response.json", "r") as file:
+def fp_calculator_response() -> Any:
+    with open("./tests/fixtures/fp_calculator_response.json", "r") as file:
         data = json.load(file)
+    return data
+
+
+@fixture
+def fp_service_response() -> Dict[str, Any]:
+    with open("./tests/fixtures/fp_service_response.json", "r") as f:
+        data: Dict[str, Any] = json.load(f)
     return data

@@ -3,122 +3,137 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from engine.data_models import ComponentMessage
 
-class CollectorMessage(BaseModel):
-    # TODO: should explore sharing pydantic model w/ SqlAlchemy
-    # triage inserts
-    engine_event_id: str
-    bundle_event_id: Optional[str]
-    store_id: Optional[str]
-    timeout: Optional[str]  # only used in Triage
 
-    # fallback updates
-    fallback_id: Optional[str] = None
-    fallback_results: Optional[Dict[str, Any]] = None
-    fallback_finish: Optional[str] = None
+class InputMessage(ComponentMessage):
+    """input messages coming off kafka"""
 
-    # optimizer updates
-    optimizer_id: Optional[str]
-    optimizer_results: Optional[Dict[str, Any]] = None
-    optimizer_finish: Optional[str] = None
+    bundle_request_id: str
 
-    def fallback_dict(self) -> Dict[str, Any]:
-        return {
-            "event_type": "fallback",
-            "engine_event_id": self.engine_event_id,
-            "fallback_id": self.fallback_id,
-            "fallback_results": self.fallback_results,
-            "fallback_finish": self.fallback_finish,
-        }
+    # list of order id
+    orders: List[str]
 
-    def optimizer_dict(self) -> Dict[str, Any]:
-        return {
-            "event_type": "optimizer",
-            "engine_event_id": self.engine_event_id,
-            "optimizer_id": self.optimizer_id,
-            "optimizer_results": self.optimizer_results,
-            "optimizer_finish": self.optimizer_finish,
-        }
-
-    def triage_dict(self) -> Dict[str, Any]:
-        return {
-            "engine_event_id": self.engine_event_id,
-            "bundle_event_id": self.bundle_event_id,
-            "store_id": self.store_id,
-            "timeout": self.timeout,
+    class Config:
+        schema_extra = {
+            "examples": [
+                {
+                    "bundle_request_id": "request-id-1234",
+                    "orders": [
+                        "15855965",
+                        "16578146",
+                    ],
+                }
+            ]
         }
 
 
-class OutputMessage(BaseModel):
+class TriageMessage(ComponentMessage):
+    """message read in by the Triage component
+
+    Currently output by Features component
+    """
+
+    enriched_orders: List[Dict[str, Any]]
+    bundle_request_id: str
     engine_event_id: str
-    bundle_event_id: str
-    store_id: str
-    optimizer_type: str
-
-    # TODO: List[Orders] or Dict[bundle_id: str, List[Orders]]
-    # data model for output
-    bundles: List[Any]
 
 
-class BaseMessage(BaseModel):
-    """base for messages that component functions read in. each message has at least"""
-
-    engine_event_id: str
-    bundle_event_id: Optional[str]
-
-
-class PublisherMessage(BaseMessage):
-    """schema for the message on the publisher queue (postgres) and read by the publisher component"""
+# COLLECTOR
+class CollectorMessage(ComponentMessage):
+    """base message schema for all messages published to the collector"""
 
     # TODO: should explore sharing pydantic model w/ SqlAlchemy
-    # triage inserts
     engine_event_id: str
-    bundle_event_id: Optional[str]
-    store_id: Optional[str]
-    timeout: Optional[str]  # only used in Triage
+    bundle_request_id: str
 
-    # fallback updates
-    fallback_id: Optional[str] = None
-    fallback_results: Optional[Dict[str, Any]] = None
-    fallback_finish: Optional[str] = None
 
-    # optimizer updates
-    optimizer_id: Optional[str]
-    optimizer_results: Optional[Dict[str, Any]] = None
-    optimizer_finish: Optional[str] = None
+class CollectTriage(CollectorMessage):
+    """contains attributes for triage events
+    triage events are created by traige component and indicate the start of optimizer and fallback processing
+    """
 
-    def fallback_dict(self) -> Dict[str, Any]:
-        return {
-            "event_type": "fallback",
-            "engine_event_id": self.engine_event_id,
-            "fallback_id": self.fallback_id,
-            "fallback_results": self.fallback_results,
-            "fallback_finish": self.fallback_finish,
-        }
-
-    def optimizer_dict(self) -> Dict[str, Any]:
-        return {
-            "event_type": "optimizer",
-            "engine_event_id": self.engine_event_id,
-            "optimizer_id": self.optimizer_id,
-            "optimizer_results": self.optimizer_results,
-            "optimizer_finish": self.optimizer_finish,
-        }
-
-    def triage_dict(self) -> Dict[str, Any]:
-        return {
-            "engine_event_id": self.engine_event_id,
-            "bundle_event_id": self.bundle_event_id,
-            "store_id": self.store_id,
-            "timeout": self.timeout,
-        }
+    event_type: str = "triage"
+    timeout: str
 
 
 class Bundle(BaseModel):
     """defines an individual bundle"""
 
     group_id: str
-    orders: List[int]
+    orders: List[str]
+
+    class Config:
+        schema_extra = {
+            "examples": [
+                {
+                    "group_id": "group_a",
+                    "orders": ["15855965", "158559635", "15812355965"],
+                }
+            ]
+        }
+
+
+class CollectOptimizer(CollectorMessage):
+    """contains attributes for finished optimizers
+    optimizer publishes its results to the collector in this format
+    """
+
+    event_type: str = "optimizer"
+    optimizer_id: str
+    optimizer_results: Dict[str, List[Bundle]]
+    optimizer_finish: str
+
+
+class CollectFallback(CollectorMessage):
+    """contains attributres for finished fallback solutions
+    fallback component publishes its results to the collector in this format
+    """
+
+    event_type: str = "fallback"
+    fallback_id: str
+    fallback_results: Dict[str, List[Bundle]]
+    fallback_finish: str
+
+
+class PublisherInput(ComponentMessage):
+    engine_event_id: str
+    bundle_request_id: str
+    optimizer_id: Optional[str]
+    optimizer_results: Optional[Dict[str, Any]]
+    optimizer_finish: Optional[str]
+    fallback_id: Optional[str]
+    fallback_results: Optional[Dict[str, Any]]
+    fallback_finish: Optional[str]
+
+
+class PublisherMessage(ComponentMessage):
+    """schema for the message on the publisher queue (postgres) and read by the publisher component"""
+
+    # TODO: should explore sharing pydantic model w/ SqlAlchemy
+    # triage inserts
+    results: List[CollectorMessage]
+
+
+class OutputMessage(ComponentMessage):
+    """schema for messages leaving the bundle-engine and going to kafka for backend engineering"""
+
+    engine_event_id: str
+    bundle_request_id: str
+
+    # data model for output
+    bundles: List[Bundle]
+
+    class Config:
+        schema_extra = {
+            "examples": [
+                {
+                    "bundle_request_id": "request-id-1234",
+                    "engine_request_id": "uuid4-engine-internal",
+                    "bundles": [Bundle.schema()["examples"][0]],
+                }
+            ]
+        }
 
 
 class Order(BaseModel):
@@ -136,7 +151,6 @@ class Order(BaseModel):
     delivery_longitude: float = Field(example=-85.53964)
     total_items: int = Field(example="0")
     metro_id: str = Field(example="")
-    store_id: str = Field(example="")
     store_location_id: int = Field(example=2110)
     store_latitude: float = Field(example=42.99678)
     store_longitude: float = Field(example=-85.59336)

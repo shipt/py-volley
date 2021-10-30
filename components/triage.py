@@ -19,13 +19,12 @@ def main(in_message: TriageMessage) -> List[Tuple[str, ComponentMessage]]:
     enriched_orders: List[Dict[str, Any]] = in_message.enriched_orders
     # # GROUP ORDERS BY TIME WINDOW
     orders_lst = enriched_orders
-    orders = pd.concat(orders_lst)
+    orders = pd.DataFrame(orders_lst)
     orders['TW_HR'] = pd.to_datetime(orders['delivery_start_time']).dt.hour
     orders = orders.sort_values('TW_HR')
-    grouped_orders = []
-    for hours in orders['TW_HR']:
-        orders = orders[orders['TW_HR'] == hours]
-        grouped_orders.append(orders)
+
+    group_df = orders.groupby("TW_HR")
+    grouped_orders = [group.to_dict(orient="records") for _,group in group_df]
 
     t = CollectTriage(
         engine_event_id=message.engine_event_id,

@@ -20,7 +20,7 @@ def test_end_to_end() -> None:
     request_ids: List[str] = [f"test_{x}_{str(uuid4())[:5]}" for x in range(test_messages)]
     for req_id in request_ids:
         data["bundle_request_id"] = req_id
-        p.publish(produce_topic, data)
+        p.publish(produce_topic, data, serialize=True)
 
     consume_topic = queues.queues["output-queue"].value
     logger.info(f"{consume_topic=}")

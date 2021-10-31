@@ -80,6 +80,8 @@ class PGConsumer(Consumer):
         # rollback the DELETE transaction
         self.session.execute(text("ROLLBACK;"))
 
+    def shutdown(self) -> None:
+        self.session.close()
 
 @dataclass
 class PGProducer(Producer):
@@ -109,3 +111,6 @@ class PGProducer(Producer):
             with self.engine.begin() as c:
                 c.execute(update_stmt)
         return True
+
+    def shutdown(self) -> None:
+        self.session.close()

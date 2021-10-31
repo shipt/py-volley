@@ -36,6 +36,8 @@ class BundleConsumer(Consumer):
     def on_fail(self) -> None:
         pass
 
+    def shutdown(self) -> None:
+        self.queue.quit()
 
 @dataclass
 class BundleProducer(Producer):
@@ -48,3 +50,6 @@ class BundleProducer(Producer):
         logger.info(f"queue_name - {queue_name}")
         msg_id: str = self.queue.sendMessage(qname=queue_name, message=m).execute()
         return bool(msg_id)
+
+    def shutdown(self) -> None:
+        self.queue.quit()

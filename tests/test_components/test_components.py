@@ -45,7 +45,7 @@ def test_bunk_order_id(mock_get: MagicMock) -> None:
     f = InputMessage(bundle_request_id="a1234", orders=["1", "2", "3"])
     outputs = features.__wrapped__(f)  # NOQA: F841
     for qname, message in outputs:
-        assert len(message.raw_orders) == 3
+        assert len(message.error_orders) == 3
         assert len(message.enriched_orders) == 0
 
 
@@ -55,7 +55,7 @@ def test_bunk_fp_response(mock_get: MagicMock, input_message: InputMessage) -> N
     mock_get.return_value.json = lambda: {"order_id": 1}
     outputs = features.__wrapped__(input_message)  # NOQA: F841
     for qname, message in outputs:
-        assert len(message.raw_orders) == 2
+        assert len(message.error_orders) == 2
         assert len(message.enriched_orders) == 0
 
 

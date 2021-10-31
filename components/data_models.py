@@ -37,7 +37,7 @@ class TriageMessage(ComponentMessage):
     enriched_orders: List[Dict[str, Any]]
     bundle_request_id: str
     engine_event_id: str
-    raw_orders: Optional[List[Dict[str, Any]]] = None
+    error_orders: Optional[List[Dict[str, Any]]] = None
 
 
 # COLLECTOR

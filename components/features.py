@@ -69,7 +69,7 @@ def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
             )
 
     output_message = TriageMessage(
-        raw_orders=raw_orders,
+        error_orders=raw_orders,
         enriched_orders=enriched_orders,
         bundle_request_id=message["bundle_request_id"],
         engine_event_id=str(uuid4()),

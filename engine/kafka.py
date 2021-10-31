@@ -15,7 +15,7 @@ class BundleConsumer(Consumer):
         # TODO: config for consumer group..env var maybe?
         self.c = KafkaConsumer(
             consumer_group="group1",
-            config_override={"enable.auto.offset.store": False}
+            # config_override={"enable.auto.offset.store": False}
         )
         self.c.subscribe([self.queue_name])
 
@@ -45,7 +45,7 @@ class BundleConsumer(Consumer):
                     return QueueMessage(message_id=message, message=msg)
 
     def delete_message(self, queue_name: str, message_id: str = None) -> bool:
-        self.c.store_offsets(message_id)
+        # self.c.consumer.store_offsets(message=message_id)
         return True
 
     def on_fail(self) -> None:

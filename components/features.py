@@ -23,8 +23,9 @@ FLIGHT_PLAN_URL = {
 def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
     message = in_message.dict()
 
-    # iterate over keys (order id)
+    raw_orders = []
     enriched_orders = []
+    # iterate over keys (order id)
     for order in message["orders"]:
         resp = requests.get(f"{FLIGHT_PLAN_URL}/{order}")
         if resp.status_code == 200:
@@ -55,20 +56,23 @@ def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
                 )
             except KeyError:
                 logger.exception(f"Flight-plan data missing for order: {order}")
-                enriched_orders.append(
+                raw_orders.append(
                     {
                         "order_id": order,
                     }
                 )
         else:
             logger.warning(f"Flight-plan returned status code: {resp.status_code} for order: {order}")
-            enriched_orders.append(
+            raw_orders.append(
                 {
                     "order_id": order,
                 }
             )
 
     output_message = TriageMessage(
-        enriched_orders=enriched_orders, bundle_request_id=message["bundle_request_id"], engine_event_id=str(uuid4())
+        raw_orders=raw_orders,
+        enriched_orders=enriched_orders,
+        bundle_request_id=message["bundle_request_id"],
+        engine_event_id=str(uuid4()),
     )
     return [("triage", output_message)]

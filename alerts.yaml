@@ -1,7 +1,7 @@
 team: "machine-learning"
 prometheus:
   - name: "bundle-engine-queue-size"
-    expression: rsmq_queue_length > 10
+    expression: bundle_engine_queue_length > 10
     period: "5m"
     team: "machine-learning"
     priority: p1

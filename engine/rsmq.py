@@ -39,6 +39,7 @@ class BundleConsumer(Consumer):
     def shutdown(self) -> None:
         self.queue.quit()
 
+
 @dataclass
 class BundleProducer(Producer):
     def __post_init__(self) -> None:

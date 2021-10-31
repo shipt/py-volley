@@ -83,6 +83,7 @@ class PGConsumer(Consumer):
     def shutdown(self) -> None:
         self.session.close()
 
+
 @dataclass
 class PGProducer(Producer):
     def __post_init__(self) -> None:

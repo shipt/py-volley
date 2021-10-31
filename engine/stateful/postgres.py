@@ -22,6 +22,8 @@ from engine.stateful.pg_config import (
     publisher,
 )
 
+BATCH_SIZE = 1
+
 
 @dataclass
 class PGConsumer(Consumer):
@@ -45,7 +47,6 @@ class PGConsumer(Consumer):
         poll_interval: float = 2,
     ) -> QueueMessage:
         now = str(datetime.now())
-        BATCH_SIZE = 1
         sql = f"""
             BEGIN;
             DELETE FROM
@@ -114,4 +115,4 @@ class PGProducer(Producer):
         return True
 
     def shutdown(self) -> None:
-        self.session.close()
+        pass

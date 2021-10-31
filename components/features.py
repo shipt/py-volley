@@ -3,7 +3,6 @@ from typing import List, Tuple
 from uuid import uuid4
 
 import requests
-import rollbar
 
 from components.data_models import InputMessage, TriageMessage
 from core.logging import logger

@@ -15,7 +15,7 @@ def main() -> None:
     i = 0
     while True:
         data = InputMessage.schema()["examples"][0]
-        p.publish(input_topic, data)
+        p.publish(input_topic, data, serialize=True)
         logger.info(f"{data=}")
         time.sleep(10)
         i += 1

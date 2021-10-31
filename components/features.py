@@ -54,14 +54,19 @@ def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
                     }
                 )
             except KeyError:
-                logger.exception(f"No flight plan data for order: {order}")
-                rollbar.report_exc_info()
-                # fail hard if we are missing details on a single order
-                raise
+                logger.exception(f"Flight-plan data missing for order: {order}")
+                enriched_orders.append(
+                    {
+                        "order_id": order,
+                    }
+                )
         else:
-            # NOTE: fail hard if we do not get details from flight plan service
-            rollbar.report_exc_info()
-            raise Exception(f"No flight plan for order: {order}")
+            logger.warning(f"Flight-plan returned status code: {resp.status_code} for order: {order}")
+            enriched_orders.append(
+                {
+                    "order_id": order,
+                }
+            )
 
     output_message = TriageMessage(
         enriched_orders=enriched_orders, bundle_request_id=message["bundle_request_id"], engine_event_id=str(uuid4())

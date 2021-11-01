@@ -50,10 +50,6 @@ class BundleConsumer(Consumer):
         return True
 
     def on_fail(self) -> None:
-        # if we fail on this message - commit the current offset, rather than current + 1
-        # https://docs.confluent.io/platform/current/clients/confluent-kafka-python/html/index.html#confluent_kafka.Consumer.commit
-        # https://www.oreilly.com/library/view/kafka-the-definitive/9781491936153/ch04.html
-        # self.c.consumer.commit(offsets=STUFF TO COMMMIT)
         pass
 
     def shutdown(self) -> None:

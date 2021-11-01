@@ -15,6 +15,7 @@ class BundleConsumer(Consumer):
         # TODO: config for consumer group..env var maybe?
         self.c = KafkaConsumer(
             consumer_group="group1",
+            # TODO: develop commit strategy to minimize duplicates and guarantee no loss
             # config_override={"enable.auto.offset.store": False}
         )
         self.c.subscribe([self.queue_name])

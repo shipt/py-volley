@@ -27,10 +27,10 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, OutputMessage]]:
         bundle_request_id = m["bundle_request_id"]
 
         if m.get("optimizer_results"):
-            name = "optimizer"
+            optimizer_type = "optimizer"
             bundled = m["optimizer_results"]["bundles"]
         elif m.get("fallback_results"):
-            name = "fallback"
+            optimizer_type = "fallback"
             bundled = m["fallback_results"]["bundles"]
         else:
             now = datetime.now()
@@ -45,8 +45,9 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, OutputMessage]]:
             engine_event_id=m["engine_event_id"],
             bundle_request_id=m["bundle_request_id"],
             bundles=bundled,
-            optimizer_type=name,
+            optimizer_type=optimizer_type,
         )
+        logger.info(f"{optimizer_type=}")
 
         result_set.append(("output-queue", pm))
     return result_set

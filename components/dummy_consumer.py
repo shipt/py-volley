@@ -21,4 +21,4 @@ def main() -> None:
         else:
             consumed_message = json.loads(message.value().decode("utf-8"))
 
-            logger.info(f"## WIN!:  {consumed_message} ##")
+            logger.info(consumed_message)

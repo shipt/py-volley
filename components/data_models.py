@@ -20,8 +20,33 @@ class InputMessage(ComponentMessage):
                 {
                     "bundle_request_id": "request-id-1234",
                     "orders": [
-                        "15855965",
-                        "16578146",
+                        "invalid-order_1",
+                        "invalid-order_2",
+                        "88640885",
+                        "88661018",
+                        "88656751",
+                        "88658697",
+                        "88664335",
+                        "88663420",
+                        "88653942",
+                        "88659648",
+                        "88662926",
+                        "88657648",
+                        "88651980",
+                        "88645892",
+                        "88659426",
+                        "88645511",
+                        "88661755",
+                        "88658061",
+                        "88661128",
+                        "88662914",
+                        "88658671",
+                        "88653710",
+                        "88646458",
+                        "88659906",
+                        "88663001",
+                        "88662351",
+                        "88659989",
                     ],
                 }
             ]
@@ -38,6 +63,70 @@ class TriageMessage(ComponentMessage):
     bundle_request_id: str
     engine_event_id: str
     error_orders: Optional[List[Dict[str, Any]]] = None
+
+    class Config:
+        schema_extra = {
+            "examples": [
+                {
+                    "bundle_request_id": "request-id-1234",
+                    "engine_request_id": "uuid4-engine-internal",
+                    "enriched_orders": [
+                        {
+                            "order_id": "16578146",
+                            "item_qty": 3,
+                            "shop_time_minutes": 20,
+                            "delivery_start_time": "2021-08-26 17:00:00Z",
+                            "delivery_end_time": "2021-08-26 18:00:00Z",
+                            "store_name": "Target",
+                            "delv_longitude": -73.919696,
+                            "delv_latitude": 40.827675,
+                            "store_longitude": -73.930287,
+                            "store_latitude": 40.823963,
+                        }
+                    ],
+                    "error_orders": ["bad_order_1", "bad_order_1"],
+                }
+            ]
+        }
+
+
+class OptimizerMessage(ComponentMessage):
+    """Message expected by Optimizer component"""
+
+    bundle_request_id: str
+    engine_event_id: str
+    grouped_orders: List[List[Dict[str, Any]]]
+    error_orders: Optional[List[Dict[str, Any]]] = None
+
+    class Config:
+        schema_extra = {
+            "examples": [
+                {
+                    "bundle_request_id": "request-id-123",
+                    "engine_event_id": "engine-id-123",
+                    "grouped_orders": [
+                        [
+                            {
+                                "order_id": "16578146",
+                                "item_qty": 3,
+                                "shop_time_minutes": 20,
+                                "delivery_start_time": "2021-08-26 17:00:00Z",
+                                "delivery_end_time": "2021-08-26 18:00:00Z",
+                                "store_name": "Target",
+                                "delv_longitude": -73.919696,
+                                "delv_latitude": 40.827675,
+                                "store_longitude": -73.930287,
+                                "store_latitude": 40.823963,
+                            }
+                        ]
+                    ],
+                    "error_orders": [
+                        {"order_id": "bad_order_1"},
+                        {"order_id": "bad_order_1"},
+                    ],
+                }
+            ]
+        }
 
 
 # COLLECTOR

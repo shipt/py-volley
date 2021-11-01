@@ -19,10 +19,7 @@ class InputMessage(ComponentMessage):
             "examples": [
                 {
                     "bundle_request_id": "request-id-1234",
-                    "orders": [
-                        "15855965",
-                        "16578146",
-                    ],
+                    "orders": ["invalid-order_1", "invalid-order_2", "16578146", "16643507", "16731513"],
                 }
             ]
         }
@@ -38,6 +35,70 @@ class TriageMessage(ComponentMessage):
     bundle_request_id: str
     engine_event_id: str
     error_orders: Optional[List[Dict[str, Any]]] = None
+
+    class Config:
+        schema_extra = {
+            "examples": [
+                {
+                    "bundle_request_id": "request-id-1234",
+                    "engine_request_id": "uuid4-engine-internal",
+                    "enriched_orders": [
+                        {
+                            "order_id": "16578146",
+                            "item_qty": 3,
+                            "shop_time_minutes": 20,
+                            "delivery_start_time": "2021-08-26 17:00:00Z",
+                            "delivery_end_time": "2021-08-26 18:00:00Z",
+                            "store_name": "Target",
+                            "delv_longitude": -73.919696,
+                            "delv_latitude": 40.827675,
+                            "store_longitude": -73.930287,
+                            "store_latitude": 40.823963,
+                        }
+                    ],
+                    "error_orders": ["bad_order_1", "bad_order_1"],
+                }
+            ]
+        }
+
+
+class OptimizerMessage(ComponentMessage):
+    """Message expected by Optimizer component"""
+
+    bundle_request_id: str
+    engine_event_id: str
+    grouped_orders: List[List[Dict[str, Any]]]
+    error_orders: Optional[List[Dict[str, Any]]] = None
+
+    class Config:
+        schema_extra = {
+            "examples": [
+                {
+                    "bundle_request_id": "request-id-123",
+                    "engine_event_id": "engine-id-123",
+                    "grouped_orders": [
+                        [
+                            {
+                                "order_id": "16578146",
+                                "item_qty": 3,
+                                "shop_time_minutes": 20,
+                                "delivery_start_time": "2021-08-26 17:00:00Z",
+                                "delivery_end_time": "2021-08-26 18:00:00Z",
+                                "store_name": "Target",
+                                "delv_longitude": -73.919696,
+                                "delv_latitude": 40.827675,
+                                "store_longitude": -73.930287,
+                                "store_latitude": 40.823963,
+                            }
+                        ]
+                    ],
+                    "error_orders": [
+                        {"order_id": "bad_order_1"},
+                        {"order_id": "bad_order_1"},
+                    ],
+                }
+            ]
+        }
 
 
 # COLLECTOR

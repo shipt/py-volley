@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Tuple
 from uuid import uuid4
 
-from components.data_models import CollectFallback
+from components.data_models import CollectFallback, OptimizerMessage
 from engine.data_models import ComponentMessage
 from engine.engine import bundle_engine
 
@@ -11,7 +11,7 @@ OUTPUT_QUEUES = ["collector"]
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(in_message: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
+def main(in_message: OptimizerMessage) -> List[Tuple[str, ComponentMessage]]:
     message = in_message.dict()
 
     falback_solution = {

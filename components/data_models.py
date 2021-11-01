@@ -19,13 +19,7 @@ class InputMessage(ComponentMessage):
             "examples": [
                 {
                     "bundle_request_id": "request-id-1234",
-                    "orders": [
-                        "invalid-order_1",
-                        "invalid-order_2",
-                        "16578146",
-                        "16643507",
-                        "16731513"
-                    ],
+                    "orders": ["invalid-order_1", "invalid-order_2", "16578146", "16643507", "16731513"],
                 }
             ]
         }

@@ -19,10 +19,6 @@ OPTIMIZER_URL = {
 }[os.getenv("APP_ENV", "localhost")]
 
 
-def opt_url_based_on_env() -> str:
-    return OPTIMIZER_URL[os.getenv("APP_ENV", "localhost")]
-
-
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
 def main(message: OptimizerMessage) -> List[Tuple[str, ComponentMessage]]:
     """handling calling the optimization service"""

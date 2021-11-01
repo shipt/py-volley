@@ -55,7 +55,8 @@ def test_bunk_fp_response(mock_get: MagicMock, input_message: InputMessage) -> N
     mock_get.return_value.json = lambda: {"order_id": 1}
     outputs = features.__wrapped__(input_message)  # NOQA: F841
     for qname, message in outputs:
-        assert len(message.error_orders) == 2
+        # forcing bad response from FP - so all should be "error orders"
+        assert len(message.error_orders) == len(input_message.orders)
         assert len(message.enriched_orders) == 0
 
 

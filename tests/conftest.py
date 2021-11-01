@@ -16,10 +16,10 @@ from components.data_models import (
     PublisherMessage,
 )
 from engine.data_models import QueueMessage
-from engine.kafka import BundleConsumer as kafka_consumer
-from engine.kafka import BundleProducer as kafka_producer
-from engine.rsmq import BundleConsumer as rsmq_consumer
-from engine.rsmq import BundleProducer as rsmq_producer
+from engine.kafka import BundleConsumer as KafkaConsumer
+from engine.kafka import BundleProducer as KafkaProducer
+from engine.rsmq import BundleConsumer as RsmqConsumer
+from engine.rsmq import BundleProducer as RsmqProducer
 
 os.environ["INPUT_QUEUE"] = "input"
 os.environ["OUTPUT_QUEUE"] = "output"
@@ -88,9 +88,9 @@ def bundle_message() -> QueueMessage:
 
 
 @fixture
-def mock_rsmq_producer() -> rsmq_producer:
+def mock_rsmq_producer() -> RsmqProducer:
     with patch("engine.rsmq.RedisSMQ"):
-        producer = rsmq_producer(
+        producer = RsmqProducer(
             host="redis",
             queue_name="test",
         )
@@ -98,13 +98,13 @@ def mock_rsmq_producer() -> rsmq_producer:
 
 
 @fixture
-def mock_rsmq_consumer() -> rsmq_consumer:
+def mock_rsmq_consumer() -> RsmqConsumer:
     msg = {
         "id": "abc123",
         "message": json.dumps({"kafka": "message"}).encode("utf-8"),
     }
     with patch("engine.rsmq.RedisSMQ"):
-        c = rsmq_consumer(
+        c = RsmqConsumer(
             host="redis",
             queue_name="test",
         )
@@ -133,17 +133,17 @@ class KafkaMessage:
 
 
 @fixture()
-def mock_kafka_consumer() -> kafka_consumer:
+def mock_kafka_consumer() -> KafkaConsumer:
     with patch("engine.kafka.KafkaConsumer"):
-        c = kafka_consumer(host="kafka", queue_name="test")
+        c = KafkaConsumer(host="kafka", queue_name="test")
         c.c.poll = MagicMock(return_value=KafkaMessage())
         return c
 
 
 @fixture
-def mock_kafka_producer() -> kafka_producer:
+def mock_kafka_producer() -> KafkaProducer:
     with patch("engine.kafka.KafkaProducer"):
-        producer = kafka_producer(host="kafka", queue_name="test")
+        producer = KafkaProducer(host="kafka", queue_name="test")
         return producer
 
 

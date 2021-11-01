@@ -23,3 +23,6 @@ class Consumer(ABC):
     @abstractmethod
     def on_fail(self) -> None:
         """perform some action when downstream operation fails"""
+
+    def shutdown(self) -> None:
+        """perform some action when shutting down the application"""

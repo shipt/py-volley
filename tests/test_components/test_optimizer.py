@@ -1,13 +1,11 @@
 from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from components.data_models import CollectOptimizer, OptimizerMessage
 from components.optimizer import main as optimizer
 
 
-def mock_optimizer(orders: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def mock_optimizer(orders: List[Dict[str, Any]]) -> Dict[str, Any]:
     """dummy optimizer - creates one giant bundle"""
     return {
         "bundle_request_id": "string",

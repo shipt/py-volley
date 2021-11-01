@@ -32,7 +32,7 @@ def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
                 fp_data = resp.json()
                 geo_data = {}
                 stops = fp_data["route"]["stops"]
-                for i, stop in enumerate(fp_data["route"]["stops"]):
+                for i, stop in enumerate(stops):
                     if i > 1:
                         logger.error(f"More than one pick one drop in order: {stops}")
                     stop_type = stop["type"]  # pickup or delivery

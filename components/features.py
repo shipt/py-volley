@@ -3,7 +3,6 @@ from typing import List, Tuple
 from uuid import uuid4
 
 import requests
-import rollbar
 
 from components.data_models import InputMessage, TriageMessage
 from core.logging import logger
@@ -23,8 +22,9 @@ FLIGHT_PLAN_URL = {
 def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
     message = in_message.dict()
 
-    # iterate over keys (order id)
+    raw_orders = []
     enriched_orders = []
+    # iterate over keys (order id)
     for order in message["orders"]:
         resp = requests.get(f"{FLIGHT_PLAN_URL}/{order}")
         if resp.status_code == 200:
@@ -34,7 +34,7 @@ def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
                 stops = fp_data["route"]["stops"]
                 for i, stop in enumerate(fp_data["route"]["stops"]):
                     if i > 1:
-                        logger.warning(f"More than one pick one drop in order: {stops}")
+                        logger.error(f"More than one pick one drop in order: {stops}")
                     stop_type = stop["type"]  # pickup or delivery
 
                     geo_data[stop_type] = {"latitude": stop["latitude"], "longitude": stop["longitude"]}
@@ -54,16 +54,24 @@ def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
                     }
                 )
             except KeyError:
-                logger.exception(f"No flight plan data for order: {order}")
-                rollbar.report_exc_info()
-                # fail hard if we are missing details on a single order
-                raise
+                logger.exception(f"Flight-plan data missing for order: {order}")
+                raw_orders.append(
+                    {
+                        "order_id": order,
+                    }
+                )
         else:
-            # NOTE: fail hard if we do not get details from flight plan service
-            rollbar.report_exc_info()
-            raise Exception(f"No flight plan for order: {order}")
+            logger.error(f"Flight-plan returned status code: {resp.status_code} for order: {order}")
+            raw_orders.append(
+                {
+                    "order_id": order,
+                }
+            )
 
     output_message = TriageMessage(
-        enriched_orders=enriched_orders, bundle_request_id=message["bundle_request_id"], engine_event_id=str(uuid4())
+        error_orders=raw_orders,
+        enriched_orders=enriched_orders,
+        bundle_request_id=message["bundle_request_id"],
+        engine_event_id=str(uuid4()),
     )
     return [("triage", output_message)]

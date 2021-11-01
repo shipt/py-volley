@@ -22,6 +22,8 @@ from engine.stateful.pg_config import (
     publisher,
 )
 
+BATCH_SIZE = 1
+
 
 @dataclass
 class PGConsumer(Consumer):
@@ -45,7 +47,6 @@ class PGConsumer(Consumer):
         poll_interval: float = 2,
     ) -> QueueMessage:
         now = str(datetime.now())
-        BATCH_SIZE = 1
         sql = f"""
             BEGIN;
             DELETE FROM
@@ -80,6 +81,9 @@ class PGConsumer(Consumer):
         # rollback the DELETE transaction
         self.session.execute(text("ROLLBACK;"))
 
+    def shutdown(self) -> None:
+        self.session.close()
+
 
 @dataclass
 class PGProducer(Producer):
@@ -109,3 +113,6 @@ class PGProducer(Producer):
             with self.engine.begin() as c:
                 c.execute(update_stmt)
         return True
+
+    def shutdown(self) -> None:
+        pass

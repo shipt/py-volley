@@ -13,7 +13,11 @@ from engine.producer import Producer
 class BundleConsumer(Consumer):
     def __post_init__(self) -> None:
         # TODO: config for consumer group..env var maybe?
-        self.c = KafkaConsumer(consumer_group="group1")
+        self.c = KafkaConsumer(
+            consumer_group="group1",
+            # TODO: develop commit strategy to minimize duplicates and guarantee no loss
+            # config_override={"enable.auto.offset.store": False}
+        )
         self.c.subscribe([self.queue_name])
 
     def consume(
@@ -39,15 +43,17 @@ class BundleConsumer(Consumer):
                 if msg is None:
                     continue
                 else:
-                    return QueueMessage(message_id=str(message.offset()), message=msg)
+                    return QueueMessage(message_id=message, message=msg)
 
     def delete_message(self, queue_name: str, message_id: str = None) -> bool:
-        # TODO: should we hard-commit here?
-        print("no message to delete!")
+        # self.c.consumer.store_offsets(message=message_id)
         return True
 
     def on_fail(self) -> None:
         pass
+
+    def shutdown(self) -> None:
+        self.c.close()
 
 
 @dataclass
@@ -56,5 +62,9 @@ class BundleProducer(Producer):
         self.p = KafkaProducer()
 
     def produce(self, queue_name: str, message: QueueMessage) -> bool:
-        self.p.publish(topic=queue_name, value=message.dict()["message"])
+        value = json.dumps(message.message, default=str).encode("utf-8")
+        self.p.publish(topic=queue_name, value=value)
         return True
+
+    def shutdown(self) -> None:
+        self.p.flush()

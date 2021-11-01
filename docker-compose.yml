@@ -42,9 +42,9 @@ services:
             - redis
         volumes:
             - ./:/app/
-#         ports:
-#             - 5678:5678
-#         command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py features  kafka rsmq
+        # ports:
+        #     - 5678:5678
+        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py features
         command: python main.py features
 
     triage:

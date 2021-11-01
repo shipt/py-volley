@@ -1,7 +1,5 @@
 from typing import Any, Dict
-from unittest.mock import patch
-
-import pytest
+from unittest.mock import MagicMock, patch
 
 from components.collector import main as collector
 from components.data_models import (
@@ -40,20 +38,32 @@ def test_features(input_message: InputMessage, fp_service_response: Dict[str, An
                 assert order["item_qty"] > 0
 
 
-def test_bunk_order_id(bunk_input_message: InputMessage) -> None:
-    with pytest.raises(Exception):
-        outputs = features.__wrapped__(bunk_input_message)  # NOQA: F841
+@patch("components.features.requests.get")
+def test_bunk_order_id(mock_get: MagicMock) -> None:
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json = lambda: {"order_id": 1}
+    f = InputMessage(bundle_request_id="a1234", orders=["1", "2", "3"])
+    outputs = features.__wrapped__(f)  # NOQA: F841
+    for qname, message in outputs:
+        assert len(message.error_orders) == 3
+        assert len(message.enriched_orders) == 0
 
 
-def test_bunk_fp_response(input_message: InputMessage) -> None:
-    with pytest.raises(KeyError):
-        with patch("components.features.requests.get") as bunk_fp_response:
-            bunk_fp_response.return_value.status_code = 200
-            bunk_fp_response.return_value.json = lambda: {"order_id": 1}
-            outputs = features.__wrapped__(input_message)  # NOQA: F841
+@patch("components.features.requests.get")
+def test_bunk_fp_response(mock_get: MagicMock, input_message: InputMessage) -> None:
+    mock_get.return_value.status_code = 500
+    mock_get.return_value.json = lambda: {"order_id": 1}
+    outputs = features.__wrapped__(input_message)  # NOQA: F841
+    for qname, message in outputs:
+        assert len(message.error_orders) == 2
+        assert len(message.enriched_orders) == 0
 
 
-def test_triage(input_message: InputMessage) -> None:
+@patch("components.features.requests.get")
+def test_triage(mock_get: MagicMock, input_message: InputMessage, fp_service_response: Dict[str, Any]) -> None:
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json = lambda: fp_service_response
+
     triage_message = features.__wrapped__(input_message)[0][1]
     outputs = triage.__wrapped__(triage_message)
     known_out_queues = ["fallback", "collector", "optimizer"]
@@ -63,7 +73,13 @@ def test_triage(input_message: InputMessage) -> None:
         assert isinstance(message, ComponentMessage)
 
 
-def test_fallback_optimizer(input_message: Dict[str, Any]) -> None:
+@patch("components.features.requests.get")
+def test_fallback_optimizer(
+    mock_get: MagicMock, input_message: Dict[str, Any], fp_service_response: Dict[str, Any]
+) -> None:
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json = lambda: fp_service_response
+
     triage_message = features.__wrapped__(input_message)[0][1]
     t_outputs = triage.__wrapped__(triage_message)
     outputs = None

@@ -26,3 +26,33 @@ def test_optimizer(mock_post: MagicMock) -> None:
     for qname, output in outputs:
         assert isinstance(output, CollectOptimizer)
         assert output.event_type == "optimizer"
+
+
+@patch("components.optimizer.requests.post")
+def test_optimizer_fail(mock_post: MagicMock) -> None:
+    """optimizer failure - everything should be bundle of one"""
+    mock_post.return_value.status_code = 500
+    mock_post.return_value.json = lambda: None
+
+    msg = OptimizerMessage(**OptimizerMessage.schema()["examples"][0])
+
+    all_order_ids = []
+    for group in msg.grouped_orders:
+        for order in group:
+            all_order_ids.append(order["order_id"])
+
+    if msg.error_orders:
+        for order in msg.error_orders:
+            all_order_ids.append(order["order_id"])
+
+    outputs = optimizer.__wrapped__(msg)
+
+    for qname, output in outputs:
+        assert isinstance(output, CollectOptimizer)
+        assert output.event_type == "optimizer"
+        all_bundles = output.optimizer_results["bundles"]
+
+        # should only be bundles of 1 when optimizer fails
+        assert len(all_order_ids) == len(all_bundles)
+        for bundle in all_bundles:
+            assert len(bundle.orders) == 1

@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 from uuid import uuid4
 
 import requests
@@ -19,22 +19,32 @@ OPTIMIZER_URL = {
 }[os.getenv("APP_ENV", "localhost")]
 
 
+def handle_optimizer_call(body: Dict[str, Any]) -> List[Dict[str, Any]]:
+    resp = requests.post(OPTIMIZER_URL, json=body)
+    if resp.status_code == 200:
+        bundles: List[Dict[str, Any]] = resp.json()["bundles"]
+    else:
+        logger.error(f"{OPTIMIZER_URL} -{resp.status_code=} - {resp.reason} - {body=}")
+        # create bundles of 1
+        bundles = []
+        for o in body["order_list"]:
+            bundles.append({"group_id": str(uuid4()), "orders": [o["order_id"]]})
+    return bundles
+
+
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
 def main(message: OptimizerMessage) -> List[Tuple[str, ComponentMessage]]:
-    """handling calling the optimization service"""
+    """handle calling the optimization service"""
 
-    bundles = []
+    bundles: List[Dict[str, Any]] = []
     for order_group in message.grouped_orders:
         body = {
             "bundle_request_id": message.bundle_request_id,
             "order_list": order_group,
         }
-        resp = requests.post(OPTIMIZER_URL, json=body)
-        if resp.status_code == 200:
-            opt_response = resp.json()
-            bundles.extend(opt_response["bundles"])
-        else:
-            logger.error(f"{OPTIMIZER_URL} -{resp.status_code=} - {resp.reason}")
+        resp_bundles = handle_optimizer_call(body)
+        if resp_bundles:
+            bundles.extend(resp_bundles)
 
     # append "error bundles of 1"
     if message.error_orders:

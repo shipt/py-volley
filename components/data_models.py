@@ -1,9 +1,93 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Extra, Field
 
 from engine.data_models import ComponentMessage
+
+
+def get_example(model: BaseModel) -> Dict[str, Any]:
+    """helper function for generating sample data from a base class model"""
+    return {k: v["example"] for k, v in model.schema()["properties"].items()}
+
+
+class Order(BaseModel):
+    """defines an individual order"""
+
+    # TODO: which of these can be optional?
+    order_id: str = Field(example="15855965")
+    order_type: str = Field(example="marketplace")  # TODO: should be enum maybe?
+    delivery_start_time: datetime = Field(example="2020-12-28T08:00:00Z")
+    delivery_end_time: datetime = Field(example="2020-12-28T09:00:00Z")
+    schedule_id: int = Field(example=86337511)
+    schedule_type: str = Field(example="deliver_between")
+    delivery_by: datetime = Field(example="2020-01-01T00:00:00Z")
+    delivery_latitude: float = Field(example=42.967167)
+    delivery_longitude: float = Field(example=-85.53964)
+    total_items: int = Field(example="0")
+    metro_id: str = Field(example="")
+
+    store_location_id: int = Field(example=2110)
+
+    class Config:
+        extra = Extra.allow
+        schema_extra = {
+            "examples": [
+                {
+                    "order_id": "16702212",
+                    "order_type": "marketplace",
+                    "delivery_start_time": "2021-07-28T16:00:00Z",
+                    "delivery_end_time": "2021-07-28T17:00:00Z",
+                    "schedule_id": "86337511",
+                    "schedule_type": "deliver_between",
+                    "delivery_by": "0001-01-01T00:00:00Z",
+                    "delivery_latitude": 42.985558,
+                    "delivery_longitude": -85.58836,
+                    "total_items": "16",
+                    "metro_id": "61",
+                    "store_id": "10",
+                    "store_location_id": "2110",
+                },
+                {
+                    "order_id": "16725330",
+                    "order_type": "platform",
+                    "delivery_start_time": "2021-08-07T02:00:00Z",
+                    "delivery_end_time": "2021-08-07T03:00:00Z",
+                    "schedule_id": "86989913",
+                    "schedule_type": "deliver_between",
+                    "delivery_by": "0001-01-01T00:00:00Z",
+                    "delivery_latitude": 42.99678,
+                    "delivery_longitude": -85.59336,
+                    "total_items": "6",
+                    "metro_id": "61",
+                    "store_id": "10",
+                    "store_location_id": "2110",
+                },
+                {
+                    "order_id": "15830545",
+                    "order_type": "marketplace",
+                    "delivery_start_time": "2020-12-09T11:00:00Z",
+                    "delivery_end_time": "2020-12-09T12:00:00Z",
+                    "schedule_id": "70253593",
+                    "schedule_type": "deliver_between",
+                    "delivery_by": "0001-01-01T00:00:00Z",
+                    "delivery_latitude": 42.968487,
+                    "delivery_longitude": -85.613686,
+                    "total_items": "0",
+                    "metro_id": "",
+                    "store_id": "",
+                    "store_location_id": "2110",
+                },
+            ]
+        }
+
+
+class EnrichedOrder(Order):
+    """base order definition plus features added from flight plan + metro service"""
+
+    shop_time_minutes: Optional[float] = Field(example=17.25)
+    store_latitude: Optional[float] = Field(example=42.99678)
+    store_longitude: Optional[float] = Field(example=-85.59336)
 
 
 class InputMessage(ComponentMessage):
@@ -12,14 +96,14 @@ class InputMessage(ComponentMessage):
     bundle_request_id: str
 
     # list of order id
-    orders: List[str]
+    orders: List[Order]
 
     class Config:
         schema_extra = {
             "examples": [
                 {
                     "bundle_request_id": "request-id-1234",
-                    "orders": ["invalid-order_1", "invalid-order_2", "16578146", "16643507", "16731513"],
+                    "orders": [get_example(Order), Order.schema()["examples"][0], Order.schema()["examples"][1]],  # type: ignore
                 }
             ]
         }
@@ -31,10 +115,10 @@ class TriageMessage(ComponentMessage):
     Currently output by Features component
     """
 
-    enriched_orders: List[Dict[str, Any]]
     bundle_request_id: str
     engine_event_id: str
-    error_orders: Optional[List[Dict[str, Any]]] = None
+    enriched_orders: List[EnrichedOrder]
+    error_orders: Optional[List[Order]] = None
 
     class Config:
         schema_extra = {
@@ -196,34 +280,3 @@ class OutputMessage(ComponentMessage):
                 }
             ]
         }
-
-
-class Order(BaseModel):
-    """defines an individual order"""
-
-    # TODO: which of these can be optional?
-    order_id: str = Field(example="15855965")
-    order_type: str = Field(example="marketplace")  # TODO: should be enum maybe?
-    delivery_start_time: datetime = Field(example="2020-12-28T08:00:00Z")
-    delivery_end_time: datetime = Field(example="2020-12-28T09:00:00Z")
-    schedule_id: int = Field(example=86337511)
-    schedule_type: str = Field(example="deliver_between")
-    delivery_by: datetime = Field(example="2020-01-01T00:00:00Z")
-    delivery_latitude: float = Field(example=42.967167)
-    delivery_longitude: float = Field(example=-85.53964)
-    total_items: int = Field(example="0")
-    metro_id: str = Field(example="")
-    store_location_id: int = Field(example=2110)
-    store_latitude: float = Field(example=42.99678)
-    store_longitude: float = Field(example=-85.59336)
-
-
-class EnrichedOrder(Order):
-    """base order definition plus features added from flight plan"""
-
-    shop_time_minutes: int = Field(example=20)
-
-
-def get_example(model: BaseModel) -> Dict[str, Any]:
-    """helper function for generating sample data from a base class model"""
-    return {k: v["example"] for k, v in model.schema()["properties"].items()}

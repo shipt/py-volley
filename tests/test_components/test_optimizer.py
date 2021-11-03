@@ -1,15 +1,15 @@
 from typing import Any, Dict, List
 from unittest.mock import MagicMock, patch
 
-from components.data_models import CollectOptimizer, OptimizerMessage
+from components.data_models import CollectOptimizer, EnrichedOrder, OptimizerMessage
 from components.optimizer import main as optimizer
 
 
-def mock_optimizer(orders: List[Dict[str, Any]]) -> Dict[str, Any]:
+def mock_optimizer(orders: List[EnrichedOrder]) -> Dict[str, Any]:
     """dummy optimizer - creates one giant bundle"""
     return {
         "bundle_request_id": "string",
-        "bundles": [{"group_id": "group-id-1", "orders": [x["order_id"] for x in orders]}],
+        "bundles": [{"group_id": "group-id-1", "orders": [x.order_id for x in orders]}],
     }
 
 
@@ -39,11 +39,11 @@ def test_optimizer_fail(mock_post: MagicMock) -> None:
     all_order_ids = []
     for group in msg.grouped_orders:
         for order in group:
-            all_order_ids.append(order["order_id"])
+            all_order_ids.append(order.order_id)
 
     if msg.error_orders:
         for order in msg.error_orders:
-            all_order_ids.append(order["order_id"])
+            all_order_ids.append(order.order_id)
 
     outputs = optimizer.__wrapped__(msg)
 

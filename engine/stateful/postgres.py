@@ -54,7 +54,7 @@ class PGConsumer(Consumer):
             USING (
                 SELECT *
                 FROM {PG_SCHEMA}.{queue_name}
-                WHERE (timeout >= '{now}' OR optimizer_id IS NOT NULL)
+                WHERE (timeout < '{now}' OR optimizer_id IS NOT NULL)
                 LIMIT {BATCH_SIZE}
                 FOR UPDATE SKIP LOCKED
             ) q

@@ -67,7 +67,7 @@ def main(in_message: OptimizerMessage) -> List[Tuple[str, ComponentMessage]]:
         engine_event_id=in_message.engine_event_id,
         bundle_request_id=in_message.bundle_request_id,
         optimizer_id=str(uuid4()),
-        optimizer_finish=str(datetime.now()),
+        optimizer_finish=str(datetime.utcnow()),
         optimizer_results=opt_solution,
     )
 

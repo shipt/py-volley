@@ -3,12 +3,7 @@ from typing import Any, Dict, List, Tuple
 
 import pandas as pd
 
-from components.data_models import (
-    CollectTriage,
-    EnrichedOrder,
-    OptimizerMessage,
-    TriageMessage,
-)
+from components.data_models import CollectTriage, OptimizerMessage, TriageMessage
 from engine.data_models import ComponentMessage
 from engine.engine import bundle_engine
 
@@ -33,7 +28,7 @@ def main(in_message: TriageMessage) -> List[Tuple[str, ComponentMessage]]:
     t = CollectTriage(
         engine_event_id=in_message.engine_event_id,
         bundle_request_id=in_message.bundle_request_id,
-        timeout=str(datetime.now() + timedelta(seconds=OPT_TIMEOUT_SECONDS)),
+        timeout=str(datetime.utcnow() + timedelta(seconds=OPT_TIMEOUT_SECONDS)),
     )
 
     opt_fall_msg = OptimizerMessage(

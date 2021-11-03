@@ -1,8 +1,6 @@
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Extra, Field
-from pydantic.schema import schema
 
 from engine.data_models import ComponentMessage
 
@@ -18,11 +16,11 @@ class Order(BaseModel):
     # TODO: which of these can be optional?
     order_id: str = Field(example="15855965")
     order_type: str = Field(example="marketplace")  # TODO: should be enum maybe?
-    delivery_start_time: datetime = Field(example="2020-12-28T08:00:00Z")
-    delivery_end_time: datetime = Field(example="2020-12-28T09:00:00Z")
+    delivery_start_time: str = Field(example="2020-12-28T08:00:00Z")
+    delivery_end_time: str = Field(example="2020-12-28T09:00:00Z")
     schedule_id: int = Field(example=86337511)
     schedule_type: str = Field(example="deliver_between")
-    delivery_by: datetime = Field(example="2020-01-01T00:00:00Z")
+    delivery_by: str = Field(example="2020-01-01T00:00:00Z")
     delivery_latitude: float = Field(example=42.967167)
     delivery_longitude: float = Field(example=-85.53964)
     total_items: int = Field(example="0")
@@ -128,7 +126,11 @@ class InputMessage(ComponentMessage):
             "examples": [
                 {
                     "bundle_request_id": "request-id-1234",
-                    "orders": [get_example(Order), Order.schema()["examples"][0], Order.schema()["examples"][1]],  # type: ignore
+                    "orders": [
+                        get_example(Order),  # type: ignore
+                        Order.schema()["examples"][0],
+                        Order.schema()["examples"][1],
+                    ],
                 }
             ]
         }

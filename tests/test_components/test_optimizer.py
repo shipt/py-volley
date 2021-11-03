@@ -42,7 +42,7 @@ def test_optimizer_fail(mock_post: MagicMock) -> None:
             all_order_ids.append(order.order_id)
 
     if msg.error_orders:
-        for order in msg.error_orders:
+        for order in msg.error_orders:  # type: ignore
             all_order_ids.append(order.order_id)
 
     outputs = optimizer.__wrapped__(msg)

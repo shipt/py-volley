@@ -11,23 +11,32 @@ from engine.queues import available_queues
 
 
 def test_end_to_end() -> None:
+    # get name of the input topic
     queues = available_queues()
     produce_topic = queues.queues["input-queue"].value
     logger.info(f"{produce_topic=}")
     p = KafkaProducer()
+
+    # get some sample test data
     data = InputMessage.schema()["examples"][0]
+
+    # create some unique request id for tracking
     test_messages = 5
     request_ids: List[str] = [f"test_{x}_{str(uuid4())[:5]}" for x in range(test_messages)]
     for req_id in request_ids:
+        # publish the messages
         data["bundle_request_id"] = req_id
         p.publish(produce_topic, value=json.dumps(data))
-
+    # wait a second for synch
+    time.sleep(1)
+    # consumer the messages off the output topic
     consume_topic = queues.queues["output-queue"].value
     logger.info(f"{consume_topic=}")
     c = KafkaConsumer(consumer_group="int-test-group")
     c.subscribe([consume_topic])
-    start = time.time()
+
     # wait 30 seconds max for messages to reach output topic
+    start = time.time()
     consumed_messages = []
     while (time.time() - start) < 30:
         message = c.poll(0.25)

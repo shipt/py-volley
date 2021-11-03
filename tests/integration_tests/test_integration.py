@@ -17,11 +17,11 @@ def test_end_to_end() -> None:
     logger.info(f"{produce_topic=}")
     p = KafkaProducer()
 
-    # get some sample test data
+    # get some sample data
     data = InputMessage.schema()["examples"][0]
 
     # create some unique request id for tracking
-    test_messages = 5
+    test_messages = 3
     request_ids: List[str] = [f"test_{x}_{str(uuid4())[:5]}" for x in range(test_messages)]
     for req_id in request_ids:
         # publish the messages
@@ -29,19 +29,17 @@ def test_end_to_end() -> None:
         p.publish(produce_topic, value=json.dumps(data))
     p.flush()
 
-    # wait a second for synch
-    time.sleep(1)
     # consumer the messages off the output topic
     consume_topic = queues.queues["output-queue"].value
     logger.info(f"{consume_topic=}")
     c = KafkaConsumer(consumer_group="int-test-group")
     c.subscribe([consume_topic])
 
-    # wait 30 seconds max for messages to reach output topic
+    # wait some seconds max for messages to reach output topic
     start = time.time()
     consumed_messages = []
-    while (time.time() - start) < 30:
-        message = c.poll(0.25)
+    while (time.time() - start) < 15:
+        message = c.poll(1)
         if message is None:
             continue
         if message.error():
@@ -62,3 +60,16 @@ def test_end_to_end() -> None:
         assert _id in conusumed_ids
 
     assert len(request_ids) == len(conusumed_ids)
+
+    # assert bundled appropriately assigned to same bundle
+    for m in consumed_messages:
+        for b in m["bundles"]:
+            orders = b["orders"]
+            if len(orders) == 1:
+                for o in orders:
+                    assert o == "15830545"
+            elif len(orders) == 2:
+                assert set(orders) == {"16702212", "16578146"}
+            else:
+                print(orders)
+                assert False

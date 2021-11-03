@@ -79,6 +79,7 @@ def get_metro_attr(
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
 def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
     message = in_message.dict()
+    request_id = message["bundle_request_id"]
     logger.info(f"{FLIGHT_PLAN_URL=}")
 
     error_orders = []
@@ -102,10 +103,14 @@ def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
             logger.exception(f"failed enriching {order_id=}")
             error_orders.append(order)
 
+    if not any([error_orders, enriched_orders]):
+        logger.error(f"NO VALID ORDER: {message}")
+        return (None, None)  # type: ignore
+
     output_message = TriageMessage(
         error_orders=error_orders,
         enriched_orders=enriched_orders,
-        bundle_request_id=message["bundle_request_id"],
+        bundle_request_id=request_id,
         engine_event_id=str(uuid4()),
     )
     return [("triage", output_message)]

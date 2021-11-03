@@ -14,8 +14,8 @@ def test_fp_default() -> None:
 
 def test_get_metro_attr_default() -> None:
     metro_result = get_metro_attr("2110")
-    assert metro_result["store_location_latitude"] == 42.9967809
-    assert metro_result["store_location_longitude"] == -85.59336449999999
+    assert metro_result["store_latitude"] == 42.9967809
+    assert metro_result["store_longitude"] == -85.59336449999999
 
 
 def mocked_requests_get(*args: Any, **kwargs: Any):  # type: ignore

@@ -23,6 +23,8 @@ OPTIMIZER_URL = {
 def handle_optimizer_call(body: Dict[str, Any]) -> List[Dict[str, Any]]:
     order_list = []
     for order in body["order_list"]:
+        order["delivery_start_time"] = order["delivery_start_time"].isoformat()
+        order["delivery_end_time"] = order["delivery_end_time"].isoformat()
         order["item_qty"] = order.pop("total_items")
         order["store_name"] = "TODO"
         order_list.append(order)
@@ -46,14 +48,17 @@ def main(in_message: OptimizerMessage) -> List[Tuple[str, ComponentMessage]]:
     message = in_message.dict()
     bundles: List[Dict[str, Any]] = []
 
-    for order_group in message["grouped_orders"]:
-        body = {
-            "bundle_request_id": message["bundle_request_id"],
-            "order_list": order_group,
-        }
-        resp_bundles = handle_optimizer_call(body)
-        if resp_bundles:
-            bundles.extend(resp_bundles)
+    if message["grouped_orders"]:
+        for order_group in message["grouped_orders"]:
+            body = {
+                "bundle_request_id": message["bundle_request_id"],
+                "order_list": order_group,
+            }
+            resp_bundles = handle_optimizer_call(body)
+            if resp_bundles:
+                bundles.extend(resp_bundles)
+    else:
+        logger.warning(f"No grouped orders for bundle_request_id={in_message.engine_event_id}")
 
     # append "error bundles of 1"
     if message["error_orders"]:
@@ -62,8 +67,12 @@ def main(in_message: OptimizerMessage) -> List[Tuple[str, ComponentMessage]]:
             logger.info(f"creating bundle of one: {order_id=}")
             bundles.extend([{"group_id": str(uuid4()), "orders": [order_id]}])
 
+    if not bundles:
+        logger.critical(f"NO BUNDLE SOLUTION - NO BUNDLES OF ONE")
+        raise Exception
+
     opt_solution = {"bundles": bundles}
-    logger.info(f"Optimized Bundles: {opt_solution}")
+    logger.info(f"{in_message.bundle_request_id} - optimized Bundles: {len(bundles)}")
 
     c = CollectOptimizer(
         engine_event_id=in_message.engine_event_id,

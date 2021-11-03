@@ -49,7 +49,8 @@ class BundleProducer(Producer):
     def produce(self, queue_name: str, message: QueueMessage) -> bool:
         m = message.dict()["message"]
         logger.info(f"queue_name - {queue_name}")
-        msg_id: str = self.queue.sendMessage(qname=queue_name, message=m).execute()
+        msg = json.dumps(m, default=str)
+        msg_id: str = self.queue.sendMessage(qname=queue_name, message=msg, encode=True).execute()
         return bool(msg_id)
 
     def shutdown(self) -> None:

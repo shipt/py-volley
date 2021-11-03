@@ -1,7 +1,6 @@
 version: '3.5'
 services:
     dummy_events:
-        container_name: dummy_events
         environment:
             - APP_ENV=localhost
             - REDIS_HOST=redis
@@ -24,7 +23,6 @@ services:
         command: python main.py dummy_events
 
     features:
-        container_name: features
         environment:
             - APP_ENV=localhost
             - REDIS_HOST=redis
@@ -48,7 +46,6 @@ services:
         command: python main.py features
 
     triage:
-        container_name: triage
         environment:
             - APP_ENV=localhost
             - REDIS_HOST=redis
@@ -70,7 +67,6 @@ services:
         command: python main.py triage
 
     optimizer:
-        container_name: optimizer
         environment:
             - APP_ENV=localhost
             - REDIS_HOST=redis
@@ -92,7 +88,6 @@ services:
         command: python main.py optimizer
 
     fallback:
-        container_name: fallback
         environment:
             - APP_ENV=localhost
             - REDIS_HOST=redis
@@ -114,7 +109,6 @@ services:
         command: python main.py fallback
 
     collector:
-        container_name: collector
         environment:
             - APP_ENV=localhost
             - REDIS_HOST=redis
@@ -137,7 +131,6 @@ services:
         command: python main.py collector
 
     publisher:
-        container_name: publisher
         environment:
             - APP_ENV=localhost
             - REDIS_HOST=redis
@@ -161,7 +154,6 @@ services:
         command: python main.py publisher
 
     dummy_consumer:
-        container_name: dummy_consumer
         environment:
             - APP_ENV=localhost
             - REDIS_HOST=redis
@@ -220,6 +212,7 @@ services:
             - zookeeper
         ports:
             - "9092:9092"
+            - "29092:29092"
             - "7071:7071"
             - "49999:49999"
         # https://rmoff.net/2018/08/02/kafka-listeners-explained/

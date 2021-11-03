@@ -10,7 +10,7 @@ queues:
   - name: optimizer
     value: optimizer
     type: rsmq
-    schema: components.data_models.ComponentMessage
+    schema: components.data_models.OptimizerMessage
   - name: fallback
     value: fallback
     type: rsmq

@@ -21,11 +21,6 @@ OPTIMIZER_URL = {
 
 
 def handle_optimizer_call(body: Dict[str, Any]) -> List[Dict[str, Any]]:
-    # convert schema
-    for order in body["order_list"]:
-        order["delv_latitude"] = order.pop("delivery_latitude")
-        order["delv_longitude"] = order.pop("delivery_longitude")
-
     resp = requests.post(OPTIMIZER_URL, data=json.dumps(body, default=str))
     if resp.status_code == 200:
         bundles: List[Dict[str, Any]] = resp.json()["bundles"]

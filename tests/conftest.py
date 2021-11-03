@@ -44,7 +44,7 @@ def collector_triage_message() -> CollectTriage:
     return CollectTriage(
         engine_event_id="123",
         bundle_request_id="abc",
-        timeout=str(datetime.now() + timedelta(minutes=10)),
+        timeout=str(datetime.utcnow() + timedelta(minutes=10)),
     )
 
 
@@ -55,7 +55,7 @@ def collector_fallback_message() -> CollectFallback:
         bundle_request_id="abc",
         fallback_id="id_1",
         fallback_results={"bundles": [{"group_id": "group_a", "orders": ["bundle_a", "bundle_b"]}]},
-        fallback_finish=str(datetime.now() + timedelta(minutes=2)),
+        fallback_finish=str(datetime.utcnow() + timedelta(minutes=2)),
     )
 
 
@@ -66,7 +66,7 @@ def collector_optimizer_message() -> CollectOptimizer:
         bundle_request_id="abc",
         optimizer_id="id_2",
         optimizer_results={"bundles": [{"group_id": "group_a", "orders": ["bundle_a", "bundle_b"]}]},
-        optimizer_finish=str(datetime.now() + timedelta(minutes=4)),
+        optimizer_finish=str(datetime.utcnow() + timedelta(minutes=4)),
     )
 
 

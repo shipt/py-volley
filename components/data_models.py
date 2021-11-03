@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Extra, Field
@@ -16,11 +17,11 @@ class Order(BaseModel):
     # TODO: which of these can be optional?
     order_id: str = Field(example="15855965")
     order_type: str = Field(example="marketplace")  # TODO: should be enum maybe?
-    delivery_start_time: str = Field(example="2020-12-28T08:00:00Z")
-    delivery_end_time: str = Field(example="2020-12-28T09:00:00Z")
+    delivery_start_time: datetime = Field(example="2020-12-28T08:00:00Z")
+    delivery_end_time: datetime = Field(example="2020-12-28T09:00:00Z")
     schedule_id: int = Field(example=86337511)
     schedule_type: str = Field(example="deliver_between")
-    delivery_by: str = Field(example="2020-01-01T00:00:00Z")
+    delivery_by: datetime = Field(example="2020-01-01T00:00:00Z")
     delivery_latitude: float = Field(example=42.967167)
     delivery_longitude: float = Field(example=-85.53964)
     total_items: int = Field(example="0")
@@ -48,10 +49,10 @@ class Order(BaseModel):
                     "store_location_id": "2110",
                 },
                 {
-                    "order_id": "16725330",
+                    "order_id": "16578146",
                     "order_type": "platform",
-                    "delivery_start_time": "2021-08-07T02:00:00Z",
-                    "delivery_end_time": "2021-08-07T03:00:00Z",
+                    "delivery_start_time": "2021-07-28T16:00:00Z",
+                    "delivery_end_time": "2021-07-28T17:00:00Z",
                     "schedule_id": "86989913",
                     "schedule_type": "deliver_between",
                     "delivery_by": "0001-01-01T00:00:00Z",
@@ -127,9 +128,9 @@ class InputMessage(ComponentMessage):
                 {
                     "bundle_request_id": "request-id-1234",
                     "orders": [
-                        get_example(Order),  # type: ignore
                         Order.schema()["examples"][0],
                         Order.schema()["examples"][1],
+                        Order.schema()["examples"][2],
                     ],
                 }
             ]

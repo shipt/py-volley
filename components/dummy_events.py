@@ -15,6 +15,7 @@ def main() -> None:
     i = 0
     while True:
         data = InputMessage.schema()["examples"][0]
+        data["bundle_request_id"] = f"request-id-{i}"
         p.publish(input_topic, data, serialize=True)
         logger.info(f"{data=}")
         time.sleep(10)

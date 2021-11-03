@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import requests
 
-from components.data_models import EnrichedOrder, InputMessage, Order, TriageMessage
+from components.data_models import EnrichedOrder, InputMessage, TriageMessage
 from core.logging import logger
 from engine.data_models import ComponentMessage
 from engine.engine import bundle_engine
@@ -69,7 +69,7 @@ def get_metro_attr(
             results["store_longitude"] = results.pop("store_location_longitude")
             return results
         except KeyError:
-            logger.exception(f"attribute missing from metropolis call")
+            logger.exception(f"attribute missing from metropolis call: {store_location_id=}")
             return {}
     else:
         logger.error(f"Metro-service returned status code: {resp.status_code} for {store_location_id=}")
@@ -85,7 +85,7 @@ def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
     enriched_orders = []
     # iterate over keys (order id)
     for order in message["orders"]:
-
+        order_id = order["order_id"]
         # handle geo enrichment
         metro_results = get_metro_attr(store_location_id=order["store_location_id"])
 
@@ -93,12 +93,13 @@ def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
         order.update(metro_results)
 
         # handle shop time
-        fp_results = get_shop_time(order_id=order["order_id"])
+        fp_results = get_shop_time(order_id=order_id)
         order.update(fp_results)
 
         try:
             enriched_orders.append(EnrichedOrder(**order))
-        except:
+        except Exception:
+            logger.exception(f"failed enriching {order_id=}")
             error_orders.append(order)
 
     output_message = TriageMessage(

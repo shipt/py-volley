@@ -37,17 +37,6 @@ def test_features(input_message: InputMessage, fp_service_response: Dict[str, An
 
 
 @patch("components.features.requests.get")
-def test_bunk_order_id(mock_get: MagicMock) -> None:
-    mock_get.return_value.status_code = 200
-    mock_get.return_value.json = lambda: {"order_id": 1}
-    f = InputMessage(bundle_request_id="a1234", orders=["1", "2", "3"])
-    outputs = features.__wrapped__(f)  # NOQA: F841
-    for qname, message in outputs:
-        assert len(message.error_orders) == 3
-        assert len(message.enriched_orders) == 0
-
-
-@patch("components.features.requests.get")
 def test_bunk_fp_response(mock_get: MagicMock, input_message: InputMessage) -> None:
     mock_get.return_value.status_code = 500
     mock_get.return_value.json = lambda: {"order_id": 1}

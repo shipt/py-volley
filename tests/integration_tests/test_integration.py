@@ -10,7 +10,7 @@ from core.logging import logger
 from engine.queues import available_queues
 
 
-def test_end_to_end() -> None:
+def test_end_to_end() -> None:  # noqa
     # get name of the input topic
     queues = available_queues()
     produce_topic = queues.queues["input-queue"].value

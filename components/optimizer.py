@@ -68,7 +68,7 @@ def main(in_message: OptimizerMessage) -> List[Tuple[str, ComponentMessage]]:
             bundles.extend([{"group_id": str(uuid4()), "orders": [order_id]}])
 
     if not bundles:
-        logger.critical(f"NO BUNDLE SOLUTION - NO BUNDLES OF ONE")
+        logger.critical(f"{in_message.bundle_request_id} = NO BUNDLE SOLUTION - NO BUNDLES OF ONE")
         raise Exception
 
     opt_solution = {"bundles": bundles}

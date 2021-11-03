@@ -1,4 +1,3 @@
-import json
 import time
 
 from pyshipt_streams import KafkaProducer

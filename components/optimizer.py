@@ -20,6 +20,11 @@ OPTIMIZER_URL = {
 
 
 def handle_optimizer_call(body: Dict[str, Any]) -> List[Dict[str, Any]]:
+    # convert schema
+    for order in body["order_list"]:
+        order["delv_latitude"] = order["delivery_latitude"]
+        order["delv_longitude"] = order["delivery_longitude"]
+
     resp = requests.post(OPTIMIZER_URL, json=body)
     if resp.status_code == 200:
         bundles: List[Dict[str, Any]] = resp.json()["bundles"]
@@ -33,13 +38,14 @@ def handle_optimizer_call(body: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(message: OptimizerMessage) -> List[Tuple[str, ComponentMessage]]:
+def main(in_message: OptimizerMessage) -> List[Tuple[str, ComponentMessage]]:
     """handle calling the optimization service"""
-
+    message = in_message.dict()
     bundles: List[Dict[str, Any]] = []
-    for order_group in message.grouped_orders:
+
+    for order_group in message["grouped_orders"]:
         body = {
-            "bundle_request_id": message.bundle_request_id,
+            "bundle_request_id": message["bundle_request_id"],
             "order_list": order_group,
         }
         resp_bundles = handle_optimizer_call(body)
@@ -47,8 +53,8 @@ def main(message: OptimizerMessage) -> List[Tuple[str, ComponentMessage]]:
             bundles.extend(resp_bundles)
 
     # append "error bundles of 1"
-    if message.error_orders:
-        for err_order in message.error_orders:
+    if message["error_orders"]:
+        for err_order in message["error_orders"]:
             order_id = err_order["order_id"]
             logger.info(f"creating bundle of one: {order_id=}")
             bundles.extend([{"group_id": str(uuid4()), "orders": [order_id]}])
@@ -57,8 +63,8 @@ def main(message: OptimizerMessage) -> List[Tuple[str, ComponentMessage]]:
     logger.info(f"Optimized Bundles: {opt_solution}")
 
     c = CollectOptimizer(
-        engine_event_id=message.engine_event_id,
-        bundle_request_id=message.bundle_request_id,
+        engine_event_id=in_message.engine_event_id,
+        bundle_request_id=in_message.bundle_request_id,
         optimizer_id=str(uuid4()),
         optimizer_finish=str(datetime.now()),
         optimizer_results=opt_solution,

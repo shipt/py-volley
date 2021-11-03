@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Extra, Field
+from pydantic.schema import schema
 
 from engine.data_models import ComponentMessage
 
@@ -89,6 +90,30 @@ class EnrichedOrder(Order):
     store_latitude: Optional[float] = Field(example=42.99678)
     store_longitude: Optional[float] = Field(example=-85.59336)
 
+    class Config:
+        schema_extra = {
+            "examples": [
+                {
+                    "order_id": "16702212",
+                    "order_type": "marketplace",
+                    "delivery_start_time": "2021-07-28T16:00:00Z",
+                    "delivery_end_time": "2021-07-28T17:00:00Z",
+                    "schedule_id": "86337511",
+                    "schedule_type": "deliver_between",
+                    "delivery_by": "0001-01-01T00:00:00Z",
+                    "delivery_latitude": 42.985558,
+                    "delivery_longitude": -85.58836,
+                    "total_items": "16",
+                    "metro_id": "61",
+                    "store_id": "10",
+                    "store_location_id": "2110",
+                    "shop_time_minutes": 17.25,
+                    "store_latitude": 42.9967809,
+                    "store_longitude": -85.59336449999999,
+                }
+            ]
+        }
+
 
 class InputMessage(ComponentMessage):
     """input messages coming off kafka"""
@@ -126,21 +151,8 @@ class TriageMessage(ComponentMessage):
                 {
                     "bundle_request_id": "request-id-1234",
                     "engine_request_id": "uuid4-engine-internal",
-                    "enriched_orders": [
-                        {
-                            "order_id": "16578146",
-                            "item_qty": 3,
-                            "shop_time_minutes": 20,
-                            "delivery_start_time": "2021-08-26 17:00:00Z",
-                            "delivery_end_time": "2021-08-26 18:00:00Z",
-                            "store_name": "Target",
-                            "delv_longitude": -73.919696,
-                            "delv_latitude": 40.827675,
-                            "store_longitude": -73.930287,
-                            "store_latitude": 40.823963,
-                        }
-                    ],
-                    "error_orders": ["bad_order_1", "bad_order_1"],
+                    "enriched_orders": [EnrichedOrder.schema()["examples"][0]],
+                    "error_orders": [Order.schema()["examples"][0]],
                 }
             ]
         }
@@ -151,8 +163,8 @@ class OptimizerMessage(ComponentMessage):
 
     bundle_request_id: str
     engine_event_id: str
-    grouped_orders: List[List[Dict[str, Any]]]
-    error_orders: Optional[List[Dict[str, Any]]] = None
+    grouped_orders: List[List[EnrichedOrder]]
+    error_orders: Optional[List[Order]] = None
 
     class Config:
         schema_extra = {
@@ -160,26 +172,8 @@ class OptimizerMessage(ComponentMessage):
                 {
                     "bundle_request_id": "request-id-123",
                     "engine_event_id": "engine-id-123",
-                    "grouped_orders": [
-                        [
-                            {
-                                "order_id": "16578146",
-                                "item_qty": 3,
-                                "shop_time_minutes": 20,
-                                "delivery_start_time": "2021-08-26 17:00:00Z",
-                                "delivery_end_time": "2021-08-26 18:00:00Z",
-                                "store_name": "Target",
-                                "delv_longitude": -73.919696,
-                                "delv_latitude": 40.827675,
-                                "store_longitude": -73.930287,
-                                "store_latitude": 40.823963,
-                            }
-                        ]
-                    ],
-                    "error_orders": [
-                        {"order_id": "bad_order_1"},
-                        {"order_id": "bad_order_1"},
-                    ],
+                    "grouped_orders": [[EnrichedOrder.schema()["examples"][0]]],
+                    "error_orders": [Order.schema()["examples"][0]],
                 }
             ]
         }

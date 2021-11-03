@@ -1,3 +1,4 @@
+from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
 from components.data_models import InputMessage, TriageMessage
@@ -27,12 +28,12 @@ def test_features(input_message: InputMessage, fp_service_response: Dict[str, An
             assert isinstance(message, TriageMessage)
             assert isinstance(message.enriched_orders, list)
 
-            for order in message.enriched_orders:
-                assert order["order_id"] in input_message.orders
+            for enr_order in message.enriched_orders:
+                assert enr_order.order_id in input_message.orders
                 # spot check some attributes exist
-                assert isinstance(order["delv_longitude"], float)
-                assert isinstance(order["delv_latitude"], float)
-                assert order["item_qty"] > 0
+                assert isinstance(enr_order.delv_longitude, float)
+                assert isinstance(enr_order.delv_latitude, float)
+                assert enr_order.item_qty > 0
 
 
 @patch("components.features.requests.get")

@@ -3,7 +3,12 @@ from typing import Any, Dict, List, Tuple
 
 import pandas as pd
 
-from components.data_models import CollectTriage, OptimizerMessage, TriageMessage
+from components.data_models import (
+    CollectTriage,
+    EnrichedOrder,
+    OptimizerMessage,
+    TriageMessage,
+)
 from engine.data_models import ComponentMessage
 from engine.engine import bundle_engine
 
@@ -15,7 +20,7 @@ OPT_TIMEOUT_SECONDS = 120
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
 def main(in_message: TriageMessage) -> List[Tuple[str, ComponentMessage]]:
-    enriched_orders: List[Dict[str, Any]] = in_message.enriched_orders
+    enriched_orders: List[Dict[str, Any]] = [x.dict() for x in in_message.enriched_orders]
 
     # # GROUP ORDERS BY TIME WINDOW
     orders = pd.DataFrame(enriched_orders)

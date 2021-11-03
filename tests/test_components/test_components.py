@@ -9,7 +9,6 @@ from components.data_models import (
     InputMessage,
     OutputMessage,
     PublisherMessage,
-    TriageMessage,
 )
 from components.fallback import main as fallback
 from components.features import main as features

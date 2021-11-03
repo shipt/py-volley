@@ -46,7 +46,7 @@ class PGConsumer(Consumer):
         timeout: float = 60,
         poll_interval: float = 2,
     ) -> QueueMessage:
-        now = str(datetime.now())
+        now = str(datetime.utcnow())
         sql = f"""
             BEGIN;
             DELETE FROM

@@ -33,7 +33,7 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, OutputMessage]]:
             optimizer_type = "fallback"
             bundled = m["fallback_results"]["bundles"]
         else:
-            now = datetime.now()
+            now = datetime.utcnow()
             if now > m["timeout"]:
                 msg = f"{engine_event_id=} - {bundle_request_id} expired without results"
                 logger.error(msg)

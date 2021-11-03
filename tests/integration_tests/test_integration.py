@@ -27,6 +27,8 @@ def test_end_to_end() -> None:
         # publish the messages
         data["bundle_request_id"] = req_id
         p.publish(produce_topic, value=json.dumps(data))
+    p.flush()
+
     # wait a second for synch
     time.sleep(1)
     # consumer the messages off the output topic
@@ -46,6 +48,7 @@ def test_end_to_end() -> None:
             logger.error(message.error())
         else:
             consumed_messages.append(json.loads(message.value().decode("utf-8")))
+    c.close()
 
     conusumed_ids = []
     for m in consumed_messages:

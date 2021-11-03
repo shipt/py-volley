@@ -21,6 +21,13 @@ OPTIMIZER_URL = {
 
 
 def handle_optimizer_call(body: Dict[str, Any]) -> List[Dict[str, Any]]:
+    order_list = []
+    for order in body["order_list"]:
+        order["item_qty"] = order.pop("total_items")
+        order["store_name"] = "TODO"
+        order_list.append(order)
+
+    body["order_list"] = order_list
     resp = requests.post(OPTIMIZER_URL, data=json.dumps(body, default=str))
     if resp.status_code == 200:
         bundles: List[Dict[str, Any]] = resp.json()["bundles"]

@@ -86,9 +86,9 @@ class Order(BaseModel):
 class EnrichedOrder(Order):
     """base order definition plus features added from flight plan + metro service"""
 
-    shop_time_minutes: Optional[float] = Field(example=17.25)
-    store_latitude: Optional[float] = Field(example=42.99678)
-    store_longitude: Optional[float] = Field(example=-85.59336)
+    shop_time_minutes: float = Field(example=17.25)
+    store_latitude: float = Field(example=42.99678)
+    store_longitude: float = Field(example=-85.59336)
 
     class Config:
         schema_extra = {

@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
@@ -17,29 +18,44 @@ def test_get_metro_attr_default() -> None:
     assert metro_result["store_location_longitude"] == -85.59336449999999
 
 
-def test_features(input_message: InputMessage, fp_service_response: Dict[str, Any]) -> None:
-    with patch("components.features.requests.get") as fp_success:
-        fp_success.return_value.status_code = 200
-        fp_success.return_value.json = lambda: fp_service_response
-        outputs = features.__wrapped__(input_message)
+def mocked_requests_get(*args: Any, **kwargs: Any):  # type: ignore
+    status_code = 200
 
-        for qname, message in outputs:
-            assert qname == "triage"
-            assert isinstance(message, TriageMessage)
-            assert isinstance(message.enriched_orders, list)
+    class MockResponse:
+        def __init__(self, json_data: Dict[str, Any], status_code: int) -> None:
+            self.json_data = json_data
+            self.status_code = status_code
 
-            for enr_order in message.enriched_orders:
-                assert enr_order.order_id in input_message.orders
-                # spot check some attributes exist
-                assert isinstance(enr_order.delv_longitude, float)
-                assert isinstance(enr_order.delv_latitude, float)
-                assert enr_order.item_qty > 0
+        def json(self) -> Dict[str, Any]:
+            return self.json_data
+
+    if "metro" in args[0]:
+        with open("./tests/fixtures/metro_response.json", "r") as f:
+            return MockResponse(json.load(f), status_code)
+    if "flight" in args[0]:
+        with open("./tests/fixtures/fp_service_response.json", "r") as f:
+            return MockResponse(json.load(f), status_code)
+
+
+@patch("components.features.requests.get", side_effect=mocked_requests_get)
+def test_features(mocked_get: MagicMock, input_message: InputMessage) -> None:
+    outputs = features.__wrapped__(input_message)
+
+    all_order_ids = [o.order_id for o in input_message.orders]
+    for qname, message in outputs:
+        assert qname == "triage"
+        assert isinstance(message, TriageMessage)
+        assert isinstance(message.enriched_orders, list)
+
+        for enr_order in message.enriched_orders:
+            assert enr_order.order_id in all_order_ids
+            assert enr_order.total_items >= 0
 
 
 @patch("components.features.requests.get")
-def test_bunk_fp_response(mock_get: MagicMock, input_message: InputMessage) -> None:
-    mock_get.return_value.status_code = 500
-    mock_get.return_value.json = lambda: {"order_id": 1}
+def test_external_call_error(mock_get: MagicMock, input_message: InputMessage) -> None:
+    mock_get.status_code = 500
+
     outputs = features.__wrapped__(input_message)  # NOQA: F841
     for qname, message in outputs:
         # forcing bad response from FP - so all should be "error orders"

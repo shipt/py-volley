@@ -64,7 +64,10 @@ def get_metro_attr(
     if resp.status_code == 200:
         try:
             body = resp.json()["configuration"]
-            return {attr: body[attr] for attr in attributes}
+            results = {attr: body[attr] for attr in attributes}
+            results["store_latitude"] = results.pop("store_location_latitude")
+            results["store_longitude"] = results.pop("store_location_longitude")
+            return results
         except KeyError:
             logger.exception(f"attribute missing from metropolis call")
             return {}
@@ -85,6 +88,7 @@ def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
 
         # handle geo enrichment
         metro_results = get_metro_attr(store_location_id=order["store_location_id"])
+
         # successful enrichment from geo
         order.update(metro_results)
 

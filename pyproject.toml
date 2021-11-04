@@ -40,6 +40,7 @@ pytest-cov = "^3.0.0"
 pylint = "^2.11.1"
 jupyter = "^1.0.0"
 types-requests = "^2.25.11"
+types-pytz = "^2021.3.0"
 
 [tool.isort]
 profile = "black"

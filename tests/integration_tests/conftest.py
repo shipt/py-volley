@@ -13,3 +13,4 @@ conf = {"bootstrap.servers": brokers}
 admin = confluent_kafka.admin.AdminClient(conf)
 topics = [confluent_kafka.admin.NewTopic(x, 1, 1) for x in [input_topic, output_topic]]
 admin.create_topics(topics)
+# TODO: can we stop here and validate topics are created before proceeding?

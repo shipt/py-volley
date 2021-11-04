@@ -23,8 +23,8 @@ OPTIMIZER_URL = {
 def handle_optimizer_call(body: Dict[str, Any]) -> List[Dict[str, Any]]:
     order_list = []
     for order in body["order_list"]:
-        order["delivery_start_time"] = order["delivery_start_time"].isoformat()
-        order["delivery_end_time"] = order["delivery_end_time"].isoformat()
+        order["delivery_start_time"] = order["delivery_start_time"].isoformat("T")
+        order["delivery_end_time"] = order["delivery_end_time"].isoformat("T")
         order["item_qty"] = order.pop("total_items")
         order["store_name"] = "TODO"
         order_list.append(order)

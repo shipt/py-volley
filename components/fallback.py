@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Tuple
 from uuid import uuid4
 
+import pandas as pd
 import requests
 
 from components.data_models import CollectFallback, OptimizerMessage
@@ -22,8 +23,8 @@ FALLBACK_URL = {
 def handle_fallback_call(body: Dict[str, Any]) -> List[Dict[str, Any]]:
     order_list = []
     for order in body["order_list"]:
-        order["delivery_start_time"] = order["delivery_start_time"].isoformat()
-        order["delivery_end_time"] = order["delivery_end_time"].isoformat()
+        order["delivery_start_time"] = pd.to_datetime(order["delivery_start_time"]).isoformat()
+        order["delivery_end_time"] = pd.to_datetime(order["delivery_end_time"]).isoformat()
         order["item_qty"] = order.pop("total_items")
         order["store_name"] = "TODO"
         order_list.append(order)

@@ -62,14 +62,20 @@ def test_end_to_end() -> None:  # noqa
     assert len(request_ids) == len(conusumed_ids)
 
     # assert bundled appropriately assigned to same bundle
+    bundles_of_one = []  # order ids for bundles of one
     for m in consumed_messages:
         for b in m["bundles"]:
             orders = b["orders"]
             if len(orders) == 1:
                 for o in orders:
-                    assert o == "15830545"
+                    bundles_of_one.append(o)
             elif len(orders) == 2:
+                # these two orders have same delivery time and same delivery lat/lon
+                # the must bundle together given this batch
                 assert set(orders) == {"16702212", "16578146"}
             else:
-                print(orders)
                 assert False
+
+        # these two orders deliver to opposite sides of the US.
+        # never bundle them
+        assert {"15830545", "15855965"} == set(bundles_of_one)

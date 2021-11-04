@@ -14,6 +14,7 @@ OUTPUT_QUEUES = ["collector"]
 def main(in_message: OptimizerMessage) -> List[Tuple[str, ComponentMessage]]:
     message = in_message.dict()
 
+    print(message)
     falback_solution = {
         "bundles": [
             {"group_id": "g1234", "orders": ["order_1", "order2", "order_4"]},

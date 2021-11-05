@@ -236,7 +236,6 @@ class Bundle(BaseModel):
             ]
         }
 
-
 class CollectOptimizer(CollectorMessage):
     """contains attributes for finished optimizers
     optimizer publishes its results to the collector in this format
@@ -283,6 +282,7 @@ class OutputMessage(ComponentMessage):
 
     engine_event_id: str
     bundle_request_id: str
+    optimizer_type: str
 
     # data model for output
     bundles: List[Bundle]

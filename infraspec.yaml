@@ -96,7 +96,7 @@ datastores:
           event:
             type: BUSINESS
             eventDescription: bundle_engine_input
-      - name: bundle-engine-input-dlq
+      - name: bundle-engine-dlq
         configVar: INPUT_TOPIC
         nameAttributes:
           domain: ds-marketplace
@@ -104,7 +104,7 @@ datastores:
           version: v1
           event:
             type: BUSINESS
-            eventDescription: bundle_engine_input_dlq
+            eventDescription: bundle_engine_dlq
       - name: bundle-engine-output
         configVar: OUTPUT_TOPIC
         nameAttributes:

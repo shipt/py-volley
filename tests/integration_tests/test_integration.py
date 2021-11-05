@@ -79,3 +79,50 @@ def test_end_to_end() -> None:  # noqa
         # these two orders deliver to opposite sides of the US.
         # never bundle them
         assert {"15830545", "15855965"} == set(bundles_of_one)
+
+
+def test_dead_letter_queue() -> None:
+    queues = available_queues()
+    produce_topic = queues.queues["input-queue"].value
+    logger.info(f"{produce_topic=}")
+    p = KafkaProducer()
+    data = {"bad": "data"}
+
+    # publish data to input-topic that does not meet schema requirements
+    test_messages = 3
+    request_ids: List[str] = [f"test_{x}_{str(uuid4())[:5]}" for x in range(test_messages)]
+    for req_id in request_ids:
+        # publish the messages
+        data["request_id"] = req_id
+        p.publish(produce_topic, value=json.dumps(data))
+    p.flush()
+
+    dlq_topic = queues.queues["dead-letter-queue"].value
+    logger.info(f"{dlq_topic=}")
+    c = KafkaConsumer(consumer_group="int-test-group")
+    c.subscribe([dlq_topic])
+
+    start = time.time()
+    consumed_messages = []
+    while (time.time() - start) < 15:
+        message = c.poll(1)
+        if message is None:
+            continue
+        if message.error():
+            logger.error(message.error())
+        else:
+            consumed_messages.append(json.loads(message.value().decode("utf-8")))
+    c.close()
+
+    conusumed_ids = []
+    for m in consumed_messages:
+        # assert all consumed IDs were from the list we produced
+        _id = m["request_id"]
+        assert _id in request_ids
+        conusumed_ids.append(_id)
+
+    for _id in request_ids:
+        # assert all ids we produced were in the list we consumed
+        assert _id in conusumed_ids
+
+    assert len(request_ids) == len(conusumed_ids)

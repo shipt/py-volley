@@ -1,6 +1,6 @@
 import os
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 import requests
@@ -38,7 +38,7 @@ FLIGHT_PLAN_URL = {
 ALL_METRO_RESULTS: Dict[str, Any] = {}
 
 
-def get_shop_time(order_id: str) -> Union[Tuple[str, float], None]:
+def get_shop_time(order_id: str) -> Optional[Tuple[str, float]]:
     """Calls flight-plan-service to retrieve shop time
 
     On success - returns Tuple[order_id: str, shop_time: float]
@@ -68,7 +68,7 @@ def get_shop_time_pooled(order_ids: List[str]) -> Dict[str, float]:
 
         results = {}
         for t in tasks:
-            order_shop_time: Union[Tuple[str, float], None] = t.result()
+            order_shop_time: Optional[Tuple[str, float]] = t.result()
             if order_shop_time:
                 results[order_shop_time[0]] = order_shop_time[1]
         return results

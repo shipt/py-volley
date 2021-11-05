@@ -40,22 +40,22 @@ roles:
   worker:
     - name: features
       command: python main.py features
-      replicaCount: 1
+      replicaCount: 2
     - name: triage
       command: python main.py triage
-      replicaCount: 1
+      replicaCount: 2
     - name: optimizer
       command: python main.py optimizer
-      replicaCount: 1
+      replicaCount: 2
     - name: fallback
       command: python main.py fallback
-      replicaCount: 1
+      replicaCount: 2
     - name: collector
       command: python main.py collector
-      replicaCount: 1
+      replicaCount: 2
     - name: publisher
       command: python main.py publisher
-      replicaCount: 1
+      replicaCount: 2
 datastores:
   cloudSql:
     - name: ml-bundle-engine

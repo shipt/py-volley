@@ -3,6 +3,8 @@ import os
 from functools import wraps
 from typing import Any, Dict, List, Tuple
 
+from pydantic import ValidationError
+
 from core.logging import logger
 from engine.consumer import Consumer
 from engine.data_models import ComponentMessage, QueueMessage
@@ -10,7 +12,7 @@ from engine.producer import Producer
 from engine.queues import Queue, Queues, available_queues
 
 # enables mocking the infinite loop to finite
-RUN = True
+RUN_ONCE = False
 
 
 def get_consumer(queue_type: str, queue_name: str) -> Consumer:
@@ -76,6 +78,7 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
     in_queue: Queue = queues.queues[input_queue]
 
     out_queues: Dict[str, Queue] = {x: queues.queues[x] for x in output_queues}
+    out_queues["dead-letter-queue"] = queues.queues["dead-letter-queue"]
 
     def decorator(func):  # type: ignore
         @wraps(func)
@@ -91,17 +94,33 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
                 q.q = get_producer(queue_name=q.value, queue_type=q.type)
 
             # queue connections were setup above. now we can start to interact with the queues
-            while RUN:
+            while True:
 
+                # read message off the specified queue
                 in_message: QueueMessage = in_queue.q.consume(queue_name=in_queue.value)
-                serialized_message: ComponentMessage = input_data_class(**in_message.message)  # type: ignore
 
-                outputs: List[Tuple[str, QueueMessage]] = func(serialized_message)
+                outputs: List[Tuple[str, ComponentMessage]] = []
+                # every queue has a schema - validate the data coming off the queue
+                # generally, data is validate before it goes on to a queue
+                # however, if a service outside bundle_engine is publishing to the queue,
+                # validation may not be guaranteed
+                # example - input_topic - anyone at Shipt can publish to it
+                try:
+                    serialized_message: ComponentMessage = input_data_class.parse_obj(in_message.message)
+                except ValidationError:
+                    logger.exception(
+                        f"""
+                        Error validating message from {in_queue.value}"""
+                    )
+                    outputs = [("dead-letter-queue", ComponentMessage.parse_obj(in_message.message))]
 
-                for qname, m in outputs:
-                    if m is None:
+                if not outputs:
+                    outputs = func(serialized_message)
+
+                for qname, component_msg in outputs:
+                    if component_msg is None:
                         continue
-                    m = QueueMessage(message_id="", message=m.dict())
+                    q_msg = QueueMessage(message_id="", message=component_msg.dict())
 
                     try:
                         out_queue = out_queues[qname]
@@ -110,7 +129,7 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
 
                     # typing of engine.queues.Queue.q makes this ambiguous and potentially error prone
                     try:
-                        status = out_queue.q.produce(queue_name=out_queue.value, message=m)  # type: ignore
+                        status = out_queue.q.produce(queue_name=out_queue.value, message=q_msg)  # type: ignore
                     except Exception:
                         logger.exception("failed producing message")
                         status = False
@@ -121,6 +140,10 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
                         )
                     else:
                         in_queue.q.on_fail()
+
+                if RUN_ONCE:
+                    # for testing purposes only - mock RUN_ONCE
+                    break
 
         run_component.__wrapped__ = func  # type: ignore  # used for unit testing
         return run_component

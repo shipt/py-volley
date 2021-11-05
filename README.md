@@ -34,6 +34,17 @@ Start all services and data stores:
 Stop all services and data stores
 `make stop`
 
+# CI / CD
+
+This is a [Kubedashian](https://kubedashian.shipt.com/apps/ml-bundle-engine) project. 
+
+See `.drone.yml` for build and test gates and Concourse for deployment status.
+Refer to infraspec.yml for infrastructure and dedployment definition criteria.
+
+# Monitoring
+
+Production and Staging queue size [Grafana dashboards](https://metrics.shipt.com/d/5dtDxKK7k/ml-bundle-engine-queues) 
+
 ## Testing
 
 `make test.unit` Runs unit tests on individual components with mocked responses dependencies external to the code. Docker is not involved in this process.

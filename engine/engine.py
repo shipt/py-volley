@@ -12,7 +12,7 @@ from engine.producer import Producer
 from engine.queues import Queue, Queues, available_queues
 
 # enables mocking the infinite loop to finite
-RUN = True
+RUN_ONCE = False
 
 
 def get_consumer(queue_type: str, queue_name: str) -> Consumer:
@@ -94,7 +94,7 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
                 q.q = get_producer(queue_name=q.value, queue_type=q.type)
 
             # queue connections were setup above. now we can start to interact with the queues
-            while RUN:
+            while True:
 
                 # read message off the specified queue
                 in_message: QueueMessage = in_queue.q.consume(queue_name=in_queue.value)
@@ -140,6 +140,10 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
                         )
                     else:
                         in_queue.q.on_fail()
+
+                if RUN_ONCE:
+                    # for testing purposes only - mock RUN_ONCE
+                    break
 
         run_component.__wrapped__ = func  # type: ignore  # used for unit testing
         return run_component

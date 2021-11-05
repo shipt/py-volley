@@ -51,7 +51,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 75
+fail_under = 85
 
 [tool.black]
 line-length = 120

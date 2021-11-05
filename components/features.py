@@ -1,5 +1,6 @@
 import os
-from typing import Any, Dict, List, Tuple
+from concurrent.futures import ThreadPoolExecutor
+from typing import Any, Dict, List, Tuple, Union
 from uuid import uuid4
 
 import requests
@@ -34,18 +35,40 @@ FLIGHT_PLAN_URL = {
 ALL_METRO_RESULTS: Dict[str, Any] = {}
 
 
-def get_shop_time(order_id: str) -> Dict[str, Any]:
+def get_shop_time(order_id: str) -> Union[Tuple[str, float], None]:
+    """Calls flight-plan-service to retrieve shop time
+
+    On success - returns Tuple[order_id: str, shop_time: float]
+    On failure - returns None. Logs exception or non-200 response to Rollbar
+    """
     resp = requests.get(f"{FLIGHT_PLAN_URL}/{order_id}")
 
     if resp.status_code == 200:
         try:
-            return {"shop_time_minutes": resp.json()["before_claim"]["shop"]["minutes"]}
+            return order_id, resp.json()["before_claim"]["shop"]["minutes"]
         except KeyError:
             logger.exception(f"Flight-plan data missing for order: {order_id}")
-            return {}
     else:
         logger.error(f"Flight-plan returned status code: {resp.status_code} for order: {order_id}")
-        return {}
+    return None
+
+
+def get_shop_time_pooled(order_ids: List[str]) -> Dict[str, float]:
+    """concurrently calls get_shop_time (flight-plan-service) for a list of order ids
+
+    Returns a dictionary:
+        keys - order_id: str
+        value - shop_time: float
+    """
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        tasks = [executor.submit(get_shop_time, o) for o in order_ids]
+
+        results = {}
+        for t in tasks:
+            order_shop_time: Union[Tuple[str, float], None] = t.result()
+            if order_shop_time:
+                results[order_shop_time[0]] = order_shop_time[1]
+        return results
 
 
 def get_metro_attr(
@@ -75,7 +98,11 @@ def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
     error_orders = []
     enriched_orders = []
 
-    # iterate over keys
+    all_order_ids = [o["order_id"] for o in message["orders"]]
+
+    # call FP concurrently
+    fp_results: Dict[str, float] = get_shop_time_pooled(all_order_ids)
+
     for order in message["orders"]:
         order_id = order["order_id"]
         # handle geo enrichment
@@ -84,18 +111,20 @@ def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
         if not (metro_results := ALL_METRO_RESULTS.get(store_location_id)):
             metro_results = get_metro_attr(store_location_id=store_location_id)
             ALL_METRO_RESULTS[store_location_id] = metro_results
-
-        # successful enrichment from geo
         order.update(metro_results)
 
         # handle shop time
-        fp_results = get_shop_time(order_id=order_id)
-        order.update(fp_results)
+        shop_time = fp_results.get(order_id)
+        if shop_time:
+            order["shop_time_minutes"] = shop_time
 
         try:
+            # EnrichedOrder validation will fail if attributes are missing
+            # e.g. FP call fails, shop_time_minutes will not exist. Validation fails.
             enriched_orders.append(EnrichedOrder(**order))
         except Exception:
             logger.exception(f"failed enriching {order_id=}")
+            # error orders end up getting "bundled as order of one" in Optimizer component
             error_orders.append(order)
 
     if not any([error_orders, enriched_orders]):

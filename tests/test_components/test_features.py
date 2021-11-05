@@ -8,8 +8,12 @@ from components.features import main as features
 
 
 def test_fp_default() -> None:
-    fp_result = get_shop_time("16578146")
-    assert fp_result["shop_time_minutes"] > 0
+    order_id = "16578146"
+    fp_result = get_shop_time(order_id)
+    assert fp_result is not None
+    assert fp_result[0] == order_id
+    assert isinstance(fp_result[1], float)
+    assert fp_result[1] > 0
 
 
 def test_get_metro_attr_default() -> None:

@@ -236,6 +236,7 @@ class Bundle(BaseModel):
             ]
         }
 
+
 class CollectOptimizer(CollectorMessage):
     """contains attributes for finished optimizers
     optimizer publishes its results to the collector in this format

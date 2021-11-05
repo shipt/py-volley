@@ -28,19 +28,10 @@ FLIGHT_PLAN_URL = {
 }[APP_ENV]
 
 
-def validate_geo_data(geo_data: Dict[str, Any]) -> None:
-    for stop_type, latlon in geo_data.items():
-        longitude = latlon["longitude"]
-        latitude = latlon["latitude"]
-        if longitude == 0 and latitude == 0:
-            logger.error(f"invalid {longitude=} {latitude=}")
-        # northern hemisphere?
-        if longitude is None or longitude < -180 or longitude > -50:
-            logger.error(f"invalid {longitude=}")
-
-        # western hemisphere?
-        if latitude is None or latitude < -10 or latitude > 90:
-            logger.error(f"invalid {latitude=}")
+# stores geo data for all location ids
+# each request __should__ be for a single location, however
+# this is effectively caching the locations lat/long
+ALL_METRO_RESULTS: Dict[str, Any] = {}
 
 
 def get_shop_time(order_id: str) -> Dict[str, Any]:
@@ -80,15 +71,19 @@ def get_metro_attr(
 def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
     message = in_message.dict()
     request_id = message["bundle_request_id"]
-    logger.info(f"{FLIGHT_PLAN_URL=}")
 
     error_orders = []
     enriched_orders = []
-    # iterate over keys (order id)
+
+    # iterate over keys
     for order in message["orders"]:
         order_id = order["order_id"]
         # handle geo enrichment
-        metro_results = get_metro_attr(store_location_id=order["store_location_id"])
+        # only call metro service if we dont already have the data cached
+        store_location_id = str(order["store_location_id"])
+        if not (metro_results := ALL_METRO_RESULTS.get(store_location_id)):
+            metro_results = get_metro_attr(store_location_id=store_location_id)
+            ALL_METRO_RESULTS[store_location_id] = metro_results
 
         # successful enrichment from geo
         order.update(metro_results)

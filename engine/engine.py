@@ -3,6 +3,8 @@ import os
 from functools import wraps
 from typing import Any, Dict, List, Tuple
 
+from pydantic import ValidationError
+
 from core.logging import logger
 from engine.consumer import Consumer
 from engine.data_models import ComponentMessage, QueueMessage
@@ -76,6 +78,7 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
     in_queue: Queue = queues.queues[input_queue]
 
     out_queues: Dict[str, Queue] = {x: queues.queues[x] for x in output_queues}
+    out_queues["dead-letter-queue"] = queues.queues["dead-letter-queue"]
 
     def decorator(func):  # type: ignore
         @wraps(func)
@@ -93,10 +96,28 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
             # queue connections were setup above. now we can start to interact with the queues
             while RUN:
 
+                # read message off the specified queue
                 in_message: QueueMessage = in_queue.q.consume(queue_name=in_queue.value)
-                serialized_message: ComponentMessage = input_data_class(**in_message.message)  # type: ignore
 
-                outputs: List[Tuple[str, QueueMessage]] = func(serialized_message)
+                outputs: List[Tuple[str, QueueMessage]] = []
+                # every queue has a schema - validate the data coming off the queue
+                # generally, data is validate before it goes on to a queue
+                # however, if a service outside bundle_engine is publishing to the queue,
+                # validation may not be guaranteed
+                # example - input_topic - anyone at Shipt can publish to it
+                try:
+                    serialized_message: ComponentMessage = input_data_class(**in_message.message)
+                except ValidationError:
+                    logger.exception(
+                        f"""
+                        Error validating message from {in_queue.value}
+                        sending message to 
+                    """
+                    )
+                    outputs = [("dead-letter-queue", in_message)]
+
+                if not outputs:
+                    outputs = func(serialized_message)
 
                 for qname, m in outputs:
                     if m is None:

@@ -29,7 +29,7 @@ roles:
       retryPolicy:
         count: 3
         perTryTimeout: 15s
-      replicaCount: 4
+      replicaCount: 1
       resources:
         cpu: 50m
         memory: 250M

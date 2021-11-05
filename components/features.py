@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Tuple, Union
 from uuid import uuid4
 
 import requests
+from pydantic import ValidationError
 
 from components.data_models import EnrichedOrder, InputMessage, TriageMessage
 from core.logging import logger
@@ -11,6 +12,8 @@ from engine.data_models import ComponentMessage
 from engine.engine import bundle_engine
 
 APP_ENV = os.getenv("APP_ENV", "localhost")
+
+FP_CALL_WORKERS: int = int(os.getenv("FP_CALL_WORKERS", 10))
 
 INPUT_QUEUE = "input-queue"
 OUTPUT_QUEUES = ["triage"]
@@ -60,7 +63,7 @@ def get_shop_time_pooled(order_ids: List[str]) -> Dict[str, float]:
         keys - order_id: str
         value - shop_time: float
     """
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    with ThreadPoolExecutor(max_workers=FP_CALL_WORKERS) as executor:
         tasks = [executor.submit(get_shop_time, o) for o in order_ids]
 
         results = {}
@@ -122,7 +125,7 @@ def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
             # EnrichedOrder validation will fail if attributes are missing
             # e.g. FP call fails, shop_time_minutes will not exist. Validation fails.
             enriched_orders.append(EnrichedOrder(**order))
-        except Exception:
+        except ValidationError:
             logger.exception(f"failed enriching {order_id=}")
             # error orders end up getting "bundled as order of one" in Optimizer component
             error_orders.append(order)

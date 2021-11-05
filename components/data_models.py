@@ -283,7 +283,6 @@ class OutputMessage(ComponentMessage):
 
     engine_event_id: str
     bundle_request_id: str
-    optimizer_type: str
 
     # data model for output
     bundles: List[Bundle]

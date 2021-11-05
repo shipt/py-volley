@@ -4,7 +4,7 @@ import time
 import confluent_kafka.admin
 
 # time for Kafka broker to init
-time.sleep(15)
+time.sleep(5)
 
 input_topic = "localhost.bus.ds-marketplace.v1.bundle_engine_input"
 output_topic = "localhost.bus.ds-marketplace.v1.bundle_engine_output"

@@ -38,7 +38,7 @@ def test_end_to_end() -> None:  # noqa
     # wait some seconds max for messages to reach output topic
     start = time.time()
     consumed_messages = []
-    while (time.time() - start) < 10:
+    while (time.time() - start) < 15:
         message = c.poll(1)
         if message is None:
             continue
@@ -104,7 +104,7 @@ def test_dead_letter_queue() -> None:
 
     start = time.time()
     consumed_messages = []
-    while (time.time() - start) < 10:
+    while (time.time() - start) < 15:
         message = c.poll(1)
         if message is None:
             continue

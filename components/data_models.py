@@ -277,6 +277,42 @@ class PublisherMessage(ComponentMessage):
     # triage inserts
     results: List[CollectorMessage]
 
+    class Config:
+        __now = datetime.utcnow().replace(tzinfo=pytz.UTC)
+        schema_extra = {
+            "examples": [
+                {
+                    "results": [
+                        {
+                            "engine_event_id": "2ceedf0d-7bbf-45d3-9a04-75354dafefa6",
+                            "bundle_request_id": "request-id-0",
+                            "timeout": __now + timedelta(minutes=5),
+                            "optimizer_finish": __now,
+                            "optimizer_results": {
+                                "bundles": [
+                                    {
+                                        "group_id": "ec5f0532-6093-4e83-ad56-0085bf7347a0",
+                                        "orders": ["16578146", "16702212"],
+                                    },
+                                    {"group_id": "ed1f1db6-9d11-4dd2-ab58-a5c997f3e4c6", "orders": ["15830545"]},
+                                    {"group_id": "6fa8a39e-f168-4e64-ad3b-53f9d225a180", "orders": ["15855965"]},
+                                ]
+                            },
+                            "fallback_id": "afa60f17-36d8-4a3b-b68c-b3e0513b0492",
+                            "fallback_results": {
+                                "bundles": [
+                                    {"group_id": "g1234", "orders": ["order_1", "order2", "order_4"]},
+                                    {"group_id": "g1235", "orders": ["order_3"]},
+                                ]
+                            },
+                            "fallback_finish": __now,
+                            "optimizer_id": "d97d7a2d-e492-41ac-a6ce-5dc8a3e6a01d",
+                        }
+                    ]
+                }
+            ]
+        }
+
 
 class OutputMessage(ComponentMessage):
     """schema for messages leaving the bundle-engine and going to kafka for backend engineering"""

@@ -3,9 +3,11 @@ import sys
 
 import rollbar
 
-if __name__ == "__main__":
-    rollbar.init(os.getenv("ROLLBAR_TOKEN"), os.getenv("APP_ENV"))
-    # TODO: can we get rid of this file entirely? just call each component.py directly? 
+rollbar.init(os.getenv("ROLLBAR_TOKEN"), os.getenv("APP_ENV", "localhost"))
+
+
+def run() -> None:
+    # TODO: can we get rid of this file entirely? just call each component.py directly?
     component = sys.argv[1]
 
     if component == "dummy_events":
@@ -27,3 +29,7 @@ if __name__ == "__main__":
     else:
         raise NotImplementedError(f"{component=} not implemented")
     main()
+
+
+if __name__ == "__main__":
+    run()

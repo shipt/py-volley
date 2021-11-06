@@ -49,9 +49,13 @@ profile = "black"
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.coverage.report]
-show_missing = true
-fail_under = 85
+[tool.coverage]
+run.omit = [
+    "components/dummy_events.py",
+    "components/dummy_consumer.py"
+    ]
+report.show_missing = true
+report.fail_under = 95
 
 [tool.black]
 line-length = 120

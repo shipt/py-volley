@@ -1,9 +1,10 @@
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from engine.engine import bundle_engine, get_consumer, get_producer
+from tests.test_kafka import KafkaMessage
 
 
 @patch("engine.kafka.KafkaConsumer")
@@ -28,25 +29,6 @@ def test_get_producer(mock_redis, mock_kafka) -> None:  # type: ignore
 
     with pytest.raises(KeyError):
         producer = get_producer("non-existant-queue", qname)
-
-
-class KafkaMessage:
-
-    _error_msg = "MOCK ERORR"
-
-    def __init__(self, error: bool = False) -> None:
-        self.is_error = error
-
-    def offset(self) -> int:
-        return 123
-
-    def value(self) -> bytes:
-        return b'{"random": "message"}'
-
-    def error(self) -> Optional[str]:
-        if self.is_error:
-            return self._error_msg
-        return None
 
 
 @patch("engine.engine.RUN_ONCE", True)

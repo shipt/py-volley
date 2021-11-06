@@ -132,7 +132,7 @@ def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
 
     if not any([error_orders, enriched_orders]):
         logger.error(f"NO VALID ORDER: {message}")
-        return (None, None)  # type: ignore
+        return [(None, None)]
 
     output_message = TriageMessage(
         error_orders=error_orders,

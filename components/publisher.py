@@ -36,12 +36,13 @@ def main(in_message: PublisherMessage) -> List[Tuple[str, OutputMessage]]:
             bundled = m["fallback_results"]["bundles"]
         else:
             now = datetime.utcnow().replace(tzinfo=pytz.UTC)
-            if now > m["timeout"]:
+            if now < m["timeout"]:
+                continue
+            else:
                 msg = f"{engine_event_id=} - {bundle_request_id} expired without results"
                 logger.error(msg)
                 raise TimeoutError(msg)
-            else:
-                continue
+                
 
         pm = OutputMessage(
             engine_event_id=m["engine_event_id"],

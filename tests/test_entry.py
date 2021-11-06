@@ -1,6 +1,6 @@
-import pytest
 from unittest.mock import patch
 
+import pytest
 
 from main import run
 
@@ -20,6 +20,7 @@ def test_main() -> None:
         with patch("sys.argv", ["program_name", component]):
             with patch(f"components.{component}.main"):
                 run()
+
 
 def test_notimpl_error() -> None:
     with patch("sys.argv", ["program_name", "I_DO_NOT_EXIST"]):

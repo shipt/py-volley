@@ -42,16 +42,3 @@ def test_engine(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:
         return [(None, None)]
 
     func()
-
-
-@patch("engine.engine.RUN_ONCE", True)
-@patch("engine.kafka.KafkaProducer")
-@patch("engine.kafka.KafkaConsumer")
-def test_engine_not_exist(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:
-    mock_consumer.return_value.poll = lambda x: KafkaMessage()
-
-    @bundle_engine(input_queue="input-queue", output_queues=["NOT-EXIST"])
-    def func() -> List[Tuple[None, None]]:
-        return [(None, None)]
-
-    func()

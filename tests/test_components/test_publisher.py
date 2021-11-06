@@ -62,7 +62,7 @@ def test_publisher_error(publisher_complete_message: PublisherMessage) -> None:
     msg = PublisherMessage.parse_obj(pub_dict)
 
     with pytest.raises(TimeoutError):
-        t_outputs = publisher.__wrapped__(msg)
+        publisher.__wrapped__(msg)
 
 
 def test_publisher_error_not_expired(publisher_complete_message: PublisherMessage) -> None:

@@ -5,7 +5,6 @@ import pytz
 
 from components.data_models import OutputMessage, PublisherMessage
 from core.logging import logger
-from engine.data_models import ComponentMessage
 from engine.engine import bundle_engine
 
 # reads from postgres (publisher table)
@@ -42,7 +41,6 @@ def main(in_message: PublisherMessage) -> List[Tuple[str, OutputMessage]]:
                 msg = f"{engine_event_id=} - {bundle_request_id} expired without results"
                 logger.error(msg)
                 raise TimeoutError(msg)
-                
 
         pm = OutputMessage(
             engine_event_id=m["engine_event_id"],

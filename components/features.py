@@ -94,7 +94,7 @@ def get_metro_attr(
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
+def main(in_message: InputMessage) -> List[Tuple[str, Optional[ComponentMessage]]]:
     message = in_message.dict()
     request_id = message["bundle_request_id"]
 
@@ -132,7 +132,7 @@ def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
 
     if not any([error_orders, enriched_orders]):
         logger.error(f"NO VALID ORDER: {message}")
-        return [(None, None)]
+        return [("None", None)]
 
     output_message = TriageMessage(
         error_orders=error_orders,

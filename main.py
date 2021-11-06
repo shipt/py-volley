@@ -13,19 +13,19 @@ def run() -> None:
     if component == "dummy_events":
         from components.dummy_events import main
     elif component == "features":
-        from components.features import main
+        from components.features import main  # type: ignore
     elif component == "triage":
-        from components.triage import main
+        from components.triage import main  # type: ignore
     elif component == "optimizer":
-        from components.optimizer import main
+        from components.optimizer import main  # type: ignore
     elif component == "fallback":
-        from components.fallback import main
+        from components.fallback import main  # type: ignore
     elif component == "collector":
-        from components.collector import main
+        from components.collector import main  # type: ignore
     elif component == "publisher":
-        from components.publisher import main
+        from components.publisher import main  # type: ignore
     elif component == "dummy_consumer":
-        from components.dummy_consumer import main
+        from components.dummy_consumer import main  # type: ignore
     else:
         raise NotImplementedError(f"{component=} not implemented")
     main()

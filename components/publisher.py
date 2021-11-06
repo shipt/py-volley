@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import List, Tuple
 
-from components.data_models import OutputMessage
+import pytz
+
+from components.data_models import OutputMessage, PublisherMessage
 from core.logging import logger
 from engine.data_models import ComponentMessage
 from engine.engine import bundle_engine
@@ -17,7 +19,7 @@ class TimeoutError(Exception):
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(in_message: ComponentMessage) -> List[Tuple[str, OutputMessage]]:
+def main(in_message: PublisherMessage) -> List[Tuple[str, OutputMessage]]:
     message = in_message.dict()
 
     result_set = []
@@ -33,7 +35,7 @@ def main(in_message: ComponentMessage) -> List[Tuple[str, OutputMessage]]:
             optimizer_type = "fallback"
             bundled = m["fallback_results"]["bundles"]
         else:
-            now = datetime.utcnow()
+            now = datetime.utcnow().replace(tzinfo=pytz.UTC)
             if now > m["timeout"]:
                 msg = f"{engine_event_id=} - {bundle_request_id} expired without results"
                 logger.error(msg)

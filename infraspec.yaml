@@ -23,7 +23,7 @@ roles:
       routes:
       - subdomain: bundle-engine-metrics
       timeout: 5s
-      command: uvicorn monitoring.monitoring:app
+      command: uvicorn engine.monitoring.monitoring:app
       healthcheck: /
       port: 8000
       retryPolicy:
@@ -42,38 +42,68 @@ roles:
       command: python main.py features
       replicaCount: 4
       resources:
-        cpu: 100m
+        cpu: 200m
         memory: 250M
+      telemetry:
+        prometheus:
+          enabled: true
+          port: 3000
+          path: /metrics
     - name: triage
       command: python main.py triage
       replicaCount: 3
       resources:
-        cpu: 50m
+        cpu: 150m
         memory: 150M
+      telemetry:
+        prometheus:
+          enabled: true
+          port: 3000
+          path: /metrics
     - name: optimizer
       command: python main.py optimizer
       replicaCount: 3
       resources:
-        cpu: 50m
+        cpu: 150m
         memory: 150M
+      telemetry:
+        prometheus:
+          enabled: true
+          port: 3000
+          path: /metrics
     - name: fallback
       command: python main.py fallback
       replicaCount: 3
       resources:
-        cpu: 50m
+        cpu: 150m
         memory: 150M
+      telemetry:
+        prometheus:
+          enabled: true
+          port: 3000
+          path: /metrics
     - name: collector
       command: python main.py collector
       replicaCount: 3
       resources:
-        cpu: 50m
+        cpu: 150m
         memory: 150M
+      telemetry:
+        prometheus:
+          enabled: true
+          port: 3000
+          path: /metrics
     - name: publisher
       command: python main.py publisher
       replicaCount: 3
       resources:
-        cpu: 50m
+        cpu: 150m
         memory: 150M
+      telemetry:
+        prometheus:
+          enabled: true
+          port: 3000
+          path: /metrics
 datastores:
   cloudSql:
     - name: ml-bundle-engine
@@ -97,7 +127,7 @@ datastores:
             type: BUSINESS
             eventDescription: bundle_engine_input
       - name: bundle-engine-dlq
-        configVar: INPUT_TOPIC
+        configVar: DLQ_TOPIC
         nameAttributes:
           domain: ds-marketplace
           messageType: BUS

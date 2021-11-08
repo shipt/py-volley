@@ -1,8 +1,10 @@
 import importlib
 import os
+import time
 from functools import wraps
 from typing import Any, Dict, List, Tuple
 
+from prometheus_client import Summary, start_http_server
 from pydantic import ValidationError
 
 from core.logging import logger
@@ -12,6 +14,9 @@ from engine.queues import Queue, Queues, available_queues
 
 # enables mocking the infinite loop to finite
 RUN_ONCE = False
+
+
+CYCLE_TIME = Summary("component_cycle_time", "Time spent processing a single message")
 
 
 def get_consumer(queue_type: str, queue_name: str) -> Consumer:
@@ -72,6 +77,7 @@ def load_schema_class(q: Queue) -> Any:
 
 
 def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C901
+    # TODO: these execute on import. would be better to handle these on exec?
     queues: Queues = available_queues()
 
     in_queue: Queue = queues.queues[input_queue]
@@ -82,6 +88,7 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
     def decorator(func):  # type: ignore
         @wraps(func)
         def run_component(*args, **kwargs) -> None:  # type: ignore
+            start_http_server(port=3000)
             # the component function is passed in as `func`
             # first setup the connections to the input and outputs queues that the component will need
             # we only want to set these up once, before the component is invoked
@@ -94,6 +101,7 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
 
             # queue connections were setup above. now we can start to interact with the queues
             while True:
+                _start_time = time.time()
 
                 # read message off the specified queue
                 in_message: QueueMessage = in_queue.qcon.consume(queue_name=in_queue.value)
@@ -140,11 +148,14 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
                     else:
                         in_queue.qcon.on_fail()
 
+                _duration = time.time() - _start_time
+                CYCLE_TIME.observe(_duration)
                 if RUN_ONCE:
                     # for testing purposes only - mock RUN_ONCE
                     break
 
-        run_component.__wrapped__ = func  # type: ignore  # used for unit testing
+        # used for unit testing as a means to access the wrapped component without the decorator
+        run_component.__wrapped__ = func  # type: ignore
         return run_component
 
     return decorator

@@ -12,7 +12,6 @@ from sqlalchemy.orm import Session
 
 from core.logging import logger
 from engine.connectors.base import Consumer, Producer
-from engine.data_models import QueueMessage
 from engine.connectors.pg_config import (
     PG_SCHEMA,
     get_eng,
@@ -20,6 +19,7 @@ from engine.connectors.pg_config import (
     metadata_obj,
     publisher,
 )
+from engine.data_models import QueueMessage
 
 BATCH_SIZE = 1
 

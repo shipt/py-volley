@@ -16,23 +16,23 @@ RUN_ONCE = False
 
 def get_consumer(queue_type: str, queue_name: str) -> Consumer:
     if queue_type == "kafka":
-        from engine.connectors.kafka import BundleConsumer
+        from engine.connectors import KafkaConsumer
 
-        return BundleConsumer(
+        return KafkaConsumer(
             host=os.environ["KAFKA_BROKERS"],
             queue_name=queue_name,
         )
     elif queue_type == "rsmq":
-        from engine.connectors.rsmq import BundleConsumer  # type: ignore
+        from engine.connectors import RSMQConsumer
 
-        return BundleConsumer(
+        return RSMQConsumer(
             host=os.environ["REDIS_HOST"],
             queue_name=queue_name,
         )
     elif queue_type == "postgres":
-        from engine.stateful.postgres import PGConsumer
+        from engine.connectors import PGConsumer
 
-        return PGConsumer(  # type: ignore
+        return PGConsumer(
             host=os.getenv("PG_HOST", "postgres"),
             queue_name=queue_name,
         )
@@ -42,19 +42,19 @@ def get_consumer(queue_type: str, queue_name: str) -> Consumer:
 
 def get_producer(queue_type: str, queue_name: str) -> Producer:
     if queue_type == "kafka":
-        from engine.connectors.kafka import BundleProducer
+        from engine.connectors import KafkaProducer
 
-        return BundleProducer(host=os.environ["KAFKA_BROKERS"], queue_name=queue_name)
+        return KafkaProducer(host=os.environ["KAFKA_BROKERS"], queue_name=queue_name)
 
     elif queue_type == "rsmq":
-        from engine.connectors.rsmq import BundleProducer as RsmqProducer
+        from engine.connectors import RSMQProducer
 
-        return RsmqProducer(host=os.environ["REDIS_HOST"], queue_name=queue_name)
+        return RSMQProducer(host=os.environ["REDIS_HOST"], queue_name=queue_name)
 
     elif queue_type == "postgres":
-        from engine.stateful.postgres import PGProducer
+        from engine.connectors import PGProducer
 
-        return PGProducer(host=os.getenv("PG_HOST", "postgres"), queue_name=queue_name)  # type: ignore
+        return PGProducer(host=os.getenv("PG_HOST", "postgres"), queue_name=queue_name)
 
     else:
         raise KeyError(f"{queue_type=} not valid")

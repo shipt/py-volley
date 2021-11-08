@@ -13,7 +13,7 @@ QUIET = bool(os.getenv("DEBUG", True))
 
 
 @dataclass
-class BundleConsumer(Consumer):
+class RSMQConsumer(Consumer):
     def __post_init__(self) -> None:
         self.queue = RedisSMQ(host=self.host, qname=self.queue_name)
         # TODO: visibility timeout (vt) probably be configurable
@@ -40,7 +40,7 @@ class BundleConsumer(Consumer):
 
 
 @dataclass
-class BundleProducer(Producer):
+class RSMQProducer(Producer):
     def __post_init__(self) -> None:
         self.queue = RedisSMQ(host=self.host, qname=self.queue_name)
         self.queue.createQueue(delay=0).vt(60).exceptions(False).execute()

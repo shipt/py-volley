@@ -1,8 +1,8 @@
 from typing import Optional
 from unittest.mock import MagicMock, patch
 
+from engine.connectors import KafkaConsumer
 from engine.connectors.base import Consumer, Producer
-from engine.connectors.kafka import BundleConsumer
 from engine.data_models import QueueMessage
 
 
@@ -35,18 +35,18 @@ def test_kafka_consumer_success(mock_kafka_consumer: Consumer) -> None:
     assert isinstance(bundle_message, QueueMessage)
 
 
-@patch("engine.connectors.kafka.KafkaConsumer")
+@patch("engine.connectors.kafka.KConsumer")
 def test_consume(mock_consumer: MagicMock) -> None:
     mock_consumer.return_value.poll = lambda x: KafkaMessage()
-    b = BundleConsumer(host="localhost", queue_name="input-queue")
+    b = KafkaConsumer(host="localhost", queue_name="input-queue")
     q_message = b.consume()
     assert isinstance(q_message, QueueMessage)
 
 
 @patch("engine.connectors.kafka.RUN_ONCE", True)
-@patch("engine.connectors.kafka.KafkaConsumer")
+@patch("engine.connectors.kafka.KConsumer")
 def test_consume_error(mock_consumer: MagicMock) -> None:
     mock_consumer.return_value.poll = lambda x: KafkaMessage(error=True)
-    b = BundleConsumer(host="localhost", queue_name="input-queue")
+    b = KafkaConsumer(host="localhost", queue_name="input-queue")
     q_message = b.consume()
     assert q_message is None

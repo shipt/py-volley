@@ -1,7 +1,8 @@
 import json
 from dataclasses import dataclass
 
-from pyshipt_streams import KafkaConsumer, KafkaProducer
+from pyshipt_streams import KafkaConsumer as KConsumer
+from pyshipt_streams import KafkaProducer as KProducer
 
 from core.logging import logger
 from engine.connectors.base import Consumer, Producer
@@ -11,10 +12,10 @@ RUN_ONCE = False
 
 
 @dataclass
-class BundleConsumer(Consumer):
+class KafkaConsumer(Consumer):
     def __post_init__(self) -> None:
         # TODO: config for consumer group..env var maybe?
-        self.c = KafkaConsumer(
+        self.c = KConsumer(
             consumer_group="group1",
             # TODO: develop commit strategy to minimize duplicates and guarantee no loss
             # config_override={"enable.auto.offset.store": False}
@@ -60,9 +61,9 @@ class BundleConsumer(Consumer):
 
 
 @dataclass
-class BundleProducer(Producer):
+class KafkaProducer(Producer):
     def __post_init__(self) -> None:
-        self.p = KafkaProducer()
+        self.p = KProducer()
 
     def produce(self, queue_name: str, message: QueueMessage) -> bool:
         value = json.dumps(message.message, default=str).encode("utf-8")

@@ -11,9 +11,8 @@ from sqlalchemy.engine.row import RowMapping
 from sqlalchemy.orm import Session
 
 from core.logging import logger
-from engine.consumer import Consumer
+from engine.connectors.base import Consumer, Producer
 from engine.data_models import QueueMessage
-from engine.producer import Producer
 from engine.stateful.pg_config import (
     PG_SCHEMA,
     get_eng,

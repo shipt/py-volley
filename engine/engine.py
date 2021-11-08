@@ -6,9 +6,8 @@ from typing import Any, Dict, List, Tuple
 from pydantic import ValidationError
 
 from core.logging import logger
-from engine.consumer import Consumer
+from engine.connectors.base import Consumer, Producer
 from engine.data_models import ComponentMessage, QueueMessage
-from engine.producer import Producer
 from engine.queues import Queue, Queues, available_queues
 
 # enables mocking the infinite loop to finite
@@ -17,14 +16,14 @@ RUN_ONCE = False
 
 def get_consumer(queue_type: str, queue_name: str) -> Consumer:
     if queue_type == "kafka":
-        from engine.kafka import BundleConsumer
+        from engine.connectors.kafka import BundleConsumer
 
         return BundleConsumer(
             host=os.environ["KAFKA_BROKERS"],
             queue_name=queue_name,
         )
     elif queue_type == "rsmq":
-        from engine.rsmq import BundleConsumer  # type: ignore
+        from engine.connectors.rsmq import BundleConsumer  # type: ignore
 
         return BundleConsumer(
             host=os.environ["REDIS_HOST"],
@@ -43,12 +42,12 @@ def get_consumer(queue_type: str, queue_name: str) -> Consumer:
 
 def get_producer(queue_type: str, queue_name: str) -> Producer:
     if queue_type == "kafka":
-        from engine.kafka import BundleProducer
+        from engine.connectors.kafka import BundleProducer
 
         return BundleProducer(host=os.environ["KAFKA_BROKERS"], queue_name=queue_name)
 
     elif queue_type == "rsmq":
-        from engine.rsmq import BundleProducer as RsmqProducer
+        from engine.connectors.rsmq import BundleProducer as RsmqProducer
 
         return RsmqProducer(host=os.environ["REDIS_HOST"], queue_name=queue_name)
 

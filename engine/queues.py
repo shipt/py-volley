@@ -8,8 +8,7 @@ from jinja2 import Template
 from pydantic import BaseModel
 from yaml import Loader
 
-from engine.consumer import Consumer
-from engine.producer import Producer
+from engine.connectors.base import Consumer, Producer
 
 _cur_path = Path(__file__).parent.resolve().joinpath("config.yml")
 

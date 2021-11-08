@@ -6,9 +6,8 @@ from typing import Any, Dict, List, Tuple
 from pydantic import ValidationError
 
 from core.logging import logger
-from engine.consumer import Consumer
+from engine.connectors.base import Consumer, Producer
 from engine.data_models import ComponentMessage, QueueMessage
-from engine.producer import Producer
 from engine.queues import Queue, Queues, available_queues
 
 # enables mocking the infinite loop to finite
@@ -17,23 +16,23 @@ RUN_ONCE = False
 
 def get_consumer(queue_type: str, queue_name: str) -> Consumer:
     if queue_type == "kafka":
-        from engine.kafka import BundleConsumer
+        from engine.connectors import KafkaConsumer
 
-        return BundleConsumer(
+        return KafkaConsumer(
             host=os.environ["KAFKA_BROKERS"],
             queue_name=queue_name,
         )
     elif queue_type == "rsmq":
-        from engine.rsmq import BundleConsumer  # type: ignore
+        from engine.connectors import RSMQConsumer
 
-        return BundleConsumer(
+        return RSMQConsumer(
             host=os.environ["REDIS_HOST"],
             queue_name=queue_name,
         )
     elif queue_type == "postgres":
-        from engine.stateful.postgres import PGConsumer
+        from engine.connectors import PGConsumer
 
-        return PGConsumer(  # type: ignore
+        return PGConsumer(
             host=os.getenv("PG_HOST", "postgres"),
             queue_name=queue_name,
         )
@@ -43,19 +42,19 @@ def get_consumer(queue_type: str, queue_name: str) -> Consumer:
 
 def get_producer(queue_type: str, queue_name: str) -> Producer:
     if queue_type == "kafka":
-        from engine.kafka import BundleProducer
+        from engine.connectors import KafkaProducer
 
-        return BundleProducer(host=os.environ["KAFKA_BROKERS"], queue_name=queue_name)
+        return KafkaProducer(host=os.environ["KAFKA_BROKERS"], queue_name=queue_name)
 
     elif queue_type == "rsmq":
-        from engine.rsmq import BundleProducer as RsmqProducer
+        from engine.connectors import RSMQProducer
 
-        return RsmqProducer(host=os.environ["REDIS_HOST"], queue_name=queue_name)
+        return RSMQProducer(host=os.environ["REDIS_HOST"], queue_name=queue_name)
 
     elif queue_type == "postgres":
-        from engine.stateful.postgres import PGProducer
+        from engine.connectors import PGProducer
 
-        return PGProducer(host=os.getenv("PG_HOST", "postgres"), queue_name=queue_name)  # type: ignore
+        return PGProducer(host=os.getenv("PG_HOST", "postgres"), queue_name=queue_name)
 
     else:
         raise KeyError(f"{queue_type=} not valid")
@@ -86,18 +85,18 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
             # the component function is passed in as `func`
             # first setup the connections to the input and outputs queues that the component will need
             # we only want to set these up once, before the component is invoked
-            in_queue.q = get_consumer(queue_type=in_queue.type, queue_name=in_queue.value)
+            in_queue.qcon = get_consumer(queue_type=in_queue.type, queue_name=in_queue.value)
 
             input_data_class: ComponentMessage = load_schema_class(in_queue)
 
             for qname, q in out_queues.items():
-                q.q = get_producer(queue_name=q.value, queue_type=q.type)
+                q.qcon = get_producer(queue_name=q.value, queue_type=q.type)
 
             # queue connections were setup above. now we can start to interact with the queues
             while True:
 
                 # read message off the specified queue
-                in_message: QueueMessage = in_queue.q.consume(queue_name=in_queue.value)
+                in_message: QueueMessage = in_queue.qcon.consume(queue_name=in_queue.value)
 
                 outputs: List[Tuple[str, ComponentMessage]] = []
                 # every queue has a schema - validate the data coming off the queue
@@ -127,19 +126,19 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
                     except KeyError:
                         logger.exception(f"{qname} is not defined in this component's output queue list")
 
-                    # typing of engine.queues.Queue.q makes this ambiguous and potentially error prone
+                    # TODO: typing of engine.queues.Queue.qcon makes this ambiguous and potentially error prone
                     try:
-                        status = out_queue.q.produce(queue_name=out_queue.value, message=q_msg)  # type: ignore
+                        status = out_queue.qcon.produce(queue_name=out_queue.value, message=q_msg)  # type: ignore
                     except Exception:
                         logger.exception("failed producing message")
                         status = False
                     if status:
-                        in_queue.q.delete_message(
+                        in_queue.qcon.delete_message(
                             queue_name=in_queue.value,
                             message_id=in_message.message_id,
                         )
                     else:
-                        in_queue.q.on_fail()
+                        in_queue.qcon.on_fail()
 
                 if RUN_ONCE:
                     # for testing purposes only - mock RUN_ONCE

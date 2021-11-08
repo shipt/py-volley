@@ -4,11 +4,11 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from engine.engine import bundle_engine, get_consumer, get_producer
-from tests.test_kafka import KafkaMessage
+from tests.test_connectors.test_kafka import KafkaMessage
 
 
-@patch("engine.kafka.KafkaConsumer")
-@patch("engine.rsmq.RedisSMQ")
+@patch("engine.connectors.kafka.KConsumer")
+@patch("engine.connectors.rsmq.RedisSMQ")
 def test_get_consumer(mock_redis, mock_kafka) -> None:  # type: ignore
     qname = "random-queue-name"
     for c in ["kafka", "rsmq"]:
@@ -19,8 +19,8 @@ def test_get_consumer(mock_redis, mock_kafka) -> None:  # type: ignore
         consumer = get_consumer("non-existant-queue", qname)
 
 
-@patch("engine.kafka.KafkaProducer")
-@patch("engine.rsmq.RedisSMQ")
+@patch("engine.connectors.kafka.KProducer")
+@patch("engine.connectors.rsmq.RedisSMQ")
 def test_get_producer(mock_redis, mock_kafka) -> None:  # type: ignore
     qname = "random-queue-name"
     for p in ["kafka", "rsmq"]:
@@ -32,8 +32,8 @@ def test_get_producer(mock_redis, mock_kafka) -> None:  # type: ignore
 
 
 @patch("engine.engine.RUN_ONCE", True)
-@patch("engine.kafka.KafkaProducer")
-@patch("engine.kafka.KafkaConsumer")
+@patch("engine.connectors.kafka.KProducer")
+@patch("engine.connectors.kafka.KConsumer")
 def test_engine(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:
     mock_consumer.return_value.poll = lambda x: KafkaMessage()
 

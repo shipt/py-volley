@@ -6,7 +6,7 @@ from prometheus_client import Gauge, make_wsgi_app
 from sqlalchemy import text
 
 from engine.queues import load_config
-from engine.stateful.pg_config import PG_SCHEMA, get_eng
+from engine.connectors.pg_config import PG_SCHEMA, get_eng
 
 eng = get_eng()
 

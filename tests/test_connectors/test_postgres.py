@@ -1,14 +1,8 @@
 from typing import Any, List, Optional
 from unittest.mock import MagicMock, patch
 
-from components.data_models import (
-    CollectFallback,
-    CollectOptimizer,
-    CollectTriage,
-    PublisherInput,
-)
+from components.data_models import CollectFallback, CollectOptimizer, CollectTriage
 from engine.connectors import PGConsumer, PGProducer
-from engine.connectors.base import Consumer, Producer
 from engine.data_models import QueueMessage
 
 
@@ -39,7 +33,7 @@ def test_pg_consume_success(mock_eng: MagicMock, mock_session: MagicMock) -> Non
     mock_session.return_value.execute = lambda x: [MockExecute(values=[1, 2, 3])]
     pg = PGConsumer(host="mockhost", queue_name="mock-queue")
     result_set = pg.consume()
-    assert True
+    assert result_set
 
 
 @patch("engine.connectors.postgres.Session")

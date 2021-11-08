@@ -197,5 +197,3 @@ RSMQ is the python implementation of the [RSMQ](https://github.com/smrchy/rsmq) 
 Kafka - TODO
 
 Postgres - TODO
-
-

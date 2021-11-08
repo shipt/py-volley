@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from engine.engine import bundle_engine, get_consumer, get_producer
-from tests.test_kafka import KafkaMessage
+from tests.test_connectors.test_kafka import KafkaMessage
 
 
 @patch("engine.connectors.kafka.KConsumer")

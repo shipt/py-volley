@@ -11,18 +11,18 @@ from sqlalchemy.engine.row import RowMapping
 from sqlalchemy.orm import Session
 
 from core.logging import logger
-from engine.consumer import Consumer
-from engine.data_models import QueueMessage
-from engine.producer import Producer
-from engine.stateful.pg_config import (
+from engine.connectors.base import Consumer, Producer
+from engine.connectors.pg_config import (
     PG_SCHEMA,
     get_eng,
     init_schema,
     metadata_obj,
     publisher,
 )
+from engine.data_models import QueueMessage
 
 BATCH_SIZE = 1
+RUN_ONCE = False
 
 
 @dataclass
@@ -65,10 +65,13 @@ class PGConsumer(Consumer):
         records: List[RowMapping] = []
         while not records:
             records = [r._mapping for r in self.session.execute(text(sql))]
-            if not records:
+            if not any(records):
                 logger.info(f"No records - waiting {poll_interval}")
                 self.session.execute(text("ROLLBACK;"))
                 time.sleep(poll_interval)
+
+            if RUN_ONCE:
+                break
 
         return QueueMessage(message_id="None", message={"results": records})
 

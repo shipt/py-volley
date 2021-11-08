@@ -15,11 +15,8 @@ from components.data_models import (
     InputMessage,
     PublisherMessage,
 )
+from engine.connectors import KafkaConsumer, KafkaProducer, RSMQConsumer, RSMQProducer
 from engine.data_models import QueueMessage
-from engine.kafka import BundleConsumer as KafkaConsumer
-from engine.kafka import BundleProducer as KafkaProducer
-from engine.rsmq import BundleConsumer as RsmqConsumer
-from engine.rsmq import BundleProducer as RsmqProducer
 
 os.environ["INPUT_QUEUE"] = "input"
 os.environ["OUTPUT_QUEUE"] = "output"
@@ -82,9 +79,9 @@ def bundle_message() -> QueueMessage:
 
 
 @fixture
-def mock_rsmq_producer() -> RsmqProducer:
-    with patch("engine.rsmq.RedisSMQ"):
-        producer = RsmqProducer(
+def mock_rsmq_producer() -> RSMQProducer:
+    with patch("engine.connectors.rsmq.RedisSMQ"):
+        producer = RSMQProducer(
             host="redis",
             queue_name="test",
         )
@@ -92,13 +89,13 @@ def mock_rsmq_producer() -> RsmqProducer:
 
 
 @fixture
-def mock_rsmq_consumer() -> RsmqConsumer:
+def mock_rsmq_consumer() -> RSMQConsumer:
     msg = {
         "id": "abc123",
         "message": json.dumps({"kafka": "message"}).encode("utf-8"),
     }
-    with patch("engine.rsmq.RedisSMQ"):
-        c = RsmqConsumer(
+    with patch("engine.connectors.rsmq.RedisSMQ"):
+        c = RSMQConsumer(
             host="redis",
             queue_name="test",
         )
@@ -128,7 +125,7 @@ class KafkaMessage:
 
 @fixture()
 def mock_kafka_consumer() -> KafkaConsumer:
-    with patch("engine.kafka.KafkaConsumer"):
+    with patch("engine.connectors.kafka.KConsumer"):
         c = KafkaConsumer(host="kafka", queue_name="test")
         c.c.poll = MagicMock(return_value=KafkaMessage())
         return c
@@ -136,7 +133,7 @@ def mock_kafka_consumer() -> KafkaConsumer:
 
 @fixture
 def mock_kafka_producer() -> KafkaProducer:
-    with patch("engine.kafka.KafkaProducer"):
+    with patch("engine.connectors.kafka.KProducer"):
         producer = KafkaProducer(host="kafka", queue_name="test")
         return producer
 

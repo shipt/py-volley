@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import List
 
+from prometheus_client import Summary
 from sqlalchemy import text, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.engine.base import Engine
@@ -23,6 +24,8 @@ from engine.data_models import QueueMessage
 
 BATCH_SIZE = 1
 RUN_ONCE = False
+
+PROCESS_TIME = Summary("postgres_process_time_seconds", "Time spent interacting with postgres", ["operation"])
 
 
 @dataclass
@@ -64,7 +67,10 @@ class PGConsumer(Consumer):
 
         records: List[RowMapping] = []
         while not records:
+            _start = time.time()
             records = [r._mapping for r in self.session.execute(text(sql))]
+            _duration = time.time() - _start
+            PROCESS_TIME.labels("read").observe(_duration)
             if not any(records):
                 logger.info(f"No records - waiting {poll_interval}")
                 self.session.execute(text("ROLLBACK;"))
@@ -77,7 +83,10 @@ class PGConsumer(Consumer):
 
     def delete_message(self, queue_name: str, message_id: str) -> bool:  # type: ignore
         # if all succeeds, commit the transaction
+        _start = time.time()
         self.session.execute(text("COMMIT;"))
+        _duration = time.time() - _start
+        PROCESS_TIME.labels("delete").observe(_duration)
         return True
 
     def on_fail(self) -> None:
@@ -110,11 +119,19 @@ class PGProducer(Producer):
         if event_type == "triage":
             insert_stmt = insert(publisher).values(**m)
             with self.engine.begin() as c:
+                _start = time.time()
                 c.execute(insert_stmt)
+                _duration = time.time() - _start
+                PROCESS_TIME.labels("insert").observe(_duration)
         elif event_type in ["fallback", "optimizer"]:
             update_stmt = update(publisher).where(publisher.c.engine_event_id == engine_event_id).values(**m)
             with self.engine.begin() as c:
+                _start = time.time()
                 c.execute(update_stmt)
+                _duration = time.time() - _start
+                PROCESS_TIME.labels("update").observe(_duration)
+        else:
+            logger.error(f"unrecognized {event_type=}")
         return True
 
     def shutdown(self) -> None:

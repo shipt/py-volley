@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 import requests
+from prometheus_client import Counter
 from pydantic import ValidationError
 
 from components.data_models import EnrichedOrder, InputMessage, TriageMessage
@@ -31,6 +32,8 @@ FLIGHT_PLAN_URL = {
     "production": "https://flight-plan-service.us-east-1.shipt.com/v1/orders",
 }[APP_ENV]
 
+
+ORDER_COUNTS = Counter("order_counts", "Orders per request by enrichment status", ["status"])  # success or fail
 
 # stores geo data for all location ids
 # each request __should__ be for a single location, however
@@ -133,6 +136,11 @@ def main(in_message: InputMessage) -> List[Tuple[str, Optional[ComponentMessage]
     if not any([error_orders, enriched_orders]):
         logger.error(f"NO VALID ORDER: {message}")
         return [("None", None)]
+
+    n_success = len(enriched_orders)
+    n_fail = len(error_orders)
+    ORDER_COUNTS.labels("success").inc(n_success)
+    ORDER_COUNTS.labels("fail").inc(n_fail)
 
     output_message = TriageMessage(
         error_orders=error_orders,

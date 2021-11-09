@@ -4,9 +4,9 @@ from typing import Any, Dict, List, Tuple
 import pandas as pd
 
 from components.data_models import CollectTriage, OptimizerMessage, TriageMessage
-from core.logging import logger
 from engine.data_models import ComponentMessage
 from engine.engine import bundle_engine
+from engine.logging import logger
 
 INPUT_QUEUE = "triage"
 OUTPUT_QUEUES = ["optimizer", "fallback", "collector"]  # , "shadow"]

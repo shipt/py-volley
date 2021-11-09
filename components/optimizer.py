@@ -7,9 +7,9 @@ from uuid import uuid4
 import requests
 
 from components.data_models import CollectOptimizer, OptimizerMessage
-from core.logging import logger
 from engine.data_models import ComponentMessage
 from engine.engine import bundle_engine
+from engine.logging import logger
 
 INPUT_QUEUE = "optimizer"
 OUTPUT_QUEUES = ["collector"]

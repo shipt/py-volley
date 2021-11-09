@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List, Tuple
 
 import pytz
+from prometheus_client import Counter
 
 from components.data_models import OutputMessage, PublisherMessage
 from engine.engine import bundle_engine
@@ -11,6 +12,9 @@ from engine.logging import logger
 INPUT_QUEUE = "publisher"
 # output to output-queue (kafka topic)
 OUTPUT_QUEUES = ["output-queue"]
+
+
+SOLUTION_TYPE = Counter("solution", "Count of solution by type", ["type"])  # fallback or optimizer
 
 
 class TimeoutError(Exception):
@@ -48,6 +52,7 @@ def main(in_message: PublisherMessage) -> List[Tuple[str, OutputMessage]]:
             bundles=bundled,
             optimizer_type=optimizer_type,
         )
+        SOLUTION_TYPE.labels(optimizer_type).inc()
         logger.info(f"{optimizer_type=}")
 
         result_set.append(("output-queue", pm))

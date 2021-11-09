@@ -8,9 +8,9 @@ from prometheus_client import Counter
 from pydantic import ValidationError
 
 from components.data_models import EnrichedOrder, InputMessage, TriageMessage
-from core.logging import logger
 from engine.data_models import ComponentMessage
 from engine.engine import bundle_engine
+from engine.logging import logger
 
 APP_ENV = os.getenv("APP_ENV", "localhost")
 

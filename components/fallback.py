@@ -8,9 +8,9 @@ import pandas as pd
 import requests
 
 from components.data_models import CollectFallback, OptimizerMessage
-from core.logging import logger
 from engine.data_models import ComponentMessage
 from engine.engine import bundle_engine
+from engine.logging import logger
 
 INPUT_QUEUE = "fallback"
 OUTPUT_QUEUES = ["collector"]

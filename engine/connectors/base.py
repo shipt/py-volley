@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any
 
-from core.logging import logger
 from engine.data_models import QueueMessage
+from engine.logging import logger
 
 
 @dataclass  # type: ignore

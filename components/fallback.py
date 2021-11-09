@@ -35,7 +35,7 @@ def handle_fallback_call(body: Dict[str, Any]) -> List[Dict[str, Any]]:
     if resp.status_code == 200:
         bundles: List[Dict[str, Any]] = resp.json()["bundles"]
     else:
-        logger.error(f"{FALLBACK_URL} -{resp.status_code=} - {resp.reason} - {body=}")
+        logger.error(f"{FALLBACK_URL} - {resp.status_code=} - {body=}")
         # create bundles of 1
         bundles = []
         for o in body["order_list"]:
@@ -70,7 +70,7 @@ def main(in_message: OptimizerMessage) -> List[Tuple[str, ComponentMessage]]:
 
     if not bundles:
         logger.critical(f"{in_message.bundle_request_id} = NO BUNDLE SOLUTION - NO BUNDLES OF ONE")
-        raise Exception
+        raise Exception(f"No bundles on req id {in_message.bundle_request_id}")
 
     fallback_solution = {"bundles": bundles}
     logger.info(f"{in_message.bundle_request_id} - optimized Bundles: {len(bundles)}")

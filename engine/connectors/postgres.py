@@ -11,7 +11,6 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.engine.row import RowMapping
 from sqlalchemy.orm import Session
 
-from core.logging import logger
 from engine.connectors.base import Consumer, Producer
 from engine.connectors.pg_config import (
     PG_SCHEMA,
@@ -21,6 +20,7 @@ from engine.connectors.pg_config import (
     publisher,
 )
 from engine.data_models import QueueMessage
+from engine.logging import logger
 
 BATCH_SIZE = 1
 RUN_ONCE = False

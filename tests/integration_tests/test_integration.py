@@ -6,7 +6,7 @@ from uuid import uuid4
 from pyshipt_streams import KafkaConsumer, KafkaProducer
 
 from components.data_models import InputMessage
-from core.logging import logger
+from engine.logging import logger
 from engine.queues import available_queues
 
 

@@ -1,8 +1,10 @@
 import os
-from typing import Any, Dict, List, Tuple
+from concurrent.futures import ThreadPoolExecutor
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 import requests
+from pydantic import ValidationError
 
 from components.data_models import EnrichedOrder, InputMessage, TriageMessage
 from core.logging import logger
@@ -10,6 +12,8 @@ from engine.data_models import ComponentMessage
 from engine.engine import bundle_engine
 
 APP_ENV = os.getenv("APP_ENV", "localhost")
+
+FP_CALL_WORKERS: int = int(os.getenv("FP_CALL_WORKERS", 10))
 
 INPUT_QUEUE = "input-queue"
 OUTPUT_QUEUES = ["triage"]
@@ -28,33 +32,46 @@ FLIGHT_PLAN_URL = {
 }[APP_ENV]
 
 
-def validate_geo_data(geo_data: Dict[str, Any]) -> None:
-    for stop_type, latlon in geo_data.items():
-        longitude = latlon["longitude"]
-        latitude = latlon["latitude"]
-        if longitude == 0 and latitude == 0:
-            logger.error(f"invalid {longitude=} {latitude=}")
-        # northern hemisphere?
-        if longitude is None or longitude < -180 or longitude > -50:
-            logger.error(f"invalid {longitude=}")
-
-        # western hemisphere?
-        if latitude is None or latitude < -10 or latitude > 90:
-            logger.error(f"invalid {latitude=}")
+# stores geo data for all location ids
+# each request __should__ be for a single location, however
+# this is effectively caching the locations lat/long
+ALL_METRO_RESULTS: Dict[str, Any] = {}
 
 
-def get_shop_time(order_id: str) -> Dict[str, Any]:
+def get_shop_time(order_id: str) -> Optional[Tuple[str, float]]:
+    """Calls flight-plan-service to retrieve shop time
+
+    On success - returns Tuple[order_id: str, shop_time: float]
+    On failure - returns None. Logs exception or non-200 response to Rollbar
+    """
     resp = requests.get(f"{FLIGHT_PLAN_URL}/{order_id}")
 
     if resp.status_code == 200:
         try:
-            return {"shop_time_minutes": resp.json()["before_claim"]["shop"]["minutes"]}
+            return order_id, resp.json()["before_claim"]["shop"]["minutes"]
         except KeyError:
             logger.exception(f"Flight-plan data missing for order: {order_id}")
-            return {}
     else:
         logger.error(f"Flight-plan returned status code: {resp.status_code} for order: {order_id}")
-        return {}
+    return None
+
+
+def get_shop_time_pooled(order_ids: List[str]) -> Dict[str, float]:
+    """concurrently calls get_shop_time (flight-plan-service) for a list of order ids
+
+    Returns a dictionary:
+        keys - order_id: str
+        value - shop_time: float
+    """
+    with ThreadPoolExecutor(max_workers=FP_CALL_WORKERS) as executor:
+        tasks = [executor.submit(get_shop_time, o) for o in order_ids]
+
+        results = {}
+        for t in tasks:
+            order_shop_time: Optional[Tuple[str, float]] = t.result()
+            if order_shop_time:
+                results[order_shop_time[0]] = order_shop_time[1]
+        return results
 
 
 def get_metro_attr(
@@ -77,35 +94,45 @@ def get_metro_attr(
 
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(in_message: InputMessage) -> List[Tuple[str, ComponentMessage]]:
+def main(in_message: InputMessage) -> List[Tuple[str, Optional[ComponentMessage]]]:
     message = in_message.dict()
     request_id = message["bundle_request_id"]
-    logger.info(f"{FLIGHT_PLAN_URL=}")
 
     error_orders = []
     enriched_orders = []
-    # iterate over keys (order id)
+
+    all_order_ids = [o["order_id"] for o in message["orders"]]
+
+    # call FP concurrently
+    fp_results: Dict[str, float] = get_shop_time_pooled(all_order_ids)
+
     for order in message["orders"]:
         order_id = order["order_id"]
         # handle geo enrichment
-        metro_results = get_metro_attr(store_location_id=order["store_location_id"])
-
-        # successful enrichment from geo
+        # only call metro service if we dont already have the data cached
+        store_location_id = str(order["store_location_id"])
+        if not (metro_results := ALL_METRO_RESULTS.get(store_location_id)):
+            metro_results = get_metro_attr(store_location_id=store_location_id)
+            ALL_METRO_RESULTS[store_location_id] = metro_results
         order.update(metro_results)
 
         # handle shop time
-        fp_results = get_shop_time(order_id=order_id)
-        order.update(fp_results)
+        shop_time = fp_results.get(order_id)
+        if shop_time:
+            order["shop_time_minutes"] = shop_time
 
         try:
+            # EnrichedOrder validation will fail if attributes are missing
+            # e.g. FP call fails, shop_time_minutes will not exist. Validation fails.
             enriched_orders.append(EnrichedOrder(**order))
-        except Exception:
+        except ValidationError:
             logger.exception(f"failed enriching {order_id=}")
+            # error orders end up getting "bundled as order of one" in Optimizer component
             error_orders.append(order)
 
     if not any([error_orders, enriched_orders]):
         logger.error(f"NO VALID ORDER: {message}")
-        return (None, None)  # type: ignore
+        return [("None", None)]
 
     output_message = TriageMessage(
         error_orders=error_orders,

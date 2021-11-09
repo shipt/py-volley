@@ -23,13 +23,13 @@ roles:
       routes:
       - subdomain: bundle-engine-metrics
       timeout: 5s
-      command: uvicorn monitoring.monitoring:app
+      command: uvicorn engine.monitoring.monitoring:app
       healthcheck: /
       port: 8000
       retryPolicy:
         count: 3
         perTryTimeout: 15s
-      replicaCount: 4
+      replicaCount: 1
       resources:
         cpu: 50m
         memory: 250M
@@ -40,22 +40,70 @@ roles:
   worker:
     - name: features
       command: python main.py features
-      replicaCount: 1
+      replicaCount: 4
+      resources:
+        cpu: 200m
+        memory: 250M
+      telemetry:
+        prometheus:
+          enabled: true
+          port: 3000
+          path: /metrics
     - name: triage
       command: python main.py triage
-      replicaCount: 1
+      replicaCount: 3
+      resources:
+        cpu: 150m
+        memory: 150M
+      telemetry:
+        prometheus:
+          enabled: true
+          port: 3000
+          path: /metrics
     - name: optimizer
       command: python main.py optimizer
-      replicaCount: 1
+      replicaCount: 3
+      resources:
+        cpu: 150m
+        memory: 150M
+      telemetry:
+        prometheus:
+          enabled: true
+          port: 3000
+          path: /metrics
     - name: fallback
       command: python main.py fallback
-      replicaCount: 1
+      replicaCount: 3
+      resources:
+        cpu: 150m
+        memory: 150M
+      telemetry:
+        prometheus:
+          enabled: true
+          port: 3000
+          path: /metrics
     - name: collector
       command: python main.py collector
-      replicaCount: 1
+      replicaCount: 3
+      resources:
+        cpu: 150m
+        memory: 150M
+      telemetry:
+        prometheus:
+          enabled: true
+          port: 3000
+          path: /metrics
     - name: publisher
       command: python main.py publisher
-      replicaCount: 1
+      replicaCount: 3
+      resources:
+        cpu: 150m
+        memory: 150M
+      telemetry:
+        prometheus:
+          enabled: true
+          port: 3000
+          path: /metrics
 datastores:
   cloudSql:
     - name: ml-bundle-engine
@@ -78,6 +126,15 @@ datastores:
           event:
             type: BUSINESS
             eventDescription: bundle_engine_input
+      - name: bundle-engine-dlq
+        configVar: DLQ_TOPIC
+        nameAttributes:
+          domain: ds-marketplace
+          messageType: BUS
+          version: v1
+          event:
+            type: BUSINESS
+            eventDescription: bundle_engine_dlq
       - name: bundle-engine-output
         configVar: OUTPUT_TOPIC
         nameAttributes:

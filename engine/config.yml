@@ -27,3 +27,7 @@ queues:
     value: "{{ env }}.bus.ds-marketplace.v1.bundle_engine_output"
     type: kafka
     schema: components.data_models.OutputMessage
+  - name: dead-letter-queue
+    value: "{{ env }}.bus.ds-marketplace.v1.bundle_engine_dlq"
+    type: kafka
+    schema: components.data_models.ComponentMessage

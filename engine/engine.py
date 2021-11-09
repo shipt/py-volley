@@ -1,37 +1,43 @@
 import importlib
 import os
+import time
 from functools import wraps
 from typing import Any, Dict, List, Tuple
 
+from prometheus_client import Summary, start_http_server
+from pydantic import ValidationError
+
 from core.logging import logger
-from engine.consumer import Consumer
+from engine.connectors.base import Consumer, Producer
 from engine.data_models import ComponentMessage, QueueMessage
-from engine.producer import Producer
 from engine.queues import Queue, Queues, available_queues
 
 # enables mocking the infinite loop to finite
-RUN = True
+RUN_ONCE = False
+
+
+CYCLE_TIME = Summary("component_cycle_time", "Time spent processing a single message")
 
 
 def get_consumer(queue_type: str, queue_name: str) -> Consumer:
     if queue_type == "kafka":
-        from engine.kafka import BundleConsumer
+        from engine.connectors import KafkaConsumer
 
-        return BundleConsumer(
+        return KafkaConsumer(
             host=os.environ["KAFKA_BROKERS"],
             queue_name=queue_name,
         )
     elif queue_type == "rsmq":
-        from engine.rsmq import BundleConsumer  # type: ignore
+        from engine.connectors import RSMQConsumer
 
-        return BundleConsumer(
+        return RSMQConsumer(
             host=os.environ["REDIS_HOST"],
             queue_name=queue_name,
         )
     elif queue_type == "postgres":
-        from engine.stateful.postgres import PGConsumer
+        from engine.connectors import PGConsumer
 
-        return PGConsumer(  # type: ignore
+        return PGConsumer(
             host=os.getenv("PG_HOST", "postgres"),
             queue_name=queue_name,
         )
@@ -41,19 +47,19 @@ def get_consumer(queue_type: str, queue_name: str) -> Consumer:
 
 def get_producer(queue_type: str, queue_name: str) -> Producer:
     if queue_type == "kafka":
-        from engine.kafka import BundleProducer
+        from engine.connectors import KafkaProducer
 
-        return BundleProducer(host=os.environ["KAFKA_BROKERS"], queue_name=queue_name)
+        return KafkaProducer(host=os.environ["KAFKA_BROKERS"], queue_name=queue_name)
 
     elif queue_type == "rsmq":
-        from engine.rsmq import BundleProducer as RsmqProducer
+        from engine.connectors import RSMQProducer
 
-        return RsmqProducer(host=os.environ["REDIS_HOST"], queue_name=queue_name)
+        return RSMQProducer(host=os.environ["REDIS_HOST"], queue_name=queue_name)
 
     elif queue_type == "postgres":
-        from engine.stateful.postgres import PGProducer
+        from engine.connectors import PGProducer
 
-        return PGProducer(host=os.getenv("PG_HOST", "postgres"), queue_name=queue_name)  # type: ignore
+        return PGProducer(host=os.getenv("PG_HOST", "postgres"), queue_name=queue_name)
 
     else:
         raise KeyError(f"{queue_type=} not valid")
@@ -71,58 +77,85 @@ def load_schema_class(q: Queue) -> Any:
 
 
 def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C901
+    # TODO: these execute on import. would be better to handle these on exec?
     queues: Queues = available_queues()
 
     in_queue: Queue = queues.queues[input_queue]
 
     out_queues: Dict[str, Queue] = {x: queues.queues[x] for x in output_queues}
+    out_queues["dead-letter-queue"] = queues.queues["dead-letter-queue"]
 
     def decorator(func):  # type: ignore
         @wraps(func)
         def run_component(*args, **kwargs) -> None:  # type: ignore
+            start_http_server(port=3000)
             # the component function is passed in as `func`
             # first setup the connections to the input and outputs queues that the component will need
             # we only want to set these up once, before the component is invoked
-            in_queue.q = get_consumer(queue_type=in_queue.type, queue_name=in_queue.value)
+            in_queue.qcon = get_consumer(queue_type=in_queue.type, queue_name=in_queue.value)
 
             input_data_class: ComponentMessage = load_schema_class(in_queue)
 
             for qname, q in out_queues.items():
-                q.q = get_producer(queue_name=q.value, queue_type=q.type)
+                q.qcon = get_producer(queue_name=q.value, queue_type=q.type)
 
             # queue connections were setup above. now we can start to interact with the queues
-            while RUN:
+            while True:
+                _start_time = time.time()
 
-                in_message: QueueMessage = in_queue.q.consume(queue_name=in_queue.value)
-                serialized_message: ComponentMessage = input_data_class(**in_message.message)  # type: ignore
+                # read message off the specified queue
+                in_message: QueueMessage = in_queue.qcon.consume(queue_name=in_queue.value)
 
-                outputs: List[Tuple[str, QueueMessage]] = func(serialized_message)
+                outputs: List[Tuple[str, ComponentMessage]] = []
+                # every queue has a schema - validate the data coming off the queue
+                # generally, data is validate before it goes on to a queue
+                # however, if a service outside bundle_engine is publishing to the queue,
+                # validation may not be guaranteed
+                # example - input_topic - anyone at Shipt can publish to it
+                try:
+                    serialized_message: ComponentMessage = input_data_class.parse_obj(in_message.message)
+                except ValidationError:
+                    logger.exception(
+                        f"""
+                        Error validating message from {in_queue.value}"""
+                    )
+                    outputs = [("dead-letter-queue", ComponentMessage.parse_obj(in_message.message))]
 
-                for qname, m in outputs:
-                    if m is None:
+                if not outputs:
+                    outputs = func(serialized_message)
+
+                for qname, component_msg in outputs:
+                    if component_msg is None:
                         continue
-                    m = QueueMessage(message_id="", message=m.dict())
+                    q_msg = QueueMessage(message_id="", message=component_msg.dict())
 
                     try:
                         out_queue = out_queues[qname]
                     except KeyError:
                         logger.exception(f"{qname} is not defined in this component's output queue list")
 
-                    # typing of engine.queues.Queue.q makes this ambiguous and potentially error prone
+                    # TODO: typing of engine.queues.Queue.qcon makes this ambiguous and potentially error prone
                     try:
-                        status = out_queue.q.produce(queue_name=out_queue.value, message=m)  # type: ignore
+                        status = out_queue.qcon.produce(queue_name=out_queue.value, message=q_msg)  # type: ignore
                     except Exception:
                         logger.exception("failed producing message")
                         status = False
                     if status:
-                        in_queue.q.delete_message(
+                        in_queue.qcon.delete_message(
                             queue_name=in_queue.value,
                             message_id=in_message.message_id,
                         )
                     else:
-                        in_queue.q.on_fail()
+                        in_queue.qcon.on_fail()
 
-        run_component.__wrapped__ = func  # type: ignore  # used for unit testing
+                _duration = time.time() - _start_time
+                CYCLE_TIME.observe(_duration)
+                if RUN_ONCE:
+                    # for testing purposes only - mock RUN_ONCE
+                    break
+
+        # used for unit testing as a means to access the wrapped component without the decorator
+        run_component.__wrapped__ = func  # type: ignore
         return run_component
 
     return decorator

@@ -1,19 +1,10 @@
 from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
-from components.collector import main as collector
-from components.data_models import (
-    CollectFallback,
-    CollectOptimizer,
-    CollectTriage,
-    InputMessage,
-    OutputMessage,
-    PublisherMessage,
-)
+from components.data_models import InputMessage
 from components.fallback import main as fallback
 from components.features import main as features
 from components.optimizer import main as optimizer
-from components.publisher import main as publisher
 from components.triage import main as triage
 from engine.data_models import ComponentMessage
 from tests.test_components.test_features import mocked_requests_get
@@ -45,23 +36,3 @@ def test_fallback_optimizer(
         if qname == "optimizer":
             outputs.extend(optimizer.__wrapped__(msg))  # type: ignore
     assert outputs is not None
-
-
-def test_publisher(publisher_message: PublisherMessage) -> None:
-    t_outputs = publisher.__wrapped__(publisher_message)
-    for qname, m in t_outputs:
-        assert m.optimizer_type == "optimizer"
-        assert isinstance(m, OutputMessage)
-
-
-def test_collector_publisher(
-    collector_optimizer_message: CollectOptimizer,
-    collector_fallback_message: CollectFallback,
-    collector_triage_message: CollectTriage,
-) -> None:
-    f = collector.__wrapped__(collector_fallback_message)
-    o = collector.__wrapped__(collector_optimizer_message)
-    t = collector.__wrapped__(collector_triage_message)
-    for i in [f, o, t]:
-        for _i in i:
-            assert _i[0] == "publisher"

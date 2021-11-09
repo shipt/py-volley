@@ -40,7 +40,8 @@ services:
             - redis
         volumes:
             - ./:/app/
-        # ports:
+        ports:
+            - 3000:3000
         #     - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py features
         command: python main.py features
@@ -50,6 +51,7 @@ services:
             - APP_ENV=localhost
             - REDIS_HOST=redis
             - REDIS_PORT=6379
+            - KAFKA_BROKERS=kafka:29092
         build:
             target: dev
             context: .
@@ -62,6 +64,7 @@ services:
         volumes:
             - ./:/app/
         # ports:
+        #     - 3000:3000
         #     - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py triage
         command: python main.py triage
@@ -71,6 +74,7 @@ services:
             - APP_ENV=localhost
             - REDIS_HOST=redis
             - REDIS_PORT=6379
+            - KAFKA_BROKERS=kafka:29092
         build:
             target: dev
             context: .
@@ -83,6 +87,7 @@ services:
         volumes:
             - ./:/app/
         # ports:
+        #     - 3000:3000
         #     - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py optimizer
         command: python main.py optimizer
@@ -92,6 +97,7 @@ services:
             - APP_ENV=localhost
             - REDIS_HOST=redis
             - REDIS_PORT=6379
+            - KAFKA_BROKERS=kafka:29092
         build:
             target: dev
             context: .
@@ -104,6 +110,7 @@ services:
         depends_on:
             - redis
         # ports:
+        #     - 3000:3000
         #     - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py fallback
         command: python main.py fallback
@@ -113,6 +120,7 @@ services:
             - APP_ENV=localhost
             - REDIS_HOST=redis
             - REDIS_PORT=6379
+            - KAFKA_BROKERS=kafka:29092
         build:
             target: dev
             context: .
@@ -126,6 +134,7 @@ services:
         volumes:
             - ./:/app/
         # ports:
+        #     - 3000:3000
         #     - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py collector
         command: python main.py collector
@@ -149,6 +158,7 @@ services:
             - postgres
             - kafka
         # ports:
+        #     - 3000:3000
         #     - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py publisher
         command: python main.py publisher
@@ -225,7 +235,7 @@ services:
             KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
             KAFKA_JMX_PORT: 49999
 
-    metrics:
+    queue_metrics:
         container_name: metrics
         environment:
             - APP_ENV=localhost
@@ -243,4 +253,4 @@ services:
             - ./:/app/
         depends_on:
             - redis
-        command: uvicorn monitoring.monitoring:app
+        command: uvicorn engine.monitoring.monitoring:app

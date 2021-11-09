@@ -55,7 +55,7 @@ run.omit = [
     "components/dummy_consumer.py"
     ]
 report.show_missing = true
-report.fail_under = 95
+report.fail_under = 90
 
 [tool.black]
 line-length = 120

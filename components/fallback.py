@@ -15,8 +15,8 @@ from engine.logging import logger
 INPUT_QUEUE = "fallback"
 OUTPUT_QUEUES = ["collector"]
 FALLBACK_URL = {
-    "localhost": "https://ds-bundling-fallback.ds.us-central1.shipt.com/v1/bundle/optimize",
-    "staging": "https://ds-bundling-fallback.ds.us-central1.shipt.com/v1/bundle/optimize",
+    "localhost": "https://ds-bundling-fallback.ds.us-central1.staging.shipt.com/v1/bundle/optimize",
+    "staging": "https://ds-bundling-fallback.ds.us-central1.staging.shipt.com/v1/bundle/optimize",
     "production": "https://ds-bundling-fallback.ds.us-central1.shipt.com/v1/bundle/optimize",
 }[os.getenv("APP_ENV", "localhost")]
 

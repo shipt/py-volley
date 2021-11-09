@@ -40,6 +40,7 @@ pytest-cov = "^3.0.0"
 pylint = "^2.11.1"
 jupyter = "^1.0.0"
 types-requests = "^2.25.11"
+types-pytz = "^2021.3.0"
 
 [tool.isort]
 profile = "black"
@@ -48,9 +49,13 @@ profile = "black"
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.coverage.report]
-show_missing = true
-fail_under = 75
+[tool.coverage]
+run.omit = [
+    "components/dummy_events.py",
+    "components/dummy_consumer.py"
+    ]
+report.show_missing = true
+report.fail_under = 95
 
 [tool.black]
 line-length = 120

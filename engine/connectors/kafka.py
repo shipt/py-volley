@@ -1,26 +1,28 @@
 import json
 from dataclasses import dataclass
 
-from pyshipt_streams import KafkaConsumer, KafkaProducer
+from pyshipt_streams import KafkaConsumer as KConsumer
+from pyshipt_streams import KafkaProducer as KProducer
 
 from core.logging import logger
-from engine.consumer import Consumer
+from engine.connectors.base import Consumer, Producer
 from engine.data_models import QueueMessage
-from engine.producer import Producer
+
+RUN_ONCE = False
 
 
 @dataclass
-class BundleConsumer(Consumer):
+class KafkaConsumer(Consumer):
     def __post_init__(self) -> None:
         # TODO: config for consumer group..env var maybe?
-        self.c = KafkaConsumer(
+        self.c = KConsumer(
             consumer_group="group1",
             # TODO: develop commit strategy to minimize duplicates and guarantee no loss
             # config_override={"enable.auto.offset.store": False}
         )
         self.c.subscribe([self.queue_name])
 
-    def consume(
+    def consume(  # type: ignore
         self,
         queue_name: str = None,
         timeout: float = 60,
@@ -33,17 +35,19 @@ class BundleConsumer(Consumer):
 
             message = self.c.poll(poll_interval)
             if message is None:
-                continue
-            if message.error():
+                pass
+            elif message.error():
                 logger.warning(message.error())
                 message = None
-                continue
             else:
                 msg = json.loads(message.value().decode("utf-8"))
                 if msg is None:
                     continue
                 else:
                     return QueueMessage(message_id=message, message=msg)
+            if RUN_ONCE:
+                # for testing purposes only - mock RUN_ONCE
+                break
 
     def delete_message(self, queue_name: str, message_id: str = None) -> bool:
         # self.c.consumer.store_offsets(message=message_id)
@@ -57,9 +61,9 @@ class BundleConsumer(Consumer):
 
 
 @dataclass
-class BundleProducer(Producer):
+class KafkaProducer(Producer):
     def __post_init__(self) -> None:
-        self.p = KafkaProducer()
+        self.p = KProducer()
 
     def produce(self, queue_name: str, message: QueueMessage) -> bool:
         value = json.dumps(message.message, default=str).encode("utf-8")

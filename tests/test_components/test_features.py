@@ -8,8 +8,12 @@ from components.features import main as features
 
 
 def test_fp_default() -> None:
-    fp_result = get_shop_time("16578146")
-    assert fp_result["shop_time_minutes"] > 0
+    order_id = "16578146"
+    fp_result = get_shop_time(order_id)
+    assert fp_result is not None
+    assert fp_result[0] == order_id
+    assert isinstance(fp_result[1], float)
+    assert fp_result[1] > 0
 
 
 def test_get_metro_attr_default() -> None:
@@ -61,3 +65,26 @@ def test_external_call_error(mock_get: MagicMock, input_message: InputMessage) -
         # forcing bad response from FP - so all should be "error orders"
         assert len(message.error_orders) == len(input_message.orders)
         assert len(message.enriched_orders) == 0
+
+
+@patch("components.features.requests.get")
+def test_metro_error(mock_get: MagicMock) -> None:
+    mock_get.return_value.status_code = 500
+    result = get_metro_attr("non-exist")
+    assert result == {}
+
+
+@patch("components.features.requests.get")
+def test_metro_malformed_response(mock_get: MagicMock) -> None:
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json = lambda: {"bad": "data"}
+    result = get_metro_attr("non-exist")
+    assert result == {}
+
+
+@patch("components.features.requests.get")
+def test_fp_malformed_response(mock_get: MagicMock) -> None:
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json = lambda: {"bad": "data"}
+    result = get_shop_time("non-exist")
+    assert result is None

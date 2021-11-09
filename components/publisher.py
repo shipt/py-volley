@@ -4,8 +4,8 @@ from typing import List, Tuple
 import pytz
 
 from components.data_models import OutputMessage, PublisherMessage
-from core.logging import logger
 from engine.engine import bundle_engine
+from engine.logging import logger
 
 # reads from postgres (publisher table)
 INPUT_QUEUE = "publisher"

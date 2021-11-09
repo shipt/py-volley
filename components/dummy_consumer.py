@@ -2,7 +2,7 @@ import json
 
 from pyshipt_streams import KafkaConsumer
 
-from core.logging import logger
+from engine.logging import logger
 from engine.queues import available_queues
 
 

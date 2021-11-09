@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from pyshipt_streams import KafkaConsumer as KConsumer
 from pyshipt_streams import KafkaProducer as KProducer
 
-from core.logging import logger
 from engine.connectors.base import Consumer, Producer
 from engine.data_models import QueueMessage
+from engine.logging import logger
 
 RUN_ONCE = False
 

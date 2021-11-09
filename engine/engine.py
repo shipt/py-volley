@@ -7,9 +7,9 @@ from typing import Any, Dict, List, Tuple
 from prometheus_client import Counter, Summary, start_http_server
 from pydantic import ValidationError
 
-from core.logging import logger
 from engine.connectors.base import Consumer, Producer
 from engine.data_models import ComponentMessage, QueueMessage
+from engine.logging import logger
 from engine.queues import Queue, Queues, available_queues
 
 # enables mocking the infinite loop to finite

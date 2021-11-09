@@ -4,7 +4,7 @@ import time
 from functools import wraps
 from typing import Any, Dict, List, Tuple
 
-from prometheus_client import Summary, start_http_server
+from prometheus_client import Counter, Summary, start_http_server
 from pydantic import ValidationError
 
 from core.logging import logger
@@ -16,7 +16,9 @@ from engine.queues import Queue, Queues, available_queues
 RUN_ONCE = False
 
 
-CYCLE_TIME = Summary("component_cycle_time", "Time spent processing a single message")
+PROCESS_TIME = Summary("process_time_seconds", "Time spent running a process", ["process_name"])
+MESSAGE_CONSUMED = Counter("messages_consumed_count", "Messages consumed from input", ["status"])  # success or fail
+MESSAGES_PRODUCED = Counter("messages_produced_count", "Messages produced to output destination(s)", ["destination"])
 
 
 def get_consumer(queue_type: str, queue_name: str) -> Consumer:
@@ -122,8 +124,12 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
                     outputs = [("dead-letter-queue", ComponentMessage.parse_obj(in_message.message))]
 
                 if not outputs:
+                    _start_main = time.time()
                     outputs = func(serialized_message)
+                    _fun_duration = time.time() - _start_main
+                    PROCESS_TIME.labels("component").observe(_fun_duration)
 
+                all_produce_status: List[bool] = []
                 for qname, component_msg in outputs:
                     if component_msg is None:
                         continue
@@ -141,15 +147,21 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
                         logger.exception("failed producing message")
                         status = False
                     if status:
+                        MESSAGES_PRODUCED.labels(destination=qname).inc()
                         in_queue.qcon.delete_message(
                             queue_name=in_queue.value,
                             message_id=in_message.message_id,
                         )
                     else:
                         in_queue.qcon.on_fail()
+                        MESSAGE_CONSUMED.labels("fail").inc()
+                    all_produce_status.append(status)
 
+                if any(all_produce_status):
+                    MESSAGE_CONSUMED.labels("success").inc()
                 _duration = time.time() - _start_time
-                CYCLE_TIME.observe(_duration)
+                PROCESS_TIME.labels("cycle").observe(_duration)
+
                 if RUN_ONCE:
                     # for testing purposes only - mock RUN_ONCE
                     break

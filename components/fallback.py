@@ -20,6 +20,7 @@ FALLBACK_URL = {
     "production": "https://ds-bundling-fallback.ds.us-central1.shipt.com/v1/bundle/optimize",
 }[os.getenv("APP_ENV", "localhost")]
 
+
 def handle_fallback_call(body: Dict[str, Any]) -> List[Dict[str, Any]]:
     order_list = []
     for order in body["order_list"]:
@@ -40,6 +41,7 @@ def handle_fallback_call(body: Dict[str, Any]) -> List[Dict[str, Any]]:
         for o in body["order_list"]:
             bundles.append({"group_id": str(uuid4()), "orders": [o["order_id"]]})
     return bundles
+
 
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
 def main(in_message: OptimizerMessage) -> List[Tuple[str, ComponentMessage]]:

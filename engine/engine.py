@@ -143,22 +143,23 @@ def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C
                     # TODO: typing of engine.queues.Queue.qcon makes this ambiguous and potentially error prone
                     try:
                         status = out_queue.qcon.produce(queue_name=out_queue.value, message=q_msg)  # type: ignore
+                        MESSAGES_PRODUCED.labels(destination=qname).inc()
                     except Exception:
                         logger.exception("failed producing message")
                         status = False
-                    if status:
-                        MESSAGES_PRODUCED.labels(destination=qname).inc()
-                        in_queue.qcon.delete_message(
-                            queue_name=in_queue.value,
-                            message_id=in_message.message_id,
-                        )
-                    else:
-                        in_queue.qcon.on_fail()
-                        MESSAGE_CONSUMED.labels("fail").inc()
                     all_produce_status.append(status)
 
-                if any(all_produce_status):
+                if all(all_produce_status):
+                    # TODO - better handling of success criteria
+                    # if multiple outputs - how to determine if its a success if one fails
+                    in_queue.qcon.delete_message(
+                        queue_name=in_queue.value,
+                        message_id=in_message.message_id,
+                    )
                     MESSAGE_CONSUMED.labels("success").inc()
+                else:
+                    in_queue.qcon.on_fail()
+                    MESSAGE_CONSUMED.labels("fail").inc()
                 _duration = time.time() - _start_time
                 PROCESS_TIME.labels("cycle").observe(_duration)
 

@@ -135,7 +135,7 @@ services:
             - ./:/app/
         # ports:
         #     - 3000:3000
-        #     - 5678:5678
+            # - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py collector
         command: python main.py collector
 
@@ -157,11 +157,11 @@ services:
         depends_on:
             - postgres
             - kafka
-        ports:
+        # ports:
         #     - 3000:3000
-            - 5678:5678
-        command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py publisher
-        # command: python main.py publisher
+        #     - 5678:5678
+        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client main.py publisher
+        command: python main.py publisher
 
     dummy_consumer:
         environment:

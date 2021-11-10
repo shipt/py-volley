@@ -5,27 +5,67 @@ prometheus:
     period: "5m"
     team: "machine-learning"
     priority: p1
-    region: ["us-east-1"]
+    region: ["us-central1"]
     runbook: ""
     environment: ["production", "staging"]
-    description: "ml-bundle-engine queue size too large"
+    description: "ml-bundle-engine queue size stayed above 10 for 5 minutes or longer"
 
   - name: "bundle-engine-consumer-group-lag-production"
-    expression: sum(kafka_consumergroup_lag{topic=~"prd.bus.ds-marketplace.v1.bundle_engine_input", consumergroup="group1"}) by (consumergroup, topic) > 0
+    expression: sum(kafka_consumergroup_lag{topic=~"prd.bus.ds-marketplace.v1.bundle_engine_input", consumergroup="features_consumer"}) > 10
     period: "5m"
     team: "machine-learning"
     priority: p1
-    region: ["us-east-1"]
+    region: ["us-central1"]
     runbook: ""
     environment: ["production"]
-    description: "production input topic lag too large"
+    description: "production input topic lag stayed above 10 for 5 minutes or longer"
 
   - name: "bundle-engine-consumer-group-lag-staging"
-    expression: sum(kafka_consumergroup_lag{topic=~"stg.bus.ds-marketplace.v1.bundle_engine_input", consumergroup="group1"}) by (consumergroup, topic) > 0
+    expression: sum(kafka_consumergroup_lag{topic=~"stg.bus.ds-marketplace.v1.bundle_engine_input", consumergroup="features_consumer"}) > 10
     period: "5m"
     team: "machine-learning"
     priority: p1
-    region: ["us-east-1"]
+    region: ["us-central1"]
     runbook: ""
     environment: ["staging"]
-    description: "staging input topic lag too large"
+    description: "staging input topic lag stayed above 10 for 5 minutes or longer"
+
+  - name: "bundle-engine-DLQ-consumer-group-lag-production"
+    expression: sum(kafka_consumergroup_lag{topic=~"prd.bus.ds-marketplace.v1.bundle_engine_dlq", consumergroup="features_consumer"}) > 0
+    period: "5m"
+    team: "machine-learning"
+    priority: p1
+    region: ["us-central1"]
+    runbook: ""
+    environment: ["staging"]
+    description: "staging messages have reached the dead letter queue"
+
+  - name: "bundle-engine-DLQ-consumer-group-lag-staging"
+    expression: sum(kafka_consumergroup_lag{topic=~"stg.bus.ds-marketplace.v1.bundle_engine_dlq", consumergroup="features_consumer"} > 0
+    period: "5m"
+    team: "machine-learning"
+    priority: p3
+    region: ["us-central1"]
+    runbook: ""
+    environment: ["staging"]
+    description: "staging messages have reached the dead letter queue"
+
+  - name: "bundle-engine-messages-expired-production"
+    expression: expired_messages{queue_name="publisher",queue_type="postgres"} > 0
+    period: "1m"
+    team: "machine-learning"
+    priority: p1
+    region: ["us-central1"]
+    runbook: ""
+    environment: ["production"]
+    description: "Expired messages are stuck in the publisher"
+
+  - name: "bundle-engine-messages-expired-staging"
+    expression: expired_messages{queue_name="publisher",queue_type="postgres"} > 0
+    period: "1m"
+    team: "machine-learning"
+    priority: p3
+    region: ["us-central1"]
+    runbook: ""
+    environment: ["staging"]
+    description: "Expired messages are stuck in the publisher"

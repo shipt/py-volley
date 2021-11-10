@@ -41,7 +41,7 @@ prometheus:
     description: "staging messages have reached the dead letter queue"
 
   - name: "bundle-engine-DLQ-consumer-group-lag-staging"
-    expression: sum(kafka_consumergroup_lag{topic=~"stg.bus.ds-marketplace.v1.bundle_engine_dlq", consumergroup="features_consumer"} > 0
+    expression: sum(kafka_consumergroup_lag{topic=~"stg.bus.ds-marketplace.v1.bundle_engine_dlq", consumergroup="features_consumer"}) > 0
     period: "5m"
     team: "machine-learning"
     priority: p3

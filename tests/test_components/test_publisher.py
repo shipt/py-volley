@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 
-import pytest
 import pytz
 
 from components.collector import main as collector
@@ -11,7 +10,6 @@ from components.data_models import (
     OutputMessage,
     PublisherMessage,
 )
-from components.publisher import TimeoutError
 from components.publisher import main as publisher
 
 
@@ -61,8 +59,10 @@ def test_publisher_error(publisher_complete_message: PublisherMessage) -> None:
     pub_dict["results"][0]["timeout"] = datetime.utcnow().replace(tzinfo=pytz.UTC) - timedelta(minutes=1)
     msg = PublisherMessage.parse_obj(pub_dict)
 
-    with pytest.raises(TimeoutError):
-        publisher.__wrapped__(msg)
+    outputs = publisher.__wrapped__(msg)
+    for o in outputs:
+        assert o[0] == "output-queue"
+        assert o[1] is None
 
 
 def test_publisher_error_not_expired(publisher_complete_message: PublisherMessage) -> None:

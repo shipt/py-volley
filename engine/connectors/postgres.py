@@ -49,24 +49,34 @@ class PGConsumer(Consumer):
         timeout: float = 60,
         poll_interval: float = 2,
     ) -> QueueMessage:
-        now = str(datetime.utcnow())
-        sql = f"""
-            BEGIN;
-            DELETE FROM
-                {PG_SCHEMA}.{queue_name}
-            USING (
-                SELECT *
-                FROM {PG_SCHEMA}.{queue_name}
-                WHERE (timeout < '{now}' OR optimizer_id IS NOT NULL)
-                LIMIT {BATCH_SIZE}
-                FOR UPDATE SKIP LOCKED
-            ) q
-            WHERE q.engine_event_id = {PG_SCHEMA}.{queue_name}.engine_event_id
-            RETURNING {PG_SCHEMA}.{queue_name}.*;
-        """
+        """reads a records (message) off a postgres table (queue)
+        messages must meet the follow criteria to leave the queue:
+            1) not expired and contain optimizer solution
+            2) expired and contain a fallback solution
+        reading a record is done in a delete transaction. the transaction
+        is not committed unless the message is successfully processed and
+        published to the next queue.
 
+        the queue should be processed FIFO by (by expiration)
+        """
         records: List[RowMapping] = []
         while not records:
+            now = str(datetime.utcnow())
+            sql = f"""
+                BEGIN;
+                DELETE FROM
+                    {PG_SCHEMA}.{queue_name}
+                USING (
+                    SELECT *
+                    FROM {PG_SCHEMA}.{queue_name}
+                    WHERE (timeout < '{now}' and fallback_id IS NOT NULL) OR (optimizer_id IS NOT NULL)
+                    ORDER BY timeout ASC
+                    LIMIT {BATCH_SIZE}
+                    FOR UPDATE SKIP LOCKED
+                ) q
+                WHERE q.engine_event_id = {PG_SCHEMA}.{queue_name}.engine_event_id
+                RETURNING {PG_SCHEMA}.{queue_name}.*;
+            """
             _start = time.time()
             records = [r._mapping for r in self.session.execute(text(sql))]
             _duration = time.time() - _start

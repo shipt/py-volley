@@ -15,8 +15,8 @@ from engine.logging import logger
 INPUT_QUEUE = "fallback"
 OUTPUT_QUEUES = ["collector"]
 FALLBACK_URL = {
-    "localhost": "https://ds-bundling-fallback.ds.us-central1.shipt.com/v1/bundle/optimize",
-    "staging": "https://ds-bundling-fallback.ds.us-central1.shipt.com/v1/bundle/optimize",
+    "localhost": "https://ds-bundling-fallback.ds.us-central1.staging.shipt.com/v1/bundle/optimize",
+    "staging": "https://ds-bundling-fallback.ds.us-central1.staging.shipt.com/v1/bundle/optimize",
     "production": "https://ds-bundling-fallback.ds.us-central1.shipt.com/v1/bundle/optimize",
 }[os.getenv("APP_ENV", "localhost")]
 
@@ -35,7 +35,7 @@ def handle_fallback_call(body: Dict[str, Any]) -> List[Dict[str, Any]]:
     if resp.status_code == 200:
         bundles: List[Dict[str, Any]] = resp.json()["bundles"]
     else:
-        logger.error(f"{FALLBACK_URL} -{resp.status_code=} - {resp.reason} - {body=}")
+        logger.error(f"{FALLBACK_URL} - {resp.status_code=} - {body=}")
         # create bundles of 1
         bundles = []
         for o in body["order_list"]:
@@ -70,7 +70,7 @@ def main(in_message: OptimizerMessage) -> List[Tuple[str, ComponentMessage]]:
 
     if not bundles:
         logger.critical(f"{in_message.bundle_request_id} = NO BUNDLE SOLUTION - NO BUNDLES OF ONE")
-        raise Exception
+        raise Exception(f"No bundles on req id {in_message.bundle_request_id}")
 
     fallback_solution = {"bundles": bundles}
     logger.info(f"{in_message.bundle_request_id} - optimized Bundles: {len(bundles)}")

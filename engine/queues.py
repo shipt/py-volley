@@ -8,6 +8,7 @@ from jinja2 import Template
 from pydantic import BaseModel
 from yaml import Loader
 
+from engine.config import ENV
 from engine.connectors.base import Consumer, Producer
 
 _cur_path = Path(__file__).parent.resolve().joinpath("config.yml")
@@ -50,7 +51,7 @@ def available_queues() -> Queues:
         "development": "dev",
         "localhost": "localhost",
     }
-    kafka_env = kafka_env_map.get(os.getenv("APP_ENV", "localhost"))
+    kafka_env = kafka_env_map.get(ENV)
     queues = {}
 
     for q in cfg["queues"]:

@@ -3,7 +3,10 @@ import sys
 
 import rollbar
 
-rollbar.init(os.getenv("ROLLBAR_TOKEN"), os.getenv("APP_ENV", "localhost"))
+from engine.config import ENV
+
+
+rollbar.init(os.getenv("ROLLBAR_TOKEN"), ENV)
 
 
 def run() -> None:

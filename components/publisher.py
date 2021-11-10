@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import pytz
 from prometheus_client import Counter
@@ -17,15 +17,11 @@ OUTPUT_QUEUES = ["output-queue"]
 SOLUTION_TYPE = Counter("solution", "Count of solution by type", ["type"])  # fallback or optimizer
 
 
-class TimeoutError(Exception):
-    pass
-
-
 @bundle_engine(input_queue=INPUT_QUEUE, output_queues=OUTPUT_QUEUES)
-def main(in_message: PublisherMessage) -> List[Tuple[str, OutputMessage]]:
+def main(in_message: PublisherMessage) -> List[Tuple[str, Optional[OutputMessage]]]:
     message = in_message.dict()
 
-    result_set = []
+    result_set: List[Tuple[str, Optional[OutputMessage]]] = []
 
     for m in message["results"]:
         engine_event_id = m["engine_event_id"]
@@ -44,7 +40,8 @@ def main(in_message: PublisherMessage) -> List[Tuple[str, OutputMessage]]:
             else:
                 msg = f"{engine_event_id=} - {bundle_request_id} expired without results"
                 logger.error(msg)
-                raise TimeoutError(msg)
+                result_set.append(("output-queue", None))
+                continue
 
         pm = OutputMessage(
             engine_event_id=m["engine_event_id"],

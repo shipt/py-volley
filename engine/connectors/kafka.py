@@ -21,7 +21,7 @@ class KafkaConsumer(Consumer):
             # for now, we'll try to use the name of the component in the consumer group
             component_name = sys.argv[1]
         except KeyError:
-            component_name = f"{ENV}_bundle_engine"
+            component_name = f"bundle_engine"
 
         self.c = KConsumer(
             consumer_group=f"{ENV}_{component_name}",

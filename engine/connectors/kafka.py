@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pyshipt_streams import KafkaConsumer as KConsumer
 from pyshipt_streams import KafkaProducer as KProducer
 
+from engine.config import ENV
 from engine.connectors.base import Consumer, Producer
 from engine.data_models import QueueMessage
 from engine.logging import logger
@@ -23,7 +24,7 @@ class KafkaConsumer(Consumer):
             component_name = "bundle_engine"
 
         self.c = KConsumer(
-            consumer_group=f"{component_name}_consumer",
+            consumer_group=f"{ENV}_{component_name}_consumer",
             # TODO: develop commit strategy to minimize duplicates and guarantee no loss
             # config_override={"enable.auto.offset.store": False}
         )

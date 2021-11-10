@@ -8,11 +8,10 @@ from prometheus_client import Counter
 from pydantic import ValidationError
 
 from components.data_models import EnrichedOrder, InputMessage, TriageMessage
+from engine.config import ENV
 from engine.data_models import ComponentMessage
 from engine.engine import bundle_engine
 from engine.logging import logger
-
-APP_ENV = os.getenv("APP_ENV", "localhost")
 
 FP_CALL_WORKERS: int = int(os.getenv("FP_CALL_WORKERS", 10))
 
@@ -23,14 +22,14 @@ METRO_URL = {
     "localhost": "https://shipt-metropolis.us-east-1.staging.shipt.com/v1/configuration/context",
     "staging": "https://shipt-metropolis.us-east-1.staging.shipt.com/v1/configuration/context",
     "production": "https://shipt-metropolis.us-east-1.shipt.com/v1/configuration/context",
-}[APP_ENV]
+}[ENV]
 
 
 FLIGHT_PLAN_URL = {
     "localhost": "https://flight-plan-service.us-east-1.staging.shipt.com/v1/orders",
     "staging": "https://flight-plan-service.us-east-1.staging.shipt.com/v1/orders",
     "production": "https://flight-plan-service.us-east-1.shipt.com/v1/orders",
-}[APP_ENV]
+}[ENV]
 
 
 ORDER_COUNTS = Counter("order_counts", "Orders per request by enrichment status", ["status"])  # success or fail

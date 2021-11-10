@@ -1,0 +1,1064 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "flowchartsData": {
+        "flowcharts": [
+          {
+            "allowDrawio": true,
+            "bgColor": null,
+            "center": true,
+            "csv": "## See more information for the syntax at https://drawio-app.com/import-from-csv-to-drawio/\n##\n## Example CSV. Use ## for comments and # for configuration.\n## The following names are reserved and should not be used (or ignored):\n## id, tooltip, placeholder(s), link and label (see below)\n##\n#\n## Node label with placeholders and HTML.\n## Default is '%name_of_first_column%'.\n#\n# label: %name%<br><i style=\"color:gray;\">%position%</i><br><a href=\"mailto:%email%\">Email</a>\n#\n## Node style (placeholders are replaced once).\n## Default is the current style for nodes.\n#\n# style: label;image=%image%;whiteSpace=wrap;html=1;rounded=1;fillColor=%fill%;strokeColor=%stroke%;\n#\n## Parent style for nodes with child nodes (placeholders are replaced once).\n#\n# parentstyle: swimlane;whiteSpace=wrap;html=1;childLayout=stackLayout;horizontal=1;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;\n#\n## Optional column name that contains a reference to a named style in styles.\n## Default is the current style for nodes.\n#\n# stylename: -\n#\n## JSON for named styles of the form {\"name\": \"style\", \"name\": \"style\"} where style is a cell style with\n## placeholders that are replaced once.\n#\n# styles: -\n#\n## Optional column name that contains a reference to a named label in labels.\n## Default is the current label.\n#\n# labelname: -\n#\n## JSON for named labels of the form {\"name\": \"label\", \"name\": \"label\"} where label is a cell label with\n## placeholders.\n#\n# labels: -\n#\n## Uses the given column name as the identity for cells (updates existing cells).\n## Default is no identity (empty value or -).\n#\n# identity: -\n#\n## Uses the given column name as the parent reference for cells. Default is no parent (empty or -).\n## The identity above is used for resolving the reference so it must be specified.\n#\n# parent: -\n#\n## Adds a prefix to the identity of cells to make sure they do not collide with existing cells (whose\n## IDs are numbers from 0..n, sometimes with a GUID prefix in the context of realtime collaboration).\n## Default is csvimport-.\n#\n# namespace: csvimport-\n#\n## Connections between rows (\"from\": source colum, \"to\": target column).\n## Label, style and invert are optional. Defaults are '', current style and false.\n## If placeholders are used in the style, they are replaced with data from the source.\n## An optional placeholders can be set to target to use data from the target instead.\n## In addition to label, an optional fromlabel and tolabel can be used to name the column\n## that contains the text for the label in the edges source or target (invert ignored).\n## The label is concatenated in the form fromlabel + label + tolabel if all are defined.\n## The target column may contain a comma-separated list of values.\n## Multiple connect entries are allowed.\n#\n# connect: {\"from\": \"manager\", \"to\": \"name\", \"invert\": true, \"label\": \"manages\", \\\n#          \"style\": \"curved=1;endArrow=blockThin;endFill=1;fontSize=11;\"}\n# connect: {\"from\": \"refs\", \"to\": \"id\", \"style\": \"curved=1;fontSize=11;\"}\n#\n## Node x-coordinate. Possible value is a column name. Default is empty. Layouts will\n## override this value.\n#\n# left: \n#\n## Node y-coordinate. Possible value is a column name. Default is empty. Layouts will\n## override this value.\n#\n# top: \n#\n## Node width. Possible value is a number (in px), auto or an @ sign followed by a column\n## name that contains the value for the width. Default is auto.\n#\n# width: auto\n#\n## Node height. Possible value is a number (in px), auto or an @ sign followed by a column\n## name that contains the value for the height. Default is auto.\n#\n# height: auto\n#\n## Padding for autosize. Default is 0.\n#\n# padding: -12\n#\n## Comma-separated list of ignored columns for metadata. (These can be\n## used for connections and styles but will not be added as metadata.)\n#\n# ignore: id,image,fill,stroke,refs,manager\n#\n## Column to be renamed to link attribute (used as link).\n#\n# link: url\n#\n## Spacing between nodes. Default is 40.\n#\n# nodespacing: 40\n#\n## Spacing between levels of hierarchical layouts. Default is 100.\n#\n# levelspacing: 100\n#\n## Spacing between parallel edges. Default is 40. Use 0 to disable.\n#\n# edgespacing: 40\n#\n## Name or JSON of layout. Possible values are auto, none, verticaltree, horizontaltree,\n## verticalflow, horizontalflow, organic, circle or a JSON string as used in Layout, Apply.\n## Default is auto.\n#\n# layout: auto\n#\n## ---- CSV below this line. First line are column names. ----\nname,position,id,location,manager,email,fill,stroke,refs,url,image\nEvan Miller,CFO,emi,Office 1,,me@example.com,#dae8fc,#6c8ebf,,https://www.draw.io,https://cdn3.iconfinder.com/data/icons/user-avatars-1/512/users-9-2-128.png\nEdward Morrison,Brand Manager,emo,Office 2,Evan Miller,me@example.com,#d5e8d4,#82b366,,https://www.draw.io,https://cdn3.iconfinder.com/data/icons/user-avatars-1/512/users-10-3-128.png\nRon Donovan,System Admin,rdo,Office 3,Evan Miller,me@example.com,#d5e8d4,#82b366,\"emo,tva\",https://www.draw.io,https://cdn3.iconfinder.com/data/icons/user-avatars-1/512/users-2-128.png\nTessa Valet,HR Director,tva,Office 4,Evan Miller,me@example.com,#d5e8d4,#82b366,,https://www.draw.io,https://cdn3.iconfinder.com/data/icons/user-avatars-1/512/users-3-128.png\n",
+            "download": false,
+            "editorTheme": "dark",
+            "editorUrl": "https://www.draw.io",
+            "enableAnim": true,
+            "grid": false,
+            "lock": true,
+            "name": "Main",
+            "scale": true,
+            "tooltip": true,
+            "type": "xml",
+            "url": "https://github.com/shipt/ml-bundle-engine/blob/main/assets/architecture.xml",
+            "xml": "<mxGraphModel>\n    <root>\n        <mxCell id=\"0\"/>\n        <mxCell id=\"1\" parent=\"0\"/>\n        <mxCell id=\"7\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;\" parent=\"1\" source=\"Input (Queue)\" target=\"Features (Worker)\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"Input (Queue)\" value=\"Input Queue&lt;br&gt;(kafka)\" style=\"outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.queue;fillColor=#D9A741;gradientColor=none;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"40\" y=\"490\" width=\"73.5\" height=\"48\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"11\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;\" parent=\"1\" source=\"Features (Worker)\" target=\"8\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"13\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.75;exitY=0;exitDx=0;exitDy=0;\" parent=\"1\" source=\"Features (Worker)\" target=\"12\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"15\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;\" parent=\"1\" source=\"Features (Worker)\" target=\"Triage (Queue)\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"Features (Worker)\" value=\"Features&lt;br&gt;(Worker)\" style=\"rounded=1;whiteSpace=wrap;html=1;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"220\" y=\"484\" width=\"120\" height=\"60\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"8\" value=\"Flight Plan Service\" style=\"rounded=0;whiteSpace=wrap;html=1;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"140\" y=\"340\" width=\"120\" height=\"60\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"12\" value=\"Metropolis\" style=\"rounded=0;whiteSpace=wrap;html=1;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"250\" y=\"250\" width=\"120\" height=\"60\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"17\" value=\"\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;\" parent=\"1\" source=\"Triage (Queue)\" target=\"Triage Worker\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"Triage (Queue)\" value=\"triage&lt;br&gt;(RSMQ)\" style=\"outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.queue;fillColor=#D9A741;gradientColor=none;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"430\" y=\"490\" width=\"73.5\" height=\"48\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"21\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;\" parent=\"1\" source=\"Triage Worker\" target=\"Optimizer (Queue)\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"22\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;\" parent=\"1\" source=\"Triage Worker\" target=\"Fallback (Queue)\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"24\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;\" parent=\"1\" source=\"Triage Worker\" target=\"Shadow (Queue)\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"47\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;\" parent=\"1\" source=\"Triage Worker\" target=\"Publisher (Queue)\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\">\n                <Array as=\"points\">\n                    <mxPoint x=\"630\" y=\"790\"/>\n                    <mxPoint x=\"1440\" y=\"790\"/>\n                </Array>\n            </mxGeometry>\n        </mxCell>\n        <mxCell id=\"Triage Worker\" value=\"Triage&lt;br&gt;(Worker)\" style=\"rounded=1;whiteSpace=wrap;html=1;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"570\" y=\"484\" width=\"120\" height=\"60\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"26\" value=\"\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;\" parent=\"1\" source=\"Optimizer (Queue)\" target=\"Optimizer (Worker)\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"44\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;\" parent=\"1\" source=\"Optimizer (Queue)\" target=\"DLQ\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\">\n                <Array as=\"points\">\n                    <mxPoint x=\"780\" y=\"250\"/>\n                    <mxPoint x=\"740\" y=\"250\"/>\n                </Array>\n            </mxGeometry>\n        </mxCell>\n        <mxCell id=\"Optimizer (Queue)\" value=\"optimizer&lt;br&gt;(RSMQ)\" style=\"outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.queue;fillColor=#D9A741;gradientColor=none;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"770\" y=\"340\" width=\"73.5\" height=\"48\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"30\" value=\"\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;\" parent=\"1\" source=\"Shadow (Queue)\" target=\"Shadow (Worker)\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"Shadow (Queue)\" value=\"shadow&lt;br&gt;(RSMQ)\" style=\"outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.queue;fillColor=#D9A741;gradientColor=none;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"770\" y=\"610\" width=\"73.5\" height=\"48\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"28\" value=\"\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;\" parent=\"1\" source=\"Fallback (Queue)\" target=\"Fallback (Worker)\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"Fallback (Queue)\" value=\"fallback&lt;br&gt;(RSMQ)\" style=\"outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.queue;fillColor=#D9A741;gradientColor=none;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"770\" y=\"490\" width=\"73.5\" height=\"48\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"32\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;\" parent=\"1\" source=\"Optimizer (Worker)\" target=\"Collector (Queue)\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"34\" value=\"optimized&amp;nbsp;&lt;br&gt;bundles\" style=\"edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];\" parent=\"32\" vertex=\"1\" connectable=\"0\">\n            <mxGeometry x=\"-0.1725\" relative=\"1\" as=\"geometry\">\n                <mxPoint as=\"offset\"/>\n            </mxGeometry>\n        </mxCell>\n        <mxCell id=\"36\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;\" parent=\"1\" source=\"Optimizer (Worker)\" target=\"Optimizer (Queue)\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\">\n                <Array as=\"points\">\n                    <mxPoint x=\"990\" y=\"280\"/>\n                    <mxPoint x=\"807\" y=\"280\"/>\n                </Array>\n            </mxGeometry>\n        </mxCell>\n        <mxCell id=\"37\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;\" parent=\"1\" source=\"Optimizer (Worker)\" target=\"Triage (Queue)\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\">\n                <Array as=\"points\">\n                    <mxPoint x=\"990\" y=\"280\"/>\n                    <mxPoint x=\"467\" y=\"280\"/>\n                </Array>\n            </mxGeometry>\n        </mxCell>\n        <mxCell id=\"50\" value=\"http\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;startArrow=blockThin;startFill=1;\" parent=\"1\" source=\"Optimizer (Worker)\" target=\"48\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"Optimizer (Worker)\" value=\"Optimizer&lt;br&gt;(Worker)\" style=\"rounded=1;whiteSpace=wrap;html=1;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"930\" y=\"334\" width=\"120\" height=\"60\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"33\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;\" parent=\"1\" source=\"Fallback (Worker)\" target=\"Collector (Queue)\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"51\" value=\"http\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;startArrow=none;startFill=0;\" parent=\"1\" source=\"Fallback (Worker)\" target=\"49\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\">\n                <Array as=\"points\">\n                    <mxPoint x=\"990\" y=\"450\"/>\n                    <mxPoint x=\"1340\" y=\"450\"/>\n                </Array>\n            </mxGeometry>\n        </mxCell>\n        <mxCell id=\"Fallback (Worker)\" value=\"Fallback&lt;br&gt;(Worker)\" style=\"rounded=1;whiteSpace=wrap;html=1;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"930\" y=\"484\" width=\"120\" height=\"60\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"Shadow (Worker)\" value=\"Shadow&lt;br&gt;(Worker)\" style=\"rounded=1;whiteSpace=wrap;html=1;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"930\" y=\"604\" width=\"120\" height=\"60\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"38\" value=\"\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;\" parent=\"1\" source=\"Collector (Queue)\" target=\"Collector (Worker)\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"Collector (Queue)\" value=\"collector&lt;br&gt;(RSMQ)\" style=\"outlineConnect=0;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;shape=mxgraph.aws3.queue;fillColor=#D9A741;gradientColor=none;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"1110\" y=\"490\" width=\"73.5\" height=\"48\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"40\" value=\"\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;\" parent=\"1\" source=\"Collector (Worker)\" target=\"Publisher (Queue)\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"Collector (Worker)\" value=\"Collector&lt;br&gt;(Worker)\" style=\"rounded=1;whiteSpace=wrap;html=1;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"1230\" y=\"484\" width=\"120\" height=\"60\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"42\" value=\"\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;\" parent=\"1\" source=\"Publisher (Queue)\" target=\"Publisher (Worker)\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"Publisher (Queue)\" value=\"publisher&lt;br&gt;(Postgres)\" style=\"shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"1410\" y=\"474\" width=\"60\" height=\"80\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"Publisher (Worker)\" value=\"Publisher&lt;br&gt;(Worker)\" style=\"rounded=1;whiteSpace=wrap;html=1;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"1530\" y=\"484\" width=\"120\" height=\"60\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"46\" value=\"\" style=\"edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;\" parent=\"1\" source=\"DLQ\" target=\"DLQ Consumer Group Lag\" edge=\"1\">\n            <mxGeometry relative=\"1\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"DLQ\" value=\"DLQ&lt;br&gt;(kafka)\" style=\"shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"710\" y=\"80\" width=\"60\" height=\"80\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"DLQ Consumer Group Lag\" value=\"Consumer group lag\" style=\"whiteSpace=wrap;html=1;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"540\" y=\"90\" width=\"120\" height=\"60\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"48\" value=\"ds-bundling&lt;br&gt;(webserver)\" style=\"rounded=1;whiteSpace=wrap;html=1;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"1110\" y=\"160\" width=\"120\" height=\"60\" as=\"geometry\"/>\n        </mxCell>\n        <mxCell id=\"49\" value=\"ds-bundling-fallback&lt;br&gt;(webserver)\" style=\"rounded=1;whiteSpace=wrap;html=1;\" parent=\"1\" vertex=\"1\">\n            <mxGeometry x=\"1280\" y=\"160\" width=\"120\" height=\"60\" as=\"geometry\"/>\n        </mxCell>\n    </root>\n</mxGraphModel>",
+            "zoom": "100%"
+          }
+        ]
+      },
+      "format": "short",
+      "graphId": "flowchart_23763571993",
+      "gridPos": {
+        "h": 22,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "newFlag": false,
+      "rulesData": {
+        "rulesData": [
+          {
+            "aggregation": "current",
+            "alias": "Collector Queue Length",
+            "colors": [
+              "rgba(50, 172, 45, 0.97)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(245, 54, 54, 0.9)"
+            ],
+            "column": "Time",
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 2,
+            "eventData": [],
+            "eventProp": "id",
+            "eventRegEx": false,
+            "gradient": true,
+            "hidden": false,
+            "invert": true,
+            "linkData": [],
+            "linkProp": "id",
+            "linkRegEx": true,
+            "mappingType": 1,
+            "metricType": "serie",
+            "order": 1,
+            "overlayIcon": false,
+            "pattern": "Collector-Queue",
+            "rangeData": [],
+            "reduce": true,
+            "refId": "A",
+            "sanitize": false,
+            "shapeData": [
+              {
+                "colorOn": "a",
+                "hidden": false,
+                "pattern": "Collector (Queue)",
+                "style": "fillColor"
+              }
+            ],
+            "shapeProp": "id",
+            "shapeRegEx": false,
+            "stringThresholds": [
+              "/.*/",
+              "/.*/"
+            ],
+            "textData": [
+              {
+                "hidden": false,
+                "pattern": "Collector (Queue)",
+                "textOn": "wmd",
+                "textPattern": "/.*/",
+                "textReplace": "content"
+              }
+            ],
+            "textProp": "id",
+            "textRegEx": false,
+            "thresholds": [
+              10,
+              20
+            ],
+            "tooltip": true,
+            "tooltipColors": true,
+            "tooltipLabel": "",
+            "tooltipOn": "a",
+            "tpDirection": "v",
+            "tpGraph": true,
+            "tpGraphHigh": null,
+            "tpGraphLow": null,
+            "tpGraphScale": "linear",
+            "tpGraphSize": "100%",
+            "tpGraphType": "line",
+            "type": "number",
+            "unit": "short",
+            "valueData": []
+          },
+          {
+            "aggregation": "current",
+            "alias": "Shadow Queue Length",
+            "colors": [
+              "rgba(50, 172, 45, 0.97)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(245, 54, 54, 0.9)"
+            ],
+            "column": "Time",
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 2,
+            "eventData": [],
+            "eventProp": "id",
+            "eventRegEx": false,
+            "gradient": true,
+            "hidden": false,
+            "invert": true,
+            "linkData": [],
+            "linkProp": "id",
+            "linkRegEx": true,
+            "mappingType": 1,
+            "metricType": "serie",
+            "order": 2,
+            "overlayIcon": false,
+            "pattern": "Shadow-Queue",
+            "rangeData": [],
+            "reduce": true,
+            "refId": "A",
+            "sanitize": false,
+            "shapeData": [
+              {
+                "colorOn": "a",
+                "hidden": false,
+                "pattern": "Shadow (Queue)",
+                "style": "fillColor"
+              }
+            ],
+            "shapeProp": "id",
+            "shapeRegEx": false,
+            "stringThresholds": [
+              "/.*/",
+              "/.*/"
+            ],
+            "textData": [
+              {
+                "hidden": false,
+                "pattern": "Shadow (Queue)",
+                "textOn": "wmd",
+                "textPattern": "/.*/",
+                "textReplace": "content"
+              }
+            ],
+            "textProp": "id",
+            "textRegEx": false,
+            "thresholds": [
+              10,
+              20
+            ],
+            "tooltip": true,
+            "tooltipColors": true,
+            "tooltipLabel": "",
+            "tooltipOn": "a",
+            "tpDirection": "v",
+            "tpGraph": true,
+            "tpGraphHigh": null,
+            "tpGraphLow": null,
+            "tpGraphScale": "linear",
+            "tpGraphSize": "100%",
+            "tpGraphType": "line",
+            "type": "number",
+            "unit": "short",
+            "valueData": []
+          },
+          {
+            "aggregation": "current",
+            "alias": "Fallback Queue Length",
+            "colors": [
+              "rgba(50, 172, 45, 0.97)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(245, 54, 54, 0.9)"
+            ],
+            "column": "Time",
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 2,
+            "eventData": [],
+            "eventProp": "id",
+            "eventRegEx": false,
+            "gradient": true,
+            "hidden": false,
+            "invert": true,
+            "linkData": [],
+            "linkProp": "id",
+            "linkRegEx": true,
+            "mappingType": 1,
+            "metricType": "serie",
+            "order": 3,
+            "overlayIcon": false,
+            "pattern": "Fallback-Queue",
+            "rangeData": [],
+            "reduce": true,
+            "refId": "A",
+            "sanitize": false,
+            "shapeData": [
+              {
+                "colorOn": "a",
+                "hidden": false,
+                "pattern": "Fallback (Queue)",
+                "style": "fillColor"
+              }
+            ],
+            "shapeProp": "id",
+            "shapeRegEx": false,
+            "stringThresholds": [
+              "/.*/",
+              "/.*/"
+            ],
+            "textData": [
+              {
+                "hidden": false,
+                "pattern": "Fallback (Queue)",
+                "textOn": "wmd",
+                "textPattern": "/.*/",
+                "textReplace": "content"
+              }
+            ],
+            "textProp": "id",
+            "textRegEx": false,
+            "thresholds": [
+              10,
+              20
+            ],
+            "tooltip": true,
+            "tooltipColors": true,
+            "tooltipLabel": "",
+            "tooltipOn": "a",
+            "tpDirection": "v",
+            "tpGraph": true,
+            "tpGraphHigh": null,
+            "tpGraphLow": null,
+            "tpGraphScale": "linear",
+            "tpGraphSize": "100%",
+            "tpGraphType": "line",
+            "type": "number",
+            "unit": "short",
+            "valueData": []
+          },
+          {
+            "aggregation": "current",
+            "alias": "Optimizer Queue Length",
+            "colors": [
+              "rgba(50, 172, 45, 0.97)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(245, 54, 54, 0.9)"
+            ],
+            "column": "Time",
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 2,
+            "eventData": [],
+            "eventProp": "id",
+            "eventRegEx": false,
+            "gradient": true,
+            "hidden": false,
+            "invert": true,
+            "linkData": [],
+            "linkProp": "id",
+            "linkRegEx": true,
+            "mappingType": 1,
+            "metricType": "serie",
+            "order": 4,
+            "overlayIcon": false,
+            "pattern": "Optimizer-Queue",
+            "rangeData": [],
+            "reduce": true,
+            "refId": "A",
+            "sanitize": false,
+            "shapeData": [
+              {
+                "colorOn": "a",
+                "hidden": false,
+                "pattern": "Optimizer (Queue)",
+                "style": "fillColor"
+              }
+            ],
+            "shapeProp": "id",
+            "shapeRegEx": false,
+            "stringThresholds": [
+              "/.*/",
+              "/.*/"
+            ],
+            "textData": [
+              {
+                "hidden": false,
+                "pattern": "Optimizer (Queue)",
+                "textOn": "wmd",
+                "textPattern": "/.*/",
+                "textReplace": "content"
+              }
+            ],
+            "textProp": "id",
+            "textRegEx": false,
+            "thresholds": [
+              10,
+              20
+            ],
+            "tooltip": true,
+            "tooltipColors": true,
+            "tooltipLabel": "",
+            "tooltipOn": "a",
+            "tpDirection": "v",
+            "tpGraph": true,
+            "tpGraphHigh": null,
+            "tpGraphLow": null,
+            "tpGraphScale": "linear",
+            "tpGraphSize": "100%",
+            "tpGraphType": "line",
+            "type": "number",
+            "unit": "short",
+            "valueData": []
+          },
+          {
+            "aggregation": "current",
+            "alias": "Features Queue Length",
+            "colors": [
+              "rgba(50, 172, 45, 0.97)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(245, 54, 54, 0.9)"
+            ],
+            "column": "Time",
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 2,
+            "eventData": [],
+            "eventProp": "id",
+            "eventRegEx": false,
+            "gradient": true,
+            "hidden": false,
+            "invert": true,
+            "linkData": [],
+            "linkProp": "id",
+            "linkRegEx": true,
+            "mappingType": 1,
+            "metricType": "serie",
+            "order": 5,
+            "overlayIcon": false,
+            "pattern": "Features-Queue",
+            "rangeData": [],
+            "reduce": true,
+            "refId": "A",
+            "sanitize": false,
+            "shapeData": [
+              {
+                "colorOn": "a",
+                "hidden": false,
+                "pattern": "Input (Queue)",
+                "style": "fillColor"
+              }
+            ],
+            "shapeProp": "id",
+            "shapeRegEx": false,
+            "stringThresholds": [
+              "/.*/",
+              "/.*/"
+            ],
+            "textData": [
+              {
+                "hidden": false,
+                "pattern": "Input (Queue)",
+                "textOn": "wmd",
+                "textPattern": "/.*/",
+                "textReplace": "content"
+              }
+            ],
+            "textProp": "id",
+            "textRegEx": false,
+            "thresholds": [
+              10,
+              20
+            ],
+            "tooltip": true,
+            "tooltipColors": true,
+            "tooltipLabel": "",
+            "tooltipOn": "a",
+            "tpDirection": "v",
+            "tpGraph": true,
+            "tpGraphHigh": null,
+            "tpGraphLow": null,
+            "tpGraphScale": "linear",
+            "tpGraphSize": "100%",
+            "tpGraphType": "line",
+            "type": "number",
+            "unit": "short",
+            "valueData": []
+          },
+          {
+            "aggregation": "current",
+            "alias": "Triage Queue Length",
+            "colors": [
+              "rgba(50, 172, 45, 0.97)",
+              "rgba(237, 129, 40, 0.89)",
+              "rgba(245, 54, 54, 0.9)"
+            ],
+            "column": "Time",
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 2,
+            "eventData": [],
+            "eventProp": "id",
+            "eventRegEx": false,
+            "gradient": true,
+            "hidden": false,
+            "invert": true,
+            "linkData": [],
+            "linkProp": "id",
+            "linkRegEx": true,
+            "mappingType": 1,
+            "metricType": "serie",
+            "order": 6,
+            "overlayIcon": false,
+            "pattern": "Triage-Queue",
+            "rangeData": [],
+            "reduce": true,
+            "refId": "A",
+            "sanitize": false,
+            "shapeData": [
+              {
+                "colorOn": "a",
+                "hidden": false,
+                "pattern": "Triage (Queue)",
+                "style": "fillColor"
+              }
+            ],
+            "shapeProp": "id",
+            "shapeRegEx": true,
+            "stringThresholds": [
+              "/.*/",
+              "/.*/"
+            ],
+            "textData": [
+              {
+                "hidden": false,
+                "pattern": "Triage (Queue)",
+                "textOn": "wmd",
+                "textPattern": "/.*/",
+                "textReplace": "content"
+              }
+            ],
+            "textProp": "id",
+            "textRegEx": true,
+            "thresholds": [
+              10,
+              20
+            ],
+            "tooltip": true,
+            "tooltipColors": true,
+            "tooltipLabel": "",
+            "tooltipOn": "a",
+            "tpDirection": "v",
+            "tpGraph": true,
+            "tpGraphHigh": null,
+            "tpGraphLow": null,
+            "tpGraphScale": "linear",
+            "tpGraphSize": "100%",
+            "tpGraphType": "line",
+            "type": "number",
+            "unit": "short",
+            "valueData": []
+          },
+          {
+            "aggregation": "current",
+            "alias": "Collector Processing Time",
+            "colors": [
+              "#73BF69",
+              "rgba(237, 129, 40, 0.89)",
+              "#F2495C"
+            ],
+            "column": "Time",
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 2,
+            "eventData": [],
+            "eventProp": "id",
+            "eventRegEx": false,
+            "gradient": true,
+            "hidden": false,
+            "invert": false,
+            "linkData": [],
+            "linkProp": "id",
+            "linkRegEx": false,
+            "mappingType": 1,
+            "metricType": "serie",
+            "order": 7,
+            "overlayIcon": false,
+            "pattern": "Collector-Worker",
+            "rangeData": [],
+            "reduce": true,
+            "refId": "A",
+            "sanitize": false,
+            "shapeData": [
+              {
+                "colorOn": "a",
+                "hidden": false,
+                "pattern": "Collector (Worker)",
+                "style": "fillColor"
+              }
+            ],
+            "shapeProp": "id",
+            "shapeRegEx": true,
+            "stringThresholds": [
+              "/.*/",
+              "/.*/"
+            ],
+            "textData": [
+              {
+                "hidden": false,
+                "pattern": "",
+                "textOn": "wmd",
+                "textPattern": "/.*/",
+                "textReplace": "content"
+              }
+            ],
+            "textProp": "id",
+            "textRegEx": false,
+            "thresholds": [
+              0.2,
+              0.4
+            ],
+            "tooltip": true,
+            "tooltipColors": true,
+            "tooltipLabel": "",
+            "tooltipOn": "a",
+            "tpDirection": "v",
+            "tpGraph": true,
+            "tpGraphHigh": null,
+            "tpGraphLow": null,
+            "tpGraphScale": "linear",
+            "tpGraphSize": "200px",
+            "tpGraphType": "line",
+            "type": "number",
+            "unit": "short",
+            "valueData": []
+          },
+          {
+            "aggregation": "current",
+            "alias": "Shadow Processing Time",
+            "colors": [
+              "#73BF69",
+              "rgba(237, 129, 40, 0.89)",
+              "#F2495C"
+            ],
+            "column": "Time",
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 2,
+            "eventData": [],
+            "eventProp": "id",
+            "eventRegEx": false,
+            "gradient": true,
+            "hidden": false,
+            "invert": false,
+            "linkData": [],
+            "linkProp": "id",
+            "linkRegEx": false,
+            "mappingType": 1,
+            "metricType": "serie",
+            "order": 8,
+            "overlayIcon": false,
+            "pattern": "Shadow-Worker",
+            "rangeData": [],
+            "reduce": true,
+            "refId": "A",
+            "sanitize": false,
+            "shapeData": [
+              {
+                "colorOn": "a",
+                "hidden": false,
+                "pattern": "Shadow (Worker)",
+                "style": "fillColor"
+              }
+            ],
+            "shapeProp": "id",
+            "shapeRegEx": true,
+            "stringThresholds": [
+              "/.*/",
+              "/.*/"
+            ],
+            "textData": [
+              {
+                "hidden": false,
+                "pattern": "",
+                "textOn": "wmd",
+                "textPattern": "/.*/",
+                "textReplace": "content"
+              }
+            ],
+            "textProp": "id",
+            "textRegEx": false,
+            "thresholds": [
+              0.2,
+              0.4
+            ],
+            "tooltip": true,
+            "tooltipColors": true,
+            "tooltipLabel": "",
+            "tooltipOn": "a",
+            "tpDirection": "v",
+            "tpGraph": true,
+            "tpGraphHigh": null,
+            "tpGraphLow": null,
+            "tpGraphScale": "linear",
+            "tpGraphSize": "200px",
+            "tpGraphType": "line",
+            "type": "number",
+            "unit": "short",
+            "valueData": []
+          },
+          {
+            "aggregation": "current",
+            "alias": "Fallback Processing Time",
+            "colors": [
+              "#73BF69",
+              "rgba(237, 129, 40, 0.89)",
+              "#F2495C"
+            ],
+            "column": "Time",
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 2,
+            "eventData": [],
+            "eventProp": "id",
+            "eventRegEx": false,
+            "gradient": true,
+            "hidden": false,
+            "invert": false,
+            "linkData": [],
+            "linkProp": "id",
+            "linkRegEx": false,
+            "mappingType": 1,
+            "metricType": "serie",
+            "order": 9,
+            "overlayIcon": false,
+            "pattern": "Fallback-Worker",
+            "rangeData": [],
+            "reduce": true,
+            "refId": "A",
+            "sanitize": false,
+            "shapeData": [
+              {
+                "colorOn": "a",
+                "hidden": false,
+                "pattern": "Fallback (Worker)",
+                "style": "fillColor"
+              }
+            ],
+            "shapeProp": "id",
+            "shapeRegEx": true,
+            "stringThresholds": [
+              "/.*/",
+              "/.*/"
+            ],
+            "textData": [
+              {
+                "hidden": false,
+                "pattern": "",
+                "textOn": "wmd",
+                "textPattern": "/.*/",
+                "textReplace": "content"
+              }
+            ],
+            "textProp": "id",
+            "textRegEx": false,
+            "thresholds": [
+              0.2,
+              0.4
+            ],
+            "tooltip": true,
+            "tooltipColors": true,
+            "tooltipLabel": "",
+            "tooltipOn": "a",
+            "tpDirection": "v",
+            "tpGraph": true,
+            "tpGraphHigh": null,
+            "tpGraphLow": null,
+            "tpGraphScale": "linear",
+            "tpGraphSize": "200px",
+            "tpGraphType": "line",
+            "type": "number",
+            "unit": "short",
+            "valueData": []
+          },
+          {
+            "aggregation": "current",
+            "alias": "Optimizer Processing Time",
+            "colors": [
+              "#73BF69",
+              "rgba(237, 129, 40, 0.89)",
+              "#F2495C"
+            ],
+            "column": "Time",
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 2,
+            "eventData": [],
+            "eventProp": "id",
+            "eventRegEx": false,
+            "gradient": true,
+            "hidden": false,
+            "invert": false,
+            "linkData": [],
+            "linkProp": "id",
+            "linkRegEx": false,
+            "mappingType": 1,
+            "metricType": "serie",
+            "order": 10,
+            "overlayIcon": false,
+            "pattern": "Optimizer-Worker",
+            "rangeData": [],
+            "reduce": true,
+            "refId": "A",
+            "sanitize": false,
+            "shapeData": [
+              {
+                "colorOn": "a",
+                "hidden": false,
+                "pattern": "Optimizer (Worker)",
+                "style": "fillColor"
+              }
+            ],
+            "shapeProp": "id",
+            "shapeRegEx": true,
+            "stringThresholds": [
+              "/.*/",
+              "/.*/"
+            ],
+            "textData": [
+              {
+                "hidden": false,
+                "pattern": "",
+                "textOn": "wmd",
+                "textPattern": "/.*/",
+                "textReplace": "content"
+              }
+            ],
+            "textProp": "id",
+            "textRegEx": false,
+            "thresholds": [
+              0.2,
+              0.4
+            ],
+            "tooltip": true,
+            "tooltipColors": true,
+            "tooltipLabel": "",
+            "tooltipOn": "a",
+            "tpDirection": "v",
+            "tpGraph": true,
+            "tpGraphHigh": null,
+            "tpGraphLow": null,
+            "tpGraphScale": "linear",
+            "tpGraphSize": "200px",
+            "tpGraphType": "line",
+            "type": "number",
+            "unit": "short",
+            "valueData": []
+          },
+          {
+            "aggregation": "current",
+            "alias": "Triage Processing Time",
+            "colors": [
+              "#73BF69",
+              "rgba(237, 129, 40, 0.89)",
+              "#F2495C"
+            ],
+            "column": "Time",
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 2,
+            "eventData": [],
+            "eventProp": "id",
+            "eventRegEx": false,
+            "gradient": true,
+            "hidden": false,
+            "invert": false,
+            "linkData": [],
+            "linkProp": "id",
+            "linkRegEx": false,
+            "mappingType": 1,
+            "metricType": "serie",
+            "order": 11,
+            "overlayIcon": false,
+            "pattern": "Triage-Worker",
+            "rangeData": [],
+            "reduce": true,
+            "refId": "A",
+            "sanitize": false,
+            "shapeData": [
+              {
+                "colorOn": "a",
+                "hidden": false,
+                "pattern": "Triage Worker",
+                "style": "fillColor"
+              }
+            ],
+            "shapeProp": "id",
+            "shapeRegEx": true,
+            "stringThresholds": [
+              "/.*/",
+              "/.*/"
+            ],
+            "textData": [
+              {
+                "hidden": false,
+                "pattern": "",
+                "textOn": "wmd",
+                "textPattern": "/.*/",
+                "textReplace": "content"
+              }
+            ],
+            "textProp": "id",
+            "textRegEx": false,
+            "thresholds": [
+              0.2,
+              0.4
+            ],
+            "tooltip": true,
+            "tooltipColors": true,
+            "tooltipLabel": "",
+            "tooltipOn": "a",
+            "tpDirection": "v",
+            "tpGraph": true,
+            "tpGraphHigh": null,
+            "tpGraphLow": null,
+            "tpGraphScale": "linear",
+            "tpGraphSize": "200px",
+            "tpGraphType": "line",
+            "type": "number",
+            "unit": "short",
+            "valueData": []
+          },
+          {
+            "aggregation": "current",
+            "alias": "Features Processing Time",
+            "colors": [
+              "#73BF69",
+              "rgba(237, 129, 40, 0.89)",
+              "#F2495C"
+            ],
+            "column": "Time",
+            "dateFormat": "YYYY-MM-DD HH:mm:ss",
+            "decimals": 2,
+            "eventData": [],
+            "eventProp": "id",
+            "eventRegEx": false,
+            "gradient": true,
+            "hidden": false,
+            "invert": false,
+            "linkData": [],
+            "linkProp": "id",
+            "linkRegEx": false,
+            "mappingType": 1,
+            "metricType": "serie",
+            "order": 12,
+            "overlayIcon": false,
+            "pattern": "Features-Worker",
+            "rangeData": [],
+            "reduce": true,
+            "refId": "A",
+            "sanitize": false,
+            "shapeData": [
+              {
+                "colorOn": "a",
+                "hidden": false,
+                "pattern": "Features (Worker)",
+                "style": "fillColor"
+              }
+            ],
+            "shapeProp": "id",
+            "shapeRegEx": true,
+            "stringThresholds": [
+              "/.*/",
+              "/.*/"
+            ],
+            "textData": [
+              {
+                "hidden": false,
+                "pattern": "Features<br>(Worker)",
+                "textOn": "wmd",
+                "textPattern": "/.*/",
+                "textReplace": "content"
+              }
+            ],
+            "textProp": "id",
+            "textRegEx": false,
+            "thresholds": [
+              0.2,
+              0.4
+            ],
+            "tooltip": true,
+            "tooltipColors": true,
+            "tooltipLabel": "",
+            "tooltipOn": "a",
+            "tpDirection": "v",
+            "tpGraph": true,
+            "tpGraphHigh": null,
+            "tpGraphLow": null,
+            "tpGraphScale": "linear",
+            "tpGraphSize": "200px",
+            "tpGraphType": "line",
+            "type": "number",
+            "unit": "short",
+            "valueData": []
+          }
+        ]
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(process_time_seconds_sum{app=\"ml-bundle-engine\", process_name=\"component\"}[1m])) by (features) / sum(rate(process_time_seconds_count{app=\"ml-bundle-engine\", process_name=\"component\"}[1m])) by (features)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Features-Worker",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(bundle_engine_queue_length) by (triage)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Triage-Queue",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(rate(process_time_seconds_sum{app=\"ml-bundle-engine\", process_name=\"component\"}[1m])) by (triage) / sum(rate(process_time_seconds_count{app=\"ml-bundle-engine\", process_name=\"component\"}[1m])) by (triage)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Triage-Worker",
+          "refId": "C"
+        },
+        {
+          "expr": "sum(bundle_engine_queue_length) by (features)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Features-Queue",
+          "refId": "D"
+        },
+        {
+          "expr": "sum(bundle_engine_queue_length) by (optimizer)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Optimizer-Queue",
+          "refId": "E"
+        },
+        {
+          "expr": "sum(bundle_engine_queue_length) by (fallback)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Fallback-Queue",
+          "refId": "F"
+        },
+        {
+          "expr": "sum(bundle_engine_queue_length) by (shadow)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Shadow-Queue",
+          "refId": "G"
+        },
+        {
+          "expr": "sum(bundle_engine_queue_length) by (collector)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Collector-Queue",
+          "refId": "H"
+        },
+        {
+          "expr": "sum(rate(process_time_seconds_sum{app=\"ml-bundle-engine\", process_name=\"component\"}[1m])) by (optimizer) / sum(rate(process_time_seconds_count{app=\"ml-bundle-engine\", process_name=\"component\"}[1m])) by (optimizer)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Optimizer-Worker",
+          "refId": "I"
+        },
+        {
+          "expr": "sum(rate(process_time_seconds_sum{app=\"ml-bundle-engine\", process_name=\"component\"}[1m])) by (fallback) / sum(rate(process_time_seconds_count{app=\"ml-bundle-engine\", process_name=\"component\"}[1m])) by (fallback)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Fallback-Worker",
+          "refId": "J"
+        },
+        {
+          "expr": "sum(rate(process_time_seconds_sum{app=\"ml-bundle-engine\", process_name=\"component\"}[1m])) by (shadow) / sum(rate(process_time_seconds_count{app=\"ml-bundle-engine\", process_name=\"component\"}[1m])) by (shadow)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Shadow-Worker",
+          "refId": "K"
+        },
+        {
+          "expr": "sum(rate(process_time_seconds_sum{app=\"ml-bundle-engine\", process_name=\"component\"}[1m])) by (collector) / sum(rate(process_time_seconds_count{app=\"ml-bundle-engine\", process_name=\"component\"}[1m])) by (collector)",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Collector-Worker",
+          "refId": "L"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "ML Bundle Engine",
+      "type": "agenty-flowcharting-panel",
+      "valueName": "current",
+      "version": "0.9.0"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 25,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "",
+  "title": "ML Bundle Engine",
+  "uid": "8w7WO7c7k",
+  "version": 46
+}

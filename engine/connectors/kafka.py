@@ -19,7 +19,7 @@ class KafkaConsumer(Consumer):
             # TODO: client implementing this consumer should be able to specify its consumer group
             # for now, we'll try to use the name of the component in the consumer group
             component_name = sys.argv[1]
-        except:
+        except KeyError:
             component_name = "bundle_engine"
 
         self.c = KConsumer(

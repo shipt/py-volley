@@ -69,3 +69,33 @@ prometheus:
     runbook: ""
     environment: ["staging"]
     description: "Expired messages are stuck in the publisher"
+  
+  - name: "bundle-engine-i-o-deviation-staging"
+    expression: |
+      abs(
+        sum(delta(kafka_topic_partition_current_offset{topic=~"stg.bus.ds-marketplace.v1.bundle_engine_input"}[10m])) /
+        sum(delta(kafka_topic_partition_current_offset{topic=~"stg.bus.ds-marketplace.v1.bundle_engine_output"}[10m])
+        ) - 1) 
+      > 0.02
+    period: "1m"
+    team: "machine-learning"
+    priority: p3
+    region: ["us-central1"]
+    runbook: ""
+    environment: ["staging"]
+    description: "Input message count is deviating from output message count"
+
+  - name: "bundle-engine-i-o-deviation-production"
+    expression: |
+      abs(
+        sum(delta(kafka_topic_partition_current_offset{topic=~"prd.bus.ds-marketplace.v1.bundle_engine_input"}[10m])) /
+        sum(delta(kafka_topic_partition_current_offset{topic=~"prd.bus.ds-marketplace.v1.bundle_engine_output"}[10m])
+        ) - 1) 
+      > 0.02
+    period: "1m"
+    team: "machine-learning"
+    priority: p1
+    region: ["us-central1"]
+    runbook: ""
+    environment: ["production"]
+    description: "Input message count is deviating from output message count"

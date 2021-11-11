@@ -29,7 +29,7 @@ def main(in_message: TriageMessage) -> List[Tuple[str, ComponentMessage]]:
         group_df = orders.groupby("TW_HR")
         grouped_orders = [group.to_dict(orient="records") for _, group in group_df]
     else:
-        logger.info(f"No enriched orders for bundle_request_id={in_message.bundle_request_id}")
+        logger.warning(f"No enriched orders for bundle_request_id={in_message.bundle_request_id}")
 
     t = CollectTriage(
         engine_event_id=in_message.engine_event_id,

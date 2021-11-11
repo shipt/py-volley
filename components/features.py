@@ -54,7 +54,7 @@ def get_shop_time(order_id: str) -> Optional[Tuple[str, float]]:
         except KeyError:
             logger.exception(f"Flight-plan data missing for order: {order_id}")
     else:
-        logger.error(f"Flight-plan returned status code: {resp.status_code} for order: {order_id}")
+        logger.warning(f"Flight-plan returned status code: {resp.status_code} for order: {order_id}")
     return None
 
 
@@ -91,7 +91,7 @@ def get_metro_attr(
             logger.exception(f"attribute missing from metropolis call: {store_location_id=}")
             return {}
     else:
-        logger.error(f"Metro-service returned status code: {resp.status_code} for {store_location_id=}")
+        logger.warning(f"Metro-service returned status code: {resp.status_code} for {store_location_id=}")
         return {}
 
 
@@ -128,7 +128,7 @@ def main(in_message: InputMessage) -> List[Tuple[str, Optional[ComponentMessage]
             # e.g. FP call fails, shop_time_minutes will not exist. Validation fails.
             enriched_orders.append(EnrichedOrder(**order))
         except ValidationError:
-            logger.exception(f"failed enriching {order_id=}")
+            logger.error(f"failed enriching {order_id=}", exc_info=True)
             # error orders end up getting "bundled as order of one" in Optimizer component
             error_orders.append(order)
 

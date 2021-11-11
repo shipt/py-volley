@@ -34,6 +34,7 @@ lints: lints.flake8 lints.format.check lints.mypy
 lints.strict: lints.pylint lints.flake8.strict lints.mypy lints.format.check
 
 notebook:
+	poetry install
 	poetry run jupyter notebook
 
 setup: setup.python setup.sysdep.poetry setup.project

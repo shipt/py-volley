@@ -1,5 +1,4 @@
 import json
-import os
 from datetime import datetime
 from typing import Any, Dict, List, Tuple
 from uuid import uuid4
@@ -7,6 +6,7 @@ from uuid import uuid4
 import requests
 
 from components.data_models import CollectOptimizer, OptimizerMessage
+from engine.config import ENV
 from engine.data_models import ComponentMessage
 from engine.engine import bundle_engine
 from engine.logging import logger
@@ -17,7 +17,7 @@ OPTIMIZER_URL = {
     "localhost": "https://ds-bundling.ds.us-central1.staging.shipt.com/v1/bundle/optimize",
     "staging": "https://ds-bundling.ds.us-central1.staging.shipt.com/v1/bundle/optimize",
     "production": "https://ds-bundling.ds.us-central1.shipt.com/v1/bundle/optimize",
-}[os.getenv("APP_ENV", "localhost")]
+}[ENV]
 
 
 def handle_optimizer_call(body: Dict[str, Any]) -> List[Dict[str, Any]]:

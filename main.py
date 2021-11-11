@@ -3,13 +3,15 @@ import sys
 
 import rollbar
 
-rollbar.init(os.getenv("ROLLBAR_TOKEN"), os.getenv("APP_ENV", "localhost"))
+from engine.config import ENV
+
+
+rollbar.init(os.getenv("ROLLBAR_TOKEN"), ENV)
 
 
 def run() -> None:
     # TODO: can we get rid of this file entirely? just call each component.py directly?
     component = sys.argv[1]
-
     if component == "dummy_events":
         from components.dummy_events import main
     elif component == "features":

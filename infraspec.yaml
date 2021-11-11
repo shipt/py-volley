@@ -42,7 +42,7 @@ roles:
       command: python main.py features
       replicaCount: 4
       resources:
-        cpu: 200m
+        cpu: 1000m
         memory: 250M
       telemetry:
         prometheus:
@@ -64,7 +64,7 @@ roles:
       command: python main.py optimizer
       replicaCount: 3
       resources:
-        cpu: 150m
+        cpu: 100m
         memory: 150M
       telemetry:
         prometheus:
@@ -75,7 +75,7 @@ roles:
       command: python main.py fallback
       replicaCount: 3
       resources:
-        cpu: 150m
+        cpu: 100m
         memory: 150M
       telemetry:
         prometheus:
@@ -84,9 +84,9 @@ roles:
           path: /metrics
     - name: collector
       command: python main.py collector
-      replicaCount: 3
+      replicaCount: 6
       resources:
-        cpu: 150m
+        cpu: 50m
         memory: 150M
       telemetry:
         prometheus:
@@ -95,9 +95,9 @@ roles:
           path: /metrics
     - name: publisher
       command: python main.py publisher
-      replicaCount: 3
+      replicaCount: 6
       resources:
-        cpu: 150m
+        cpu: 50m
         memory: 150M
       telemetry:
         prometheus:

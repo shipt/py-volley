@@ -35,7 +35,7 @@ def handle_fallback_call(body: Dict[str, Any]) -> List[Dict[str, Any]]:
     if resp.status_code == 200:
         bundles: List[Dict[str, Any]] = resp.json()["bundles"]
     else:
-        logger.error(f"{FALLBACK_URL} - {resp.status_code=} - {body=}")
+        logger.warning(f"{FALLBACK_URL} - {resp.status_code=} - {body=}")
         # create bundles of 1
         bundles = []
         for o in body["order_list"]:

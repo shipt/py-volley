@@ -1,9 +1,11 @@
 import json
+import sys
 from dataclasses import dataclass
 
 from pyshipt_streams import KafkaConsumer as KConsumer
 from pyshipt_streams import KafkaProducer as KProducer
 
+from engine.config import ENV
 from engine.connectors.base import Consumer, Producer
 from engine.data_models import QueueMessage
 from engine.logging import logger
@@ -14,9 +16,15 @@ RUN_ONCE = False
 @dataclass
 class KafkaConsumer(Consumer):
     def __post_init__(self) -> None:
-        # TODO: config for consumer group..env var maybe?
+        try:
+            # TODO: client implementing this consumer should be able to specify its consumer group
+            # for now, we'll try to use the name of the component in the consumer group
+            component_name = sys.argv[1]
+        except KeyError:
+            component_name = "bundle_engine"
+
         self.c = KConsumer(
-            consumer_group="group1",
+            consumer_group=f"{ENV}_{component_name}",
             # TODO: develop commit strategy to minimize duplicates and guarantee no loss
             # config_override={"enable.auto.offset.store": False}
         )

@@ -1,3 +1,1 @@
 *   @jmeisele @ChuckHend @MeeshCompBio
-*.tf @shipt/devops
-/terraform/*/dba.tf @shipt/dba

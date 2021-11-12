@@ -7,10 +7,10 @@ from typing import Any, Dict, List, Tuple
 from prometheus_client import Counter, Summary, start_http_server
 from pydantic import ValidationError
 
-from engine.connectors.base import Consumer, Producer
-from engine.data_models import ComponentMessage, QueueMessage
-from engine.logging import logger
-from engine.queues import Queue, Queues, available_queues
+from volley.connectors.base import Consumer, Producer
+from volley.data_models import ComponentMessage, QueueMessage
+from volley.logging import logger
+from volley.queues import Queue, Queues, available_queues
 
 # enables mocking the infinite loop to finite
 RUN_ONCE = False
@@ -23,21 +23,21 @@ MESSAGES_PRODUCED = Counter("messages_produced_count", "Messages produced to out
 
 def get_consumer(queue_type: str, queue_name: str) -> Consumer:
     if queue_type == "kafka":
-        from engine.connectors import KafkaConsumer
+        from volley.connectors import KafkaConsumer
 
         return KafkaConsumer(
             host=os.environ["KAFKA_BROKERS"],
             queue_name=queue_name,
         )
     elif queue_type == "rsmq":
-        from engine.connectors import RSMQConsumer
+        from volley.connectors import RSMQConsumer
 
         return RSMQConsumer(
             host=os.environ["REDIS_HOST"],
             queue_name=queue_name,
         )
     elif queue_type == "postgres":
-        from engine.connectors import PGConsumer
+        from volley.connectors import PGConsumer
 
         return PGConsumer(
             host=os.getenv("PG_HOST", "postgres"),
@@ -49,17 +49,17 @@ def get_consumer(queue_type: str, queue_name: str) -> Consumer:
 
 def get_producer(queue_type: str, queue_name: str) -> Producer:
     if queue_type == "kafka":
-        from engine.connectors import KafkaProducer
+        from volley.connectors import KafkaProducer
 
         return KafkaProducer(host=os.environ["KAFKA_BROKERS"], queue_name=queue_name)
 
     elif queue_type == "rsmq":
-        from engine.connectors import RSMQProducer
+        from volley.connectors import RSMQProducer
 
         return RSMQProducer(host=os.environ["REDIS_HOST"], queue_name=queue_name)
 
     elif queue_type == "postgres":
-        from engine.connectors import PGProducer
+        from volley.connectors import PGProducer
 
         return PGProducer(host=os.getenv("PG_HOST", "postgres"), queue_name=queue_name)
 

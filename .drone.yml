@@ -10,20 +10,63 @@ trigger:
     - main
 
 steps:
-  - name: unit-tests
+  - name: unit-test
     image: python:3.9.4
+    commands:
+    - pip install poetry==1.1.10
+    - poetry install
+    - make test.unit
     environment:
-      APP_ENV: 'localhost'
       POETRY_HTTP_BASIC_SHIPT_USERNAME:
         from_secret: SHIPT_PYPI_USERNAME
       POETRY_HTTP_BASIC_SHIPT_PASSWORD:
         from_secret: SHIPT_PYPI_PASSWORD
+    depends_on: [ git-differences ]
+
+  - name: unit-test-python38
+    image: python:3.8.0
     commands:
-      - pip3 install poetry==1.1.11
+      - pip install poetry==1.1.10
       - poetry install
       - make test.unit
+    environment:
+      POETRY_HTTP_BASIC_SHIPT_USERNAME:
+        from_secret: SHIPT_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_PASSWORD:
+        from_secret: SHIPT_PYPI_PASSWORD
+    depends_on: [ git-differences ]
 
-  - name: lints-quality
+  - name: lints
+    image: python:3.9.4
+    commands:
+      - pip install poetry==1.1.10
+      - poetry install
+      - make lints
+    environment:
+      POETRY_HTTP_BASIC_SHIPT_USERNAME:
+        from_secret: SHIPT_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_PASSWORD:
+        from_secret: SHIPT_PYPI_PASSWORD
+    depends_on: [ git-differences ]
+
+  - name: integration-test
+    image: python:3.9.4
+    environment:
+      APP_ENV: localhost
+      KAFKA_BROKERS: kafka:9092
+      GITHUB_PAT:
+        from_secret: GITHUB_PAT
+      POETRY_HTTP_BASIC_SHIPT_USERNAME:
+        from_secret: SHIPT_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_PASSWORD:
+        from_secret: SHIPT_PYPI_PASSWORD
+    commands:
+      - pip install poetry==1.1.10
+      - poetry install
+      - poetry run pytest tests/integration/integration_test.py
+    depends_on: [ git-differences ]
+
+  - name: publish-release
     image: python:3.9.4
     environment:
       POETRY_HTTP_BASIC_SHIPT_USERNAME:
@@ -31,47 +74,15 @@ steps:
       POETRY_HTTP_BASIC_SHIPT_PASSWORD:
         from_secret: SHIPT_PYPI_PASSWORD
     commands:
-      - pip3 install poetry==1.1.11
-      - poetry install
-      - make lints
-
-  - name: integration-test
-    image: docker/compose
-    volumes:
-      - name: docker_socket
-        path: /var/run/docker.sock
-    environment:
-      APP_ENV: localhost
-      POETRY_HTTP_BASIC_SHIPT_USERNAME:
-        from_secret: SHIPT_PYPI_USERNAME
-      POETRY_HTTP_BASIC_SHIPT_PASSWORD:
-        from_secret: SHIPT_PYPI_PASSWORD
-    commands:
-    - apk add make
-    - sed -i -e '/volumes:/,+1d' docker-compose.yml
-    - make test.integration
-
-  - name: docker-prep
-    image: harbor.shipttech.com/plugins/dockerspec
-    pull: always
-
-  - name: docker-build-and-push
-    image: plugins/docker
-    environment:
-      GITHUB_TOKEN:
-        from_secret: github_token
-      SHIPT_PYPI_USERNAME:
-        from_secret: SHIPT_PYPI_USERNAME
-      SHIPT_PYPI_PASSWORD:
-        from_secret: SHIPT_PYPI_PASSWORD
-    settings:
-      target: prod
-      build_args_from_env:
-        - GITHUB_TOKEN
-        - SHIPT_PYPI_USERNAME
-        - SHIPT_PYPI_PASSWORD
-      registry: harbor.shipttech.com
-      env_file: "docker_args"
+      - pip install poetry==1.1.10
+      - test "v$(poetry version --short)" "=" "$DRONE_TAG"
+      - poetry publish --repository=shipt --build
+    when:
+      branch:
+        - main
+      event:
+        - tag
     depends_on:
-      - unit-tests
-      - integration-test
+      - "integration-test"
+      - "lints"
+      - "unit-test"

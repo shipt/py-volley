@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "ml_bundle_engine"
-version = "0.1.0"
-description = "ML driven bundle engine consisting of workers & queues"
-authors = ["jeisele <jeisele@shipt.com>"]
+name = "volley"
+version = "0.0.1"
+description = "send messages everywhere"
+authors = ["#ask-machine-learning"]
 
 [[tool.poetry.source]]
 name = "shipt"

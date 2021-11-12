@@ -7,8 +7,8 @@ from jinja2 import Template
 from pydantic import BaseModel
 from yaml import Loader
 
-from engine.config import ENV
-from engine.connectors.base import Consumer, Producer
+from volley.config import ENV
+from volley.connectors.base import Consumer, Producer
 
 _cur_path = Path(__file__).parent.resolve().joinpath("config.yml")
 

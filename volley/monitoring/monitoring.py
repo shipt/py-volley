@@ -6,8 +6,8 @@ import redis  # type: ignore
 from prometheus_client import Gauge, make_wsgi_app
 from sqlalchemy import text
 
-from engine.connectors.pg_config import PG_SCHEMA, get_eng
-from engine.queues import load_config
+from volley.connectors.pg_config import PG_SCHEMA, get_eng
+from volley.queues import load_config
 
 eng = get_eng()
 

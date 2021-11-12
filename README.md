@@ -1,9 +1,3 @@
-
-
-# ML Bundle Engine
-The ML bundle engine is an event driven series of processes & queues. 
-The engine consumes a Kafka message containing a list of orders from the bundle request topic, enriches the orders by calling various machine learning models, then using one or more optimization services to group the orders into bundles. The bundles are produced to another Kafka topic.
-
 # Run locally
 1. Install poetry with `pip install poetry` or follow [poetry's official documentaton](https://python-poetry.org/docs/#osx--linux--bashonwindows-install-instructions)
 
@@ -15,24 +9,6 @@ The engine consumes a Kafka message containing a list of orders from the bundle 
 export POETRY_HTTP_BASIC_SHIPT_USERNAME=your_username
 export POETRY_HTTP_BASIC_SHIPT_PASSWORD=your_password
 ```
-
-4. Ensure [docker](https://docs.docker.com/get-docker/) is installed in your local environment.
-
-Start all services and data stores:
-
-`make run` - this spins up all the components listed below along with local instances of Kafka, Redis, and Postgres all running in Docker.
-
-- dummy_events: components/dummy_events.py - produces dummy kafka messages to an `input-topic` kafka
-- features: components/feature_generator.py - reads from `input-topic` kafka, publishes to `triage` queue
-- triage: components/triage.py - reads from `triage` queue, publishes to `optimizer` queue
-- optimizer: components/optimizer.py - reads from `optimizer` queue, publishes to `collector` or back to `optimizer` queue
-- fallback: components/fallback.py - reads from `fallback` queue, publishes to `collector` queue
-- collector: components/collector.py - reads from `collector` queue and publishes to `publisher` table in postgres
-- publisher: components/publisher.py - reads from the `publisher` table in postgre and produces to `output-topic` kafka
-- dummy_consumer: components/dummy_consimer.py - reads from `output-topic` kafka and logs to stddout
-
-Stop all services and data stores
-`make stop`
 
 # CI / CD
 
@@ -50,11 +26,6 @@ Production and Staging queue size [Grafana dashboards](https://metrics.shipt.com
 `make test.unit` Runs unit tests on individual components with mocked responses dependencies external to the code. Docker is not involved in this process.
 
 `make test.integration` Runs all components, Postgres, Kafka, and Redis in locally running Docker containers. Validates messages published to input topic successfully reach the output topic.
-
-## Simulating Staging Data
-
-`make notebook` will spin up jupyer notebook. Open `./notebooks/publish_consume.ipynb`. Publish messages to the input topic and then consume data from the output topic.
-
 
 # Components
 

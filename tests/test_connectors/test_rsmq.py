@@ -1,5 +1,5 @@
-from engine.connectors import RSMQConsumer, RSMQProducer
-from engine.data_models import QueueMessage
+from volley.connectors import RSMQConsumer, RSMQProducer
+from volley.data_models import QueueMessage
 
 
 def test_rsmq_producer(mock_rsmq_producer: RSMQProducer, bundle_message: QueueMessage) -> None:

@@ -67,6 +67,5 @@ steps:
       event:
         - tag
     depends_on:
-      - "integration-test"
       - "lints"
       - "unit-test"

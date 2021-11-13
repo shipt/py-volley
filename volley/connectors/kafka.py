@@ -5,10 +5,10 @@ from dataclasses import dataclass
 from pyshipt_streams import KafkaConsumer as KConsumer
 from pyshipt_streams import KafkaProducer as KProducer
 
-from engine.config import ENV
-from engine.connectors.base import Consumer, Producer
-from engine.data_models import QueueMessage
-from engine.logging import logger
+from volley.config import ENV
+from volley.connectors.base import Consumer, Producer
+from volley.data_models import QueueMessage
+from volley.logging import logger
 
 RUN_ONCE = False
 

@@ -1,4 +1,5 @@
 from enum import Enum
+import os
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
@@ -10,8 +11,9 @@ from yaml import Loader
 from volley.config import ENV
 from volley.connectors.base import Consumer, Producer
 
-_cur_path = Path(__file__).parent.resolve().joinpath("config.yml")
+# _cur_path = Path(__file__).parent.resolve().joinpath("config.yml")
 
+CFG_FILE = Path(os.getenv("VOLLEY_CONFIG", "./volley_config.yml"))
 
 class QueueType(str, Enum):
     kafka = "kafka"
@@ -35,7 +37,7 @@ class Queues(BaseModel):
 
 
 def load_config() -> Dict[str, List[Dict[str, str]]]:
-    with _cur_path.open() as f:
+    with CFG_FILE.open() as f:
         cfg: Dict[str, List[Dict[str, str]]] = yaml.load(f, Loader=Loader)
 
     return cfg

@@ -6,9 +6,9 @@ from dataclasses import dataclass
 from prometheus_client import Summary
 from rsmq import RedisSMQ
 
-from engine.connectors.base import Consumer, Producer
-from engine.data_models import QueueMessage
-from engine.logging import logger
+from volley.connectors.base import Consumer, Producer
+from volley.data_models import QueueMessage
+from volley.logging import logger
 
 QUIET = bool(os.getenv("DEBUG", True))
 

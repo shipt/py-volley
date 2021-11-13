@@ -12,8 +12,6 @@ export POETRY_HTTP_BASIC_SHIPT_PASSWORD=your_password
 
 # CI / CD
 
-This is a [Kubedashian](https://kubedashian.shipt.com/apps/ml-bundle-engine) project. 
-
 See `.drone.yml` for build and test gates and Concourse for deployment status.
 Refer to infraspec.yml for infrastructure and dedployment definition criteria.
 

@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any
 
-from engine.data_models import QueueMessage
-from engine.logging import logger
+from volley.data_models import QueueMessage
+from volley.logging import logger
 
 
 @dataclass  # type: ignore

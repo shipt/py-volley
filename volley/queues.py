@@ -1,16 +1,11 @@
 from enum import Enum
-from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, Optional, Union
 
-import yaml  # type: ignore
 from jinja2 import Template
 from pydantic import BaseModel
-from yaml import Loader
 
-from volley.config import ENV
+from volley.config import ENV, load_config
 from volley.connectors.base import Consumer, Producer
-
-_cur_path = Path(__file__).parent.resolve().joinpath("config.yml")
 
 
 class QueueType(str, Enum):
@@ -32,13 +27,6 @@ class Queue(BaseModel):
 
 class Queues(BaseModel):
     queues: Dict[str, Queue]
-
-
-def load_config() -> Dict[str, List[Dict[str, str]]]:
-    with _cur_path.open() as f:
-        cfg: Dict[str, List[Dict[str, str]]] = yaml.load(f, Loader=Loader)
-
-    return cfg
 
 
 def available_queues() -> Queues:

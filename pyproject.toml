@@ -2,7 +2,7 @@
 name = "volley"
 version = "0.0.1"
 description = "send messages everywhere"
-authors = ["#ask-machine-learning"]
+authors = ["ask-machine-learning <shipt@shipt.com>"]
 
 [[tool.poetry.source]]
 name = "shipt"

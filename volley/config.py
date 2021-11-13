@@ -13,11 +13,13 @@ ENV = os.getenv("APP_ENV", "localhost")
 
 
 def load_config() -> Dict[str, List[Dict[str, str]]]:
+    cfg: Dict[str, List[Dict[str, str]]] = {}
     try:
         with CFG_FILE.open() as f:
-            cfg: Dict[str, List[Dict[str, str]]] = yaml.load(f, Loader=Loader)
+            cfg = yaml.load(f, Loader=Loader)
     except FileNotFoundError:
+        logger.warning(f"file {CFG_FILE} not found - falling back to default for testing")
         _cfg = Path(__file__).parent.resolve().joinpath("default_config.yml")
         with _cfg.open() as f:
-            cfg: Dict[str, List[Dict[str, str]]] = yaml.load(f, Loader=Loader)        
+            cfg = yaml.load(f, Loader=Loader)
     return cfg

@@ -56,10 +56,10 @@ def generate_metrics() -> None:
 wsgi_app = make_wsgi_app()
 
 
-def my_app(environ, start_fn):  # type: ignore
+def app(environ, start_fn):  # type: ignore
     generate_metrics()
     return wsgi_app(environ, start_fn)
 
 
-server = make_server("", 8000, my_app)
-server.serve_forever()
+metrics_server = make_server("", 8000, app)
+metrics_server.serve_forever()

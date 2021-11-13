@@ -1,8 +1,12 @@
 [tool.poetry]
 name = "py_volley"
-version = "0.0.1"
+version = "0.0.3"
 description = "send messages everywhere"
 authors = ["ask-machine-learning <shipt@shipt.com>"]
+
+packages = [
+    { include = "volley" },
+]
 
 [[tool.poetry.source]]
 name = "shipt"

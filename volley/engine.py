@@ -78,7 +78,7 @@ def load_schema_class(q: Queue) -> Any:
         return getattr(module, class_obj)
 
 
-def bundle_engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C901
+def engine(input_queue: str, output_queues: List[str]) -> Any:  # noqa: C901
     # TODO: these execute on import. would be better to handle these on exec?
     queues: Queues = available_queues()
 

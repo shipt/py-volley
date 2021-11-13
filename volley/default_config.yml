@@ -1,0 +1,21 @@
+queues:
+  - name: input-queue
+    value: "{{ env }}.kafka.input"
+    type: kafka
+    schema: volley.data_models.ComponentMessage
+  - name: comp_1
+    value: comp2
+    type: rsmq
+    schema: volley.data_models.ComponentMessage
+  - name: comp_2
+    value: comp2
+    type: postgres
+    schema: volley.data_models.ComponentMessage
+  - name: output-queue
+    value: "{{ env }}.kafka.output"
+    type: kafka
+    schema: volley.data_models.ComponentMessage
+  - name: dead-letter-queue
+    value: "{{ env }}.kafka.dlq"
+    type: kafka
+    schema: volley.data_models.ComponentMessage

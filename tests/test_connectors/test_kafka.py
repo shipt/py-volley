@@ -1,9 +1,9 @@
 from typing import Optional
 from unittest.mock import MagicMock, patch
 
-from engine.connectors import KafkaConsumer
-from engine.connectors.base import Consumer, Producer
-from engine.data_models import QueueMessage
+from volley.connectors import KafkaConsumer
+from volley.connectors.base import Consumer, Producer
+from volley.data_models import QueueMessage
 
 
 class KafkaMessage:
@@ -35,7 +35,7 @@ def test_kafka_consumer_success(mock_kafka_consumer: Consumer) -> None:
     assert isinstance(bundle_message, QueueMessage)
 
 
-@patch("engine.connectors.kafka.KConsumer")
+@patch("volley.connectors.kafka.KConsumer")
 def test_consume(mock_consumer: MagicMock) -> None:
     mock_consumer.return_value.poll = lambda x: KafkaMessage()
     b = KafkaConsumer(host="localhost", queue_name="input-queue")
@@ -43,8 +43,8 @@ def test_consume(mock_consumer: MagicMock) -> None:
     assert isinstance(q_message, QueueMessage)
 
 
-@patch("engine.connectors.kafka.RUN_ONCE", True)
-@patch("engine.connectors.kafka.KConsumer")
+@patch("volley.connectors.kafka.RUN_ONCE", True)
+@patch("volley.connectors.kafka.KConsumer")
 def test_consume_error(mock_consumer: MagicMock) -> None:
     mock_consumer.return_value.poll = lambda x: KafkaMessage(error=True)
     b = KafkaConsumer(host="localhost", queue_name="input-queue")

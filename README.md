@@ -1,3 +1,8 @@
+:construction: :construction: WORK IN PROGRESS :construction: :construction:
+
+Forked from https://github.com/shipt/ml-bundle-engine. Provides interface to Kafka, RSMQ, and Postgres queues for Python workers. Note, Postgres queue is a highly specific implementation for ml-bundle-engine.
+
+
 # Run locally
 1. Install poetry with `pip install poetry` or follow [poetry's official documentaton](https://python-poetry.org/docs/#osx--linux--bashonwindows-install-instructions)
 

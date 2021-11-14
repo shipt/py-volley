@@ -22,22 +22,11 @@ pip install py-volley \
   --extra-index-url=https://${POETRY_HTTP_BASIC_SHIPT_USERNAME}:${POETRY_HTTP_BASIC_SHIPT_PASSWORD}@pypi.shipt.com/simple
 ```
 
+## Getting started
 
-# CI / CD
+Components are implemented as a function decorated with an instance of the `volley.engine.Engine`. A component consumes from one queue and can publish to one or many queues.
 
-See `.drone.yml` for test gates. A Semantic tagged release triggers a build and publish to pypi.shipt.com.
-
-## Testing
-
-`make test.unit` Runs unit tests on individual components with mocked responses dependencies external to the code. Docker is not involved in this process.
-
-
-# Design
-## Components
-
-Components get implemented as a function decorated with an instance of the `volley.engine.Engine`. A component consumes from one queue and can publish to one or many queues. 
-
-A component function takes in `input_object` of type: `ComponentMessage`, which is a Pydantic model that accepts extra attributes. This model defines the schema of messages on the INPUT_QUEUE. The component function can process and modify that object it meet its needs.
+A component function takes in `input_object` of type: `ComponentMessage`, which is a Pydantic model that accepts extra attributes. This model defines the schema of messages on the INPUT_QUEUE. The component function can process and modify that object to meet its needs.
 
 Components output a list of tuples, where the tuple is defined as `(<name_of_queue>, ComponentMessage)`.
  The returned component message type must agree with the type accepted by the queue you are publishing to.
@@ -70,14 +59,14 @@ def hello_world(msg: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
   return [("output-queue", out)]
 ```
 
-### Generic Example:
+## Generic Example:
 
-Let's define three queues, `my_input`, `queue_a`, `queue_b` and assume `my_input` is a Kafka topic populated by some external service. Let's decide that `queue_a` is an RSMQ type and `queue_b` is a Postgres. We define these in `engine/config.yml`. Queues have `names`, which is how we reference them and `values`. The engine interacts with the queue using the value and components (developers) interact with queue using the `name`.
+Let's define three queues, `my_input`, `queue_a`, `queue_b` and assume `my_input` is a Kafka topic populated by some external service. Let's decide that `queue_a` is an RSMQ type and `queue_b` is a Postgres. We define these in `./volley_config.yml`. Queues have `names`, which is how we reference them, and `values`. The engine interacts with the queue using the `value` and components (developers) interact with queue using the `name`.
 
 Queues also have a schema. These are defined by subclassing `engine.data_models.ComponentMessage`. `ComponentMessage` are Pydantic models that accept extra attributes. This means if you do not provide a strictly subclass to a `ComponentMessage`, the message will get passed through to your component as key-value pairs from a `dict` of message on the queue, and constructed via `ComponentMessage(**message)`. The location of the data model for a queue is defined as the value of the `schema` attribute in the config file.
 
 ```yml
-# engine/config.yml
+# ./volley_config.yml
 queues:
   - name: my_input
     value: "stg.bus.kafka.topic.name"
@@ -96,7 +85,7 @@ queues:
 Reminder: schemas for a queue are defined by subclassing `ComponentMessage`.
 
 ```python
-# components/data_models.py
+# ./components/data_models.py
 from engine.data_models import ComponentMessage
 
 class InputMessage(ComponentMessage):
@@ -113,7 +102,7 @@ class MessageB(ComponentMessage):
 
 ## A multi-output example
 
-`my_component_function` is implemented below. It consumes from `my_input` and publishes to `queue_a` and `queue_b` (defined above).
+`my_component_function` is implemented below. It consumes from `my_input` and publishes to `queue_a` and `queue_b` (defined above in `./volley_config.yml`).
 
 
 ```python
@@ -166,7 +155,7 @@ And are run by invoking the function.
 python main.py
 ```
 
-# Engine Design
+# Design
 
 ## Engine
 
@@ -174,7 +163,7 @@ The engine itself is a python decorator that wraps a component worker and runs a
 
 On initialization:
 - setup connections to the queues using the connectors specified by the components inputs and outputs
-- determines the data type required by the component
+- determines the data schema required by the component
 
 Once the engine has initialized, it will continuously poll the input queue for new messages. When it receives a message, it will process the message and pass it to the wrapped component function. It takes the output of the component function and produces it to the output queues. It will repeat this process until terminated.
 
@@ -199,7 +188,7 @@ Consumers:
 
 - `on_fail` - operation to conduct if a component worker fails processing a message. For example, place the message back on the queue, rollback a transaction, etc.
 
-## Queues
+## Supported Queues
 
 Queues are the broker and backend that handle messages. The bundle engine supports types of queues; [pyRSMQ](https://github.com/mlasevich/PyRSMQ), Kafka, and Postgres. Each technology can be used as a first-in-first-out basis but also have unique features and limitations.
 
@@ -208,3 +197,12 @@ RSMQ is the python implementation of the [RSMQ](https://github.com/smrchy/rsmq) 
 Kafka - TODO
 
 Postgres - TODO
+
+# CI / CD
+
+See `.drone.yml` for test gates. A Semantic tagged release triggers a build and publish to pypi.shipt.com.
+
+## Testing
+
+`make test.unit` Runs unit tests on individual components with mocked responses dependencies external to the code. Docker is not involved in this process.
+

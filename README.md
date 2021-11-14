@@ -5,17 +5,23 @@ Forked from https://github.com/shipt/ml-bundle-engine. Provides interface to Kaf
 Kafka and RSMQ interfaces are general purpose. However, the Postgres queue connector is a highly specific implementation for [ml-bundle-engine](https://github.com/shipt/ml-bundle-engine).
 
 
-# Run locally
-1. Install poetry with `pip install poetry` or follow [poetry's official documentaton](https://python-poetry.org/docs/#osx--linux--bashonwindows-install-instructions)
+# Installation
 
-2. Acquire creds to pypi.shipt.com #ask-machine-learning
+1. Acquire creds to pypi.shipt.com #ask-machine-learning or #ask-info-sec
 
-3. Export these to your shell 
+2. Export these to your shell 
 
 ```bash
 export POETRY_HTTP_BASIC_SHIPT_USERNAME=your_username
 export POETRY_HTTP_BASIC_SHIPT_PASSWORD=your_password
 ```
+
+3. Install from pypi.shipt.com
+```bash
+pip install py-volley \
+  --extra-index-url=https://${POETRY_HTTP_BASIC_SHIPT_USERNAME}:${POETRY_HTTP_BASIC_SHIPT_PASSWORD}@pypi.shipt.com/simple
+```
+
 
 # CI / CD
 

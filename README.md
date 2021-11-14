@@ -1,6 +1,8 @@
 :construction: :construction: WORK IN PROGRESS :construction: :construction:
 
-Forked from https://github.com/shipt/ml-bundle-engine. Provides interface to Kafka, RSMQ, and Postgres queues for Python workers. Note, Postgres queue is a highly specific implementation for ml-bundle-engine.
+Forked from https://github.com/shipt/ml-bundle-engine. Provides interface to Kafka, RSMQ, and Postgres queues for Python workers. 
+
+Kafka and RSMQ interfaces are general purpose. However, the Postgres queue connector is a highly specific implementation for [ml-bundle-engine](https://github.com/shipt/ml-bundle-engine).
 
 
 # Run locally
@@ -17,27 +19,50 @@ export POETRY_HTTP_BASIC_SHIPT_PASSWORD=your_password
 
 # CI / CD
 
-See `.drone.yml` for build and test gates and Concourse for deployment status.
-Refer to infraspec.yml for infrastructure and dedployment definition criteria.
-
-# Monitoring
-
-Production and Staging queue size [Grafana dashboards](https://metrics.shipt.com/d/5dtDxKK7k/ml-bundle-engine-queues) 
+See `.drone.yml` for test gates. A Semantic tagged release triggers a build and publish to pypi.shipt.com.
 
 ## Testing
 
 `make test.unit` Runs unit tests on individual components with mocked responses dependencies external to the code. Docker is not involved in this process.
 
-`make test.integration` Runs all components, Postgres, Kafka, and Redis in locally running Docker containers. Validates messages published to input topic successfully reach the output topic.
 
-# Components
+# Design
+## Components
 
-Components get implemented as a function decorated with the `bundle_engine`. A component consumes from one queue and can publish to one or many queues. 
+Components get implemented as a function decorated with an instance of the `volley.engine.Engine`. A component consumes from one queue and can publish to one or many queues. 
 
 A component function takes in `input_object` of type: `ComponentMessage`, which is a Pydantic model that accepts extra attributes. This model defines the schema of messages on the INPUT_QUEUE. The component function can process and modify that object it meet its needs.
 
 Components output a list of tuples, where the tuple is defined as `(<name_of_queue>, ComponentMessage)`.
  The returned component message type must agree with the type accepted by the queue you are publishing to.
+
+Below is an example that:
+1) consumes from input-queue
+2) evaluates the message from the queue
+3) publishes a message to output-queue
+
+```python
+from typing import List, Tuple
+
+from volley.engine import Engine
+from volley.data_models import ComponentMessage
+
+engine = Engine(
+  input_queue="input-queue",
+  output_queues=["output-queue"]
+)
+
+@eng.stream_app
+def hello_world(msg: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
+  if msg.value > 0:
+    out_value = "foo"
+  else:
+    out_value = "bar"
+  
+  out = ComponentMessage(hello=out_value)
+  
+  return [("output-queue", out)]
+```
 
 ### Generic Example:
 
@@ -62,7 +87,7 @@ queues:
     schema: components.data_models.MessageA
 ```
 
-As mentioned above, schemas for queue are defined by subclassing `ComponentMessage`.
+Reminder: schemas for a queue are defined by subclassing `ComponentMessage`.
 
 ```python
 # components/data_models.py
@@ -79,16 +104,22 @@ class MessageB(ComponentMessage):
     max_value: float
 ```
 
-`my_component` is implemented below. It consumes from `my_input` and publishes to `queue_a` and `queue_b` (defined above).
+
+## A multi-output example
+
+`my_component_function` is implemented below. It consumes from `my_input` and publishes to `queue_a` and `queue_b` (defined above).
 
 
 ```python
 # components/my_component.py
-from engine.engine import bundle_engine
+engine = Engine(
+  input_queue="my_input",
+  output_queues=["queue_a", "queue_b"]
+)
 
 import numpy as np
 
-@bundle_engine(input_queue="my_input", output_queues=["queue_a", "queue_b"])
+@engine.stream_app
 def my_component_function(input_object: ComponentMessage) -> List[(str, ComponentMessage)]
     """component function that computes some basics stats on a list of values
     

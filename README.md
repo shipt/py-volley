@@ -106,7 +106,7 @@ class MessageB(ComponentMessage):
 
 
 ```python
-# components/my_component.py
+# my_components/my_component.py
 engine = Engine(
   input_queue="my_input",
   output_queues=["queue_a", "queue_b"]
@@ -146,7 +146,7 @@ Components are run as stand-alone workers.
 
 ```python
 # main.py
-from components import my_component_function
+from my_components import my_component_function
 my_component_function()
 ```
 

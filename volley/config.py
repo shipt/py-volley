@@ -10,6 +10,8 @@ from volley.logging import logger
 CFG_FILE = Path(os.getenv("VOLLEY_CONFIG", "./volley_config.yml"))
 
 ENV = os.getenv("APP_ENV", "localhost")
+METRICS_ENABLED = True
+METRICS_PORT = 3000
 
 
 def load_config() -> Dict[str, List[Dict[str, str]]]:

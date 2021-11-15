@@ -35,12 +35,16 @@ steps:
         from_secret: SHIPT_PYPI_PASSWORD
 
   - name: test-integration
-    image: python:3.9.4
+    image: docker/compose
+    volumes:
+      - name: docker_socket
+        path: /var/run/docker.sock
     commands:
-    - pip install poetry==1.1.10
-    - poetry install
+    - apk add make
+    - sed -i -e '/volumes:/,+1d' docker-compose.yml
     - make test.integration
     environment:
+      APP_ENV: localhost
       POETRY_HTTP_BASIC_SHIPT_USERNAME:
         from_secret: SHIPT_PYPI_USERNAME
       POETRY_HTTP_BASIC_SHIPT_PASSWORD:

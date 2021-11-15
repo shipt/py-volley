@@ -16,9 +16,9 @@ RUN pip3 install poetry==1.1.11
 RUN poetry config virtualenvs.create false
 
 FROM base as prod
-RUN poetry install --no-dev
+RUN poetry install --no-dev --no-root
 COPY . /app/
 
 FROM base as dev
-RUN poetry install
+RUN poetry install --no-root
 COPY . /app/

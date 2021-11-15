@@ -3,7 +3,7 @@ import os
 import time
 from dataclasses import dataclass
 from functools import wraps
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from prometheus_client import Counter, Summary, start_http_server
 from pydantic import ValidationError
@@ -70,6 +70,17 @@ def get_producer(queue_type: str, queue_name: str) -> Producer:
 
 
 def load_schema_class(q: Queue) -> Any:
+    """loads the schema for a queue from config
+
+    parses the string to the path of the model into and importable object
+
+    for exampe: load a model from volley.default_config
+        volley.data_models.ComponentMessage results in something equivalent to:
+            ```
+            from volley.data_models import ComponentMessage
+            return ComponentMessage
+            ```
+    """
     if q.model_schema in ["dict"]:
         return dict
     else:
@@ -94,10 +105,19 @@ class Engine:
         self.in_queue: Queue = self.queues.queues[self.input_queue].copy()
 
         self.out_queues: Dict[str, Queue] = {x: self.queues.queues[x] for x in self.output_queues}
-        self.out_queues["dead-letter-queue"] = self.queues.queues["dead-letter-queue"]
+        try:
+            self.out_queues["dead-letter-queue"] = self.queues.queues["dead-letter-queue"]
+        except KeyError:
+            # TODO: there should be a more graceful default behavior for schema violations and retries
+            logger.warning(
+                """
+            Dead-letter-queue config not found. Messages with schema violations crash the application.
+            Add a queue named "dead-letter-queue" to volley_config.yml
+            """
+            )
 
     def stream_app(  # noqa: C901
-        self, func: Callable[[ComponentMessage], List[Tuple[str, ComponentMessage]]]
+        self, func: Callable[[ComponentMessage], List[Tuple[str, Optional[ComponentMessage]]]]
     ) -> Callable[..., Any]:
         @wraps(func)
         def run_component(*args, **kwargs) -> None:  # type: ignore
@@ -120,12 +140,9 @@ class Engine:
                 # read message off the specified queue
                 in_message: QueueMessage = self.in_queue.qcon.consume(queue_name=self.in_queue.value)
 
-                outputs: List[Tuple[str, ComponentMessage]] = []
+                outputs: List[Tuple[str, Optional[ComponentMessage]]] = []
                 # every queue has a schema - validate the data coming off the queue
-                # generally, data is validate before it goes on to a queue
-                # however, if a service outside bundle_engine is publishing to the queue,
-                # validation may not be guaranteed
-                # example - input_topic - anyone at Shipt can publish to it
+                # we are using pydantic to validate the data.
                 try:
                     serialized_message: ComponentMessage = input_data_class.parse_obj(in_message.message)
                 except ValidationError:
@@ -133,7 +150,11 @@ class Engine:
                         f"""
                         Error validating message from {self.in_queue.value}"""
                     )
-                    outputs = [("dead-letter-queue", ComponentMessage.parse_obj(in_message.message))]
+                    if "dead-letter-queue" not in self.out_queues:
+                        outputs = [("n/a", None)]
+                        logger.warning("DLQ not configured")
+                    else:
+                        outputs = [("dead-letter-queue", ComponentMessage.parse_obj(in_message.message))]
 
                 if not outputs:
                     _start_main = time.time()

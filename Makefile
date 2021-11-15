@@ -1,7 +1,7 @@
 PROJECT=volley
 PYTHON_VERSION=3.9.4
 
-SOURCE_OBJECTS=volley
+SOURCE_OBJECTS=example volley
 
 # remove extra-index-urls - they break when auth is required
 deploy.requirements:
@@ -68,7 +68,7 @@ test.clean:
 	-docker images -a | grep ${PROJECT} | awk '{print $3}' | xargs docker rmi
 	-docker image prune -f
 test.integration: run.datastores run.components
-	docker-compose exec -T features pytest tests/integration_tests/test_integration.py
+	docker-compose exec -T input_component pytest tests/integration_tests/test_integration.py
 	docker-compose down
 test.shell:
 	docker compose run unit-tests /bin/bash
@@ -81,14 +81,11 @@ test.unit: setup
             --cov-report=xml:cov.xml \
             --cov-report term
 
-run.dummy.components:
-	docker compose up -d dummy_events dummy_consumer
-
 run.components:
-	docker-compose up -d features triage optimizer fallback collector publisher
+	docker-compose up -d input_component component_1
 
 run.datastores:
-	docker-compose up -d postgres redis kafka zookeeper
+	docker-compose up -d redis kafka zookeeper
 
 run:
 	docker compose up --build -d

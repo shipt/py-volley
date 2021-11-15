@@ -12,7 +12,7 @@ eng = Engine(
 
 
 @eng.stream_app
-def main(msg: Comp1Message) -> List[Tuple[str, Optional[ComponentMessage]]]:
+def main(msg: Comp1Message) -> List[Tuple[str, ComponentMessage]]:
 
     req_id = msg.request_id
     max_val = msg.max_value

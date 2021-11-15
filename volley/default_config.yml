@@ -4,12 +4,8 @@ queues:
     type: kafka
     schema: volley.data_models.ComponentMessage
   - name: comp_1
-    value: comp2
+    value: comp1
     type: rsmq
-    schema: volley.data_models.ComponentMessage
-  - name: comp_2
-    value: comp2
-    type: postgres
     schema: volley.data_models.ComponentMessage
   - name: output-queue
     value: "{{ env }}.kafka.output"

@@ -3,7 +3,7 @@ import os
 import time
 from dataclasses import dataclass
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar
 
 from prometheus_client import Counter, Summary, start_http_server
 from pydantic import ValidationError
@@ -13,6 +13,8 @@ from volley.connectors.base import Consumer, Producer
 from volley.data_models import ComponentMessage, QueueMessage
 from volley.logging import logger
 from volley.queues import Queue, Queues, available_queues
+
+ComponentMessageType = TypeVar("ComponentMessageType", bound=ComponentMessage)
 
 # enables mocking the infinite loop to finite
 RUN_ONCE = False
@@ -117,7 +119,7 @@ class Engine:
             )
 
     def stream_app(  # noqa: C901
-        self, func: Callable[[ComponentMessage], List[Tuple[str, Optional[ComponentMessage]]]]
+        self, func: Callable[[ComponentMessageType], List[Tuple[str, Any]]]
     ) -> Callable[..., Any]:
         @wraps(func)
         def run_component(*args, **kwargs) -> None:  # type: ignore
@@ -128,7 +130,7 @@ class Engine:
             # we only want to set these up once, before the component is invoked
             self.in_queue.qcon = get_consumer(queue_type=self.in_queue.type, queue_name=self.in_queue.value)
 
-            input_data_class: ComponentMessage = load_schema_class(self.in_queue)
+            input_data_class: ComponentMessageType = load_schema_class(self.in_queue)
 
             for qname, q in self.out_queues.items():
                 q.qcon = get_producer(queue_name=q.value, queue_type=q.type)
@@ -140,11 +142,11 @@ class Engine:
                 # read message off the specified queue
                 in_message: QueueMessage = self.in_queue.qcon.consume(queue_name=self.in_queue.value)
 
-                outputs: List[Tuple[str, Optional[ComponentMessage]]] = []
+                outputs: List[Tuple[str, Optional[ComponentMessageType]]] = []
                 # every queue has a schema - validate the data coming off the queue
                 # we are using pydantic to validate the data.
                 try:
-                    serialized_message: ComponentMessage = input_data_class.parse_obj(in_message.message)
+                    serialized_message: ComponentMessageType = input_data_class.parse_obj(in_message.message)
                 except ValidationError:
                     logger.exception(
                         f"""
@@ -154,7 +156,9 @@ class Engine:
                         outputs = [("n/a", None)]
                         logger.warning("DLQ not configured")
                     else:
-                        outputs = [("dead-letter-queue", ComponentMessage.parse_obj(in_message.message))]
+                        outputs = [
+                            ("dead-letter-queue", ComponentMessage.parse_obj(in_message.message))  # type: ignore
+                        ]
 
                 if not outputs:
                     _start_main = time.time()

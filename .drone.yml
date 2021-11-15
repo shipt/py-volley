@@ -34,21 +34,17 @@ steps:
       POETRY_HTTP_BASIC_SHIPT_PASSWORD:
         from_secret: SHIPT_PYPI_PASSWORD
 
-  # - name: integration-test
-  #   image: python:3.9.4
-  #   environment:
-  #     APP_ENV: localhost
-  #     KAFKA_BROKERS: kafka:9092
-  #     GITHUB_PAT:
-  #       from_secret: GITHUB_PAT
-  #     POETRY_HTTP_BASIC_SHIPT_USERNAME:
-  #       from_secret: SHIPT_PYPI_USERNAME
-  #     POETRY_HTTP_BASIC_SHIPT_PASSWORD:
-  #       from_secret: SHIPT_PYPI_PASSWORD
-  #   commands:
-  #     - pip install poetry==1.1.10
-  #     - poetry install
-  #     - poetry run pytest tests/integration/integration_test.py
+  - name: test-integration
+    image: python:3.9.4
+    commands:
+    - pip install poetry==1.1.10
+    - poetry install
+    - make test.integration
+    environment:
+      POETRY_HTTP_BASIC_SHIPT_USERNAME:
+        from_secret: SHIPT_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_PASSWORD:
+        from_secret: SHIPT_PYPI_PASSWORD
 
   - name: publish-release
     image: python:3.9.4

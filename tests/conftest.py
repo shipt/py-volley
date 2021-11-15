@@ -22,8 +22,7 @@ def bundle_message() -> QueueMessage:
     return QueueMessage(
         message_id="123",
         message={
-            "engine_event_id": "123",
-            "bundle_request_id": "abc",
+            "request_id": "123",
             "orders": ["1", "2", "3"],
         },
     )

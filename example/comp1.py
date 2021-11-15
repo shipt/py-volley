@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from example.data_models import Comp1Message, OutputMessage
 from volley.data_models import ComponentMessage
@@ -12,7 +12,7 @@ eng = Engine(
 
 
 @eng.stream_app
-def main(msg: Comp1Message) -> List[Tuple[str, ComponentMessage]]:
+def main(msg: Comp1Message) -> List[Tuple[str, Optional[ComponentMessage]]]:
 
     req_id = msg.request_id
     max_val = msg.max_value

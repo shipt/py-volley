@@ -55,8 +55,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.coverage]
 run.omit = [
-    "components/dummy_events.py",
-    "components/dummy_consumer.py"
+    "./example/*",
+    "./example.py"
     ]
 report.show_missing = true
 report.fail_under = 90

@@ -93,7 +93,9 @@ class Engine:
 
         self.in_queue: Queue = self.queues.queues[self.input_queue].copy()
 
-        self.out_queues: Dict[str, Queue] = {x: self.queues.queues[x] for x in self.output_queues}
+        self.out_queues: Dict[str, Queue] = {
+            x: self.queues.queues[x] for x in self.output_queues if (len(self.output_queues) != 0)
+        }
         self.out_queues["dead-letter-queue"] = self.queues.queues["dead-letter-queue"]
 
     def stream_app(  # noqa: C901

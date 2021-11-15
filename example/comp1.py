@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 from example.data_models import Comp1Message, OutputMessage
 from volley.data_models import ComponentMessage

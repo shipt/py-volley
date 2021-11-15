@@ -122,7 +122,7 @@ class Engine:
         self, func: Callable[[ComponentMessageType], List[Tuple[str, Any]]]
     ) -> Callable[..., Any]:
         @wraps(func)
-        def run_component(*args, **kwargs) -> None:  # type: ignore
+        def run_component() -> None:
             if METRICS_ENABLED:
                 start_http_server(port=METRICS_PORT)
             # the component function is passed in as `func`

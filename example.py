@@ -7,6 +7,8 @@ def run() -> None:
         from example.input_component import main
     elif component == "component_1":
         from example.comp1 import main
+    elif component == "output_component":
+        from example.output_component import main
     elif component == "external_consumer":
         from example.external_data_consumer import main
     else:

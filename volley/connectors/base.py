@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Optional
 
 from volley.data_models import QueueMessage
 from volley.logging import logger
@@ -10,8 +10,8 @@ from volley.logging import logger
 class Consumer(ABC):
     """Base for a consumer (kafka, rsmq, postgres)"""
 
-    host: str
     queue_name: str
+    host: Optional[str] = None
 
     @abstractmethod
     def consume(self, queue_name: str, timeout: float = 30, poll_interval: float = 1) -> QueueMessage:
@@ -33,8 +33,8 @@ class Consumer(ABC):
 class Producer(ABC):
     """Basic protocol for a producer (kafka or rsmq)"""
 
-    host: str
     queue_name: str
+    host: Optional[str] = None
 
     @abstractmethod
     def produce(self, queue_name: str, message: QueueMessage) -> bool:

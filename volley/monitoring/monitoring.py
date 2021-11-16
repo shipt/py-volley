@@ -6,12 +6,12 @@ import redis  # type: ignore
 from prometheus_client import Gauge, make_wsgi_app
 from sqlalchemy import text
 
+from volley.config import get_application_config
 from volley.connectors.pg_config import PG_SCHEMA, get_eng
-from volley.queues import load_config
 
 eng = get_eng()
 
-all_queues = [x["value"] for x in load_config()["queues"] if x["type"] == "rsmq"]
+all_queues = [x["value"] for x in get_application_config()["queues"] if x["type"] == "rsmq"]
 
 g = Gauge("bundle_engine_queue_length", "Length of queues", ["queue_name", "queue_type"])
 g_expired = Gauge("expired_messages", "Number of expired messages", ["queue_name", "queue_type"])

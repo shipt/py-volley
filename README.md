@@ -1,5 +1,7 @@
 :construction: :construction: WORK IN PROGRESS :construction: :construction:
 
+
+
 Forked from https://github.com/shipt/ml-bundle-engine. Provides interface to Kafka, RSMQ, and Postgres queues for Python workers. 
 
 Kafka and RSMQ interfaces are general purpose. However, the Postgres queue connector is a highly specific implementation for [ml-bundle-engine](https://github.com/shipt/ml-bundle-engine).
@@ -21,6 +23,14 @@ export POETRY_HTTP_BASIC_SHIPT_PASSWORD=your_password
 pip install py-volley \
   --extra-index-url=https://${POETRY_HTTP_BASIC_SHIPT_USERNAME}:${POETRY_HTTP_BASIC_SHIPT_PASSWORD}@pypi.shipt.com/simple
 ```
+
+4. Run the pre-built exampe:
+`docker-compose up --build`
+
+- `./example/external_data_producer.py` publishes sample data to `input-queue` Kafka topic.
+- `./example/input_component/py` consumes from `input-queue` and publishes to `comp_1` RSMQ queue. 
+- `./example/comp1.py` consumes from `comp_1` RSMQ and publishes to `output-queue` Kafka topic.
+- `./example/external_data_consumer.py` consumes from `output-queue` and logs to console.
 
 ## Getting started
 
@@ -78,7 +88,7 @@ queues:
     schema: components.data_models.MessageA
   - name: queue_b
     value: name_of_table
-    type: postgres
+    type: rsmq
     schema: components.data_models.MessageA
 ```
 

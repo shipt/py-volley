@@ -1,0 +1,9 @@
+connectors:
+  kafka:
+    consumer: volley.connectors.kafka.KafkaConsumer
+    producer: volley.connectors.kafka.KafkaProducer
+  rsmq:
+    consumer: volley.connectors.rsmq.RSMQConsumer
+    producer: volley.connectors.rsmq.RSMQProducer
+schemas:
+  default: volley.data_models.ComponentMessage

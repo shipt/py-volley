@@ -22,6 +22,14 @@ pip install py-volley \
   --extra-index-url=https://${POETRY_HTTP_BASIC_SHIPT_USERNAME}:${POETRY_HTTP_BASIC_SHIPT_PASSWORD}@pypi.shipt.com/simple
 ```
 
+4. Run the pre-built exampe:
+`docker-compose up --build`
+
+- `./example/external_data_producer.py` publishes sample data to `input-queue` Kafka topic.
+- `./example/input_component/py` consumes from `input-queue` and publishes to `comp_1` RSMQ queue. 
+- `./example/comp1.py` consumes from `comp_1` RSMQ and publishes to `output-queue` Kafka topic.
+- `./example/external_data_consumer.py` consumes from `output-queue` and logs to console.
+
 ## Getting started
 
 Components are implemented as a function decorated with an instance of the `volley.engine.Engine`. A component consumes from one queue and can publish to one or many queues.

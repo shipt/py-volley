@@ -64,14 +64,14 @@ def get_application_config() -> Dict[str, List[Dict[str, str]]]:
     return client_cfg
 
 
-def import_module_from_string(module: str) -> Any:
+def import_module_from_string(module_str: str) -> Any:
     """returns the module given its string path
     for example:
         'volley.data_models.ComponentMessage'
     is equivalent to:
         from volley.data_models import ComponentMessage
     """
-    modules = module.split(".")
+    modules = module_str.split(".")
     class_obj = modules[-1]
     pathmodule = ".".join(modules[:-1])
     module = importlib.import_module(pathmodule)

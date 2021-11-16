@@ -1,5 +1,3 @@
-import importlib
-import os
 import time
 from dataclasses import dataclass
 from functools import wraps
@@ -9,7 +7,6 @@ from prometheus_client import Counter, Summary, start_http_server
 from pydantic import ValidationError
 
 from volley.config import METRICS_ENABLED, METRICS_PORT, import_module_from_string
-from volley.connectors.base import Consumer, Producer
 from volley.data_models import ComponentMessage, QueueMessage
 from volley.logging import logger
 from volley.queues import Queue, Queues, available_queues
@@ -23,52 +20,6 @@ RUN_ONCE = False
 PROCESS_TIME = Summary("process_time_seconds", "Time spent running a process", ["process_name"])
 MESSAGE_CONSUMED = Counter("messages_consumed_count", "Messages consumed from input", ["status"])  # success or fail
 MESSAGES_PRODUCED = Counter("messages_produced_count", "Messages produced to output destination(s)", ["destination"])
-
-
-def get_consumer(queue_type: str, queue_name: str) -> Consumer:
-    if queue_type == "kafka":
-        from volley.connectors import KafkaConsumer
-
-        return KafkaConsumer(
-            host=os.environ["KAFKA_BROKERS"],
-            queue_name=queue_name,
-        )
-    elif queue_type == "rsmq":
-        from volley.connectors import RSMQConsumer
-
-        return RSMQConsumer(
-            host=os.environ["REDIS_HOST"],
-            queue_name=queue_name,
-        )
-    elif queue_type == "postgres":
-        from volley.connectors import PGConsumer
-
-        return PGConsumer(
-            host=os.getenv("PG_HOST", "postgres"),
-            queue_name=queue_name,
-        )
-    else:
-        raise KeyError(f"{queue_type=} not valid")
-
-
-def get_producer(queue_type: str, queue_name: str) -> Producer:
-    if queue_type == "kafka":
-        from volley.connectors import KafkaProducer
-
-        return KafkaProducer(host=os.environ["KAFKA_BROKERS"], queue_name=queue_name)
-
-    elif queue_type == "rsmq":
-        from volley.connectors import RSMQProducer
-
-        return RSMQProducer(host=os.environ["REDIS_HOST"], queue_name=queue_name)
-
-    elif queue_type == "postgres":
-        from volley.connectors import PGProducer
-
-        return PGProducer(host=os.getenv("PG_HOST", "postgres"), queue_name=queue_name)
-
-    else:
-        raise KeyError(f"{queue_type=} not valid")
 
 
 def load_schema_class(q: Queue) -> Any:
@@ -136,7 +87,7 @@ class Engine:
                 _start_time = time.time()
 
                 # read message off the specified queue
-                in_message: QueueMessage = self.in_queue.qcon.consume(queue_name=self.in_queue.value)
+                in_message: QueueMessage = self.in_queue.qcon.consume(queue_name=self.in_queue.value)  # type: ignore
 
                 outputs: List[Tuple[str, Optional[ComponentMessageType]]] = []
                 # every queue has a schema - validate the data coming off the queue
@@ -185,13 +136,13 @@ class Engine:
                 if all(all_produce_status):
                     # TODO - better handling of success criteria
                     # if multiple outputs - how to determine if its a success if one fails
-                    self.in_queue.qcon.delete_message(
+                    self.in_queue.qcon.delete_message(  # type: ignore
                         queue_name=self.in_queue.value,
                         message_id=in_message.message_id,
                     )
                     MESSAGE_CONSUMED.labels("success").inc()
                 else:
-                    self.in_queue.qcon.on_fail()
+                    self.in_queue.qcon.on_fail()  # type: ignore
                     MESSAGE_CONSUMED.labels("fail").inc()
                 _duration = time.time() - _start_time
                 PROCESS_TIME.labels("cycle").observe(_duration)

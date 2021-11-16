@@ -75,12 +75,12 @@ class Engine:
             # the component function is passed in as `func`
             # first setup the connections to the input and outputs queues that the component will need
             # we only want to set these up once, before the component is invoked
-            self.in_queue.qcon = self.in_queue.consumer_class(queue_name=self.in_queue.value)
+            self.in_queue.qcon = import_module_from_string(self.in_queue.consumer_class)(queue_name=self.in_queue.value)
 
             input_data_class: ComponentMessageType = load_schema_class(self.in_queue)
 
             for qname, q in self.out_queues.items():
-                q.qcon = q.producer_class(queue_name=q.value)
+                q.qcon = import_module_from_string(q.producer_class)(queue_name=q.value)
 
             # queue connections were setup above. now we can start to interact with the queues
             while True:

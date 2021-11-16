@@ -78,7 +78,7 @@ queues:
     schema: components.data_models.MessageA
   - name: queue_b
     value: name_of_table
-    type: postgres
+    type: rsmq
     schema: components.data_models.MessageA
 ```
 

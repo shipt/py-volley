@@ -1,3 +1,4 @@
+import os
 import time
 from dataclasses import dataclass
 from datetime import datetime
@@ -30,6 +31,8 @@ PROCESS_TIME = Summary("postgres_process_time_seconds", "Time spent interacting 
 
 @dataclass
 class PGConsumer(Consumer):
+    host = os.getenv("PG_HOST", "postgres")
+
     engine: Engine = get_eng()
 
     def __post_init__(self) -> None:
@@ -109,6 +112,8 @@ class PGConsumer(Consumer):
 
 @dataclass
 class PGProducer(Producer):
+    host = os.getenv("PG_HOST", "postgres")
+
     def __post_init__(self) -> None:
         # TODO: are there implications of "if not exists"?
         self.engine: Engine = get_eng()

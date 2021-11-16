@@ -1,5 +1,7 @@
 :construction: :construction: WORK IN PROGRESS :construction: :construction:
 
+[![Build Status](https://drone.shipt.com/api/badges/shipt/volley/status.svg?ref=refs/heads/main)](https://drone.shipt.com/shipt/volley)
+
 Forked from https://github.com/shipt/ml-bundle-engine. Provides interface to Kafka, RSMQ, and Postgres queues for Python workers. 
 
 Kafka and RSMQ interfaces are general purpose. However, the Postgres queue connector is a highly specific implementation for [ml-bundle-engine](https://github.com/shipt/ml-bundle-engine).

@@ -1,26 +1,19 @@
-import abc
-from enum import Enum
 from typing import Dict, Optional, Union
 
 from jinja2 import Template
 from pydantic import BaseModel
 
-from volley.config import ENV, get_application_config, import_module_from_string
+from volley.config import ENV, get_application_config
 from volley.connectors.base import Consumer, Producer
-
-
-class QueueType(str, Enum):
-    kafka = "kafka"
-    rsmq = "rsmq"
 
 
 class Queue(BaseModel):
     value: str
     model_schema: str
-    type: QueueType
+    type: str
 
-    consumer_class: abc.ABCMeta
-    producer_class: abc.ABCMeta
+    consumer_class: str
+    producer_class: str
 
     # queue connection
     qcon: Optional[Union[Consumer, Producer]] = None
@@ -54,8 +47,8 @@ def available_queues() -> Queues:
             value=_value,
             type=q["type"],
             model_schema=q["schema"],
-            consumer_class=import_module_from_string(q["consumer"]),
-            producer_class=import_module_from_string(q["producer"]),
+            consumer_class=q["consumer"],
+            producer_class=q["producer"],
         )
         queues[q["name"]] = meta
 

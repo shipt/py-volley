@@ -8,7 +8,7 @@ from volley.logging import logger
 
 @dataclass  # type: ignore
 class Consumer(ABC):
-    """Base for a consumer (kafka, rsmq, postgres)"""
+    """Base for a consumer (kafka, rsmq)"""
 
     host: str
     queue_name: str

@@ -11,7 +11,6 @@ from volley.connectors.base import Consumer, Producer
 class QueueType(str, Enum):
     kafka = "kafka"
     rsmq = "rsmq"
-    postgres = "postgres"
 
 
 class Queue(BaseModel):

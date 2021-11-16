@@ -6,6 +6,7 @@ services:
             - REDIS_HOST=redis
             - REDIS_PORT=6379
             - KAFKA_BROKERS=kafka:29092
+            - VOLLEY_CONFIG=./example/volley_config.yml
         build:
             context: .
             dockerfile: Dockerfile
@@ -28,6 +29,7 @@ services:
             - REDIS_HOST=redis
             - REDIS_PORT=6379
             - KAFKA_BROKERS=kafka:29092
+            - VOLLEY_CONFIG=./example/volley_config.yml
         build:
             target: dev
             context: .
@@ -52,6 +54,7 @@ services:
             - REDIS_HOST=redis
             - REDIS_PORT=6379
             - KAFKA_BROKERS=kafka:29092
+            - VOLLEY_CONFIG=./example/volley_config.yml
         build:
             target: dev
             context: .
@@ -69,12 +72,37 @@ services:
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client example.py component_1
         command: python example.py component_1
 
+    output_component:
+        environment:
+            - APP_ENV=localhost
+            - REDIS_HOST=redis
+            - REDIS_PORT=6379
+            - KAFKA_BROKERS=kafka:29092
+            - VOLLEY_CONFIG=./example/volley_config.yml
+        build:
+            target: dev
+            context: .
+            dockerfile: Dockerfile
+            args:
+                SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
+                SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        depends_on:
+            - redis
+        volumes:
+            - ./:/app/
+        # ports:
+        #     - 3000:3000
+        #     - 5678:5678
+        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client example.py output_component
+        command: python example.py output_component
+
     data_consumer:
         environment:
             - APP_ENV=localhost
             - REDIS_HOST=redis
             - REDIS_PORT=6379
             - KAFKA_BROKERS=kafka:29092
+            - VOLLEY_CONFIG=./example/volley_config.yml
         build:
             target: dev
             context: .
@@ -131,3 +159,12 @@ services:
             KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
             KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
             KAFKA_JMX_PORT: 49999
+
+    postgres:
+        restart: always
+        image: postgres:12.3
+        container_name: postgres
+        ports:
+            - 5432:5432
+        environment:
+            POSTGRES_PASSWORD: password

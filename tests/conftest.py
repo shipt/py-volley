@@ -8,13 +8,14 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 from pytest import fixture
 
-from volley.connectors import KafkaConsumer, KafkaProducer, RSMQConsumer, RSMQProducer
 from volley.data_models import QueueMessage
 
 os.environ["INPUT_QUEUE"] = "input"
 os.environ["OUTPUT_QUEUE"] = "output"
 os.environ["REDIS_HOST"] = "redis"
 os.environ["KAFKA_BROKERS"] = "kafka:9092"
+
+from volley.connectors import KafkaConsumer, KafkaProducer, RSMQConsumer, RSMQProducer
 
 
 @fixture

@@ -8,7 +8,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar
 from prometheus_client import Counter, Summary, start_http_server
 from pydantic import ValidationError
 
-from volley.config import METRICS_ENABLED, METRICS_PORT
+from volley.config import METRICS_ENABLED, METRICS_PORT, import_module_from_string
 from volley.connectors.base import Consumer, Producer
 from volley.data_models import ComponentMessage, QueueMessage
 from volley.logging import logger
@@ -86,11 +86,7 @@ def load_schema_class(q: Queue) -> Any:
     if q.model_schema in ["dict"]:
         return dict
     else:
-        modules = q.model_schema.split(".")
-        class_obj = modules[-1]
-        pathmodule = ".".join(modules[:-1])
-        module = importlib.import_module(pathmodule)
-        return getattr(module, class_obj)
+        return import_module_from_string(q.model_schema)
 
 
 @dataclass
@@ -128,12 +124,12 @@ class Engine:
             # the component function is passed in as `func`
             # first setup the connections to the input and outputs queues that the component will need
             # we only want to set these up once, before the component is invoked
-            self.in_queue.qcon = get_consumer(queue_type=self.in_queue.type, queue_name=self.in_queue.value)
+            self.in_queue.qcon = self.in_queue.consumer_class(queue_name=self.in_queue.value)
 
             input_data_class: ComponentMessageType = load_schema_class(self.in_queue)
 
             for qname, q in self.out_queues.items():
-                q.qcon = get_producer(queue_name=q.value, queue_type=q.type)
+                q.qcon = q.producer_class(queue_name=q.value)
 
             # queue connections were setup above. now we can start to interact with the queues
             while True:

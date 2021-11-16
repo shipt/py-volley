@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 from dataclasses import dataclass
 
@@ -16,6 +17,7 @@ RUN_ONCE = False
 @dataclass
 class KafkaConsumer(Consumer):
     def __post_init__(self) -> None:
+        self.host = os.environ["KAFKA_BROKERS"]
         try:
             # TODO: client implementing this consumer should be able to specify its consumer group
             # for now, we'll try to use the name of the component in the consumer group
@@ -71,6 +73,7 @@ class KafkaConsumer(Consumer):
 @dataclass
 class KafkaProducer(Producer):
     def __post_init__(self) -> None:
+        self.host = os.environ["KAFKA_BROKERS"]
         self.p = KProducer()
 
     def produce(self, queue_name: str, message: QueueMessage) -> bool:

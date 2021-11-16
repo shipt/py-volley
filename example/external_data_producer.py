@@ -1,6 +1,7 @@
 # example producer
 # simulates some "external service" publishing data to a kafka topic that a Volley application consumes from
 import time
+from uuid import uuid4
 
 from pyshipt_streams import KafkaProducer
 
@@ -17,7 +18,8 @@ def main() -> None:
     i = 0
     while True:
         data = InputMessage.schema()["examples"][0]
-        data["request_id"] = f"request-id-{i}"
+        uuid = str(uuid4())[:8]
+        data["request_id"] = f"{uuid}-{i}"
         p.publish(input_topic, data, serialize=True)
         logger.info(f"{data=}")
         time.sleep(10)

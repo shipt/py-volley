@@ -82,10 +82,10 @@ test.unit: setup
             --cov-report term
 
 run.components:
-	docker-compose up -d input_component component_1
+	docker-compose up -d input_component component_1 output_component
 
 run.datastores:
-	docker-compose up -d redis kafka zookeeper
+	docker-compose up -d redis kafka zookeeper postgres
 
 run:
 	docker compose up --build -d

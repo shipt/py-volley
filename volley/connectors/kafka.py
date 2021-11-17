@@ -5,7 +5,6 @@ from dataclasses import dataclass
 
 from pyshipt_streams import KafkaConsumer as KConsumer
 from pyshipt_streams import KafkaProducer as KProducer
-from pyshipt_streams import consumer
 
 from volley.config import APP_ENV
 from volley.connectors.base import Consumer, Producer
@@ -35,6 +34,7 @@ class KafkaConsumer(Consumer):
                 logger.exception("Kafka Consumer group not specified")
 
         logger.info(f"Kafka {consumer_group=}")
+        self.consumer_group: str = consumer_group
         self.c = KConsumer(
             consumer_group=consumer_group,
             # TODO: develop commit strategy to minimize duplicates and guarantee no loss

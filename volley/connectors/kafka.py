@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pyshipt_streams import KafkaConsumer as KConsumer
 from pyshipt_streams import KafkaProducer as KProducer
 
-from volley.config import ENV
+from volley.config import APP_ENV
 from volley.connectors.base import Consumer, Producer
 from volley.data_models import QueueMessage
 from volley.logging import logger
@@ -18,15 +18,25 @@ RUN_ONCE = False
 class KafkaConsumer(Consumer):
     def __post_init__(self) -> None:
         self.host = os.environ["KAFKA_BROKERS"]
-        try:
-            # TODO: client implementing this consumer should be able to specify its consumer group
-            # for now, we'll try to use the name of the component in the consumer group
-            component_name = sys.argv[1]
-        except KeyError:
-            component_name = "bundle_engine"
 
+        # consumer group assignment
+        # use env var first, then command line argument w/ env, then auto generate one
+        try:
+            consumer_group = os.environ["KAFKA_CONSUMER_GROUP"]
+        except KeyError:
+            # TODO: need a better way to do this
+            # keeping to prevent breaking change
+            logger.warning("KAFKA_CONSUMER_GROUP not specified in environment")
+            try:
+                component_name = sys.argv[1]
+                consumer_group = f"{APP_ENV}_{component_name}"
+            except KeyError:
+                logger.exception("Kafka Consumer group not specified")
+
+        logger.info(f"Kafka {consumer_group=}")
+        self.consumer_group: str = consumer_group
         self.c = KConsumer(
-            consumer_group=f"{ENV}_{component_name}",
+            consumer_group=consumer_group,
             # TODO: develop commit strategy to minimize duplicates and guarantee no loss
             # config_override={"enable.auto.offset.store": False}
         )

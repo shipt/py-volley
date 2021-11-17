@@ -3,7 +3,7 @@ from typing import Dict, Optional, Union
 from jinja2 import Template
 from pydantic import BaseModel
 
-from volley.config import ENV, get_application_config
+from volley.config import APP_ENV, get_application_config
 from volley.connectors.base import Consumer, Producer
 
 
@@ -32,7 +32,7 @@ def available_queues() -> Queues:
         "development": "dev",
         "localhost": "localhost",
     }
-    kafka_env = kafka_env_map.get(ENV)
+    kafka_env = kafka_env_map.get(APP_ENV)
     queues = {}
 
     for q in cfg["queues"]:

@@ -1,6 +1,10 @@
 from typing import Optional
 from unittest.mock import MagicMock, patch
+from uuid import uuid4
 
+from pytest import MonkeyPatch
+
+from volley.config import APP_ENV
 from volley.connectors import KafkaConsumer
 from volley.connectors.base import Consumer, Producer
 from volley.data_models import QueueMessage
@@ -50,3 +54,18 @@ def test_consume_error(mock_consumer: MagicMock) -> None:
     b = KafkaConsumer(host="localhost", queue_name="input-queue")
     q_message = b.consume()
     assert q_message is None
+
+
+@patch("volley.connectors.kafka.KConsumer")
+def test_consumer_group_init(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> None:
+    with monkeypatch.context() as m:
+        random_consumer_group = str(uuid4())
+        m.setenv("KAFKA_CONSUMER_GROUP", random_consumer_group)
+        m.setenv("KAFKA_BROKERS", "rando_kafka:9092")
+
+        consumer = KafkaConsumer(queue_name="input-queue")
+        assert consumer.consumer_group == random_consumer_group
+
+        m.delenv("KAFKA_CONSUMER_GROUP")
+        consumer = KafkaConsumer(queue_name="input-queue")
+        assert APP_ENV in consumer.consumer_group

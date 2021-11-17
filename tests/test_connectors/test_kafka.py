@@ -1,10 +1,7 @@
 import os
-import sys
 from typing import Optional
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
-
-import pytest
 
 from volley.config import APP_ENV
 from volley.connectors import KafkaConsumer

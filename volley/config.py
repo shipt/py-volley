@@ -11,7 +11,7 @@ from volley.logging import logger
 GLOBALS = Path(__file__).parent.resolve().joinpath("global.yml")
 CFG_FILE = Path(os.getenv("VOLLEY_CONFIG", "./volley_config.yml"))
 
-ENV = os.getenv("APP_ENV", "localhost")
+APP_ENV = os.getenv("APP_ENV", "localhost")
 METRICS_ENABLED = True
 METRICS_PORT = 3000
 

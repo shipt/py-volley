@@ -13,7 +13,7 @@ eng = Engine(
 
 
 @eng.stream_app
-def main(msg: ComponentMessage) -> List[Tuple[str, Optional[ComponentMessage]]]:
+def main(msg: ComponentMessage) -> Optional[List[Tuple[str, ComponentMessage]]]:
     if msg.results:  # type: ignore
         req_id = msg.results[0]["request_id"]  # type: ignore
         max_plus_1 = msg.results[0]["max_plus_1"]  # type: ignore
@@ -24,7 +24,7 @@ def main(msg: ComponentMessage) -> List[Tuple[str, Optional[ComponentMessage]]]:
         return [("output-queue", output_msg)]
     else:
         time.sleep(1)
-        return [("n/a", None)]
+        return None
 
 
 if __name__ == "__main__":

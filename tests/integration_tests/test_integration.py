@@ -46,7 +46,7 @@ def test_end_to_end() -> None:  # noqa
             logger.error(message.error())
         else:
             consumed_messages.append(json.loads(message.value().decode("utf-8")))
-        
+
         if len(consumed_messages) == len(request_ids):
             break
 
@@ -64,8 +64,6 @@ def test_end_to_end() -> None:  # noqa
         assert _id in conusumed_ids
 
     assert len(request_ids) == len(conusumed_ids)
-
-
 
 
 # def test_dead_letter_queue() -> None:

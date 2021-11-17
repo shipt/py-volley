@@ -152,6 +152,50 @@ def my_component_function(input_object: ComponentMessage) -> List[(str, Componen
     ]
 ```
 
+## No output example:
+
+A component is not required to output anywhere. A typical use case would be if the component is filtering messages off a stream, and only producing if the message meets certain criteria. To do this, simply return `None` from the component function.
+
+
+```python
+import numpy as np
+
+from volley.engine import Engine
+
+
+engine = Engine(
+  input_queue="my_input",
+  output_queues=["queue_a"]
+)
+
+
+@engine.stream_app
+def my_component_function(input_object: ComponentMessage) -> Optional[List[Tuple[str, ComponentMessage]]]:
+    """component function that filters messages off a stream.
+    
+    Consumes from a queue named "my_input".
+    Conditionally publishes to "queue_a" if the mean value is above 2
+    """
+    mean_value = np.mean(input_object.list_of_values)
+
+    if mean_value > 2:
+      # queue_a expects an object of type MessageA
+      output_a = MessageA(mean_value=mean_value)
+      return [("queue_a", output_a)]
+    else:
+      return None
+```
+
+A component can also produce nothing.
+
+```python
+@engine.stream_app
+def my_component_function(input_object: ComponentMessage) -> None:
+    print(input_object.list_of_values)
+    return None
+```
+
+## Running a worker component
 Components are run as stand-alone workers.
 
 ```python
@@ -165,9 +209,7 @@ And are run by invoking the function.
 python main.py
 ```
 
-# Design
-
-## Engine
+# Engine
 
 The engine itself is a python decorator that wraps a component worker and runs as headless services. The engine interacts with `Connectors`, `QueueMessages`, and the component function that it wraps.
 
@@ -179,16 +221,17 @@ Once the engine has initialized, it will continuously poll the input queue for n
 
 ## Connectors
 
-Connectors are specific implementations of producers and consumers. There are currently connectors for pyRSMQ, Postgres, and Kafka. For example - `produce` in a Postgres connector handles inserting a row to a table, while `produce` in a Kafka connector handles producing a message to a topic.
+Connectors are specific implementations of producers and consumers for a data store. There are currently connectors implemented for pyRSMQ and Kafka. 
 
 Consumers and producers handle converting the `QueueMessage` objects to whichever data type and serialization is implemented in the specfic queue. For example, the pyRSMQ implementation stores messages as `JSON`, so the pyRSMQ producer converts the message in `QueueMessage` to JSON, then places the message on the queue. Likewise, pyRMSQ consumer read from JSON and convert to `QueueMessage`.
 
-## Producers/Consumers
-
-Components consume from one queue and produce to one or many queues. The engine has a consistent interface to conduct the following operations on any of the supported queues:
+Components consume from one queue and produce to zero or many queues. Volley consumers and produces adhere to a consistent interface to conduct the following operations on any of the supported queues. These interfaces are designed in [Consumer and Producer](./volley/connectors/base.py) base classes.
 
 Producers:
+
 - `produce` - place a message on the queue.
+
+- `shutdown` - gracefully disconnect the producer.
 
 Consumers:
 
@@ -198,21 +241,47 @@ Consumers:
 
 - `on_fail` - operation to conduct if a component worker fails processing a message. For example, place the message back on the queue, rollback a transaction, etc.
 
-## Supported Queues
+- `shutdown` - gracefully disconnect the consumer.
 
-Queues are the broker and backend that handle messages. The bundle engine supports types of queues; [pyRSMQ](https://github.com/mlasevich/PyRSMQ), Kafka, and Postgres. Each technology can be used as a first-in-first-out basis but also have unique features and limitations.
+## Supported Connectors
 
-RSMQ is the python implementation of the [RSMQ](https://github.com/smrchy/rsmq) project. It is lightweight but full features message queue system built on Redis. It provides clean interface to producing and consuming messages from a queue. It only supports strict FIFO - you cannot modify or update a message on the queue once it is produced. The number of messages that can exist in the queue is limited by the amount of memory available to Redis.
+Queues are the broker and backend that handle messages. Volley has connectors for two types of queue: 
+- [pyRSMQ](https://github.com/mlasevich/PyRSMQ) is the python implementation of the [RSMQ](https://github.com/smrchy/rsmq) project. It is lightweight but full featured message queue system built on Redis. It provides clean interface to producing and consuming messages from a queue. It only supports strict FIFO - you cannot modify or update a message on the queue once it is produced. The number of messages that can exist in the queue is limited by the amount of memory available to Redis.
 
-Kafka - TODO
+- Kafka - Volley's integration with Kafka is built on [confluent_kafka](https://docs.confluent.io/platform/current/clients/confluent-kafka-python/html/index.html) and [pyshipt-streams](https://github.com/shipt/pyshipt-streams)
 
-Postgres - TODO
+Supported connectors are specified in `volley_config.yml` by name.
+
+```yml
+- name: main_queue
+  value: main_rsmq_queue
+  type: rsmq
+  schema: volley.data_models.ComponentMessage
+```
+
+# Extending Connectors with Plugins
+
+Users can write their own connectors as needed. This is done by subclassing `volley.connects.base.Consumer|Producer`, then registering the connectors in `volley_config.yml`, along with the queue they are intended to connect to. The configuration below specifies an example connetor defined in `example.plugins.my_plugin` in the `MyPGProducer` and `MyPGConsumer` classes.
+
+```yml
+- name: postgres_queue
+  value: pg_queue_table
+  type: postgres
+  schema: volley.data_models.ComponentMessage
+  producer: example.plugins.my_plugin.MyPGProducer
+  consumer: example.plugins.my_plugin.MyPGConsumer
+```
 
 # CI / CD
 
 See `.drone.yml` for test gates. A Semantic tagged release triggers a build and publish to pypi.shipt.com.
 
-## Testing
+# Testing
 
 `make test.unit` Runs unit tests on individual components with mocked responses dependencies external to the code. Docker is not involved in this process.
 
+`make test.integration` Runs an "end-to-end" test against the example project in `./example`. The tests validate messages make it through all supported connectors and queus, plus a user defined connector plugin (postgres).
+
+# Support
+
+`#ask-machine-learning`

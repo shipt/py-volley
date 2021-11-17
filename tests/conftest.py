@@ -1,21 +1,18 @@
 import json
 import os
 from dataclasses import dataclass
-from datetime import datetime, timedelta
-from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
 import numpy as np
 from pytest import fixture
 
+from volley.connectors import KafkaConsumer, KafkaProducer, RSMQConsumer, RSMQProducer
 from volley.data_models import QueueMessage
 
 os.environ["INPUT_QUEUE"] = "input"
 os.environ["OUTPUT_QUEUE"] = "output"
 os.environ["REDIS_HOST"] = "redis"
 os.environ["KAFKA_BROKERS"] = "kafka:29092"
-
-from volley.connectors import KafkaConsumer, KafkaProducer, RSMQConsumer, RSMQProducer
 
 
 @fixture

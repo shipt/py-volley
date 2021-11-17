@@ -1,4 +1,3 @@
-import os
 from typing import Optional
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
@@ -58,7 +57,7 @@ def test_consume_error(mock_consumer: MagicMock) -> None:
 
 
 @patch("volley.connectors.kafka.KConsumer")
-def test_consumer_group_init(mock_consumer: MagicMock, monkeypatch) -> None:
+def test_consumer_group_init(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> None:
     with monkeypatch.context() as m:
         random_consumer_group = str(uuid4())
         m.setenv("KAFKA_CONSUMER_GROUP", random_consumer_group)

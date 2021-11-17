@@ -25,15 +25,7 @@ MESSAGES_PRODUCED = Counter("messages_produced_count", "Messages produced to out
 
 def load_schema_class(q: Queue) -> Any:
     """loads the schema for a queue from config
-
-    parses the string to the path of the model into and importable object
-
-    for exampe: load a model from volley.default_config
-        volley.data_models.ComponentMessage results in something equivalent to:
-            ```
-            from volley.data_models import ComponentMessage
-            return ComponentMessage
-            ```
+    "dict" is an acceptable schema
     """
     if q.model_schema in ["dict"]:
         return dict
@@ -75,7 +67,7 @@ class Engine:
         self.kill_now = True
 
     def stream_app(  # noqa: C901
-        self, func: Callable[[ComponentMessageType], List[Tuple[str, Any]]]
+        self, func: Callable[[ComponentMessageType], Optional[List[Tuple[str, Any]]]]
     ) -> Callable[..., Any]:
         @wraps(func)
         def run_component() -> None:
@@ -98,7 +90,7 @@ class Engine:
                 # read message off the specified queue
                 in_message: QueueMessage = self.in_queue.qcon.consume(queue_name=self.in_queue.value)  # type: ignore
 
-                outputs: List[Tuple[str, Optional[ComponentMessageType]]] = []
+                outputs: Optional[List[Tuple[str, ComponentMessageType]]] = []
                 # every queue has a schema - validate the data coming off the queue
                 # we are using pydantic to validate the data.
                 try:
@@ -109,7 +101,7 @@ class Engine:
                         Error validating message from {self.in_queue.value}"""
                     )
                     if "dead-letter-queue" not in self.out_queues:
-                        outputs = [("n/a", None)]
+                        outputs = None
                         logger.warning("DLQ not configured")
                     else:
                         outputs = [
@@ -123,24 +115,28 @@ class Engine:
                     PROCESS_TIME.labels("component").observe(_fun_duration)
 
                 all_produce_status: List[bool] = []
-                for qname, component_msg in outputs:
-                    if component_msg is None:
-                        continue
-                    q_msg = QueueMessage(message_id="", message=component_msg.dict())
+                if outputs is None:
+                    all_produce_status.append(True)
+                else:
+                    for qname, component_msg in outputs:
+                        if component_msg is None:
+                            # this is deprecated: components should just return None
+                            continue
+                        q_msg = QueueMessage(message_id=None, message=component_msg.dict())
 
-                    try:
-                        out_queue = self.out_queues[qname]
-                    except KeyError:
-                        logger.exception(f"{qname} is not defined in this component's output queue list")
+                        try:
+                            out_queue = self.out_queues[qname]
+                        except KeyError:
+                            logger.exception(f"{qname} is not defined in this component's output queue list")
 
-                    # TODO: typing of engine.queues.Queue.qcon makes this ambiguous and potentially error prone
-                    try:
-                        status = out_queue.qcon.produce(queue_name=out_queue.value, message=q_msg)  # type: ignore
-                        MESSAGES_PRODUCED.labels(destination=qname).inc()
-                    except Exception:
-                        logger.exception("failed producing message")
-                        status = False
-                    all_produce_status.append(status)
+                        # TODO: typing of engine.queues.Queue.qcon makes this ambiguous and potentially error prone
+                        try:
+                            status = out_queue.qcon.produce(queue_name=out_queue.value, message=q_msg)  # type: ignore
+                            MESSAGES_PRODUCED.labels(destination=qname).inc()
+                        except Exception:
+                            logger.exception("failed producing message")
+                            status = False
+                        all_produce_status.append(status)
 
                 if all(all_produce_status):
                     # TODO - better handling of success criteria

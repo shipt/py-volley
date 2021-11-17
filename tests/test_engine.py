@@ -21,8 +21,8 @@ def test_kafka_component(mock_consumer: MagicMock, mock_producer: MagicMock) -> 
     mock_consumer.return_value.poll = lambda x: KafkaMessage()
 
     @eng.stream_app
-    def func(*args: ComponentMessage) -> List[Tuple[None, None]]:
-        return [(None, None)]
+    def func(*args: ComponentMessage) -> None:
+        return None
     func()
 
 

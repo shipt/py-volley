@@ -1,3 +1,4 @@
+import signal
 import time
 from dataclasses import dataclass
 from functools import wraps
@@ -47,7 +48,12 @@ class Engine:
     input_queue: str
     output_queues: List[str]
 
+    kill_now = False
+
     def __post_init__(self) -> None:
+
+        signal.signal(signal.SIGINT, self.exit_gracefully)
+        signal.signal(signal.SIGTERM, self.exit_gracefully)
 
         self.queues: Queues = available_queues()
 
@@ -64,6 +70,9 @@ class Engine:
             Add a queue named "dead-letter-queue" to volley_config.yml
             """
             )
+
+    def exit_gracefully(self, *args: Any) -> None:
+        self.kill_now = True
 
     def stream_app(  # noqa: C901
         self, func: Callable[[ComponentMessageType], List[Tuple[str, Any]]]
@@ -83,7 +92,7 @@ class Engine:
                 q.qcon = import_module_from_string(q.producer_class)(queue_name=q.value)
 
             # queue connections were setup above. now we can start to interact with the queues
-            while True:
+            while not self.kill_now:
                 _start_time = time.time()
 
                 # read message off the specified queue
@@ -150,6 +159,14 @@ class Engine:
                 if RUN_ONCE:
                     # for testing purposes only - mock RUN_ONCE
                     break
+
+            # graceful shutdown
+            logger.info(f"Shutting down {self.in_queue.na}")
+            self.in_queue.qcon.shutdown()
+            for q_name, q in self.output_queues:
+                logger.info(f"Shutting down {q.value}")
+                q.qcon.shutdown()
+                logger.info(f"{q_name} shutdown complete")
 
         # used for unit testing as a means to access the wrapped component without the decorator
         run_component.__wrapped__ = func  # type: ignore

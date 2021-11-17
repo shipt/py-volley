@@ -152,6 +152,50 @@ def my_component_function(input_object: ComponentMessage) -> List[(str, Componen
     ]
 ```
 
+## No output example:
+
+A component is not required to output anywhere. A typical use case would be if the component is filtering messages off a stream, and only producing if the message meets certain criteria. To do this, simply return `None` from the component function.
+
+
+```python
+import numpy as np
+
+from volley.engine import Engine
+
+
+engine = Engine(
+  input_queue="my_input",
+  output_queues=["queue_a"]
+)
+
+
+@engine.stream_app
+def my_component_function(input_object: ComponentMessage) -> Optional[List[Tuple[str, ComponentMessage]]]:
+    """component function that filters messages off a stream.
+    
+    Consumes from a queue named "my_input".
+    Conditionally publishes to "queue_a" if the mean value is above 2
+    """
+    mean_value = np.mean(input_object.list_of_values)
+
+    if mean_value > 2:
+      # queue_a expects an object of type MessageA
+      output_a = MessageA(mean_value=mean_value)
+      return [("queue_a", output_a)]
+    else:
+      return None
+```
+
+A component can also produce nothing.
+
+```python
+@engine.stream_app
+def my_component_function(input_object: ComponentMessage) -> None:
+    print(input_object.list_of_values)
+    return None
+```
+
+## Running a worker component
 Components are run as stand-alone workers.
 
 ```python

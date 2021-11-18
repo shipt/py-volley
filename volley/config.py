@@ -33,7 +33,7 @@ def load_client_config() -> Dict[str, List[Dict[str, str]]]:
     return cfg
 
 
-def get_application_config() -> Dict[str, List[Dict[str, str]]]:
+def load_queue_configs() -> Dict[str, Dict[str, str]]:
     """loads client configurations for:
         - queues
         - connectors
@@ -48,6 +48,7 @@ def get_application_config() -> Dict[str, List[Dict[str, str]]]:
     global_connectors = global_configs["connectors"]
     default_queue_schema = global_configs["schemas"]["default"]
 
+    queue_dict: Dict[str, Dict[str, str]] = {}
     for q in client_cfg["queues"]:
         # for each defined queue, validate there is a consumer & producer defined
         # or fallback to the global default
@@ -60,8 +61,8 @@ def get_application_config() -> Dict[str, List[Dict[str, str]]]:
         # handle data schema
         if "schema" not in q:
             q["schema"] = default_queue_schema
-
-    return client_cfg
+        queue_dict[q["name"]] = q
+    return queue_dict
 
 
 def import_module_from_string(module_str: str) -> Any:

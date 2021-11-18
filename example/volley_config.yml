@@ -2,11 +2,11 @@ queues:
   - name: input-queue
     value: "{{ env }}.kafka.input"
     type: kafka
-    schema: volley.data_models.ComponentMessage
+    schema: example.data_models.InputMessage
   - name: comp_1
     value: comp1
     type: rsmq
-    schema: volley.data_models.ComponentMessage
+    schema: example.data_models.Comp1Message
   - name: test_queue_plugin
     value: q42
     type: postgres
@@ -16,7 +16,7 @@ queues:
   - name: output-queue
     value: "{{ env }}.kafka.output"
     type: kafka
-    schema: volley.data_models.ComponentMessage
+    schema: example.data_models.OutputMessage
   - name: dead-letter-queue
     value: "{{ env }}.kafka.dlq"
     type: kafka

@@ -1,14 +1,15 @@
 import json
+from typing import Dict
 
 from pyshipt_streams import KafkaConsumer
 
 from volley.logging import logger
-from volley.queues import available_queues
+from volley.queues import Queue, available_queues
 
 
 def main() -> None:
-    queues = available_queues()
-    input_topic = queues.queues["output-queue"].value
+    queues: Dict[str, Queue] = available_queues()
+    input_topic = queues["output-queue"].value
     c = KafkaConsumer(consumer_group="group1")
     c.subscribe([input_topic])
 

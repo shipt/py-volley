@@ -16,7 +16,7 @@ METRICS_ENABLED = True
 METRICS_PORT = 3000
 
 
-def load_config(file_path: Path) -> Dict[str, Any]:
+def load_yaml(file_path: Path) -> Dict[str, Any]:
     with file_path.open() as f:
         cfg: Dict[str, Any] = yaml.load(f, Loader=Loader)
     return cfg
@@ -25,11 +25,11 @@ def load_config(file_path: Path) -> Dict[str, Any]:
 def load_client_config() -> Dict[str, List[Dict[str, str]]]:
     cfg: Dict[str, List[Dict[str, str]]] = {}
     try:
-        cfg = load_config(CFG_FILE)
+        cfg = load_yaml(CFG_FILE)
     except FileNotFoundError:
         logger.info(f"file {CFG_FILE} not found - falling back to default for testing")
         _cfg = Path(__file__).parent.resolve().joinpath("default_config.yml")
-        cfg = load_config(_cfg)
+        cfg = load_yaml(_cfg)
     return cfg
 
 
@@ -42,7 +42,7 @@ def get_application_config() -> Dict[str, List[Dict[str, str]]]:
     falls back to global configurations when client does not provide them
     """
     client_cfg = load_client_config()
-    global_configs = load_config(GLOBALS)
+    global_configs = load_yaml(GLOBALS)
 
     # handle default fallbacks
     global_connectors = global_configs["connectors"]

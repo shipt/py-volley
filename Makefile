@@ -3,13 +3,6 @@ PYTHON_VERSION=3.9.4
 
 SOURCE_OBJECTS=example volley tests
 
-# remove extra-index-urls - they break when auth is required
-deploy.requirements:
-	poetry export --without-hashes -f requirements.txt -o requirements.txt
-	poetry export --without-hashes --dev -f requirements.txt -o requirements-dev.txt
-	sed -i.bak -e '/^--extra-index-url/d' -e '/^$$/d' requirements.txt && rm requirements.txt.bak
-	sed -i.bak -e '/^--extra-index-url/d' -e '/^$$/d' requirements-dev.txt && rm requirements-dev.txt.bak
-
 deploy:
 	poetry build
 
@@ -32,10 +25,6 @@ lints.pylint:
 	poetry run pylint --rcfile pyproject.toml  ${SOURCE_OBJECTS}
 lints: lints.flake8 lints.format.check lints.mypy 
 lints.strict: lints.pylint lints.flake8.strict lints.mypy lints.format.check
-
-notebook:
-	poetry install
-	poetry run jupyter notebook
 
 setup: setup.python setup.sysdep.poetry setup.project
 setup.uninstall: setup.python
@@ -70,10 +59,6 @@ test.clean:
 test.integration: run.datastores run.components
 	docker-compose exec -T input_component pytest tests/integration_tests/test_integration.py
 	docker-compose down
-test.shell:
-	docker compose run unit-tests /bin/bash
-test.shell.debug:
-	docker compose run --entrypoint /bin/bash unit-tests
 test.unit: setup
 	poetry run coverage run -m pytest -s \
 			--ignore=tests/integration_tests \
@@ -83,15 +68,11 @@ test.unit: setup
 
 run.components:
 	docker-compose up -d input_component component_1 output_component
-
 run.datastores:
 	docker-compose up -d redis kafka zookeeper postgres
-
 run:
 	docker compose up --build -d
-
 stop.components:
 	docker compose down
-
 stop:
 	docker compose down --remove-orphans

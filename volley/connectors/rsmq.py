@@ -63,7 +63,7 @@ class RSMQProducer(Producer):
         _start = time.time()
         msg_id: str = self.queue.sendMessage(qname=queue_name, message=msg, encode=True).execute()
         _duration = time.time() - _start
-        PROCESS_TIME.labels("read").observe(_duration)
+        PROCESS_TIME.labels("write").observe(_duration)
         return bool(msg_id)
 
     def shutdown(self) -> None:

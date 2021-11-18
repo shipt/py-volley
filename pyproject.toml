@@ -29,6 +29,7 @@ rollbar = "^0.16.2"
 SQLAlchemy = "^1.4.25"
 sqlmodel = "^0.0.4"
 uvicorn = {extras = ["standard"], version = "^0.15.0"}
+hiredis = "^2.0.0"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.2"

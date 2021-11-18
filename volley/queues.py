@@ -65,25 +65,23 @@ def queues_from_yaml(queues: List[str]) -> Dict[str, Queue]:
     input_output_queues: Dict[str, Queue] = {}
 
     for q in queues:
-        q_config = cfg[q]
-
-        input_output_queues[q] = Queue(
-            name=q,
-            value=q_config["value"],
-            model_schema=q_config["schema"],
-            type=q_config["type"],
-            consumer_class=q_config["consumer"],
-            producer_class=q_config["producer"],
-        )
+        q_config = interpolate_kafka_topics(cfg[q])
+        try:
+            input_output_queues[q] = Queue(
+                name=q,
+                value=q_config["value"],
+                model_schema=q_config["schema"],
+                type=q_config["type"],
+                consumer_class=q_config["consumer"],
+                producer_class=q_config["producer"],
+            )
+        except KeyError:
+            logger.warning(f"Queue '{q}' not found in configuraiton")
     return input_output_queues
 
 
-class Queues(BaseModel):
-    queues: Dict[str, Queue]
-
-
 def interpolate_kafka_topics(cfg: Dict[str, str]) -> Dict[str, str]:
-    """interpolates env prefix to templates kafka topic"""
+    """interpolates Shipt env prefix to templates kafka topic"""
     kafka_env_map = {
         "production": "prd",
         "staging": "stg",
@@ -92,42 +90,27 @@ def interpolate_kafka_topics(cfg: Dict[str, str]) -> Dict[str, str]:
     }
     kafka_env = kafka_env_map.get(APP_ENV)
 
-    for q_name, q in cfg.items():
-        if q["type"] == "kafka":
-            # interpolates environment prefix to templated kafka topic definitions
-            _t = Template(q["value"])
-            q["value"] = _t.render(env=kafka_env)
-
+    if cfg["type"] == "kafka":
+        _t = Template(cfg["value"])
+        cfg["value"] = _t.render(env=kafka_env)
     return cfg
 
 
-def available_queues() -> Queues:
-    cfg = get_application_config()
+def available_queues() -> Dict[str, Queue]:
+    cfg = load_queue_configs()
 
-    kafka_env_map = {
-        "production": "prd",
-        "staging": "stg",
-        "development": "dev",
-        "localhost": "localhost",
-    }
-    kafka_env = kafka_env_map.get(APP_ENV)
     queues = {}
 
-    for q in cfg["queues"]:
-        if q["type"] == "kafka":
-            # interpolates environment prefix to templated kafka topic definitions
-            _t = Template(q["value"])
-            _value = _t.render(env=kafka_env)
-        else:
-            _value = q["value"]
-
+    for q_name, queue_dict in cfg.items():
+        queue_dict = interpolate_kafka_topics(queue_dict)
         meta = Queue(
-            value=_value,
-            type=q["type"],
-            model_schema=q["schema"],
-            consumer_class=q["consumer"],
-            producer_class=q["producer"],
+            name=q_name,
+            value=queue_dict["value"],
+            type=queue_dict["type"],
+            model_schema=queue_dict["schema"],
+            consumer_class=queue_dict["consumer"],
+            producer_class=queue_dict["producer"],
         )
-        queues[q["name"]] = meta
+        queues[q_name] = meta
 
-    return Queues(queues=queues)
+    return queues

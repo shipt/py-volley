@@ -1,4 +1,3 @@
-import signal
 import time
 from dataclasses import dataclass
 from functools import wraps
@@ -11,6 +10,7 @@ from volley.config import METRICS_ENABLED, METRICS_PORT, import_module_from_stri
 from volley.data_models import ComponentMessage, QueueMessage
 from volley.logging import logger
 from volley.queues import Queue, Queues, available_queues
+from volley.util import GracefulKiller
 
 ComponentMessageType = TypeVar("ComponentMessageType", bound=ComponentMessage)
 
@@ -40,12 +40,9 @@ class Engine:
     input_queue: str
     output_queues: List[str]
 
-    kill_now = False
+    killer: GracefulKiller = GracefulKiller()
 
     def __post_init__(self) -> None:
-
-        signal.signal(signal.SIGINT, self.exit_gracefully)
-        signal.signal(signal.SIGTERM, self.exit_gracefully)
 
         self.queues: Queues = available_queues()
 
@@ -66,9 +63,6 @@ class Engine:
             """
             )
 
-    def exit_gracefully(self, *args: Any) -> None:
-        self.kill_now = True
-
     def stream_app(  # noqa: C901
         self, func: Callable[[ComponentMessageType], Optional[List[Tuple[str, Any]]]]
     ) -> Callable[..., Any]:
@@ -87,7 +81,7 @@ class Engine:
                 q.qcon = import_module_from_string(q.producer_class)(queue_name=q.value)
 
             # queue connections were setup above. now we can start to interact with the queues
-            while not self.kill_now:
+            while not self.killer.kill_now:
                 _start_time = time.time()
 
                 # read message off the specified queue
@@ -160,11 +154,12 @@ class Engine:
                     break
 
             # graceful shutdown
-            logger.info(f"Shutting down {self.in_queue.na}")
-            self.in_queue.qcon.shutdown()
-            for q_name, q in self.output_queues:
-                logger.info(f"Shutting down {q.value}")
-                q.qcon.shutdown()
+            logger.info(f"Shutting down {self.in_queue.value}")
+            self.in_queue.qcon.shutdown()  # type: ignore
+            for q_name in self.output_queues:
+                out_queue = self.out_queues[q_name]
+                logger.info(f"Shutting down {out_queue.value}")
+                out_queue.qcon.shutdown()  # type: ignore
                 logger.info(f"{q_name} shutdown complete")
 
         # used for unit testing as a means to access the wrapped component without the decorator

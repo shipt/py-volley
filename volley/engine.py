@@ -22,6 +22,8 @@ PROCESS_TIME = Summary("process_time_seconds", "Time spent running a process", [
 MESSAGE_CONSUMED = Counter("messages_consumed_count", "Messages consumed from input", ["status"])  # success or fail
 MESSAGES_PRODUCED = Counter("messages_produced_count", "Messages produced to output destination(s)", ["destination"])
 
+DLQ_NAME = "dead-letter-queue"
+
 
 def load_schema_class(q: Queue) -> Any:
     """loads the schema for a queue from config
@@ -56,15 +58,19 @@ class Engine:
         # dict of <queue_name>: Queue
         self.queue_map = queues_from_yaml(queues=[self.input_queue] + self.output_queues)
 
-        if "dead-letter-queue" not in self.queue_map:
-            self.dlq_enabled = False
-            # TODO: there should be a more graceful default behavior for schema violations and retries
-            logger.warning(
+        if DLQ_NAME not in self.queue_map:
+            try:
+                self.queue_map.update(queues_from_yaml([DLQ_NAME]))
+                self.output_queues.append(DLQ_NAME)
+            except Exception:
+                self.dlq_enabled = False
+                # TODO: there should be a more graceful default behavior for schema violations and retries
+                logger.warning(
+                    f"""
+                Dead-letter-queue config not found. Messages with schema violations crash the application.
+                Add a queue named "{DLQ_NAME}" to volley_config.yml
                 """
-            Dead-letter-queue config not found. Messages with schema violations crash the application.
-            Add a queue named "dead-letter-queue" to volley_config.yml
-            """
-            )
+                )
 
     def stream_app(  # noqa: C901
         self, func: Callable[[ComponentMessage], Optional[List[Tuple[str, Any]]]]
@@ -110,7 +116,7 @@ class Engine:
                         outputs = None
                         logger.error("DLQ not configured. Skipping message")
                     else:
-                        outputs = [("dead-letter-queue", ComponentMessage.parse_obj(in_message.message))]
+                        outputs = [(DLQ_NAME, ComponentMessage.parse_obj(in_message.message))]
 
                 if not outputs:
                     _start_main = time.time()
@@ -136,7 +142,7 @@ class Engine:
 
                         # TODO: typing of engine.queues.Queue.qcon makes this ambiguous and potentially error prone
                         try:
-                            status = out_queue.producer_class.produce(queue_name=out_queue.value, message=q_msg)  # type: ignore
+                            status = out_queue.producer_con.produce(queue_name=out_queue.value, message=q_msg)  # type: ignore
                             MESSAGES_PRODUCED.labels(destination=qname).inc()
                         except Exception:
                             logger.exception("failed producing message")

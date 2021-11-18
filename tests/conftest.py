@@ -1,13 +1,15 @@
 import json
 import os
 from dataclasses import dataclass
+from typing import Any, Callable, Generator
 from unittest.mock import MagicMock, patch
 
 import numpy as np
-from pytest import fixture
+from pytest import MonkeyPatch, fixture
 
 from volley.connectors import KafkaConsumer, KafkaProducer, RSMQConsumer, RSMQProducer
 from volley.data_models import QueueMessage
+from volley.engine import Engine
 
 os.environ["INPUT_QUEUE"] = "input"
 os.environ["OUTPUT_QUEUE"] = "output"
@@ -84,3 +86,18 @@ def mock_kafka_producer() -> KafkaProducer:
     with patch("volley.connectors.kafka.KProducer"):
         producer = KafkaProducer(host="kafka", queue_name="test")
         return producer
+
+
+@fixture
+def non_producer(monkeypatch: MonkeyPatch) -> Generator[Callable[..., None], None, None]:
+    eng = Engine(input_queue="input-queue", output_queues=["output-queue"])
+
+    monkeypatch.setattr("volley.engine", "METRICS_ENABLED", False)
+    monkeypatch.setattr("volley.connectors.kafka", "KProducer", MagicMock())
+    monkeypatch.setattr("volley.connectors.kafka", "KConsumer", MagicMock())
+
+    @eng.stream_app
+    def func(*args: Any) -> None:
+        return None
+
+    yield func

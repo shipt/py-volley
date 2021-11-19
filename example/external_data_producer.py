@@ -21,7 +21,6 @@ def main() -> None:
         data = InputMessage.schema()["examples"][0]
         uuid = str(uuid4())[:8]
         data["request_id"] = f"{uuid}-{i}"
-        del data["request_id"]
         p.publish(input_topic, data, serialize=True)
         logger.info(f"{data=}")
         time.sleep(10)

@@ -14,8 +14,8 @@ class Consumer(ABC):
     host: Optional[str] = None
 
     @abstractmethod
-    def consume(self, queue_name: str, timeout: float = 30, poll_interval: float = 1) -> QueueMessage:
-        """consumes a message to any queue. decodes from queue's data type to QueueMessage schema"""
+    def consume(self, queue_name: str, timeout: float = 30, poll_interval: float = 1) -> Optional[QueueMessage]:
+        """consumes a message to any queue. return None when there are no messages to consume"""
 
     @abstractmethod
     def delete_message(self, queue_name: str, message_id: Any = None) -> bool:

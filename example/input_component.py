@@ -12,7 +12,7 @@ eng = Engine(
 
 
 @eng.stream_app
-def main(msg: InputMessage) -> List[Tuple[str, Optional[ComponentMessage]]]:
+def main(msg: InputMessage) -> Optional[List[Tuple[str, ComponentMessage]]]:
 
     req_id = msg.request_id
     values = msg.list_of_values

@@ -3,6 +3,7 @@ import time
 from typing import Dict, List
 from uuid import uuid4
 
+from confluent_kafka import OFFSET_END, TopicPartition
 from pyshipt_streams import KafkaConsumer, KafkaProducer
 
 from example.data_models import InputMessage
@@ -11,6 +12,7 @@ from volley.queues import Queue, available_queues
 
 
 def test_end_to_end() -> None:  # noqa
+    """good data should make it all the way through app"""
     # get name of the input topic
     queues: Dict[str, Queue] = available_queues()
     produce_topic = queues["input-queue"].value
@@ -20,6 +22,13 @@ def test_end_to_end() -> None:  # noqa
     # get some sample data
     data = InputMessage.schema()["examples"][0]
 
+    # consumer the messages off the output topic
+    consume_topic = queues["output-queue"].value
+    logger.info(f"{consume_topic=}")
+    c = KafkaConsumer(consumer_group="int-test-group")
+    c.consumer.assign([TopicPartition(topic=consume_topic, partition=0, offset=OFFSET_END)])
+    c.subscribe([consume_topic])
+
     # create some unique request id for tracking
     test_messages = 3
     request_ids: List[str] = [f"test_{x}_{str(uuid4())[:5]}" for x in range(test_messages)]
@@ -28,12 +37,6 @@ def test_end_to_end() -> None:  # noqa
         data["request_id"] = req_id
         p.publish(produce_topic, value=json.dumps(data))
     p.flush()
-
-    # consumer the messages off the output topic
-    consume_topic = queues["output-queue"].value
-    logger.info(f"{consume_topic=}")
-    c = KafkaConsumer(consumer_group="int-test-group")
-    c.subscribe([consume_topic])
 
     # wait some seconds max for messages to reach output topic
     start = time.time()
@@ -67,11 +70,20 @@ def test_end_to_end() -> None:  # noqa
 
 
 def test_dead_letter_queue() -> None:
+    """publish bad data to input queue
+    it should cause schema violation and end up on DLQ
+    """
     queues: Dict[str, Queue] = available_queues()
     produce_topic = queues["input-queue"].value
     logger.info(f"{produce_topic=}")
     p = KafkaProducer()
     data = {"bad": "data"}
+
+    dlq_topic = queues["dead-letter-queue"].value
+    logger.info(f"{dlq_topic=}")
+    c = KafkaConsumer(consumer_group="int-test-group")
+    c.consumer.assign([TopicPartition(topic=dlq_topic, partition=0, offset=OFFSET_END)])
+    c.subscribe([dlq_topic])
 
     # publish data to input-topic that does not meet schema requirements
     test_messages = 3
@@ -81,11 +93,6 @@ def test_dead_letter_queue() -> None:
         data["request_id"] = req_id
         p.publish(produce_topic, value=json.dumps(data))
     p.flush()
-
-    dlq_topic = queues["dead-letter-queue"].value
-    logger.info(f"{dlq_topic=}")
-    c = KafkaConsumer(consumer_group="int-test-group")
-    c.subscribe([dlq_topic])
 
     start = time.time()
     consumed_messages = []

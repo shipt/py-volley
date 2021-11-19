@@ -56,7 +56,7 @@ class RSMQProducer(Producer):
         self.queue.createQueue(delay=0).vt(60).exceptions(False).execute()
 
     def produce(self, queue_name: str, message: QueueMessage) -> bool:
-        m = message.dict()["message"]
+        m = message.message
         logger.info(f"queue_name - {queue_name}")
         msg = json.dumps(m, default=str)
         _start = time.time()

@@ -17,12 +17,17 @@ METRICS_PORT = 3000
 
 
 def load_yaml(file_path: Path) -> Dict[str, Any]:
+    """loads a yaml to dict from Path object"""
     with file_path.open() as f:
         cfg: Dict[str, Any] = yaml.load(f, Loader=Loader)
     return cfg
 
 
 def load_client_config() -> Dict[str, List[Dict[str, str]]]:
+    """attemps to load the client provided config yaml
+    falls back to the default_config file.
+    #TODO: get rid of this. for testing we should just provide a config file
+    """
     cfg: Dict[str, List[Dict[str, str]]] = {}
     try:
         cfg = load_yaml(CFG_FILE)

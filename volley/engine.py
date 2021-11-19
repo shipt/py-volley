@@ -43,9 +43,6 @@ class Engine:
 
     killer: GracefulKiller = GracefulKiller()
 
-    # user can provide a full configuration in Engine(), or use volley_config.yml, but not both
-    queue_config: Optional[Dict[str, Any]] = None
-
     # set in post_init
     queue_map: Dict[str, Queue] = field(default_factory=dict)
 

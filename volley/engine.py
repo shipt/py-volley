@@ -51,10 +51,11 @@ class Engine:
 
     def __post_init__(self) -> None:
 
-        # dict of <queue_name>: Queue
-        self.queue_map = queues_from_yaml(queues=[self.input_queue] + self.output_queues)
+        self.queue_map: Dict[str, Queue] = queues_from_yaml(queues=[self.input_queue] + self.output_queues)
 
         if DLQ_NAME not in self.queue_map:
+            # if DLQ was not explicitly provided as an output from the wrapped function
+            # try to add it to the queue_map anyway
             try:
                 self.queue_map.update(queues_from_yaml([DLQ_NAME]))
                 self.output_queues.append(DLQ_NAME)
@@ -143,7 +144,6 @@ class Engine:
                         except KeyError:
                             logger.exception(f"{qname} is not defined in this component's output queue list")
 
-                        # TODO: typing of engine.queues.Queue.qcon makes this ambiguous and potentially error prone
                         try:
                             status = out_queue.producer_con.produce(queue_name=out_queue.value, message=q_msg)
                             MESSAGES_PRODUCED.labels(destination=qname).inc()

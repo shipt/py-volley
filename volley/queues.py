@@ -19,6 +19,10 @@ class ConnectionType(Enum):
 
 @dataclass
 class Queue:
+    """a Queue object represents everything we need to know about a queue
+    and is modeled off the configuration files for a queue
+    """
+
     # alias for the queue
     name: str
     # system name for the queue. for example, some really long kafka topic name
@@ -31,10 +35,12 @@ class Queue:
     producer_class: str
 
     # initialized queue connection
+    # these get initialized by calling connect()
     consumer_con: Consumer = field(init=False)
     producer_con: Producer = field(init=False)
 
     # initialized schema model
+    # these gets loaded by calling init_schema()
     model_class: Union[ComponentMessage, Dict[str, Any]] = field(init=False)
 
     def connect(self, con_type: ConnectionType) -> None:
@@ -96,6 +102,9 @@ def interpolate_kafka_topics(cfg: Dict[str, str]) -> Dict[str, str]:
 
 
 def available_queues() -> Dict[str, Queue]:
+    """returns a mapping of all the queues defined in configuration
+    useful for utilizies that might want to work with all queues, such as a healthcheck
+    """
     cfg = load_queue_configs()
 
     queues = {}

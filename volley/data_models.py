@@ -1,4 +1,4 @@
-from typing import Any, Dict, NamedTuple, TypeVar, Union
+from typing import Any, Dict, TypeVar, Union
 
 from pydantic import BaseModel, Extra
 

@@ -1,7 +1,7 @@
 import time
 from dataclasses import dataclass, field
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar
+from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
 
 from prometheus_client import Counter, Summary, start_http_server
 from pydantic import ValidationError
@@ -24,6 +24,7 @@ MESSAGES_PRODUCED = Counter("messages_produced_count", "Messages produced to out
 
 DLQ_NAME = "dead-letter-queue"
 POLL_INTERVAL = 1
+
 
 def load_schema_class(q: Queue) -> Any:
     """loads the schema for a queue from config
@@ -74,7 +75,7 @@ class Engine:
                 )
 
     def stream_app(  # noqa: C901
-        self, func: Callable[[ComponentMessage], Optional[List[Tuple[str, Any]]]]
+        self, func: Callable[[Union[ComponentMessage, Dict[Any, Any]]], Optional[List[Tuple[str, Any]]]]
     ) -> Callable[..., Any]:
         @wraps(func)
         def run_component() -> None:
@@ -89,9 +90,9 @@ class Engine:
             self.queue_map[self.input_queue].init_schema()
             # we only want to connect to queues passed in to Engine()
             # there can be more queues than we need defined in the configuration yaml
-            for out_queue in self.output_queues:
-                self.queue_map[out_queue].connect(con_type=ConnectionType.PRODUCER)
-                self.queue_map[out_queue].init_schema()
+            for out_q_name in self.output_queues:
+                self.queue_map[out_q_name].connect(con_type=ConnectionType.PRODUCER)
+                self.queue_map[out_q_name].init_schema()
 
             # queue connections were setup above. now we can start to interact with the queues
             # alias for input connection readability
@@ -111,10 +112,9 @@ class Engine:
                 # every queue has a schema - validate the data coming off the queue
                 # we are using pydantic to validate the data.
                 try:
-                    serialized_message: ComponentMessage = self.queue_map[self.input_queue].model_class.parse_obj(
-                        in_message.message
-                    )
-                    # serialized_message: ComponentMessageType = input_data_class.parse_obj(in_message.message)
+                    serialized_message: Union[ComponentMessage, Dict[Any, Any]] = self.queue_map[  # type: ignore
+                        self.input_queue
+                    ].model_class(**in_message.message)
                 except ValidationError:
                     logger.exception(
                         f"""
@@ -150,7 +150,7 @@ class Engine:
 
                         # TODO: typing of engine.queues.Queue.qcon makes this ambiguous and potentially error prone
                         try:
-                            status = out_queue.producer_con.produce(queue_name=out_queue.value, message=q_msg)  # type: ignore
+                            status = out_queue.producer_con.produce(queue_name=out_queue.value, message=q_msg)
                             MESSAGES_PRODUCED.labels(destination=qname).inc()
                         except Exception:
                             logger.exception("failed producing message")
@@ -160,13 +160,13 @@ class Engine:
                 if all(all_produce_status):
                     # TODO - better handling of success criteria
                     # if multiple outputs - how to determine if its a success if one fails
-                    input_con.consumer_con.delete_message(  # type: ignore
+                    input_con.consumer_con.delete_message(
                         queue_name=input_con.value,
                         message_id=in_message.message_id,
                     )
                     MESSAGE_CONSUMED.labels("success").inc()
                 else:
-                    input_con.consumer_con.on_fail()  # type: ignore
+                    input_con.consumer_con.on_fail()
                     MESSAGE_CONSUMED.labels("fail").inc()
                 _duration = time.time() - _start_time
                 PROCESS_TIME.labels("cycle").observe(_duration)
@@ -177,11 +177,11 @@ class Engine:
 
             # graceful shutdown of ALL queues
             logger.info(f"Shutting down {input_con.value}")
-            input_con.consumer_con.shutdown()  # type: ignore
+            input_con.consumer_con.shutdown()
             for q_name in self.output_queues:
                 out_queue = self.queue_map[q_name]
                 logger.info(f"Shutting down {out_queue.value}")
-                out_queue.producer_con.shutdown()  # type: ignore
+                out_queue.producer_con.shutdown()
                 logger.info(f"{q_name} shutdown complete")
 
         # used for unit testing as a means to access the wrapped component without the decorator

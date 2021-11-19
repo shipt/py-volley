@@ -11,7 +11,6 @@ eng = Engine(
     output_queues=["output-queue"],
 )
 
-
 @eng.stream_app
 def main(msg: ComponentMessage) -> Optional[List[Tuple[str, ComponentMessage]]]:
     if msg.results:  # type: ignore

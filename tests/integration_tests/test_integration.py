@@ -10,6 +10,8 @@ from example.data_models import InputMessage
 from volley.logging import logger
 from volley.queues import Queue, available_queues
 
+POLL_TIMEOUT = 30
+
 
 def test_end_to_end() -> None:  # noqa
     """good data should make it all the way through app"""
@@ -41,7 +43,7 @@ def test_end_to_end() -> None:  # noqa
     # wait some seconds max for messages to reach output topic
     start = time.time()
     consumed_messages = []
-    while (time.time() - start) < 15:
+    while (time.time() - start) < POLL_TIMEOUT:
         message = c.poll(1)
         if message is None:
             continue
@@ -96,7 +98,7 @@ def test_dead_letter_queue() -> None:
 
     start = time.time()
     consumed_messages = []
-    while (time.time() - start) < 15:
+    while (time.time() - start) < POLL_TIMEOUT:
         message = c.poll(1)
         if message is None:
             continue

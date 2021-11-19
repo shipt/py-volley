@@ -1,18 +1,16 @@
 import time
 from dataclasses import dataclass, field
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Tuple, TypeVar, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from prometheus_client import Counter, Summary, start_http_server
 from pydantic import ValidationError
 
 from volley.config import METRICS_ENABLED, METRICS_PORT, import_module_from_string
-from volley.data_models import ComponentMessage, QueueMessage
+from volley.data_models import ComponentMessage, ComponentMessageType, QueueMessage
 from volley.logging import logger
 from volley.queues import ConnectionType, Queue, queues_from_yaml
 from volley.util import GracefulKiller
-
-ComponentMessageType = TypeVar("ComponentMessageType", bound=ComponentMessage)
 
 # enables mocking the infinite loop to finite
 RUN_ONCE = False
@@ -75,7 +73,7 @@ class Engine:
                 )
 
     def stream_app(  # noqa: C901
-        self, func: Callable[[Union[ComponentMessage, Dict[Any, Any]]], Optional[List[Tuple[str, Any]]]]
+        self, func: Callable[[Union[ComponentMessageType, Any]], Optional[List[Tuple[str, Any]]]]
     ) -> Callable[..., Any]:
         @wraps(func)
         def run_component() -> None:
@@ -112,7 +110,7 @@ class Engine:
                 # every queue has a schema - validate the data coming off the queue
                 # we are using pydantic to validate the data.
                 try:
-                    serialized_message: Union[ComponentMessage, Dict[Any, Any]] = self.queue_map[  # type: ignore
+                    serialized_message: Union[ComponentMessageType, Dict[Any, Any]] = self.queue_map[  # type: ignore
                         self.input_queue
                     ].model_class(**in_message.message)
                 except ValidationError:

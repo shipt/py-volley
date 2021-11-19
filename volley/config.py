@@ -16,24 +16,29 @@ METRICS_ENABLED = True
 METRICS_PORT = 3000
 
 
-def load_config(file_path: Path) -> Dict[str, Any]:
+def load_yaml(file_path: Path) -> Dict[str, Any]:
+    """loads a yaml to dict from Path object"""
     with file_path.open() as f:
         cfg: Dict[str, Any] = yaml.load(f, Loader=Loader)
     return cfg
 
 
 def load_client_config() -> Dict[str, List[Dict[str, str]]]:
+    """attemps to load the client provided config yaml
+    falls back to the default_config file.
+    #TODO: get rid of this. for testing we should just provide a config file
+    """
     cfg: Dict[str, List[Dict[str, str]]] = {}
     try:
-        cfg = load_config(CFG_FILE)
+        cfg = load_yaml(CFG_FILE)
     except FileNotFoundError:
         logger.info(f"file {CFG_FILE} not found - falling back to default for testing")
         _cfg = Path(__file__).parent.resolve().joinpath("default_config.yml")
-        cfg = load_config(_cfg)
+        cfg = load_yaml(_cfg)
     return cfg
 
 
-def get_application_config() -> Dict[str, List[Dict[str, str]]]:
+def load_queue_configs() -> Dict[str, Dict[str, str]]:
     """loads client configurations for:
         - queues
         - connectors
@@ -42,12 +47,13 @@ def get_application_config() -> Dict[str, List[Dict[str, str]]]:
     falls back to global configurations when client does not provide them
     """
     client_cfg = load_client_config()
-    global_configs = load_config(GLOBALS)
+    global_configs = load_yaml(GLOBALS)
 
     # handle default fallbacks
     global_connectors = global_configs["connectors"]
     default_queue_schema = global_configs["schemas"]["default"]
 
+    queue_dict: Dict[str, Dict[str, str]] = {}
     for q in client_cfg["queues"]:
         # for each defined queue, validate there is a consumer & producer defined
         # or fallback to the global default
@@ -60,8 +66,8 @@ def get_application_config() -> Dict[str, List[Dict[str, str]]]:
         # handle data schema
         if "schema" not in q:
             q["schema"] = default_queue_schema
-
-    return client_cfg
+        queue_dict[q["name"]] = q
+    return queue_dict
 
 
 def import_module_from_string(module_str: str) -> Any:

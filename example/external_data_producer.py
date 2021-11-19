@@ -1,18 +1,19 @@
 # example producer
 # simulates some "external service" publishing data to a kafka topic that a Volley application consumes from
 import time
+from typing import Dict
 from uuid import uuid4
 
 from pyshipt_streams import KafkaProducer
 
 from example.data_models import InputMessage
 from volley.logging import logger
-from volley.queues import available_queues
+from volley.queues import Queue, available_queues
 
 
 def main() -> None:
-    queues = available_queues()
-    input_topic = queues.queues["input-queue"].value
+    queues: Dict[str, Queue] = available_queues()
+    input_topic = queues["input-queue"].value
     logger.info(f"{input_topic=}")
     p = KafkaProducer()
     i = 0

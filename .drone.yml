@@ -42,7 +42,6 @@ steps:
     commands:
     - apk add make
     - sed -i -e '/volumes:/,+1d' docker-compose.yml
-    - docker-compose down
     - make test.integration
     environment:
       APP_ENV: localhost

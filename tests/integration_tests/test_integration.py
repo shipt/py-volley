@@ -97,6 +97,8 @@ def test_dead_letter_queue() -> None:
             logger.error(message.error())
         else:
             consumed_messages.append(json.loads(message.value().decode("utf-8")))
+            if len(request_ids) == len(consumed_messages):
+                break
     c.close()
 
     conusumed_ids = []

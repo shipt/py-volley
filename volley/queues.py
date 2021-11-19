@@ -1,9 +1,8 @@
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 from jinja2 import Template
-from pydantic import BaseModel
 
 from volley.config import APP_ENV, import_module_from_string, load_queue_configs
 from volley.connectors.base import Consumer, Producer

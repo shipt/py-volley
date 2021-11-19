@@ -1,7 +1,6 @@
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 from example.data_models import Comp1Message, InputMessage
-from volley.data_models import ComponentMessage
 from volley.engine import Engine
 from volley.logging import logger
 
@@ -12,7 +11,7 @@ eng = Engine(
 
 
 @eng.stream_app
-def main(msg: InputMessage) -> Optional[List[Tuple[str, ComponentMessage]]]:
+def main(msg: InputMessage) -> List[Tuple[str, Comp1Message]]:
 
     req_id = msg.request_id
     values = msg.list_of_values

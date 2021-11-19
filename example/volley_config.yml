@@ -6,7 +6,7 @@ queues:
   - name: comp_1
     value: comp1
     type: rsmq
-    schema: example.data_models.Comp1Message
+    schema: dict
   - name: test_queue_plugin
     value: q42
     type: postgres

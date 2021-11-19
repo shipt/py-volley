@@ -2,6 +2,7 @@ import json
 import os
 import time
 from dataclasses import dataclass
+from typing import Optional
 
 from prometheus_client import Summary
 from rsmq import RedisSMQ
@@ -23,17 +24,15 @@ class RSMQConsumer(Consumer):
         # TODO: visibility timeout (vt) probably be configurable
         self.queue.createQueue(delay=0).vt(60).exceptions(False).execute()
 
-    def consume(self, queue_name: str, timeout: float = 30.0, poll_interval: float = 1) -> QueueMessage:
-        msg = None
-        while not isinstance(msg, dict):
-            _start = time.time()
-            msg = self.queue.receiveMessage(qname=queue_name, vt=timeout, quiet=QUIET).exceptions(False).execute()
-            _duration = time.time() - _start
-            PROCESS_TIME.labels("read").observe(_duration)
-            if isinstance(msg, dict):
-                return QueueMessage(message_id=msg["id"], message=json.loads(msg["message"]))
-            else:
-                time.sleep(poll_interval)
+    def consume(self, queue_name: str, timeout: float = 30.0, poll_interval: float = 1) -> Optional[QueueMessage]:
+        _start = time.time()
+        msg = self.queue.receiveMessage(qname=queue_name, vt=timeout, quiet=QUIET).exceptions(False).execute()
+        _duration = time.time() - _start
+        PROCESS_TIME.labels("read").observe(_duration)
+        if isinstance(msg, dict):
+            return QueueMessage(message_id=msg["id"], message=json.loads(msg["message"]))
+        else:
+            return None
 
     def delete_message(self, queue_name: str, message_id: str = None) -> bool:
         _start = time.time()
@@ -57,7 +56,7 @@ class RSMQProducer(Producer):
         self.queue.createQueue(delay=0).vt(60).exceptions(False).execute()
 
     def produce(self, queue_name: str, message: QueueMessage) -> bool:
-        m = message.dict()["message"]
+        m = message.message
         logger.info(f"queue_name - {queue_name}")
         msg = json.dumps(m, default=str)
         _start = time.time()

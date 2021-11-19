@@ -2,6 +2,7 @@ import json
 import os
 import sys
 from dataclasses import dataclass
+from typing import Optional
 
 from pyshipt_streams import KafkaConsumer as KConsumer
 from pyshipt_streams import KafkaProducer as KProducer
@@ -47,27 +48,19 @@ class KafkaConsumer(Consumer):
         queue_name: str = None,
         timeout: float = 60,
         poll_interval: float = 0.25,
-    ) -> QueueMessage:
+    ) -> Optional[QueueMessage]:
         if queue_name is None:
             queue_name = self.queue_name
-        message = None
-        while message is None:
 
-            message = self.c.poll(poll_interval)
-            if message is None:
-                pass
-            elif message.error():
-                logger.warning(message.error())
-                message = None
-            else:
-                msg = json.loads(message.value().decode("utf-8"))
-                if msg is None:
-                    continue
-                else:
-                    return QueueMessage(message_id=message, message=msg)
-            if RUN_ONCE:
-                # for testing purposes only - mock RUN_ONCE
-                break
+        message = self.c.poll(poll_interval)
+        if message is None:
+            pass
+        elif message.error():
+            logger.warning(message.error())
+            message = None
+        else:
+            msg = json.loads(message.value().decode("utf-8"))
+            return QueueMessage(message_id=message, message=msg)
 
     def delete_message(self, queue_name: str, message_id: str = None) -> bool:
         # self.c.consumer.store_offsets(message=message_id)

@@ -23,7 +23,7 @@ MESSAGE_CONSUMED = Counter("messages_consumed_count", "Messages consumed from in
 MESSAGES_PRODUCED = Counter("messages_produced_count", "Messages produced to output destination(s)", ["destination"])
 
 DLQ_NAME = "dead-letter-queue"
-
+POLL_INTERVAL = 1
 
 def load_schema_class(q: Queue) -> Any:
     """loads the schema for a queue from config
@@ -62,6 +62,7 @@ class Engine:
             try:
                 self.queue_map.update(queues_from_yaml([DLQ_NAME]))
                 self.output_queues.append(DLQ_NAME)
+                self.dlq_enabled = True
             except Exception:
                 self.dlq_enabled = False
                 # TODO: there should be a more graceful default behavior for schema violations and retries
@@ -86,6 +87,8 @@ class Engine:
             # intialize connections to each queue, and schemas
             self.queue_map[self.input_queue].connect(con_type=ConnectionType.CONSUMER)
             self.queue_map[self.input_queue].init_schema()
+            # we only want to connect to queues passed in to Engine()
+            # there can be more queues than we need defined in the configuration yaml
             for out_queue in self.output_queues:
                 self.queue_map[out_queue].connect(con_type=ConnectionType.PRODUCER)
                 self.queue_map[out_queue].init_schema()
@@ -97,7 +100,12 @@ class Engine:
                 _start_time = time.time()
 
                 # read message off the specified queue
-                in_message: QueueMessage = input_con.consumer_con.consume(queue_name=input_con.value)
+                in_message: Optional[QueueMessage] = input_con.consumer_con.consume(queue_name=input_con.value)
+                if in_message is None:
+                    # if no messages, handle poll interval
+                    # TODO: this should be dynamic with some sort of backoff
+                    time.sleep(POLL_INTERVAL)
+                    continue
 
                 outputs: Optional[List[Tuple[str, ComponentMessage]]] = []
                 # every queue has a schema - validate the data coming off the queue

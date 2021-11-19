@@ -1,6 +1,6 @@
-from typing import Any, Dict, TypeVar, Union
+from typing import Any, Dict, NamedTuple, TypeVar, Union
 
-from pydantic import BaseModel, Extra, Field
+from pydantic import BaseModel, Extra
 
 
 class ComponentMessage(BaseModel):
@@ -11,9 +11,12 @@ class ComponentMessage(BaseModel):
 
 
 class QueueMessage(BaseModel):
-    # standardized across a kafka message and rsmq
-    # rsmq has its own schema and kafka has headers, etc.
-    message_id: Any = Field(description="identifier for the message in the queue")
+    """message in its raw state off a queue
+    message_id: any identifier for a message on a queue.
+        used for deleting or markng a message as success after post-processing
+    """
+
+    message_id: Any
     message: Union[Dict[str, Any], ComponentMessage]
 
 

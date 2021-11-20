@@ -90,7 +90,9 @@ def mock_kafka_producer() -> KafkaProducer:
 
 @fixture
 def none_producer_decorated(monkeypatch: MonkeyPatch) -> Generator[Callable[..., None], None, None]:
-    eng = Engine(input_queue="input-queue", output_queues=["output-queue"])
+    eng = Engine(
+        input_queue="input-queue", output_queues=["output-queue"], yaml_config_path="./example/volley_config.yml"
+    )
 
     monkeypatch.setattr("volley.engine", "METRICS_ENABLED", False)
     monkeypatch.setattr("volley.connectors.kafka", "KProducer", MagicMock())

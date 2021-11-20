@@ -16,7 +16,9 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
     """test a stubbed component that does not produce messages
     passes so long as no exception is raised
     """
-    eng = Engine(input_queue="input-queue", output_queues=["output-queue"])
+    eng = Engine(
+        input_queue="input-queue", output_queues=["output-queue"], yaml_config_path="./example/volley_config.yml"
+    )
     mock_consumer.return_value.poll = lambda x: KafkaMessage()
 
     # component returns "just none"
@@ -44,9 +46,15 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
         "message": json.dumps(m),
     }
     mock_rsmq.return_value.receiveMessage.return_value.exceptions.return_value.execute = lambda: rsmq_msg
-
     mock_rsmq.return_value.sendMessage.return_value.execute = lambda: True
-    eng = Engine(input_queue="comp_1", output_queues=["comp_1"])
+    cfg = {
+        "comp_1": {
+            "name": "comp_1",
+            "value": "random_val",
+            "type": "rsmq",
+        }
+    }
+    eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg)
 
     @eng.stream_app
     def hello_world(msg: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:

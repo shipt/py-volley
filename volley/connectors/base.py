@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from typing import Any, Optional
 
 from volley.data_models import QueueMessage
-from volley.logging import logger
 
 
 @dataclass  # type: ignore

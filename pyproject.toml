@@ -57,7 +57,8 @@ build-backend = "poetry.core.masonry.api"
 [tool.coverage]
 run.omit = [
     "./example/*",
-    "./example.py"
+    "./example.py",
+    "./tests/*"
     ]
 report.show_missing = true
 report.fail_under = 90

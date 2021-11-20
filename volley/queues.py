@@ -72,6 +72,9 @@ def queues_from_yaml(queues: List[str]) -> Dict[str, Queue]:
     """
     cfg: Dict[str, Dict[str, str]] = load_queue_configs()
 
+    for queue, config in cfg.items():
+        cfg[queue] = interpolate_kafka_topics(config)
+
     return queues_from_dict(cfg)
 
 
@@ -97,21 +100,7 @@ def available_queues() -> Dict[str, Queue]:
     """
     cfg = load_queue_configs()
 
-    queues = {}
-
-    for q_name, queue_dict in cfg.items():
-        queue_dict = interpolate_kafka_topics(queue_dict)
-        meta = Queue(
-            name=q_name,
-            value=queue_dict["value"],
-            type=queue_dict["type"],
-            schema=queue_dict["schema"],
-            consumer=queue_dict["consumer"],
-            producer=queue_dict["producer"],
-        )
-        queues[q_name] = meta
-
-    return queues
+    return queues_from_dict(cfg)
 
 
 def queues_from_dict(config: dict[str, Any]) -> Dict[str, Queue]:

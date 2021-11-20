@@ -6,10 +6,26 @@ from volley.data_models import ComponentMessage
 from volley.engine import Engine
 from volley.logging import logger
 
-eng = Engine(
-    input_queue="test_queue_plugin",
-    output_queues=["output-queue"],
-)
+# define queue configurations in a dict
+# overrwrites any existing yaml configs
+queue_config = {
+    "test_queue_plugin": {
+        "name": "test_queue_plugin",
+        "value": "q42",
+        "type": "postgres",
+        "schema": "volley.data_models.ComponentMessage",
+        "producer": "example.plugins.my_plugin.MyPGProducer",
+        "consumer": "example.plugins.my_plugin.MyPGConsumer",
+    },
+    "output-queue": {
+        "name": "output-queue",
+        "value": "localhost.kafka.output",
+        "type": "kafka",
+        "schema": "volley.data_models.ComponentMessage",
+    },
+}
+
+eng = Engine(input_queue="test_queue_plugin", output_queues=["output-queue"], queue_config=queue_config)
 
 
 @eng.stream_app

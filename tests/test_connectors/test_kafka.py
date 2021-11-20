@@ -38,6 +38,10 @@ def test_kafka_producer(mock_kafka_producer: Producer, bundle_message: QueueMess
     assert mock_kafka_producer.produce(queue_name="test", message=bundle_message)
 
 
+def test_kafka_consumer_fail(mock_kafka_consumer: Consumer) -> None:
+    assert mock_kafka_consumer.on_fail() is None
+
+
 def test_kafka_consumer_success(mock_kafka_consumer: Consumer) -> None:
     bundle_message = mock_kafka_consumer.consume("test-q")
     assert isinstance(bundle_message, QueueMessage)

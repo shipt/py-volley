@@ -21,7 +21,7 @@ metadata_obj = MetaData()
 queue_table = Table(
     "my_queue_table",
     metadata_obj,
-    Column("request_id", String(40), unique=True, nullable=False),
+    Column("request_id", String(40), nullable=False),
     Column("max_plus_1", Float),
 )
 

@@ -8,7 +8,8 @@ from volley.queues import Queue, available_queues
 
 
 def main() -> None:
-    queues: Dict[str, Queue] = available_queues()
+    """consumes example data to a topic. mimics an data consumer external to Volley"""
+    queues: Dict[str, Queue] = available_queues("./example/volley_config.yml")
     input_topic = queues["output-queue"].value
     c = KafkaConsumer(consumer_group="group1")
     c.subscribe([input_topic])

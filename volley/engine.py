@@ -59,11 +59,12 @@ class Engine:
 
             # handle DLQ
             if self.dead_letter_queue is not None:
+                # if provided by user, DLQ becomes a producer target
                 self.output_queues.append(self.dead_letter_queue)
             else:
                 logger.warning("DLQ not provided. Application will crash on schema violations")
 
-            cfg = yaml_to_dict_config(queues=[self.input_queue] + self.output_queues, yaml_path=self.yaml_config_path)
+            cfg = yaml_to_dict_config(yaml_path=self.yaml_config_path)
         cfg = apply_defaults(cfg)
         self.queue_map = config_to_queue_map(cfg["queues"])
         logger.info(f"Queues initialized: {list(self.queue_map.keys())}")

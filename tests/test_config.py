@@ -14,7 +14,7 @@ from volley.queues import (
 
 
 def test_available_queues() -> None:
-    all_queues: Dict[str, Queue] = available_queues()
+    all_queues: Dict[str, Queue] = available_queues("./example/volley_config.yml")
 
     for qname, q in all_queues.items():
         assert isinstance(qname, str)
@@ -23,7 +23,7 @@ def test_available_queues() -> None:
 
 def test_queues_from_yaml() -> None:
     queue_list = ["input-queue", "dead-letter-queue"]
-    queues = queues_from_yaml(queue_list)
+    queues = queues_from_yaml(queue_list, yaml_path="./example/volley_config.yml")
     for qname, queue in queues.items():
         assert isinstance(queue, Queue)
         assert qname == queue.name

@@ -3,6 +3,8 @@ from typing import Any, List, Tuple
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
+import pytest
+
 from tests.test_connectors.test_kafka import KafkaMessage
 from volley.data_models import ComponentMessage
 from volley.engine import Engine
@@ -17,7 +19,10 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
     passes so long as no exception is raised
     """
     eng = Engine(
-        input_queue="input-queue", output_queues=["output-queue"], yaml_config_path="./example/volley_config.yml"
+        input_queue="input-queue",
+        output_queues=["output-queue"],
+        yaml_config_path="./example/volley_config.yml",
+        dead_letter_queue="dead-letter-queue",
     )
     mock_consumer.return_value.poll = lambda x: KafkaMessage()
 
@@ -34,6 +39,31 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
         return [("n/a", None)]
 
     func_depr()
+
+
+@patch("volley.engine.RUN_ONCE", True)
+@patch("volley.engine.METRICS_ENABLED", False)
+@patch("volley.connectors.kafka.KProducer")
+@patch("volley.connectors.kafka.KConsumer")
+def test_dlq_not_implemented(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:
+    """test a stubbed component that does not produce messages
+    passes so long as no exception is raised
+    """
+    eng = Engine(
+        input_queue="input-queue",
+        output_queues=["output-queue"],
+        yaml_config_path="./example/volley_config.yml",
+        dead_letter_queue=None,
+    )
+    mock_consumer.return_value.poll = lambda x: KafkaMessage()
+
+    # component returns "just none"
+    @eng.stream_app
+    def func(*args: ComponentMessage) -> None:
+        return None
+
+    with pytest.raises(NotImplementedError):
+        func()
 
 
 @patch("volley.engine.RUN_ONCE", True)

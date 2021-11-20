@@ -4,12 +4,7 @@ from typing import Any, Dict, List, Union
 
 from jinja2 import Template
 
-from volley.config import (
-    APP_ENV,
-    apply_defaults,
-    import_module_from_string,
-    load_queue_configs,
-)
+from volley.config import APP_ENV, GLOBALS, import_module_from_string, load_yaml
 from volley.connectors.base import Consumer, Producer
 from volley.data_models import ComponentMessage
 from volley.logging import logger
@@ -65,17 +60,90 @@ class Queue:
             self.model_class = import_module_from_string(self.schema)
 
 
-def queues_from_yaml(queues: List[str], yaml_path: str) -> Dict[str, Queue]:
-    """loads config from yaml then filters to queues needed for specific implementation
+def yaml_to_dict_config(queues: List[str], yaml_path: str) -> Dict[str, List[dict[str, str]]]:
+    """loads config from yaml then filters to those needed for specific implementation
+
+    yaml config file is allowed to contain more configurations than needed
+    """
+    cfg: Dict[str, List[dict[str, str]]] = load_yaml(file_path=yaml_path)
+
+    out_configs: Dict[str, List[dict[str, str]]] = {"queues": []}
+    for q_config in cfg["queues"]:
+        if q_config["name"] in queues:
+            q_config = interpolate_kafka_topics(q_config)
+            out_configs["queues"].append(q_config)
+
+    return cfg
+
+
+def dict_to_config(config: dict[str, dict[str, str]]) -> dict[str, List[dict[str, str]]]:
+    # assign the name of the queue to the queue object
+    for qname, _config in config.items():
+        _config["name"] = qname
+    # put all queues configs into a list
+    standard_schema = {"queues": [v for k, v in config.items()]}
+    # configuration is now in same schema as yaml
+    return standard_schema
+
+
+def apply_defaults(config: Dict[str, List[Dict[str, str]]]) -> Dict[str, List[Dict[str, str]]]:
+    global_configs = load_yaml(GLOBALS)
+    global_connectors = global_configs["connectors"]
+    default_queue_schema = global_configs["schemas"]["default"]
+
+    # apply default queue configurations
+    for queue in config["queues"]:
+        # for each defined queue, validate there is a consumer & producer defined
+        # or fallback to the global default
+        q_type = queue["type"]
+        for conn in ["consumer", "producer"]:
+            if conn not in queue:
+                # if there isn't a connector (produce/consume) defined,
+                #   assign it from global defalt
+                queue[conn] = global_connectors[q_type][conn]
+        # handle data schema
+        if "schema" not in queue:
+            queue["schema"] = default_queue_schema
+
+    return config
+
+
+def config_to_queue_map(configs: List[dict[str, Any]]) -> Dict[str, Queue]:
+    """
+
+    Overrides anything in yaml.
 
     Returns a map of {queue_name: Queue}
     """
-    cfg: Dict[str, Dict[str, str]] = load_queue_configs(yaml_path=yaml_path)
+    input_output_queues: Dict[str, Queue] = {}
 
-    for queue, config in cfg.items():
-        cfg[queue] = interpolate_kafka_topics(config)
+    for q in configs:
+        qname = q["name"]
+        try:
+            input_output_queues[qname] = Queue(
+                name=qname,
+                value=q["value"],
+                schema=q["schema"],
+                type=q["type"],
+                consumer=q["consumer"],
+                producer=q["producer"],
+            )
+        except KeyError:
+            logger.warning(f"Queue '{qname}' not found in configuraiton")
+    return input_output_queues
 
-    return queues_from_dict(cfg)
+
+def available_queues(yaml_path: str) -> Dict[str, Queue]:
+    """returns a mapping of all the queues defined in configuration
+    useful for utilizies that might want to work with all queues, such as a healthcheck
+    """
+    cfg = load_yaml(yaml_path)
+
+    for queue_config in cfg["queues"]:
+        queue_config = interpolate_kafka_topics(queue_config)
+    cfg = apply_defaults(cfg)
+
+    return config_to_queue_map(cfg["queues"])
 
 
 def interpolate_kafka_topics(cfg: Dict[str, str]) -> Dict[str, str]:
@@ -92,44 +160,3 @@ def interpolate_kafka_topics(cfg: Dict[str, str]) -> Dict[str, str]:
         _t = Template(cfg["value"])
         cfg["value"] = _t.render(env=kafka_env)
     return cfg
-
-
-def available_queues(yaml_path: str) -> Dict[str, Queue]:
-    """returns a mapping of all the queues defined in configuration
-    useful for utilizies that might want to work with all queues, such as a healthcheck
-    """
-    cfg = load_queue_configs(yaml_path)
-
-    for queue, config in cfg.items():
-        cfg[queue] = interpolate_kafka_topics(config)
-
-    return queues_from_dict(cfg)
-
-
-def queues_from_dict(config: dict[str, Any]) -> Dict[str, Queue]:
-    """loads config from user provided dictionary.
-
-    Overrides anything in yaml.
-
-    Returns a map of {queue_name: Queue}
-    """
-
-    # put all queues configs into a list
-    queue_list = [v for k, v in config.items()]
-    for_default_check = {"queues": queue_list}
-    config = apply_defaults(for_default_check)
-    input_output_queues: Dict[str, Queue] = {}
-
-    for qname, config in config.items():
-        try:
-            input_output_queues[qname] = Queue(
-                name=qname,
-                value=config["value"],
-                schema=config["schema"],
-                type=config["type"],
-                consumer=config["consumer"],
-                producer=config["producer"],
-            )
-        except KeyError:
-            logger.warning(f"Queue '{qname}' not found in configuraiton")
-    return input_output_queues

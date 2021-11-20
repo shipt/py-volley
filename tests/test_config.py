@@ -9,7 +9,7 @@ from volley.queues import (
     Queue,
     available_queues,
     import_module_from_string,
-    load_queue_configs,
+    interpolate_kafka_topics,
     queues_from_dict,
     queues_from_yaml,
 )
@@ -29,6 +29,8 @@ def test_queues_from_yaml() -> None:
     for qname, queue in queues.items():
         assert isinstance(queue, Queue)
         assert qname == queue.name
+        if queue.type == "kafka":
+            assert "{{ env  }}" not in queue.value
 
 
 def test_queues_from_dict(config_dict: dict[str, dict[str, str]]) -> None:
@@ -51,3 +53,11 @@ def test_import_module_from_string() -> None:
 
     assert issubclass(class_module, BaseModel)
     assert isinstance(instance, QueueMessage)
+
+
+def test_interpolate_kafka_topics() -> None:
+    templated = "{{ env }}.kafka.input"
+    cfg = {"type": "kafka", "value": templated}
+    interpolated = interpolate_kafka_topics(cfg)
+
+    assert interpolated["value"] == "localhost.kafka.input"

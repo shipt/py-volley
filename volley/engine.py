@@ -50,6 +50,7 @@ class Engine:
     dlq_enabled: bool = field(init=False, default=False)
 
     queue_config: Optional[Dict[str, Any]] = None
+    yaml_config_path: str = "./volley_config.yml"
 
     def __post_init__(self) -> None:
 
@@ -57,7 +58,10 @@ class Engine:
         if self.queue_config:
             self.queue_map = queues_from_dict(self.queue_config)
         else:
-            self.queue_map: Dict[str, Queue] = queues_from_yaml(queues=[self.input_queue] + self.output_queues)
+            self.queue_map: Dict[str, Queue] = queues_from_yaml(
+                queues=[self.input_queue] + self.output_queues,
+                yaml_path=self.yaml_config_path,
+            )
 
         if DLQ_NAME in self.queue_map:
             self.dlq_enabled = True

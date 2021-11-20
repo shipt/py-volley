@@ -12,7 +12,8 @@ from volley.queues import Queue, available_queues
 
 
 def main() -> None:
-    queues: Dict[str, Queue] = available_queues()
+    """produces example data to a topic. mimics a data producer external to Volley"""
+    queues: Dict[str, Queue] = available_queues("./example/volley_config.yml")
     input_topic = queues["input-queue"].value
     logger.info(f"{input_topic=}")
     p = KafkaProducer()

@@ -12,11 +12,12 @@ from volley.queues import Queue, available_queues
 
 POLL_TIMEOUT = 30
 
+queues: Dict[str, Queue] = available_queues("./example/volley_config.yml")
+
 
 def test_end_to_end() -> None:  # noqa
     """good data should make it all the way through app"""
     # get name of the input topic
-    queues: Dict[str, Queue] = available_queues()
     produce_topic = queues["input-queue"].value
     logger.info(f"{produce_topic=}")
     p = KafkaProducer()
@@ -75,7 +76,6 @@ def test_dead_letter_queue() -> None:
     """publish bad data to input queue
     it should cause schema violation and end up on DLQ
     """
-    queues: Dict[str, Queue] = available_queues()
     produce_topic = queues["input-queue"].value
     logger.info(f"{produce_topic=}")
     p = KafkaProducer()

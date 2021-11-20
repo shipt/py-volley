@@ -71,7 +71,7 @@ queue_config = {
 engine = Engine(
   input_queue="input-queue",
   output_queues=["output-queue"],
-  dead_letter_queue="dead-letter-queue,
+  dead_letter_queue="dead-letter-queue",
   queue_config=queue_config
 )
 

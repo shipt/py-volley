@@ -24,17 +24,16 @@ def load_yaml(file_path: Path) -> Dict[str, Any]:
 
 def load_client_config(yaml_path: str) -> Dict[str, List[Dict[str, str]]]:
     """attemps to load the client provided config yaml
-    falls back to the default_config file.
-    #TODO: get rid of this. for testing we should just provide a config file
+
+    raises FileNotFoundError
     """
     yaml_cfg = Path(yaml_path)
     cfg: Dict[str, List[Dict[str, str]]] = {}
     try:
         cfg = load_yaml(yaml_cfg)
     except FileNotFoundError:
-        logger.info(f"file {yaml_cfg} not found - falling back to default for testing")
-        _cfg = Path(__file__).parent.resolve().joinpath("default_config.yml")
-        cfg = load_yaml(_cfg)
+        logger.error(f"file {yaml_cfg} not found - falling back to default for testing")
+        raise
     return cfg
 
 

@@ -9,7 +9,7 @@ from pydantic import ValidationError
 from volley.config import METRICS_ENABLED, METRICS_PORT, import_module_from_string
 from volley.data_models import ComponentMessage, ComponentMessageType, QueueMessage
 from volley.logging import logger
-from volley.queues import ConnectionType, Queue, queues_from_yaml
+from volley.queues import ConnectionType, Queue, queues_from_dict, queues_from_yaml
 from volley.util import GracefulKiller
 
 # enables mocking the infinite loop to finite
@@ -28,10 +28,10 @@ def load_schema_class(q: Queue) -> Any:
     """loads the schema for a queue from config
     "dict" is an acceptable schema
     """
-    if q.model_schema in ["dict"]:
+    if q.schema in ["dict"]:
         return dict
     else:
-        return import_module_from_string(q.model_schema)
+        return import_module_from_string(q.schema)
 
 
 @dataclass
@@ -49,9 +49,15 @@ class Engine:
     # set in post_init
     dlq_enabled: bool = field(init=False, default=False)
 
+    queue_config: Optional[Dict[str, Any]] = None
+
     def __post_init__(self) -> None:
 
-        self.queue_map: Dict[str, Queue] = queues_from_yaml(queues=[self.input_queue] + self.output_queues)
+        # if user provided config, use it
+        if self.queue_config:
+            self.queue_map = queues_from_dict(self.queue_config)
+        else:
+            self.queue_map: Dict[str, Queue] = queues_from_yaml(queues=[self.input_queue] + self.output_queues)
 
         if DLQ_NAME not in self.queue_map:
             # if DLQ was not explicitly provided as an output from the wrapped function
@@ -118,7 +124,7 @@ class Engine:
                     )
                     if not self.dlq_enabled:
                         outputs = None
-                        logger.error("DLQ not configured. Skipping message")
+                        logger.error("DLQ not configured. Processing will fail")
                     else:
                         outputs = [(DLQ_NAME, ComponentMessage.parse_obj(in_message.message))]
 

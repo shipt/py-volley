@@ -46,15 +46,18 @@ def load_queue_configs() -> Dict[str, Dict[str, str]]:
 
     falls back to global configurations when client does not provide them
     """
-    client_cfg = load_client_config()
-    global_configs = load_yaml(GLOBALS)
+    client_cfg: Dict[str, List[Dict[str, str]]] = load_client_config()
+    return apply_defaults(client_cfg)
 
+
+def apply_defaults(config: Dict[str, List[Dict[str, str]]]) -> Dict[str, Dict[str, str]]:
+    global_configs = load_yaml(GLOBALS)
     # handle default fallbacks
     global_connectors = global_configs["connectors"]
     default_queue_schema = global_configs["schemas"]["default"]
 
     queue_dict: Dict[str, Dict[str, str]] = {}
-    for q in client_cfg["queues"]:
+    for q in config["queues"]:
         # for each defined queue, validate there is a consumer & producer defined
         # or fallback to the global default
         q_type = q["type"]

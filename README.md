@@ -46,6 +46,7 @@ Below is a basic example that:
 2) evaluates the message from the queue
 3) publishes a message to `output-queue` (also kafka topic)
 4) Provides a path to a pydantic model that provides schema validation to both inputs and outputs.
+5) Configures a dead-letter queue for any incoming messages that violate the specified schema.
 
 ```python
 from typing import List, Tuple
@@ -55,20 +56,25 @@ from volley.data_models import ComponentMessage
 
 queue_config = {
     "input-queue": {
-        "value": "stg.ds-marketplace.v1.my_kafka_topic_input",
-        "type": "kafka",
-        "schema": "example.data_models.InputMessage",  # for input validation
+      "value": "stg.kafka.myapp.input",
+      "type": "kafka",
+      "schema": "example.data_models.InputMessage",  # for input validation
     },
     "output-queue": {
-        "value": "stg.ds-marketplace.v1.my_kafka_topic_output",
-        "type": "kafka",
-        "schema": "example.data_models.OutputMessage",  # for output validation
+      "value": "stg.ds-marketplace.v1.my_kafka_topic_output",
+      "type": "kafka",
+      "schema": "example.data_models.OutputMessage",  # for output validation
     },
+    "dead-letter-queue": {
+      "value": "stg.kafka.myapp.dlq",
+      "type": "kafka"
+    }
 }
 
 engine = Engine(
   input_queue="input-queue",
   output_queues=["output-queue"],
+  dead_letter_queue="dead-letter-queue,
   queue_config=queue_config
 )
 

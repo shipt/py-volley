@@ -1,5 +1,5 @@
 import json
-from typing import List, Tuple
+from typing import Any, Callable, Generator, List, Tuple
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
@@ -57,3 +57,25 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
 
     # must not raise any exceptions
     hello_world()
+
+
+@patch("volley.engine.RUN_ONCE", True)
+@patch("volley.engine.METRICS_ENABLED", False)
+@patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
+@patch("volley.connectors.kafka.KProducer", MagicMock())
+@patch("volley.connectors.kafka.KConsumer")
+def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]]) -> None:
+    from example.data_models import InputMessage
+
+    data = InputMessage.schema()["examples"][0]
+    msg = json.dumps(data).encode("utf-8")
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
+    input_queue = "input-queue"
+    output_queues = list(config_dict.keys())
+    eng = Engine(input_queue=input_queue, output_queues=output_queues, queue_config=config_dict)
+
+    @eng.stream_app
+    def func(*args: Any) -> None:
+        return None
+
+    func()

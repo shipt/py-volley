@@ -6,7 +6,6 @@ services:
             - REDIS_HOST=redis
             - REDIS_PORT=6379
             - KAFKA_BROKERS=kafka:29092
-            - VOLLEY_CONFIG=./example/volley_config.yml
         build:
             context: .
             dockerfile: Dockerfile
@@ -29,7 +28,6 @@ services:
             - REDIS_HOST=redis
             - REDIS_PORT=6379
             - KAFKA_BROKERS=kafka:29092
-            - VOLLEY_CONFIG=./example/volley_config.yml
         build:
             target: dev
             context: .
@@ -54,7 +52,6 @@ services:
             - REDIS_HOST=redis
             - REDIS_PORT=6379
             - KAFKA_BROKERS=kafka:29092
-            - VOLLEY_CONFIG=./example/volley_config.yml
         build:
             target: dev
             context: .
@@ -78,7 +75,6 @@ services:
             - REDIS_HOST=redis
             - REDIS_PORT=6379
             - KAFKA_BROKERS=kafka:29092
-            - VOLLEY_CONFIG=./example/volley_config.yml
         build:
             target: dev
             context: .
@@ -102,7 +98,6 @@ services:
             - REDIS_HOST=redis
             - REDIS_PORT=6379
             - KAFKA_BROKERS=kafka:29092
-            - VOLLEY_CONFIG=./example/volley_config.yml
         build:
             target: dev
             context: .

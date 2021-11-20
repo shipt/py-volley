@@ -24,16 +24,6 @@ DLQ_NAME = "dead-letter-queue"
 POLL_INTERVAL = 1
 
 
-def load_schema_class(q: Queue) -> Any:
-    """loads the schema for a queue from config
-    "dict" is an acceptable schema
-    """
-    if q.schema in ["dict"]:
-        return dict
-    else:
-        return import_module_from_string(q.schema)
-
-
 @dataclass
 class Engine:
     """initializes configuration for input and output workers"""

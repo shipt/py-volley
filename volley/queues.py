@@ -100,6 +100,9 @@ def available_queues() -> Dict[str, Queue]:
     """
     cfg = load_queue_configs()
 
+    for queue, config in cfg.items():
+        cfg[queue] = interpolate_kafka_topics(config)
+
     return queues_from_dict(cfg)
 
 

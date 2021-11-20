@@ -44,6 +44,7 @@ class Queue:
     model_class: Union[ComponentMessage, Dict[str, Any]] = field(init=False)
 
     def connect(self, con_type: ConnectionType) -> None:
+        """instantiate the connector class"""
         if con_type == ConnectionType.CONSUMER:
             _class = import_module_from_string(self.consumer)
             self.consumer_con = _class(queue_name=self.value)
@@ -54,13 +55,14 @@ class Queue:
             logger.error(f"{con_type=} is not valid")
 
     def init_schema(self) -> None:
+        """load the schema class"""
         if self.schema in ["dict"]:
             self.model_class = dict  # type: ignore
         else:
             self.model_class = import_module_from_string(self.schema)
 
 
-def yaml_to_dict_config(queues: List[str], yaml_path: str) -> Dict[str, List[dict[str, str]]]:
+def yaml_to_dict_config(yaml_path: str) -> Dict[str, List[dict[str, str]]]:
     """loads config from yaml then filters to those needed for specific implementation
 
     yaml config file is allowed to contain more configurations than needed
@@ -69,14 +71,14 @@ def yaml_to_dict_config(queues: List[str], yaml_path: str) -> Dict[str, List[dic
 
     out_configs: Dict[str, List[dict[str, str]]] = {"queues": []}
     for q_config in cfg["queues"]:
-        if q_config["name"] in queues:
-            q_config = interpolate_kafka_topics(q_config)
-            out_configs["queues"].append(q_config)
+        q_config = interpolate_kafka_topics(q_config)
+        out_configs["queues"].append(q_config)
 
-    return cfg
+    return out_configs
 
 
 def dict_to_config(config: dict[str, dict[str, str]]) -> dict[str, List[dict[str, str]]]:
+    """convert dict provided by user to common configuration schema"""
     # assign the name of the queue to the queue object
     for qname, _config in config.items():
         _config["name"] = qname
@@ -87,6 +89,7 @@ def dict_to_config(config: dict[str, dict[str, str]]) -> dict[str, List[dict[str
 
 
 def apply_defaults(config: Dict[str, List[Dict[str, str]]]) -> Dict[str, List[Dict[str, str]]]:
+    """when a config is not provided, apply the global default"""
     global_configs = load_yaml(GLOBALS)
     global_connectors = global_configs["connectors"]
     default_queue_schema = global_configs["schemas"]["default"]

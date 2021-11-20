@@ -47,7 +47,7 @@ def load_queue_configs() -> Dict[str, Dict[str, str]]:
     falls back to global configurations when client does not provide them
     """
     client_cfg: Dict[str, List[Dict[str, str]]] = load_client_config()
-    return apply_defaults(client_cfg)
+    return {k["name"]: k for k in client_cfg["queues"]}
 
 
 def apply_defaults(config: Dict[str, List[Dict[str, str]]]) -> Dict[str, Dict[str, str]]:

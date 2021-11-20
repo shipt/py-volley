@@ -7,6 +7,7 @@ from volley.logging import logger
 eng = Engine(
     input_queue="comp_1",
     output_queues=["test_queue_plugin"],
+    yaml_config_path="./example/volley_config.yml",
 )
 
 

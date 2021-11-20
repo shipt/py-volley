@@ -14,14 +14,18 @@ class KafkaMessage:
 
     _error_msg = "MOCK ERORR"
 
-    def __init__(self, error: bool = False) -> None:
+    def __init__(self, error: bool = False, msg: bytes = None) -> None:
         self.is_error = error
+        if msg is not None:
+            self._msg = msg
+        else:
+            self._msg = b'{"random": "message"}'
 
     def offset(self) -> int:
         return 123
 
     def value(self) -> bytes:
-        return b'{"random": "message"}'
+        return self._msg
 
     def error(self) -> Optional[str]:
         if self.is_error:

@@ -59,7 +59,10 @@ class Engine:
         else:
             self.queue_map: Dict[str, Queue] = queues_from_yaml(queues=[self.input_queue] + self.output_queues)
 
-        if DLQ_NAME not in self.queue_map:
+        if DLQ_NAME in self.queue_map:
+            self.dlq_enabled = True
+            self.output_queues.append(DLQ_NAME)
+        else:
             # if DLQ was not explicitly provided as an output from the wrapped function
             # try to add it to the queue_map anyway
             try:

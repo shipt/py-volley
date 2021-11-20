@@ -1,5 +1,5 @@
 import json
-from typing import Any, Callable, Generator, List, Tuple
+from typing import Any, List, Tuple
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 

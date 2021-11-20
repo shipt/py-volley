@@ -9,7 +9,14 @@ from pydantic import ValidationError
 from volley.config import METRICS_ENABLED, METRICS_PORT
 from volley.data_models import ComponentMessage, ComponentMessageType, QueueMessage
 from volley.logging import logger
-from volley.queues import ConnectionType, Queue, queues_from_dict, queues_from_yaml
+from volley.queues import (
+    ConnectionType,
+    Queue,
+    apply_defaults,
+    config_to_queue_map,
+    dict_to_config,
+    yaml_to_dict_config,
+)
 from volley.util import GracefulKiller
 
 # enables mocking the infinite loop to finite
@@ -20,7 +27,6 @@ PROCESS_TIME = Summary("process_time_seconds", "Time spent running a process", [
 MESSAGE_CONSUMED = Counter("messages_consumed_count", "Messages consumed from input", ["status"])  # success or fail
 MESSAGES_PRODUCED = Counter("messages_produced_count", "Messages produced to output destination(s)", ["destination"])
 
-DLQ_NAME = "dead-letter-queue"
 POLL_INTERVAL = 1
 
 
@@ -30,49 +36,37 @@ class Engine:
 
     input_queue: str
     output_queues: List[str]
+    dead_letter_queue: Optional[str] = None
 
     killer: GracefulKiller = GracefulKiller()
 
     # set in post_init
     queue_map: Dict[str, Queue] = field(default_factory=dict)
 
-    # set in post_init
-    dlq_enabled: bool = field(init=False, default=False)
-
     queue_config: Optional[Dict[str, Any]] = None
     yaml_config_path: str = "./volley_config.yml"
 
     def __post_init__(self) -> None:
+        self._construct_queues()
 
+    def _construct_queues(self) -> None:
+        """loads configurations and connectors"""
         # if user provided config, use it
         if self.queue_config:
-            self.queue_map = queues_from_dict(self.queue_config)
+            cfg: dict[str, List[dict[str, str]]] = dict_to_config(self.queue_config)
         else:
-            self.queue_map: Dict[str, Queue] = queues_from_yaml(
-                queues=[self.input_queue] + self.output_queues,
-                yaml_path=self.yaml_config_path,
-            )
+            logger.info(f"loading configuration from {self.yaml_config_path}")
 
-        if DLQ_NAME in self.queue_map:
-            self.dlq_enabled = True
-            self.output_queues.append(DLQ_NAME)
-        else:
-            # if DLQ was not explicitly provided as an output from the wrapped function
-            # try to add it to the queue_map anyway
-            try:
-                # TODO: this may no longer be reachable code...
-                self.queue_map.update(queues_from_yaml([DLQ_NAME], yaml_path=self.yaml_config_path))
-                self.output_queues.append(DLQ_NAME)
-                self.dlq_enabled = True
-            except Exception:
-                self.dlq_enabled = False
-                # TODO: there should be a more graceful default behavior for schema violations and retries
-                logger.warning(
-                    f"""
-                Dead-letter-queue config not found. Messages with schema violations crash the application.
-                Add a queue named "{DLQ_NAME}" to volley_config.yml
-                """
-                )
+            # handle DLQ
+            if self.dead_letter_queue is not None:
+                self.output_queues.append(self.dead_letter_queue)
+            else:
+                logger.warning("DLQ not provided. Application will crash on schema violations")
+
+            cfg = yaml_to_dict_config(queues=[self.input_queue] + self.output_queues, yaml_path=self.yaml_config_path)
+        cfg = apply_defaults(cfg)
+        self.queue_map = config_to_queue_map(cfg["queues"])
+        logger.info(f"Queues initialized: {list(self.queue_map.keys())}")
 
     def stream_app(  # noqa: C901
         self, func: Callable[[Union[ComponentMessageType, Any]], Optional[List[Tuple[str, Any]]]]
@@ -120,11 +114,11 @@ class Engine:
                         f"""
                         Error validating message from {input_con.value}"""
                     )
-                    if not self.dlq_enabled:
-                        outputs = None
+                    if self.dead_letter_queue not in self.queue_map:
                         logger.error("DLQ not configured. Processing will fail")
+                        raise NotImplementedError
                     else:
-                        outputs = [(DLQ_NAME, ComponentMessage.parse_obj(in_message.message))]
+                        outputs = [(self.dead_letter_queue, ComponentMessage.parse_obj(in_message.message))]
 
                 if not outputs:
                     _start_main = time.time()

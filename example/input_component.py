@@ -8,6 +8,7 @@ eng = Engine(
     input_queue="input-queue",
     output_queues=["comp_1"],
     yaml_config_path="./example/volley_config.yml",
+    dead_letter_queue="dead-letter-queue",
 )
 
 

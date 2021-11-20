@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from prometheus_client import Counter, Summary, start_http_server
 from pydantic import ValidationError
 
-from volley.config import METRICS_ENABLED, METRICS_PORT, import_module_from_string
+from volley.config import METRICS_ENABLED, METRICS_PORT
 from volley.data_models import ComponentMessage, ComponentMessageType, QueueMessage
 from volley.logging import logger
 from volley.queues import ConnectionType, Queue, queues_from_dict, queues_from_yaml
@@ -60,7 +60,8 @@ class Engine:
             # if DLQ was not explicitly provided as an output from the wrapped function
             # try to add it to the queue_map anyway
             try:
-                self.queue_map.update(queues_from_yaml([DLQ_NAME]))
+                # TODO: this may no longer be reachable code...
+                self.queue_map.update(queues_from_yaml([DLQ_NAME], yaml_path=self.yaml_config_path))
                 self.output_queues.append(DLQ_NAME)
                 self.dlq_enabled = True
             except Exception:

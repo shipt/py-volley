@@ -9,7 +9,6 @@ from yaml import Loader
 from volley.logging import logger
 
 GLOBALS = Path(__file__).parent.resolve().joinpath("global.yml")
-CFG_FILE = Path(os.getenv("VOLLEY_CONFIG", "./volley_config.yml"))
 
 APP_ENV = os.getenv("APP_ENV", "localhost")
 METRICS_ENABLED = True
@@ -23,22 +22,23 @@ def load_yaml(file_path: Path) -> Dict[str, Any]:
     return cfg
 
 
-def load_client_config() -> Dict[str, List[Dict[str, str]]]:
+def load_client_config(yaml_path: str) -> Dict[str, List[Dict[str, str]]]:
     """attemps to load the client provided config yaml
     falls back to the default_config file.
     #TODO: get rid of this. for testing we should just provide a config file
     """
+    yaml_cfg = Path(yaml_path)
     cfg: Dict[str, List[Dict[str, str]]] = {}
     try:
-        cfg = load_yaml(CFG_FILE)
+        cfg = load_yaml(yaml_cfg)
     except FileNotFoundError:
-        logger.info(f"file {CFG_FILE} not found - falling back to default for testing")
+        logger.info(f"file {yaml_cfg} not found - falling back to default for testing")
         _cfg = Path(__file__).parent.resolve().joinpath("default_config.yml")
         cfg = load_yaml(_cfg)
     return cfg
 
 
-def load_queue_configs() -> Dict[str, Dict[str, str]]:
+def load_queue_configs(yaml_path: str) -> Dict[str, Dict[str, str]]:
     """loads client configurations for:
         - queues
         - connectors
@@ -46,7 +46,7 @@ def load_queue_configs() -> Dict[str, Dict[str, str]]:
 
     falls back to global configurations when client does not provide them
     """
-    client_cfg: Dict[str, List[Dict[str, str]]] = load_client_config()
+    client_cfg: Dict[str, List[Dict[str, str]]] = load_client_config(yaml_path=yaml_path)
     return {k["name"]: k for k in client_cfg["queues"]}
 
 

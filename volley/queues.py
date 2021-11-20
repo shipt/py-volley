@@ -65,12 +65,12 @@ class Queue:
             self.model_class = import_module_from_string(self.schema)
 
 
-def queues_from_yaml(queues: List[str]) -> Dict[str, Queue]:
+def queues_from_yaml(queues: List[str], yaml_path: str) -> Dict[str, Queue]:
     """loads config from yaml then filters to queues needed for specific implementation
 
     Returns a map of {queue_name: Queue}
     """
-    cfg: Dict[str, Dict[str, str]] = load_queue_configs()
+    cfg: Dict[str, Dict[str, str]] = load_queue_configs(yaml_path=yaml_path)
 
     for queue, config in cfg.items():
         cfg[queue] = interpolate_kafka_topics(config)
@@ -94,11 +94,11 @@ def interpolate_kafka_topics(cfg: Dict[str, str]) -> Dict[str, str]:
     return cfg
 
 
-def available_queues() -> Dict[str, Queue]:
+def available_queues(yaml_path: str) -> Dict[str, Queue]:
     """returns a mapping of all the queues defined in configuration
     useful for utilizies that might want to work with all queues, such as a healthcheck
     """
-    cfg = load_queue_configs()
+    cfg = load_queue_configs(yaml_path)
 
     for queue, config in cfg.items():
         cfg[queue] = interpolate_kafka_topics(config)

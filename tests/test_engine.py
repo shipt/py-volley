@@ -5,9 +5,38 @@ from uuid import uuid4
 
 import pytest
 
+from example.data_models import InputMessage, OutputMessage
 from tests.test_connectors.test_kafka import KafkaMessage
 from volley.data_models import ComponentMessage
 from volley.engine import Engine
+
+
+@patch("volley.engine.RUN_ONCE", True)
+@patch("volley.engine.METRICS_ENABLED", False)
+@patch("volley.connectors.kafka.KProducer")
+@patch("volley.connectors.kafka.KConsumer")
+def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:
+    """test a stubbed component that does not produce messages
+    passes so long as no exception is raised
+    """
+
+    eng = Engine(
+        input_queue="input-queue",
+        output_queues=["output-queue"],
+        yaml_config_path="./example/volley_config.yml",
+        dead_letter_queue="dead-letter-queue",
+    )
+    input_msg = json.dumps(InputMessage.schema()["examples"][0]).encode("utf-8")
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=input_msg)
+
+    output_msg = OutputMessage.parse_obj(OutputMessage.schema()["examples"][0])
+    # component returns "just none"
+
+    @eng.stream_app
+    def func(*args: ComponentMessage) -> List[Tuple[str, OutputMessage]]:
+        return [("output-queue", output_msg)]
+
+    func()
 
 
 @patch("volley.engine.RUN_ONCE", True)
@@ -18,13 +47,15 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
     """test a stubbed component that does not produce messages
     passes so long as no exception is raised
     """
+
     eng = Engine(
         input_queue="input-topic",
         output_queues=["output-topic"],
         yaml_config_path="./example/volley_config.yml",
         dead_letter_queue="dead-letter-queue",
     )
-    mock_consumer.return_value.poll = lambda x: KafkaMessage()
+    msg = json.dumps(InputMessage.schema()["examples"][0]).encode("utf-8")
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
 
     # component returns "just none"
     @eng.stream_app

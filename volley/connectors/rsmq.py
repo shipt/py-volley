@@ -1,4 +1,3 @@
-import json
 import os
 import time
 from dataclasses import dataclass
@@ -30,7 +29,7 @@ class RSMQConsumer(Consumer):
         _duration = time.time() - _start
         PROCESS_TIME.labels("read").observe(_duration)
         if isinstance(msg, dict):
-            return QueueMessage(message_id=msg["id"], message=json.loads(msg["message"]))
+            return QueueMessage(message_id=msg["id"], message=msg["message"])
         else:
             return None
 
@@ -55,12 +54,11 @@ class RSMQProducer(Producer):
         self.queue = RedisSMQ(host=self.host, qname=self.queue_name)
         self.queue.createQueue(delay=0).vt(60).exceptions(False).execute()
 
-    def produce(self, queue_name: str, message: QueueMessage) -> bool:
-        m = message.message
+    def produce(self, queue_name: str, message: bytes) -> bool:
+        m = message
         logger.info(f"queue_name - {queue_name}")
-        msg = json.dumps(m, default=str)
         _start = time.time()
-        msg_id: str = self.queue.sendMessage(qname=queue_name, message=msg, encode=True).execute()
+        msg_id: str = self.queue.sendMessage(qname=queue_name, message=m, encode=False).execute()
         _duration = time.time() - _start
         PROCESS_TIME.labels("write").observe(_duration)
         return bool(msg_id)

@@ -7,3 +7,6 @@ connectors:
     producer: volley.connectors.rsmq.RSMQProducer
 schemas:
   default: volley.data_models.ComponentMessage
+serializers:
+  default: volley.serializers.json_serializer.JsonSerialization
+  json: volley.serializers.json_serializer.JsonSerialization

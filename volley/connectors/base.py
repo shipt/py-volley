@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from typing import Any, Optional
 
 from volley.data_models import QueueMessage
-from volley.logging import logger
 
 
 @dataclass  # type: ignore
@@ -39,8 +38,6 @@ class Producer(ABC):
     @abstractmethod
     def produce(self, queue_name: str, message: QueueMessage) -> bool:
         """publishes a message to any queue"""
-        logger.info(f"producing to: {queue_name=}")
-        return True
 
     def shutdown(self) -> None:
         """perform some action when shutting down the application"""

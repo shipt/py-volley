@@ -1,7 +1,9 @@
 import json
-from typing import List, Tuple
+from typing import Any, List, Tuple
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
+
+import pytest
 
 from tests.test_connectors.test_kafka import KafkaMessage
 from volley.data_models import ComponentMessage
@@ -16,7 +18,12 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
     """test a stubbed component that does not produce messages
     passes so long as no exception is raised
     """
-    eng = Engine(input_queue="input-queue", output_queues=["output-queue"])
+    eng = Engine(
+        input_queue="input-queue",
+        output_queues=["output-queue"],
+        yaml_config_path="./example/volley_config.yml",
+        dead_letter_queue="dead-letter-queue",
+    )
     mock_consumer.return_value.poll = lambda x: KafkaMessage()
 
     # component returns "just none"
@@ -36,6 +43,31 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
 
 @patch("volley.engine.RUN_ONCE", True)
 @patch("volley.engine.METRICS_ENABLED", False)
+@patch("volley.connectors.kafka.KProducer")
+@patch("volley.connectors.kafka.KConsumer")
+def test_dlq_not_implemented(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:
+    """test a stubbed component that does not produce messages
+    passes so long as no exception is raised
+    """
+    eng = Engine(
+        input_queue="input-queue",
+        output_queues=["output-queue"],
+        yaml_config_path="./example/volley_config.yml",
+        dead_letter_queue=None,
+    )
+    mock_consumer.return_value.poll = lambda x: KafkaMessage()
+
+    # component returns "just none"
+    @eng.stream_app
+    def func(*args: ComponentMessage) -> None:
+        return None
+
+    with pytest.raises(NotImplementedError):
+        func()
+
+
+@patch("volley.engine.RUN_ONCE", True)
+@patch("volley.engine.METRICS_ENABLED", False)
 @patch("volley.connectors.rsmq.RedisSMQ")
 def test_rsmq_component(mock_rsmq: MagicMock) -> None:
     m = {"uuid": str(uuid4)}
@@ -44,9 +76,15 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
         "message": json.dumps(m),
     }
     mock_rsmq.return_value.receiveMessage.return_value.exceptions.return_value.execute = lambda: rsmq_msg
-
     mock_rsmq.return_value.sendMessage.return_value.execute = lambda: True
-    eng = Engine(input_queue="comp_1", output_queues=["comp_1"])
+    cfg = {
+        "comp_1": {
+            "name": "comp_1",
+            "value": "random_val",
+            "type": "rsmq",
+        }
+    }
+    eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg)
 
     @eng.stream_app
     def hello_world(msg: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
@@ -57,3 +95,25 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
 
     # must not raise any exceptions
     hello_world()
+
+
+@patch("volley.engine.RUN_ONCE", True)
+@patch("volley.engine.METRICS_ENABLED", False)
+@patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
+@patch("volley.connectors.kafka.KProducer", MagicMock())
+@patch("volley.connectors.kafka.KConsumer")
+def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]]) -> None:
+    from example.data_models import InputMessage
+
+    data = InputMessage.schema()["examples"][0]
+    msg = json.dumps(data).encode("utf-8")
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
+    input_queue = "input-queue"
+    output_queues = list(config_dict.keys())
+    eng = Engine(input_queue=input_queue, output_queues=output_queues, queue_config=config_dict)
+
+    @eng.stream_app
+    def func(*args: Any) -> None:
+        return None
+
+    func()

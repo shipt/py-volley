@@ -35,7 +35,7 @@ class KafkaMessage:
 
 def test_kafka_producer(mock_kafka_producer: Producer, bundle_message: QueueMessage) -> None:
 
-    assert mock_kafka_producer.produce(queue_name="test", message=bundle_message)
+    assert mock_kafka_producer.produce(queue_name="test", message=bundle_message.json().encode("utf-8"))
 
 
 def test_kafka_consumer_fail(mock_kafka_consumer: Consumer) -> None:

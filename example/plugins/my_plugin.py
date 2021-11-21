@@ -74,7 +74,7 @@ class MyPGProducer(Producer):
         metadata_obj.create_all(self.engine)
         self.session = Session(self.engine)
 
-    def produce(self, queue_name: str, message: QueueMessage) -> bool:
+    def produce(self, queue_name: str, message: bytes) -> bool:
         logger.info(f"produced message to: {queue_name=} - message={message.message}")
         vals = {
             "request_id": message.message["request_id"],  # type: ignore

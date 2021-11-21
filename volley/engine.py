@@ -82,12 +82,10 @@ class Engine:
 
             # intialize connections to each queue, and schemas
             self.queue_map[self.input_queue].connect(con_type=ConnectionType.CONSUMER)
-            self.queue_map[self.input_queue].init_schema()
             # we only want to connect to queues passed in to Engine()
             # there can be more queues than we need defined in the configuration yaml
             for out_q_name in self.output_queues:
                 self.queue_map[out_q_name].connect(con_type=ConnectionType.PRODUCER)
-                self.queue_map[out_q_name].init_schema()
 
             # queue connections were setup above. now we can start to interact with the queues
             # alias for input connection readability
@@ -107,10 +105,15 @@ class Engine:
                 # every queue has a schema - validate the data coming off the queue
                 # we are using pydantic to validate the data.
                 try:
-                    deserialized = input_con.serializer.deserialize(in_message.message)
-                    serialized_message: Union[ComponentMessageType, Dict[Any, Any]] = input_con.model_class(
-                        **deserialized
-                    )  # type: ignore
+                    if input_con.serializer is not None:
+                        deserialized = input_con.serializer.deserialize(in_message.message)
+                    else:
+                        # serializer can optionally be built into a connector
+                        # or for any reason, be disabled
+                        deserialized = in_message.message
+
+                    # validate data meets the provided or default schema
+                    validated_message: Union[ComponentMessageType, Dict[Any, Any]] = input_con.schema(**deserialized)
                 except ValidationError:
                     logger.exception(
                         f"""
@@ -124,7 +127,7 @@ class Engine:
 
                 if not outputs:
                     _start_main = time.time()
-                    outputs = func(serialized_message)
+                    outputs = func(validated_message)
                     _fun_duration = time.time() - _start_main
                     PROCESS_TIME.labels("component").observe(_fun_duration)
 
@@ -146,7 +149,10 @@ class Engine:
 
                         try:
                             # serialize message
-                            serialized = out_queue.serializer.serialize(q_msg.message)
+                            if out_queue.serializer is None:
+                                serialized = q_msg.message
+                            else:
+                                serialized = out_queue.serializer.serialize(q_msg.message)
                             status = out_queue.producer_con.produce(queue_name=out_queue.value, message=serialized)
                             MESSAGES_PRODUCED.labels(destination=qname).inc()
                         except Exception:

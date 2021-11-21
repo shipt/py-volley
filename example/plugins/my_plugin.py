@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 
 from sqlalchemy import Column, Float, MetaData, String, Table, create_engine, text
 from sqlalchemy.dialects.postgresql import insert
@@ -74,11 +75,11 @@ class MyPGProducer(Producer):
         metadata_obj.create_all(self.engine)
         self.session = Session(self.engine)
 
-    def produce(self, queue_name: str, message: bytes) -> bool:
-        logger.info(f"produced message to: {queue_name=} - message={message.message}")
+    def produce(self, queue_name: str, message: dict[str, Any]) -> bool:
+        logger.info(f"produced message to: {queue_name=} - message={message}")
         vals = {
-            "request_id": message.message["request_id"],  # type: ignore
-            "max_plus_1": message.message["max_plus_1"],  # type: ignore
+            "request_id": message["request_id"],
+            "max_plus_1": message["max_plus_1"],
         }
         insert_stmt = insert(queue_table).values(**vals)
         with self.engine.begin() as c:

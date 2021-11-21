@@ -11,6 +11,7 @@ queues:
     value: q42
     type: postgres
     schema: volley.data_models.ComponentMessage
+    serializer: None
     producer: example.plugins.my_plugin.MyPGProducer
     consumer: example.plugins.my_plugin.MyPGConsumer
   - name: output-queue

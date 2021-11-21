@@ -8,6 +8,7 @@ from volley.config import APP_ENV, GLOBALS, import_module_from_string, load_yaml
 from volley.connectors.base import Consumer, Producer
 from volley.data_models import ComponentMessage
 from volley.logging import logger
+from volley.serializers.base import BaseSerialization
 
 
 class ConnectionType(Enum):
@@ -33,6 +34,8 @@ class Queue:
 
     consumer: str
     producer: str
+
+    serializer: BaseSerialization
 
     # initialized queue connection
     # these get initialized by calling connect()
@@ -93,7 +96,7 @@ def apply_defaults(config: Dict[str, List[Dict[str, str]]]) -> Dict[str, List[Di
     global_configs = load_yaml(GLOBALS)
     global_connectors = global_configs["connectors"]
     default_queue_schema = global_configs["schemas"]["default"]
-
+    default_serializer = global_configs["serializers"]["default"]
     # apply default queue configurations
     for queue in config["queues"]:
         # for each defined queue, validate there is a consumer & producer defined
@@ -107,6 +110,9 @@ def apply_defaults(config: Dict[str, List[Dict[str, str]]]) -> Dict[str, List[Di
         # handle data schema
         if "schema" not in queue:
             queue["schema"] = default_queue_schema
+
+        if "serializer" not in queue:
+            queue["serializer"] = default_serializer
 
     return config
 
@@ -130,6 +136,7 @@ def config_to_queue_map(configs: List[dict[str, Any]]) -> Dict[str, Queue]:
                 type=q["type"],
                 consumer=q["consumer"],
                 producer=q["producer"],
+                serializer=import_module_from_string(q["serializer"])(),
             )
         except KeyError:
             logger.warning(f"Queue '{qname}' not found in configuraiton")

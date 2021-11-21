@@ -11,8 +11,8 @@ def test_load_plugin(mock_eng: MagicMock, mock_sess: MagicMock) -> None:
     class_obj = import_module_from_string(module_str)
     assert issubclass(class_obj, Consumer)
 
-    pg_producer = class_obj(queue_name="test-queue")
-    assert isinstance(pg_producer, Consumer)
+    pg_consumer = class_obj(queue_name="test-queue")
+    assert isinstance(pg_consumer, Consumer)
 
     module_str = "example.plugins.my_plugin.MyPGProducer"
     class_obj = import_module_from_string(module_str)

@@ -36,7 +36,7 @@ class Producer(ABC):
     host: Optional[str] = None
 
     @abstractmethod
-    def produce(self, queue_name: str, message: QueueMessage) -> bool:
+    def produce(self, queue_name: str, message: bytes) -> bool:
         """publishes a message to any queue"""
 
     def shutdown(self) -> None:

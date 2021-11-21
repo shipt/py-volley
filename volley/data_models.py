@@ -1,4 +1,4 @@
-from typing import Any, Dict, TypeVar, Union
+from typing import Any, TypeVar
 
 from pydantic import BaseModel, Extra
 
@@ -17,7 +17,7 @@ class QueueMessage(BaseModel):
     """
 
     message_id: Any
-    message: Union[Dict[str, Any], ComponentMessage]
+    message: Any
 
 
 ComponentMessageType = TypeVar("ComponentMessageType", bound=ComponentMessage)

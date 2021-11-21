@@ -38,10 +38,12 @@ A component function takes in `input_object` of type: `ComponentMessage`, which 
 Components output a list of tuples, where the tuple is defined as `(<name_of_queue>, ComponentMessage)`.
  The returned component message type must agree with the type accepted by the queue you are publishing to.
 
-Below is an example that:
-1) consumes from input-queue
+Below is a basic example that:
+1) consumes from `input-queue` (a kafka topic).
 2) evaluates the message from the queue
-3) publishes a message to output-queue
+3) publishes a message to `output-queue` (also kafka topic)
+4) Provides a path to a pydantic model that provides schema validation to both inputs and outputs.
+5) Configures a dead-letter queue for any incoming messages that violate the specified schema.
 
 ```python
 from typing import List, Tuple
@@ -49,26 +51,45 @@ from typing import List, Tuple
 from volley.engine import Engine
 from volley.data_models import ComponentMessage
 
+queue_config = {
+    "input-queue": {
+      "value": "stg.kafka.myapp.input",
+      "type": "kafka",
+      "schema": "example.data_models.InputMessage",  # for input validation
+    },
+    "output-queue": {
+      "value": "stg.ds-marketplace.v1.my_kafka_topic_output",
+      "type": "kafka",
+      "schema": "example.data_models.OutputMessage",  # for output validation
+    },
+    "dead-letter-queue": {
+      "value": "stg.kafka.myapp.dlq",
+      "type": "kafka"
+    }
+}
+
 engine = Engine(
   input_queue="input-queue",
-  output_queues=["output-queue"]
+  output_queues=["output-queue"],
+  dead_letter_queue="dead-letter-queue",
+  queue_config=queue_config
 )
 
 @eng.stream_app
-def hello_world(msg: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
+def hello_world(msg: InputMessage) -> List[Tuple[str, OutputMessage]]:
   if msg.value > 0:
     out_value = "foo"
   else:
     out_value = "bar"
   
   out = ComponentMessage(hello=out_value)
-  
+
   return [("output-queue", out)]
 ```
 
-## Generic Example:
+## Another Example:
 
-Let's define three queues, `my_input`, `queue_a`, `queue_b` and assume `my_input` is a Kafka topic populated by some external service. Let's decide that `queue_a` is an RSMQ type and `queue_b` is a Postgres. We define these in `./volley_config.yml`. Queues have `names`, which is how we reference them, and `values`. The engine interacts with the queue using the `value` and components (developers) interact with queue using the `name`.
+By default Volley will read queue configuration from a specified yaml. Let's define three queues, `my_input`, `queue_a`, `queue_b` and assume `my_input` is a Kafka topic populated by some external service. Let's decide that `queue_a` is an RSMQ type and `queue_b` is a Postgres. We define these in `./volley_config.yml`. Queues have `names`, which is how we reference them, and `values`. The engine interacts with the queue using the `value` and components (developers) interact with queue using the `name`.
 
 Queues also have a schema. These are defined by subclassing `engine.data_models.ComponentMessage`. `ComponentMessage` are Pydantic models that accept extra attributes. This means if you do not provide a strictly subclass to a `ComponentMessage`, the message will get passed through to your component as key-value pairs from a `dict` of message on the queue, and constructed via `ComponentMessage(**message)`. The location of the data model for a queue is defined as the value of the `schema` attribute in the config file.
 

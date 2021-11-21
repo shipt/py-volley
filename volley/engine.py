@@ -107,9 +107,10 @@ class Engine:
                 # every queue has a schema - validate the data coming off the queue
                 # we are using pydantic to validate the data.
                 try:
-                    serialized_message: Union[ComponentMessageType, Dict[Any, Any]] = self.queue_map[  # type: ignore
-                        self.input_queue
-                    ].model_class(**in_message.message)
+                    deserialized = input_con.serializer.deserialize(in_message.message)
+                    serialized_message: Union[ComponentMessageType, Dict[Any, Any]] = input_con.model_class(
+                        **deserialized
+                    )  # type: ignore
                 except ValidationError:
                     logger.exception(
                         f"""
@@ -144,7 +145,9 @@ class Engine:
                             logger.exception(f"{qname} is not defined in this component's output queue list")
 
                         try:
-                            status = out_queue.producer_con.produce(queue_name=out_queue.value, message=q_msg)
+                            # serialize message
+                            serialized = out_queue.serializer.serialize(q_msg.message)
+                            status = out_queue.producer_con.produce(queue_name=out_queue.value, message=serialized)
                             MESSAGES_PRODUCED.labels(destination=qname).inc()
                         except Exception:
                             logger.exception("failed producing message")

@@ -3,7 +3,12 @@ from json import JSONDecodeError
 
 import pytest
 
+from volley.serializers.base import BaseSerialization
 from volley.serializers.json_serializer import JsonSerialization
+
+
+def test_protocol() -> None:
+    assert issubclass(JsonSerialization, BaseSerialization)
 
 
 def test_success() -> None:

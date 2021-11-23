@@ -30,8 +30,9 @@ class KafkaConsumer(Consumer):
             try:
                 component_name = sys.argv[1]
                 consumer_group = f"{APP_ENV}_{component_name}"
-            except KeyError:
+            except Exception:
                 logger.exception("Kafka Consumer group not specified")
+                raise
 
         logger.info(f"Kafka {consumer_group=}")
         self.consumer_group: str = consumer_group

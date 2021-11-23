@@ -1,9 +1,11 @@
 import json
+import logging
 from typing import Any, List, Tuple
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
+from pytest import LogCaptureFixture
 
 from example.data_models import InputMessage, OutputMessage
 from tests.test_connectors.test_kafka import KafkaMessage
@@ -157,7 +159,9 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[st
 @patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
 @patch("volley.connectors.kafka.KProducer", MagicMock())
 @patch("volley.connectors.kafka.KConsumer")
-def test_null_serializer_fail(mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]]) -> None:
+def test_null_serializer_fail(
+    mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]], caplog: LogCaptureFixture
+) -> None:
     """disable serialization for a message off input-queue"""
     config_dict["input-queue"]["serializer"] = "disabled"
 
@@ -177,10 +181,13 @@ def test_null_serializer_fail(mock_consumer: MagicMock, config_dict: dict[str, d
     def func(*args: Any) -> None:
         return None
 
-    # model on component expects data to be serialized to dict
-    # we disabled serializer though, so it will be bytes
-    # with pytest.raises(TypeError):
-    func()
+    # serializer disable, schema validation will fail
+    # but messages will route to DLQ with exceptions handles
+    with caplog.at_level(logging.WARNING):
+        func()
+    # should only be one warning log - for the DLQ
+    assert len(caplog.records) == 1
+    assert caplog.records[0].levelname == "WARNING"
 
     # do not specifiy the DLQ
     eng = Engine(

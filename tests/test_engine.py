@@ -134,7 +134,6 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
 @patch("volley.connectors.kafka.KProducer", MagicMock())
 @patch("volley.connectors.kafka.KConsumer")
 def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]]) -> None:
-    from example.data_models import InputMessage
 
     data = InputMessage.schema()["examples"][0]
     msg = json.dumps(data).encode("utf-8")
@@ -143,8 +142,57 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[st
     output_queues = list(config_dict.keys())
     eng = Engine(input_queue=input_queue, output_queues=output_queues, queue_config=config_dict)
 
+    # use a function that returns None
+    # not to be confused with a consumer that returns None
     @eng.stream_app
     def func(*args: Any) -> None:
         return None
 
     func()
+
+
+@patch("volley.engine.RUN_ONCE", True)
+@patch("volley.engine.METRICS_ENABLED", False)
+@patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
+@patch("volley.connectors.kafka.KConsumer")
+def test_null_serializer_fail(mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]]) -> None:
+    """disable serialization for a message off input-queue"""
+    config_dict["input-queue"]["serializer"] = "disabled"
+
+    data = InputMessage.schema()["examples"][0]
+    msg = json.dumps(data).encode("utf-8")
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
+    input_queue = "input-queue"
+    output_queues = list(config_dict.keys())
+    eng = Engine(
+        input_queue=input_queue,
+        output_queues=output_queues,
+        queue_config=config_dict,
+        dead_letter_queue="dead-letter-queue",
+    )
+
+    @eng.stream_app
+    def func(*args: Any) -> None:
+        return None
+
+    # model on component expects data to be serialized to dict
+    # we disabled serializer though, so it will be bytes
+    # with pytest.raises(TypeError):
+    func()
+
+    # del func
+    # # do not specifiy the DLQ
+    # # serialization will fail
+    # eng = Engine(
+    #     input_queue=input_queue,
+    #     output_queues=output_queues,
+    #     queue_config=config_dict,
+    # )
+    # @eng.stream_app
+    # def func2(*args: Any) -> None:
+    #     return None
+
+    # # model on component expects data to be serialized to dict
+    # # we disabled serializer though, so it will be bytes
+    # with pytest.raises(TypeError):
+    #     func2()

@@ -87,8 +87,8 @@ services:
         volumes:
             - ./:/app/
         # ports:
-        #     - 3000:3000
-        #     - 5678:5678
+            # - 3000:3000
+            # - 5678:5678
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client example.py output_component
         command: python example.py output_component
 

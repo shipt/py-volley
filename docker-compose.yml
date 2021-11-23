@@ -163,3 +163,16 @@ services:
             - 5432:5432
         environment:
             POSTGRES_PASSWORD: password
+
+    int-tests:
+        build:
+            context: .
+            dockerfile: Dockerfile
+            target: dev
+            args:
+                SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
+                SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
+        environment:
+            APP_ENV: localhost
+            KAFKA_BROKERS: kafka:29092
+        command: pytest tests/integration_tests/test_integration.py

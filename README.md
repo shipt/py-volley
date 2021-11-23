@@ -140,7 +140,6 @@ engine = Engine(
   output_queues=["queue_a", "queue_b"]
 )
 
-import numpy as np
 
 @engine.stream_app
 def my_component_function(input_object: ComponentMessage) -> List[(str, ComponentMessage)]
@@ -151,7 +150,7 @@ def my_component_function(input_object: ComponentMessage) -> List[(str, Componen
     """
 
     # we can access the input models attributes like any other pydantic model
-    mean_value = np.mean(input_object.list_of_values)
+    mean_value = sum(input_object.list_of_values)/len(input_object.list_of_values)
 
     # or convert to a dict
     input_dict = input_object.dict()
@@ -176,8 +175,6 @@ A component is not required to output anywhere. A typical use case would be if t
 
 
 ```python
-import numpy as np
-
 from volley.engine import Engine
 
 
@@ -194,7 +191,7 @@ def my_component_function(input_object: ComponentMessage) -> Optional[List[Tuple
     Consumes from a queue named "my_input".
     Conditionally publishes to "queue_a" if the mean value is above 2
     """
-    mean_value = np.mean(input_object.list_of_values)
+    mean_value = sum(input_object.list_of_values)/len(input_object.list_of_values)
 
     if mean_value > 2:
       # queue_a expects an object of type MessageA

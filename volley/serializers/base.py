@@ -3,6 +3,7 @@ from typing import Any, Tuple
 
 from volley.logging import logger
 
+
 class BaseSerialization(ABC):
     """Base class for serializing and deserializing queue data"""
 
@@ -32,7 +33,9 @@ class NullSerializer(BaseSerialization):
         return message
 
 
-def handle_serializer(serializer: BaseSerialization, message: Any, operation: str, *args: Any, **kwargs: Any) -> Tuple[Any, bool]:
+def handle_serializer(
+    serializer: BaseSerialization, message: Any, operation: str, *args: Any, **kwargs: Any
+) -> Tuple[Any, bool]:
     """handles errors in serializer opertions (serialize|deserialize)
 
     Args:
@@ -42,11 +45,11 @@ def handle_serializer(serializer: BaseSerialization, message: Any, operation: st
 
     Returns:
         Tuple[Any, bool]: returns the processed message and a success/fail status.
-            on fail, the message will be the same original, unprocessed message 
+            on fail, the message will be the same original, unprocessed message
     """
     if operation not in ("serialize", "deserialize"):
         raise NotImplementedError(f"{operation} not a valid serilizer method")
-    
+
     op = getattr(serializer, operation)
     try:
         success_msg = op(message, *args, **kwargs)

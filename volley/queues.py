@@ -10,6 +10,12 @@ from volley.logging import logger
 from volley.serializers.base import BaseSerialization
 
 
+class DLQ_NotConfiguredError(Exception):
+    """raised when message processes fails and no DLQ configured"""
+
+    pass
+
+
 class ConnectionType(Enum):
     """types of connections to queues"""
 
@@ -34,7 +40,7 @@ class Queue:
     consumer: str
     producer: str
 
-    serializer: Optional[BaseSerialization] = None
+    serializer: BaseSerialization
 
     # initialized queue connection
     # these get initialized by calling connect()
@@ -120,7 +126,7 @@ def config_to_queue_map(configs: List[dict[str, str]]) -> Dict[str, Queue]:
         # serializers are optional
         # users are allowed to pass message to a producer "as is"
         if q["serializer"] in (None, "disabled", "None"):
-            serializer = None
+            serializer = import_module_from_string("volley.serializers.base.NullSerializer")()
         else:
             # serializer is initialized
             serializer = import_module_from_string(q["serializer"])()

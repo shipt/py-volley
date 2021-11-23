@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from jinja2 import Template
 
@@ -10,7 +10,7 @@ from volley.logging import logger
 from volley.serializers.base import BaseSerialization
 
 
-class DLQ_NotConfiguredError(Exception):
+class DLQNotConfiguredError(Exception):
     """raised when message processes fails and no DLQ configured"""
 
     pass

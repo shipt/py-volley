@@ -4,8 +4,6 @@ from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from prometheus_client import Counter, Summary, start_http_server
-from pydantic import ValidationError
-from pydantic.main import validate_model
 
 from volley.config import METRICS_ENABLED, METRICS_PORT
 from volley.data_models import (
@@ -17,7 +15,7 @@ from volley.data_models import (
 from volley.logging import logger
 from volley.queues import (
     ConnectionType,
-    DLQ_NotConfiguredError,
+    DLQNotConfiguredError,
     Queue,
     apply_defaults,
     config_to_queue_map,
@@ -113,10 +111,10 @@ class Engine:
                 outputs: Optional[List[Tuple[str, ComponentMessage]]] = []
 
                 # input serialization
-                serialized_msg: Any
+                deserialized_msg: Any
                 deserialized_success: bool = False
                 dlq_message: str = "NONE"
-                serialized_msg, deserialized_success = handle_serializer(
+                deserialized_msg, deserialized_success = handle_serializer(
                     serializer=input_con.serializer, operation="deserialize", message=in_message.message
                 )
 
@@ -125,14 +123,14 @@ class Engine:
                     validated_message: ComponentMessageType
                     validated_success: bool = False
                     validated_message, validated_success = schema_handler(
-                        schema=input_con.schema, message=serialized_msg
+                        schema=input_con.schema, message=deserialized_msg
                     )
                 else:
                     # serialized failed, try to send this message to DLQ
                     dlq_message = in_message.message
 
                 if not validated_success:
-                    dlq_message = serialized_msg
+                    dlq_message = deserialized_msg
 
                 if dlq_message == "NONE":
                     # happy path
@@ -142,7 +140,7 @@ class Engine:
                     outputs = [(self.dead_letter_queue, ComponentMessage(error_msg=dlq_message))]
                 else:
                     # things have gone wrong w/ the message and no DLQ configured
-                    raise DLQ_NotConfiguredError(f"Deserializing {in_message.message} failed")
+                    raise DLQNotConfiguredError(f"Deserializing {in_message.message} failed")
 
                 # component processing
                 if not outputs:

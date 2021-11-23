@@ -87,7 +87,7 @@ def test_dlq_not_implemented(mock_consumer: MagicMock, mock_producer: MagicMock)
         yaml_config_path="./example/volley_config.yml",
         dead_letter_queue=None,
     )
-    mock_consumer.return_value.poll = lambda x: KafkaMessage()
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=b'{"random": "message"}')
 
     # component returns "just none"
     @eng.stream_app

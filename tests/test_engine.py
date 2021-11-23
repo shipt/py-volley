@@ -182,19 +182,17 @@ def test_null_serializer_fail(mock_consumer: MagicMock, config_dict: dict[str, d
     # with pytest.raises(TypeError):
     func()
 
-    # del func
-    # # do not specifiy the DLQ
-    # # serialization will fail
-    # eng = Engine(
-    #     input_queue=input_queue,
-    #     output_queues=output_queues,
-    #     queue_config=config_dict,
-    # )
-    # @eng.stream_app
-    # def func2(*args: Any) -> None:
-    #     return None
+    # do not specifiy the DLQ
+    eng = Engine(
+        input_queue=input_queue,
+        output_queues=output_queues,
+        queue_config=config_dict,
+    )
 
-    # # model on component expects data to be serialized to dict
-    # # we disabled serializer though, so it will be bytes
-    # with pytest.raises(TypeError):
-    #     func2()
+    @eng.stream_app
+    def func2(*args: Any) -> None:
+        return None
+
+    # we disabled serializer though, so it will be fail pydantic validation
+    with pytest.raises(DLQNotConfiguredError):
+        func2()

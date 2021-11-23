@@ -115,6 +115,7 @@ class Engine:
                 # input serialization
                 serialized_msg: Any
                 deserialized_success: bool = False
+                dlq_message: str = "NONE"
                 serialized_msg, deserialized_success = handle_serializer(
                     serializer=input_con.serializer, operation="deserialize", message=in_message.message
                 )
@@ -126,13 +127,22 @@ class Engine:
                     validated_message, validated_success = schema_handler(
                         schema=input_con.schema, message=serialized_msg
                     )
+                else:
+                    # serialized failed, try to send this message to DLQ
+                    dlq_message = in_message.message
 
-                # messages go to DLQ in raw, unseralized format
-                if not deserialized_success or not validated_success:
-                    if self.dead_letter_queue in self.queue_map:
-                        outputs = [(self.dead_letter_queue, ComponentMessage(error_msg=in_message.message))]
-                    else:
-                        raise DLQ_NotConfiguredError(f"Deserializing {in_message.message} failed")
+                if not validated_success:
+                    dlq_message = serialized_msg
+
+                if dlq_message == "NONE":
+                    # happy path
+                    pass
+                elif self.dead_letter_queue in self.queue_map and dlq_message != "NONE":
+                    # DLQ is configured and there is a message ready for the DLQ
+                    outputs = [(self.dead_letter_queue, ComponentMessage(error_msg=dlq_message))]
+                else:
+                    # things have gone wrong w/ the message and no DLQ configured
+                    raise DLQ_NotConfiguredError(f"Deserializing {in_message.message} failed")
 
                 # component processing
                 if not outputs:

@@ -1,4 +1,4 @@
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from volley.connectors import RSMQConsumer, RSMQProducer
 from volley.data_models import QueueMessage
@@ -20,11 +20,7 @@ def test_rsmq_delete(mock_rsmq_consumer: RSMQConsumer) -> None:
 
 @patch("volley.connectors.rsmq.RedisSMQ")
 def test_return_none(mocked_rsmq: MagicMock) -> None:
-    mocked_rsmq.queue.receiveMessage.return_value.exceptions.return_value.execute = (
-        None
-    )
-    consumer = RSMQConsumer(
-        host="redis", queue_name="test"
-    )
+    mocked_rsmq.queue.receiveMessage.return_value.exceptions.return_value.execute = None
+    consumer = RSMQConsumer(host="redis", queue_name="test")
     msg = consumer.consume(queue_name="test")
     assert msg is None

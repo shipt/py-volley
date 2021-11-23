@@ -9,6 +9,7 @@ from example.data_models import InputMessage, OutputMessage
 from tests.test_connectors.test_kafka import KafkaMessage
 from volley.data_models import ComponentMessage
 from volley.engine import Engine
+from volley.queues import DLQ_NotConfiguredError
 
 
 @patch("volley.engine.RUN_ONCE", True)
@@ -93,7 +94,7 @@ def test_dlq_not_implemented(mock_consumer: MagicMock, mock_producer: MagicMock)
     def func(*args: ComponentMessage) -> None:
         return None
 
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(DLQ_NotConfiguredError):
         func()
 
 
@@ -154,6 +155,7 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[st
 @patch("volley.engine.RUN_ONCE", True)
 @patch("volley.engine.METRICS_ENABLED", False)
 @patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
+@patch("volley.connectors.kafka.KProducer", MagicMock())
 @patch("volley.connectors.kafka.KConsumer")
 def test_null_serializer_fail(mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]]) -> None:
     """disable serialization for a message off input-queue"""

@@ -175,4 +175,6 @@ services:
         environment:
             APP_ENV: localhost
             KAFKA_BROKERS: kafka:29092
+        volumes:
+            - ./:/app/
         command: pytest tests/integration_tests/test_integration.py

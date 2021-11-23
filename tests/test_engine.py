@@ -9,7 +9,7 @@ from example.data_models import InputMessage, OutputMessage
 from tests.test_connectors.test_kafka import KafkaMessage
 from volley.data_models import ComponentMessage
 from volley.engine import Engine
-from volley.queues import DLQ_NotConfiguredError
+from volley.queues import DLQNotConfiguredError
 
 
 @patch("volley.engine.RUN_ONCE", True)
@@ -94,7 +94,7 @@ def test_dlq_not_implemented(mock_consumer: MagicMock, mock_producer: MagicMock)
     def func(*args: ComponentMessage) -> None:
         return None
 
-    with pytest.raises(DLQ_NotConfiguredError):
+    with pytest.raises(DLQNotConfiguredError):
         func()
 
 

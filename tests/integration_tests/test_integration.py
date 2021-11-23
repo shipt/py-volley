@@ -1,6 +1,6 @@
 import json
 import time
-from typing import Dict, List
+from typing import List
 from uuid import uuid4
 
 from confluent_kafka import OFFSET_END, TopicPartition
@@ -9,7 +9,6 @@ from pyshipt_streams import KafkaConsumer, KafkaProducer
 from example.data_models import InputMessage
 from tests.integration_tests.conftest import Environment
 from volley.logging import logger
-from volley.queues import Queue, available_queues
 
 POLL_TIMEOUT = 30
 
@@ -109,9 +108,7 @@ def test_dead_letter_queue(environment: Environment) -> None:
     conusumed_ids = []
     for m in consumed_messages:
         # assert all consumed IDs were from the list we produced
-        logger.info("#########")
-        logger.info(m)
-        _id = m["request_id"]
+        _id = m["error_msg"]["request_id"]
         assert _id in request_ids
         conusumed_ids.append(_id)
 

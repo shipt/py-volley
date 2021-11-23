@@ -17,25 +17,28 @@ class Environment(NamedTuple):
     dlq: str
 
 
+env = Environment(
+    brokers=os.environ["KAFKA_BROKERS"],
+    input_topic=queues["input-queue"].value,
+    output_topic=queues["output-queue"].value,
+    dlq=queues["dead-letter-queue"].value,
+)
+
+
 @fixture
 def environment() -> Environment:
-    return Environment(
-        brokers=os.environ["KAFKA_BROKERS"],
-        input_topic=queues["input-queue"].value,
-        output_topic=queues["output-queue"].value,
-        dlq=queues["dead-letter-queue"].value,
-    )
+    return env
 
 
-def test_create_topics(environment: Environment) -> None:
+def create_topics() -> None:
     # time for Kafka broker to init
     time.sleep(5)
-    conf = {"bootstrap.servers": environment.brokers}
+    conf = {"bootstrap.servers": env.brokers}
     admin = confluent_kafka.admin.AdminClient(conf)
-    topics = [
-        confluent_kafka.admin.NewTopic(x, 1, 1)
-        for x in [environment.input_topic, environment.output_topic, environment.dlq]
-    ]
+    topics = [confluent_kafka.admin.NewTopic(x, 1, 1) for x in [env.input_topic, env.output_topic, env.dlq]]
     admin.create_topics(topics)
     # TODO: add assertion for topics successfully created
     assert True
+
+
+create_topics()

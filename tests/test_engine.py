@@ -185,6 +185,8 @@ def test_null_serializer_fail(
     # but messages will route to DLQ with exceptions handles
     with caplog.at_level(logging.WARNING):
         func()
+    # this is a WARNING level, because rollbar is swallowing the log locally
+    # its coming from logger.exception in volley.data_models.schema_handler
     # should only be one warning log - for the DLQ
     assert len(caplog.records) == 1
     assert caplog.records[0].levelname == "WARNING"

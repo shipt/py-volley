@@ -5,18 +5,26 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from prometheus_client import Counter, Summary, start_http_server
 from pydantic import ValidationError
+from pydantic.main import validate_model
 
 from volley.config import METRICS_ENABLED, METRICS_PORT
-from volley.data_models import ComponentMessage, ComponentMessageType, QueueMessage
+from volley.data_models import (
+    ComponentMessage,
+    ComponentMessageType,
+    QueueMessage,
+    schema_handler,
+)
 from volley.logging import logger
 from volley.queues import (
     ConnectionType,
+    DLQ_NotConfiguredError,
     Queue,
     apply_defaults,
     config_to_queue_map,
     dict_to_config,
     yaml_to_dict_config,
 )
+from volley.serializers.base import handle_serializer
 from volley.util import GracefulKiller
 
 # enables mocking the infinite loop to finite
@@ -101,31 +109,35 @@ class Engine:
                     time.sleep(POLL_INTERVAL)
                     continue
 
+                # typing for producing
                 outputs: Optional[List[Tuple[str, ComponentMessage]]] = []
-                # every queue has a schema - validate the data coming off the queue
-                # we are using pydantic to validate the data.
-                try:
-                    if input_con.serializer is not None:
-                        deserialized = input_con.serializer.deserialize(in_message.message)
-                    else:
-                        # serializer can optionally be built into a connector
-                        # or for any reason, be disabled
-                        deserialized = in_message.message
 
-                    # validate data meets the provided or default schema
-                    validated_message: Union[ComponentMessageType, Dict[Any, Any]] = input_con.schema(**deserialized)
-                except ValidationError:
-                    logger.exception(
-                        f"""
-                        Error validating message from {input_con.value}"""
+                # input serialization
+                serialized_msg: Any
+                deserialized_success: bool = False
+                serialized_msg, deserialized_success = handle_serializer(
+                    serializer=input_con.serializer, operation="deserialize", message=in_message.message
+                )
+
+                if deserialized_success:
+                    # schema validation can only happen if deserialization succeeds
+                    validated_message: ComponentMessageType
+                    validated_success: bool = False
+                    validated_message, validated_success = schema_handler(
+                        schema=input_con.schema, message=serialized_msg
                     )
-                    if self.dead_letter_queue not in self.queue_map:
-                        logger.error("DLQ not configured. Processing will fail")
-                        raise NotImplementedError
-                    else:
-                        outputs = [(self.dead_letter_queue, ComponentMessage.parse_obj(in_message.message))]
 
+                # messages go to DLQ in raw, unseralized format
+                if not deserialized_success or not validated_success:
+                    if self.dead_letter_queue in self.queue_map:
+                        outputs = [(self.dead_letter_queue, ComponentMessage(error_msg=in_message.message))]
+                    else:
+                        raise DLQ_NotConfiguredError(f"Deserializing {in_message.message} failed")
+
+                # component processing
                 if not outputs:
+                    # this is happy path
+                    # if outputs have been assigned it means this message is destined for a DLQ
                     _start_main = time.time()
                     outputs = func(validated_message)
                     _fun_duration = time.time() - _start_main
@@ -149,10 +161,7 @@ class Engine:
 
                         try:
                             # serialize message
-                            if out_queue.serializer is None:
-                                serialized = q_msg.message
-                            else:
-                                serialized = out_queue.serializer.serialize(q_msg.message)
+                            serialized = out_queue.serializer.serialize(q_msg.message)
                             status = out_queue.producer_con.produce(queue_name=out_queue.value, message=serialized)
                             MESSAGES_PRODUCED.labels(destination=qname).inc()
                         except Exception:

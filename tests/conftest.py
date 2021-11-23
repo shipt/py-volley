@@ -1,10 +1,10 @@
 import json
 import os
 from dataclasses import dataclass
+from random import randint
 from typing import Any, Callable, Generator
 from unittest.mock import MagicMock, patch
 
-import numpy as np
 from pytest import MonkeyPatch, fixture
 
 from volley.connectors import KafkaConsumer, KafkaProducer, RSMQConsumer, RSMQProducer
@@ -60,7 +60,7 @@ def mock_rsmq_consumer() -> RSMQConsumer:
 class KafkaMessage:
 
     _error: bool = False
-    _offset: int = np.random.randint(1, 200)
+    _offset: int = randint(1, 200)
     _value: bytes = json.dumps({"kafka": "message"}).encode("utf-8")
 
     def error(self) -> bool:

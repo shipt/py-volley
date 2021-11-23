@@ -13,6 +13,7 @@ queue_config = {
         "name": "test_queue_plugin",
         "value": "q42",
         "type": "postgres",
+        "serializer": "disabled",
         "schema": "volley.data_models.ComponentMessage",
         "producer": "example.plugins.my_plugin.MyPGProducer",
         "consumer": "example.plugins.my_plugin.MyPGConsumer",

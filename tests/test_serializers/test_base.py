@@ -36,3 +36,13 @@ def test_handle_serializer_fail(serializer: MagicMock) -> None:
 
     with raises(NotImplementedError):
         handle_serializer(serializer=serializer, operation="xtz", message=raw_msg)
+
+
+def test_handler_success() -> None:
+    ser = NullSerializer()
+    raw_msg = b"raw"
+
+    for operation in ["deserialize", "serialize"]:
+        msg, status = handle_serializer(serializer=ser, message=raw_msg, operation=operation)
+        assert msg == raw_msg
+        assert status is True

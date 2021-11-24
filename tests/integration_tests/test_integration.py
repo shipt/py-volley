@@ -18,7 +18,7 @@ queues: Dict[str, Queue] = available_queues("./example/volley_config.yml")
 def test_end_to_end() -> None:  # noqa
     """good data should make it all the way through app"""
     # get name of the input topic
-    produce_topic = queues["input-queue"].value
+    produce_topic = queues["input-topic"].value
     logger.info(f"{produce_topic=}")
     p = KafkaProducer()
 
@@ -26,7 +26,7 @@ def test_end_to_end() -> None:  # noqa
     data = InputMessage.schema()["examples"][0]
 
     # consumer the messages off the output topic
-    consume_topic = queues["output-queue"].value
+    consume_topic = queues["output-topic"].value
     logger.info(f"{consume_topic=}")
     c = KafkaConsumer(consumer_group="int-test-group")
     c.consumer.assign([TopicPartition(topic=consume_topic, partition=0, offset=OFFSET_END)])
@@ -76,7 +76,7 @@ def test_dead_letter_queue() -> None:
     """publish bad data to input queue
     it should cause schema violation and end up on DLQ
     """
-    produce_topic = queues["input-queue"].value
+    produce_topic = queues["input-topic"].value
     logger.info(f"{produce_topic=}")
     p = KafkaProducer()
     data = {"bad": "data"}

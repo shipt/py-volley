@@ -57,7 +57,7 @@ test.clean:
 	-docker images -a | grep ${PROJECT} | awk '{print $3}' | xargs docker rmi
 	-docker image prune -f
 test.integration: run.datastores run.components
-	docker-compose exec -T input_component pytest tests/integration_tests/test_integration.py
+	docker-compose exec -T input_worker pytest tests/integration_tests/test_integration.py
 	docker-compose down
 test.unit: setup
 	poetry run coverage run -m pytest -s \
@@ -67,11 +67,14 @@ test.unit: setup
             --cov-report term
 
 run.components:
-	docker-compose up -d input_component component_1 output_component
+	docker-compose up -d input_worker middle_worker output_worker
 run.datastores:
 	docker-compose up -d redis kafka zookeeper postgres
 run:
 	docker compose up --build -d
+run.demo: run.datastores
+	docker compose up --build -d data_producer input_worker middle_worker data_consumer
+# dokcer compose logs -f data_consumer
 stop.components:
 	docker compose down
 stop:

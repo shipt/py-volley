@@ -1,7 +1,7 @@
 import threading
 from unittest.mock import MagicMock, patch
 
-from example.input_component import eng, main
+from example.input_worker import eng, main
 
 
 @patch("volley.engine.METRICS_ENABLED", False)

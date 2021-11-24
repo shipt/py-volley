@@ -18,7 +18,7 @@ class InputMessage(ComponentMessage):
         }
 
 
-class Comp1Message(ComponentMessage):
+class Queue1Message(ComponentMessage):
     request_id: str
     max_value: float
 
@@ -35,14 +35,14 @@ class Comp1Message(ComponentMessage):
 
 class OutputMessage(ComponentMessage):
     request_id: str
-    max_plus_1: float
+    max_plus: float
 
     class Config:
         schema_extra = {
             "examples": [
                 {
                     "request_id": "request-id-1234",
-                    "max_plus_1": 5.5,
+                    "max_plus": 5.5,
                 }
             ]
         }

@@ -28,7 +28,7 @@ def test_kafka_consumer_success(mock_kafka_consumer: Consumer) -> None:
 @patch("volley.connectors.kafka.KConsumer")
 def test_consume(mock_consumer: MagicMock) -> None:
     mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=b'{"random": "message"}')
-    b = KafkaConsumer(host="localhost", queue_name="input-queue")
+    b = KafkaConsumer(host="localhost", queue_name="input-topic")
     q_message = b.consume()
     assert isinstance(q_message, QueueMessage)
 
@@ -37,7 +37,7 @@ def test_consume(mock_consumer: MagicMock) -> None:
 @patch("volley.connectors.kafka.KConsumer")
 def test_consume_none(mock_consumer: MagicMock) -> None:
     mock_consumer.return_value.poll = lambda x: None
-    b = KafkaConsumer(host="localhost", queue_name="input-queue")
+    b = KafkaConsumer(host="localhost", queue_name="input-topic")
     q_message = b.consume()
     assert q_message is None
 
@@ -67,4 +67,4 @@ def test_consumer_group_init(mock_consumer: MagicMock, monkeypatch: MonkeyPatch)
         m.setattr(sys, "argv", "")
         with raises(Exception):
             # fallback to parsing sys.argv fails if its not provided
-            KafkaConsumer(queue_name="input-queue")
+            KafkaConsumer(queue_name="input-topic")

@@ -2,6 +2,8 @@
 
 Forked from https://github.com/shipt/ml-bundle-engine. Provides an extensible interface to queues with built in support for Kafka and [RSMQ](https://github.com/mlasevich/PyRSMQ) (Redis Simple Message Queue).
 
+Use Volley if you need to quickly get up and running with a Python streaming application that consumes messages, processes them (and do other things), then publish results to some place.
+
 # Installation
 
 1. Acquire creds to pypi.shipt.com #ask-machine-learning or #ask-info-sec
@@ -22,12 +24,19 @@ pip install py-volley \
 4. Run the pre-built exampe:
 `docker-compose up --build`
 
-- `./example/external_data_producer.py` publishes sample data to `input-queue` Kafka topic.
-- `./example/input_component/py` consumes from `input-queue` and publishes to `comp_1` RSMQ queue. 
-- `./example/comp1.py` consumes from `comp_1` RSMQ and publishes to `output-queue` Kafka topic.
-- `./example/external_data_consumer.py` consumes from `output-queue` and logs to console.
+- `./example/external_data_producer.py` publishes sample data to `input-topic` Kafka topic.
+- `./example/input_worker.py` consumes from `input-topic` and publishes to `comp_1` RSMQ queue. 
+- `./example/comp1.py` consumes from `comp_1` RSMQ and publishes to `output-topic` Kafka topic.
+- `./example/external_data_consumer.py` consumes from `output-topic` and logs to console.
 
 ## Getting started
+
+Check out projects already using Volley:
+  - [TLMD Future Route Actualizer](https://github.com/shipt/tlmd-future-route-actualizer) - Single worker that consumes from Kafka, does processing and invokes ML models, then publishes results to Kafka.
+  - [Bundle Optimization Engine](https://github.com/shipt/ml-bundle-engine) - Collection of workers that consume/produce to Kafka, Redis, and Postgres. 
+
+
+A full example is provided in `./example`. Run this example locally with `make run.example`.
 
 Components are implemented as a function decorated with an instance of the `volley.engine.Engine`. A component consumes from one queue and can publish to one or many queues.
 
@@ -37,9 +46,9 @@ Components output a list of tuples, where the tuple is defined as `(<name_of_que
  The returned component message type must agree with the type accepted by the queue you are publishing to.
 
 Below is a basic example that:
-1) consumes from `input-queue` (a kafka topic).
+1) consumes from `input-topic` (a kafka topic).
 2) evaluates the message from the queue
-3) publishes a message to `output-queue` (also kafka topic)
+3) publishes a message to `output-topic` (also kafka topic)
 4) Provides a path to a pydantic model that provides schema validation to both inputs and outputs.
 5) Configures a dead-letter queue for any incoming messages that violate the specified schema.
 
@@ -50,12 +59,12 @@ from volley.engine import Engine
 from volley.data_models import ComponentMessage
 
 queue_config = {
-    "input-queue": {
+    "input-topic": {
       "value": "stg.kafka.myapp.input",
       "type": "kafka",
       "schema": "example.data_models.InputMessage",  # for input validation
     },
-    "output-queue": {
+    "output-topic": {
       "value": "stg.ds-marketplace.v1.my_kafka_topic_output",
       "type": "kafka",
       "schema": "example.data_models.OutputMessage",  # for output validation
@@ -68,8 +77,8 @@ queue_config = {
 
 engine = Engine(
   app_name="my_volley_app",
-  input_queue="input-queue",
-  output_queues=["output-queue"],
+  input_queue="input-topic",
+  output_queues=["output-topic"],
   dead_letter_queue="dead-letter-queue",
   queue_config=queue_config
 )
@@ -83,7 +92,7 @@ def hello_world(msg: InputMessage) -> List[Tuple[str, OutputMessage]]:
   
   out = ComponentMessage(hello=out_value)
 
-  return [("output-queue", out)]
+  return [("output-topic", out)]
 ```
 
 ## Another Example:

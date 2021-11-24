@@ -3,12 +3,12 @@ def run() -> None:
     component = sys.argv[1]
     if component == "external_producer":
         from example.external_data_producer import main
-    elif component == "input_component":
-        from example.input_component import main
-    elif component == "component_1":
-        from example.comp1 import main
-    elif component == "output_component":
-        from example.output_component import main
+    elif component == "input_worker":
+        from example.input_worker import main
+    elif component == "middle_worker":
+        from example.middle_worker import main
+    elif component == "output_worker":
+        from example.output_worker import main
     elif component == "external_consumer":
         from example.external_data_consumer import main
     else:

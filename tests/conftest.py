@@ -91,7 +91,7 @@ def mock_kafka_producer() -> KafkaProducer:
 @fixture
 def none_producer_decorated(monkeypatch: MonkeyPatch) -> Generator[Callable[..., None], None, None]:
     eng = Engine(
-        input_queue="input-queue", output_queues=["output-queue"], yaml_config_path="./example/volley_config.yml"
+        input_queue="input-topic", output_queues=["output-topic"], yaml_config_path="./example/volley_config.yml"
     )
 
     monkeypatch.setattr("volley.engine", "METRICS_ENABLED", False)
@@ -108,26 +108,22 @@ def none_producer_decorated(monkeypatch: MonkeyPatch) -> Generator[Callable[...,
 @fixture
 def config_dict() -> dict[str, dict[str, str]]:
     return {
-        "input-queue": {
-            "name": "input-queue",
+        "input-topic": {
             "value": "localhost.kafka.input",
             "type": "kafka",
             "schema": "example.data_models.InputMessage",
         },
         "comp_1": {
-            "name": "comp_1",
             "value": "comp1",
             "type": "rsmq",
             "schema": "dict",
         },
-        "output-queue": {
-            "name": "output-queue",
+        "output-topic": {
             "value": "localhost.kafka.output",
             "type": "kafka",
             "schema": "volley.data_models.ComponentMessage",
         },
         "dead-letter-queue": {
-            "name": "dead-letter-queue",
             "value": "localhost.kafka.dlq",
             "type": "kafka",
             "schema": "volley.data_models.ComponentMessage",

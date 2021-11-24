@@ -22,7 +22,7 @@ services:
         # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client example.py external_producer
         command: python example.py external_producer
 
-    input_component:
+    input_worker:
         environment:
             - APP_ENV=localhost
             - REDIS_HOST=redis
@@ -43,10 +43,10 @@ services:
         ports:
             - 3000:3000
         #     - 5678:5678
-        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client example.py input_component
-        command: python example.py input_component
+        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client example.py input_worker
+        command: python example.py input_worker
 
-    component_1:
+    middle_worker:
         environment:
             - APP_ENV=localhost
             - REDIS_HOST=redis
@@ -66,31 +66,8 @@ services:
         # ports:
         #     - 3000:3000
         #     - 5678:5678
-        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client example.py component_1
-        command: python example.py component_1
-
-    output_component:
-        environment:
-            - APP_ENV=localhost
-            - REDIS_HOST=redis
-            - REDIS_PORT=6379
-            - KAFKA_BROKERS=kafka:29092
-        build:
-            target: dev
-            context: .
-            dockerfile: Dockerfile
-            args:
-                SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
-                SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
-        depends_on:
-            - redis
-        volumes:
-            - ./:/app/
-        # ports:
-            # - 3000:3000
-            # - 5678:5678
-        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client example.py output_component
-        command: python example.py output_component
+        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client example.py middle_worker
+        command: python example.py middle_worker
 
     data_consumer:
         environment:

@@ -143,7 +143,29 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[st
     mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
     input_queue = "input-topic"
     output_queues = list(config_dict.keys())
-    eng = Engine(input_queue=input_queue, output_queues=output_queues, queue_config=config_dict)
+
+    with pytest.raises(ValueError):
+        Engine(
+            input_queue=input_queue,
+            output_queues=output_queues,
+            dead_letter_queue="wrong-DLQ",
+            queue_config=config_dict,
+        )
+
+    eng = Engine(
+        input_queue=input_queue,
+        output_queues=output_queues,
+        dead_letter_queue="dead-letter-queue",
+        queue_config=config_dict,
+    )
+
+    assert eng.input_queue == input_queue
+    assert eng.dead_letter_queue == "dead-letter-queue"
+
+    # all queues listed in "config_dict" should be viable producer targets
+    for queue in config_dict.keys():
+        assert queue in eng.output_queues
+        assert queue in eng.queue_map
 
     # use a function that returns None
     # not to be confused with a consumer that returns None

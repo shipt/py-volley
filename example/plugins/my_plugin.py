@@ -1,5 +1,5 @@
-from datetime import datetime
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 
 from sqlalchemy import Column, Float, MetaData, String, Table, create_engine, text
@@ -26,7 +26,7 @@ queue_table = Table(
     metadata_obj,
     Column("request_id", String(40), nullable=False),
     Column("max_plus", Float),
-    Column("message_sent_at", DateTime)
+    Column("message_sent_at", DateTime),
 )
 
 

@@ -19,8 +19,8 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
     passes so long as no exception is raised
     """
     eng = Engine(
-        input_queue="input-queue",
-        output_queues=["output-queue"],
+        input_queue="input-topic",
+        output_queues=["output-topic"],
         yaml_config_path="./example/volley_config.yml",
         dead_letter_queue="dead-letter-queue",
     )
@@ -50,8 +50,8 @@ def test_dlq_not_implemented(mock_consumer: MagicMock, mock_producer: MagicMock)
     passes so long as no exception is raised
     """
     eng = Engine(
-        input_queue="input-queue",
-        output_queues=["output-queue"],
+        input_queue="input-topic",
+        output_queues=["output-topic"],
         yaml_config_path="./example/volley_config.yml",
         dead_letter_queue=None,
     )
@@ -91,7 +91,7 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
         msg_dict = msg.dict()
         unique_val = msg_dict["uuid"]
         out = ComponentMessage(hello="world", unique_val=unique_val)
-        return [("output-queue", out)]
+        return [("output-topic", out)]
 
     # must not raise any exceptions
     hello_world()
@@ -108,7 +108,7 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[st
     data = InputMessage.schema()["examples"][0]
     msg = json.dumps(data).encode("utf-8")
     mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
-    input_queue = "input-queue"
+    input_queue = "input-topic"
     output_queues = list(config_dict.keys())
     eng = Engine(input_queue=input_queue, output_queues=output_queues, queue_config=config_dict)
 

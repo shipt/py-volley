@@ -3,14 +3,14 @@ queues:
     value: "localhost.kafka.input"
     type: kafka
     schema: example.data_models.InputMessage
-  - name: queue_1
+  - name: redis_queue
     value: long_name_1
     type: rsmq
     schema: dict
-  - name: queue_2
+  - name: postgres_queue
     value: my_long_table_name
     type: postgres
-    schema: volley.data_models.ComponentMessage
+    schema: example.data_models.PostgresMessage
     producer: example.plugins.my_plugin.MyPGProducer
     consumer: example.plugins.my_plugin.MyPGConsumer
   - name: output-topic

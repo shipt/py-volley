@@ -69,12 +69,12 @@ class Engine:
         else:
             logger.info(f"loading configuration from {self.yaml_config_path}")
 
-            # handle DLQ
-            if self.dead_letter_queue is not None:
-                # if provided by user, DLQ becomes a producer target
-                self.output_queues.append(self.dead_letter_queue)
-            else:
-                logger.warning("DLQ not provided. Application will crash on schema violations")
+        # handle DLQ
+        if self.dead_letter_queue is not None:
+            # if provided by user, DLQ becomes a producer target
+            self.output_queues.append(self.dead_letter_queue)
+        else:
+            logger.warning("DLQ not provided. Application will crash on schema violations")
 
             cfg = yaml_to_dict_config(yaml_path=self.yaml_config_path)
         cfg = apply_defaults(cfg)

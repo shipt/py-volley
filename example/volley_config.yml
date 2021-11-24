@@ -11,6 +11,7 @@ queues:
     value: my_long_table_name
     type: postgres
     schema: example.data_models.PostgresMessage
+    serializer: None
     producer: example.plugins.my_plugin.MyPGProducer
     consumer: example.plugins.my_plugin.MyPGConsumer
   - name: output-topic

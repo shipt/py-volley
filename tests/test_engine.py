@@ -1,13 +1,45 @@
 import json
+import logging
 from typing import Any, List, Tuple
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
+from pytest import LogCaptureFixture
 
+from example.data_models import InputMessage, OutputMessage
 from tests.test_connectors.test_kafka import KafkaMessage
 from volley.data_models import ComponentMessage
 from volley.engine import Engine
+from volley.queues import DLQNotConfiguredError
+
+
+@patch("volley.engine.RUN_ONCE", True)
+@patch("volley.engine.METRICS_ENABLED", False)
+@patch("volley.connectors.kafka.KProducer")
+@patch("volley.connectors.kafka.KConsumer")
+def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:
+    """test a stubbed component that does not produce messages
+    passes so long as no exception is raised
+    """
+
+    eng = Engine(
+        input_queue="input-queue",
+        output_queues=["output-queue"],
+        yaml_config_path="./example/volley_config.yml",
+        dead_letter_queue="dead-letter-queue",
+    )
+    input_msg = json.dumps(InputMessage.schema()["examples"][0]).encode("utf-8")
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=input_msg)
+
+    output_msg = OutputMessage.parse_obj(OutputMessage.schema()["examples"][0])
+    # component returns "just none"
+
+    @eng.stream_app
+    def func(*args: ComponentMessage) -> List[Tuple[str, OutputMessage]]:
+        return [("output-queue", output_msg)]
+
+    func()
 
 
 @patch("volley.engine.RUN_ONCE", True)
@@ -18,13 +50,15 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
     """test a stubbed component that does not produce messages
     passes so long as no exception is raised
     """
+
     eng = Engine(
         input_queue="input-topic",
         output_queues=["output-topic"],
         yaml_config_path="./example/volley_config.yml",
         dead_letter_queue="dead-letter-queue",
     )
-    mock_consumer.return_value.poll = lambda x: KafkaMessage()
+    msg = json.dumps(InputMessage.schema()["examples"][0]).encode("utf-8")
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
 
     # component returns "just none"
     @eng.stream_app
@@ -55,14 +89,14 @@ def test_dlq_not_implemented(mock_consumer: MagicMock, mock_producer: MagicMock)
         yaml_config_path="./example/volley_config.yml",
         dead_letter_queue=None,
     )
-    mock_consumer.return_value.poll = lambda x: KafkaMessage()
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=b'{"random": "message"}')
 
     # component returns "just none"
     @eng.stream_app
     def func(*args: ComponentMessage) -> None:
         return None
 
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(DLQNotConfiguredError):
         func()
 
 
@@ -103,17 +137,93 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
 @patch("volley.connectors.kafka.KProducer", MagicMock())
 @patch("volley.connectors.kafka.KConsumer")
 def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]]) -> None:
-    from example.data_models import InputMessage
 
     data = InputMessage.schema()["examples"][0]
     msg = json.dumps(data).encode("utf-8")
     mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
     input_queue = "input-topic"
     output_queues = list(config_dict.keys())
-    eng = Engine(input_queue=input_queue, output_queues=output_queues, queue_config=config_dict)
 
+    with pytest.raises(ValueError):
+        Engine(
+            input_queue=input_queue,
+            output_queues=output_queues,
+            dead_letter_queue="wrong-DLQ",
+            queue_config=config_dict,
+        )
+
+    eng = Engine(
+        input_queue=input_queue,
+        output_queues=output_queues,
+        dead_letter_queue="dead-letter-queue",
+        queue_config=config_dict,
+    )
+
+    assert eng.input_queue == input_queue
+    assert eng.dead_letter_queue == "dead-letter-queue"
+
+    # all queues listed in "config_dict" should be viable producer targets
+    for queue in config_dict.keys():
+        assert queue in eng.output_queues
+        assert queue in eng.queue_map
+
+    # use a function that returns None
+    # not to be confused with a consumer that returns None
     @eng.stream_app
     def func(*args: Any) -> None:
         return None
 
     func()
+
+
+@patch("volley.engine.RUN_ONCE", True)
+@patch("volley.engine.METRICS_ENABLED", False)
+@patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
+@patch("volley.connectors.kafka.KProducer", MagicMock())
+@patch("volley.connectors.kafka.KConsumer")
+def test_null_serializer_fail(
+    mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]], caplog: LogCaptureFixture
+) -> None:
+    """disable serialization for a message off input-queue"""
+    config_dict["input-queue"]["serializer"] = "disabled"
+
+    data = InputMessage.schema()["examples"][0]
+    msg = json.dumps(data).encode("utf-8")
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
+    input_queue = "input-queue"
+    output_queues = list(config_dict.keys())
+    eng = Engine(
+        input_queue=input_queue,
+        output_queues=output_queues,
+        queue_config=config_dict,
+        dead_letter_queue="dead-letter-queue",
+    )
+
+    @eng.stream_app
+    def func(*args: Any) -> None:
+        return None
+
+    # serializer disable, schema validation will fail
+    # but messages will route to DLQ with exceptions handles
+    with caplog.at_level(logging.WARNING):
+        func()
+    # this is a WARNING level, because rollbar is swallowing the log locally
+    # its coming from logger.exception in volley.data_models.schema_handler
+    # should only be one warning log - for the DLQ
+    assert len(caplog.records) == 1
+    assert caplog.records[0].levelname == "WARNING"
+
+    # do not specifiy the DLQ
+    eng = Engine(
+        input_queue=input_queue,
+        output_queues=output_queues,
+        queue_config=config_dict,
+    )
+
+    @eng.stream_app
+    def func2(*args: Any) -> None:
+        return None
+
+    # we disabled serializer though, so it will be fail pydantic validation
+    with pytest.raises(DLQNotConfiguredError):
+        func2()

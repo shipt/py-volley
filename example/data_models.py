@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from volley.data_models import ComponentMessage
 
@@ -6,6 +6,7 @@ from volley.data_models import ComponentMessage
 class InputMessage(ComponentMessage):
     request_id: str
     list_of_values: List[float]
+    msg_counter: Optional[int] = 0
 
     class Config:
         schema_extra = {
@@ -21,6 +22,7 @@ class InputMessage(ComponentMessage):
 class Queue1Message(ComponentMessage):
     request_id: str
     max_value: float
+    msg_counter: Optional[int] = 0
 
     class Config:
         schema_extra = {
@@ -36,6 +38,7 @@ class Queue1Message(ComponentMessage):
 class OutputMessage(ComponentMessage):
     request_id: str
     max_plus: float
+    msg_counter: Optional[int] = 0
 
     class Config:
         schema_extra = {
@@ -51,6 +54,7 @@ class OutputMessage(ComponentMessage):
 class PostgresMessage(ComponentMessage):
     request_id: str
     max_plus: float
+    msg_counter: Optional[int] = 0
 
     class Config:
         schema_extra = {

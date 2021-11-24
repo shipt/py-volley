@@ -57,7 +57,7 @@ test.clean:
 	-docker images -a | grep ${PROJECT} | awk '{print $3}' | xargs docker rmi
 	-docker image prune -f
 test.integration: run.datastores run.components
-	docker-compose up int-tests
+	docker-compose up --build int-tests
 test.unit: setup
 	poetry run coverage run -m pytest -s \
 			--ignore=tests/integration_tests \
@@ -66,7 +66,7 @@ test.unit: setup
             --cov-report term
 
 run.components:
-	docker-compose up -d input_worker middle_worker
+	docker-compose up --build -d input_worker middle_worker
 run.example: run.datastores run.components run.externals
 	docker compose up --build -d data_producer input_worker middle_worker data_consumer
 run.externals:

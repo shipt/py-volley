@@ -72,7 +72,7 @@ run.datastores:
 	docker-compose up -d redis kafka zookeeper postgres
 run:
 	docker compose up --build -d
-run.demo: run.datastores
+run.demo.workers:
 	docker compose up --build -d data_producer input_worker middle_worker data_consumer
 # dokcer compose logs -f data_consumer
 stop.components:

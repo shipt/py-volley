@@ -9,7 +9,7 @@ from volley.logging import logger
 # define queue configurations in a dict
 # overrwrites any existing yaml configs
 queue_config = {
-    "queue_2": {
+    "postgres_queue": {
         "value": "longer_name",
         "type": "postgres",
         "schema": "volley.data_models.ComponentMessage",
@@ -35,7 +35,7 @@ def main(msg: ComponentMessage) -> Optional[List[Tuple[str, ComponentMessage]]]:
         output_msg = OutputMessage(request_id=req_id, max_plus=max_plus_1)
 
         logger.info(f"{req_id=}: {max_plus_1=}")
-        return [("output-topic", output_msg)]
+        return [("postgres_queue", output_msg)]
     else:
         time.sleep(1)
         return None

@@ -29,9 +29,13 @@ from volley.util import GracefulKiller
 RUN_ONCE = False
 
 
-PROCESS_TIME = Summary("process_time_seconds", "Time spent running a process", ["process_name"])
-MESSAGE_CONSUMED = Counter("messages_consumed_count", "Messages consumed from input", ["status"])  # success or fail
-MESSAGES_PRODUCED = Counter("messages_produced_count", "Messages produced to output destination(s)", ["destination"])
+PROCESS_TIME = Summary("process_time_seconds", "Time spent running a process", ["volley_app", "process_name"])
+MESSAGE_CONSUMED = Counter(
+    "messages_consumed_count", "Messages consumed from input", ["volley_app", "status"]
+)  # success or fail
+MESSAGES_PRODUCED = Counter(
+    "messages_produced_count", "Messages produced to output destination(s)", ["volley_app", "source", "destination"]
+)
 
 POLL_INTERVAL = 1
 
@@ -42,6 +46,8 @@ class Engine:
 
     input_queue: str
     output_queues: List[str]
+
+    app_name: str = "volley"
     dead_letter_queue: Optional[str] = None
 
     killer: GracefulKiller = GracefulKiller()
@@ -149,7 +155,7 @@ class Engine:
                     _start_main = time.time()
                     outputs = func(validated_message)
                     _fun_duration = time.time() - _start_main
-                    PROCESS_TIME.labels("component").observe(_fun_duration)
+                    PROCESS_TIME.labels(volley_app=self.app_name, process_name="component").observe(_fun_duration)
 
                 all_produce_status: List[bool] = []
                 if outputs is None:
@@ -171,7 +177,9 @@ class Engine:
                             # serialize message
                             serialized = out_queue.serializer.serialize(q_msg.message)
                             status = out_queue.producer_con.produce(queue_name=out_queue.value, message=serialized)
-                            MESSAGES_PRODUCED.labels(destination=qname).inc()
+                            MESSAGES_PRODUCED.labels(
+                                volley_app=self.app_name, source=input_con.name, destination=qname
+                            ).inc()
                         except Exception:
                             logger.exception("failed producing message")
                             status = False
@@ -184,12 +192,12 @@ class Engine:
                         queue_name=input_con.value,
                         message_id=in_message.message_id,
                     )
-                    MESSAGE_CONSUMED.labels("success").inc()
+                    MESSAGE_CONSUMED.labels(volley_app=self.app_name, status="success").inc()
                 else:
                     input_con.consumer_con.on_fail()
-                    MESSAGE_CONSUMED.labels("fail").inc()
+                    MESSAGE_CONSUMED.labels(volley_app=self.app_name, status="fail").inc()
                 _duration = time.time() - _start_time
-                PROCESS_TIME.labels("cycle").observe(_duration)
+                PROCESS_TIME.labels(volley_app=self.app_name, process_name="cycle").observe(_duration)
 
                 if RUN_ONCE:
                     # for testing purposes only - mock RUN_ONCE

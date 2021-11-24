@@ -24,8 +24,8 @@ def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -
     """
 
     eng = Engine(
-        input_queue="input-queue",
-        output_queues=["output-queue"],
+        input_queue="input-topic",
+        output_queues=["output-topic"],
         yaml_config_path="./example/volley_config.yml",
         dead_letter_queue="dead-letter-queue",
     )
@@ -37,7 +37,7 @@ def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -
 
     @eng.stream_app
     def func(*args: ComponentMessage) -> List[Tuple[str, OutputMessage]]:
-        return [("output-queue", output_msg)]
+        return [("output-topic", output_msg)]
 
     func()
 
@@ -184,13 +184,13 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[st
 def test_null_serializer_fail(
     mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]], caplog: LogCaptureFixture
 ) -> None:
-    """disable serialization for a message off input-queue"""
-    config_dict["input-queue"]["serializer"] = "disabled"
+    """disable serialization for a message off input-topic"""
+    config_dict["input-topic"]["serializer"] = "disabled"
 
     data = InputMessage.schema()["examples"][0]
     msg = json.dumps(data).encode("utf-8")
     mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
-    input_queue = "input-queue"
+    input_queue = "input-topic"
     output_queues = list(config_dict.keys())
     eng = Engine(
         input_queue=input_queue,

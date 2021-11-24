@@ -5,7 +5,7 @@ from volley.engine import Engine
 from volley.logging import logger
 
 eng = Engine(
-    input_queue="input-queue",
+    input_queue="input-topic",
     output_queues=["comp_1"],
     yaml_config_path="./example/volley_config.yml",
     dead_letter_queue="dead-letter-queue",

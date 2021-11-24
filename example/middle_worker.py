@@ -1,6 +1,5 @@
-from typing import Any, List, Tuple
-
 from random import randint
+from typing import Any, List, Tuple
 
 from volley.data_models import ComponentMessage
 from volley.engine import Engine
@@ -21,15 +20,12 @@ def main(msg: Any) -> List[Tuple[str, ComponentMessage]]:
     req_id = msg["request_id"]
     max_val = msg["max_value"]
 
-    max_plus_jiggle = max_val + randint(1, 20)    
+    max_plus_jiggle = max_val + randint(1, 20)
 
     output_msg = ComponentMessage(request_id=req_id, max_plus=max_plus_jiggle)
 
     logger.info(f"{req_id=}: {max_val=}")
-    return [
-        ("postgres_queue", output_msg),
-        ("output-topic", output_msg)
-    ]
+    return [("postgres_queue", output_msg), ("output-topic", output_msg)]
 
 
 if __name__ == "__main__":

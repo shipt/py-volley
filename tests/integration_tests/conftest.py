@@ -19,8 +19,8 @@ class Environment(NamedTuple):
 
 env = Environment(
     brokers=os.environ["KAFKA_BROKERS"],
-    input_topic=queues["input-queue"].value,
-    output_topic=queues["output-queue"].value,
+    input_topic=queues["input-topic"].value,
+    output_topic=queues["output-topic"].value,
     dlq=queues["dead-letter-queue"].value,
 )
 

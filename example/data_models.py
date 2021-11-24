@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from volley.data_models import ComponentMessage
@@ -34,6 +35,20 @@ class Queue1Message(ComponentMessage):
 
 
 class OutputMessage(ComponentMessage):
+    request_id: str
+    max_plus: float
+
+    class Config:
+        schema_extra = {
+            "examples": [
+                {
+                    "request_id": "request-id-1234",
+                    "max_plus": 5.5,
+                }
+            ]
+        }
+
+class PostgresMessage(ComponentMessage):
     request_id: str
     max_plus: float
 

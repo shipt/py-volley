@@ -67,8 +67,9 @@ queue_config = {
 }
 
 engine = Engine(
-  input_queue="input-topic",
-  output_queues=["output-topic"],
+  app_name="my_volley_app",
+  input_queue="input-queue",
+  output_queues=["output-queue"],
   dead_letter_queue="dead-letter-queue",
   queue_config=queue_config
 )
@@ -134,6 +135,7 @@ class MessageB(ComponentMessage):
 ```python
 # my_components/my_component.py
 engine = Engine(
+  app_name="my_volley_app",
   input_queue="my_input",
   output_queues=["queue_a", "queue_b"]
 )
@@ -177,6 +179,7 @@ from volley.engine import Engine
 
 
 engine = Engine(
+  app_name="my_volley_app",
   input_queue="my_input",
   output_queues=["queue_a"]
 )

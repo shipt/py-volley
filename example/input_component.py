@@ -22,7 +22,7 @@ def main(msg: InputMessage) -> List[Tuple[str, Comp1Message]]:
 
     output_msg = Comp1Message(request_id=req_id, max_value=max_val)
 
-    logger.info(f"{req_id=}: {values=}")
+    logger.info(f"{req_id=}: {output_msg=}")
 
     return [("comp_1", output_msg)]
 

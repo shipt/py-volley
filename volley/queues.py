@@ -1,13 +1,19 @@
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, Dict, List, Union
+from typing import Dict, List
 
 from jinja2 import Template
 
 from volley.config import APP_ENV, GLOBALS, import_module_from_string, load_yaml
 from volley.connectors.base import Consumer, Producer
-from volley.data_models import ComponentMessage
 from volley.logging import logger
+from volley.serializers.base import BaseSerialization
+
+
+class DLQNotConfiguredError(Exception):
+    """raised when message processes fails and no DLQ configured"""
+
+    pass
 
 
 class ConnectionType(Enum):
@@ -28,20 +34,18 @@ class Queue:
     # system name for the queue. for example, some really long kafka topic name
     value: str
 
-    schema: str
+    schema: type
     type: str
 
     consumer: str
     producer: str
 
+    serializer: BaseSerialization
+
     # initialized queue connection
     # these get initialized by calling connect()
     consumer_con: Consumer = field(init=False)
     producer_con: Producer = field(init=False)
-
-    # initialized schema model
-    # these gets loaded by calling init_schema()
-    model_class: Union[ComponentMessage, Dict[str, Any]] = field(init=False)
 
     def connect(self, con_type: ConnectionType) -> None:
         """instantiate the connector class"""
@@ -53,13 +57,6 @@ class Queue:
             self.producer_con = _class(queue_name=self.value)
         else:
             logger.error(f"{con_type=} is not valid")
-
-    def init_schema(self) -> None:
-        """load the schema class"""
-        if self.schema in ["dict"]:
-            self.model_class = dict  # type: ignore
-        else:
-            self.model_class = import_module_from_string(self.schema)
 
 
 def yaml_to_dict_config(yaml_path: str) -> Dict[str, List[dict[str, str]]]:
@@ -93,7 +90,7 @@ def apply_defaults(config: Dict[str, List[Dict[str, str]]]) -> Dict[str, List[Di
     global_configs = load_yaml(GLOBALS)
     global_connectors = global_configs["connectors"]
     default_queue_schema = global_configs["schemas"]["default"]
-
+    default_serializer = global_configs["serializers"]["default"]
     # apply default queue configurations
     for queue in config["queues"]:
         # for each defined queue, validate there is a consumer & producer defined
@@ -108,10 +105,13 @@ def apply_defaults(config: Dict[str, List[Dict[str, str]]]) -> Dict[str, List[Di
         if "schema" not in queue:
             queue["schema"] = default_queue_schema
 
+        if "serializer" not in queue:
+            queue["serializer"] = default_serializer
+
     return config
 
 
-def config_to_queue_map(configs: List[dict[str, Any]]) -> Dict[str, Queue]:
+def config_to_queue_map(configs: List[dict[str, str]]) -> Dict[str, Queue]:
     """
 
     Overrides anything in yaml.
@@ -122,14 +122,31 @@ def config_to_queue_map(configs: List[dict[str, Any]]) -> Dict[str, Queue]:
 
     for q in configs:
         qname = q["name"]
+
+        # serializers are optional
+        # users are allowed to pass message to a producer "as is"
+        if q["serializer"] in (None, "disabled", "None"):
+            serializer = import_module_from_string("volley.serializers.base.NullSerializer")()
+        else:
+            # serializer is initialized
+            serializer = import_module_from_string(q["serializer"])()
+
+        # init schema data models
+        config_schema: str = q["schema"]
+        if config_schema not in ("dict"):
+            schema: type = import_module_from_string(config_schema)
+        else:
+            schema = dict
+
         try:
             input_output_queues[qname] = Queue(
                 name=qname,
                 value=q["value"],
-                schema=q["schema"],
+                schema=schema,
                 type=q["type"],
                 consumer=q["consumer"],
                 producer=q["producer"],
+                serializer=serializer,
             )
         except KeyError:
             logger.warning(f"Queue '{qname}' not found in configuraiton")

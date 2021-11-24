@@ -4,19 +4,25 @@ from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from prometheus_client import Counter, Summary, start_http_server
-from pydantic import ValidationError
 
 from volley.config import METRICS_ENABLED, METRICS_PORT
-from volley.data_models import ComponentMessage, ComponentMessageType, QueueMessage
+from volley.data_models import (
+    ComponentMessage,
+    ComponentMessageType,
+    QueueMessage,
+    schema_handler,
+)
 from volley.logging import logger
 from volley.queues import (
     ConnectionType,
+    DLQNotConfiguredError,
     Queue,
     apply_defaults,
     config_to_queue_map,
     dict_to_config,
     yaml_to_dict_config,
 )
+from volley.serializers.base import handle_serializer
 from volley.util import GracefulKiller
 
 # enables mocking the infinite loop to finite
@@ -82,12 +88,10 @@ class Engine:
 
             # intialize connections to each queue, and schemas
             self.queue_map[self.input_queue].connect(con_type=ConnectionType.CONSUMER)
-            self.queue_map[self.input_queue].init_schema()
             # we only want to connect to queues passed in to Engine()
             # there can be more queues than we need defined in the configuration yaml
             for out_q_name in self.output_queues:
                 self.queue_map[out_q_name].connect(con_type=ConnectionType.PRODUCER)
-                self.queue_map[out_q_name].init_schema()
 
             # queue connections were setup above. now we can start to interact with the queues
             # alias for input connection readability
@@ -103,27 +107,47 @@ class Engine:
                     time.sleep(POLL_INTERVAL)
                     continue
 
+                # typing for producing
                 outputs: Optional[List[Tuple[str, ComponentMessage]]] = []
-                # every queue has a schema - validate the data coming off the queue
-                # we are using pydantic to validate the data.
-                try:
-                    serialized_message: Union[ComponentMessageType, Dict[Any, Any]] = self.queue_map[  # type: ignore
-                        self.input_queue
-                    ].model_class(**in_message.message)
-                except ValidationError:
-                    logger.exception(
-                        f"""
-                        Error validating message from {input_con.value}"""
-                    )
-                    if self.dead_letter_queue not in self.queue_map:
-                        logger.error("DLQ not configured. Processing will fail")
-                        raise NotImplementedError
-                    else:
-                        outputs = [(self.dead_letter_queue, ComponentMessage.parse_obj(in_message.message))]
 
+                # input serialization
+                deserialized_msg: Any
+                deserialized_success: bool = False
+                dlq_message: str = "NONE"
+                deserialized_msg, deserialized_success = handle_serializer(
+                    serializer=input_con.serializer, operation="deserialize", message=in_message.message
+                )
+
+                if deserialized_success:
+                    # schema validation can only happen if deserialization succeeds
+                    validated_message: ComponentMessageType
+                    validated_success: bool = False
+                    validated_message, validated_success = schema_handler(
+                        schema=input_con.schema, message=deserialized_msg
+                    )
+                else:
+                    # serialized failed, try to send this message to DLQ
+                    dlq_message = in_message.message
+
+                if not validated_success:
+                    dlq_message = deserialized_msg
+
+                if dlq_message == "NONE":
+                    # happy path
+                    pass
+                elif self.dead_letter_queue in self.queue_map and dlq_message != "NONE":
+                    # DLQ is configured and there is a message ready for the DLQ
+                    outputs = [(self.dead_letter_queue, ComponentMessage(error_msg=dlq_message))]
+                else:
+                    # things have gone wrong w/ the message and no DLQ configured
+                    raise DLQNotConfiguredError(f"Deserializing {in_message.message} failed")
+
+                # component processing
                 if not outputs:
+                    # this is happy path
+                    # if outputs have been assigned it means this message is destined for a DLQ
                     _start_main = time.time()
-                    outputs = func(serialized_message)
+                    outputs = func(validated_message)
                     _fun_duration = time.time() - _start_main
                     PROCESS_TIME.labels("component").observe(_fun_duration)
 
@@ -144,7 +168,9 @@ class Engine:
                             logger.exception(f"{qname} is not defined in this component's output queue list")
 
                         try:
-                            status = out_queue.producer_con.produce(queue_name=out_queue.value, message=q_msg)
+                            # serialize message
+                            serialized = out_queue.serializer.serialize(q_msg.message)
+                            status = out_queue.producer_con.produce(queue_name=out_queue.value, message=serialized)
                             MESSAGES_PRODUCED.labels(destination=qname).inc()
                         except Exception:
                             logger.exception("failed producing message")

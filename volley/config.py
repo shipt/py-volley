@@ -33,7 +33,7 @@ def load_yaml(file_path: Union[str, Path]) -> Dict[str, Any]:
     return cfg
 
 
-def import_module_from_string(module_str: str) -> Any:
+def import_module_from_string(module_str: str) -> type:
     """returns the module given its string path
     for example:
         'volley.data_models.ComponentMessage'
@@ -44,4 +44,5 @@ def import_module_from_string(module_str: str) -> Any:
     class_obj = modules[-1]
     pathmodule = ".".join(modules[:-1])
     module = importlib.import_module(pathmodule)
-    return getattr(module, class_obj)
+    t: type = getattr(module, class_obj)
+    return t

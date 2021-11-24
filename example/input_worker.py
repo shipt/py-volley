@@ -6,9 +6,7 @@ from volley.logging import logger
 
 eng = Engine(
     input_queue="input-topic",
-    # output_queues=["redis_queue"],
-    output_queues=["output-topic"],
-    # output_queues=["redis_queue", "postgres_queue"],
+    output_queues=["redis_queue", "postgres_queue", "output-topic"],
     yaml_config_path="./example/volley_config.yml",
     dead_letter_queue="dead-letter-queue",
 )
@@ -23,13 +21,13 @@ def main(msg: InputMessage) -> List[Tuple[str, Queue1Message]]:
 
     max_val = max(values)
 
-    # q1_msg = Queue1Message(request_id=req_id, max_value=max_val)
-    # return [("redis_queue", q1_msg)]
+    q1_msg = Queue1Message(request_id=req_id, max_value=max_val)
+    pg_msg = PostgresMessage(request_id=req_id, max_plus=max_val)
 
-    output_msg = PostgresMessage(request_id=req_id, max_plus=max_val)
     return [
-        ("postgres_queue", output_msg),
-        ("redis_queue", q1_msg)
+        ("redis_queue", q1_msg),
+        ("postgres_queue", pg_msg),
+        ("output-topic", q1_msg)
     ]
 
 if __name__ == "__main__":

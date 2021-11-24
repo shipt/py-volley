@@ -68,8 +68,8 @@ queue_config = {
 
 engine = Engine(
   app_name="my_volley_app",
-  input_queue="input-queue",
-  output_queues=["output-queue"],
+  input_queue="input-topic",
+  output_queues=["output-topic"],
   dead_letter_queue="dead-letter-queue",
   queue_config=queue_config
 )

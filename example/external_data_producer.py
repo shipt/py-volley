@@ -21,10 +21,7 @@ def main() -> None:
     while True:
         # data = InputMessage.schema()["examples"][0]
         uuid = str(uuid4())[:8]
-        data = {
-            "list_of_values": [1, 2, 3, 4.5],
-            "request_id": f"{uuid}-{i}"
-        }
+        data = {"list_of_values": [1, 2, 3, 4.5], "request_id": f"{uuid}-{i}"}
         p.publish(input_topic, data, serialize=True)
         logger.info(f"{data=}")
         time.sleep(2)

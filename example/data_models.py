@@ -48,6 +48,7 @@ class OutputMessage(ComponentMessage):
             ]
         }
 
+
 class PostgresMessage(ComponentMessage):
     request_id: str
     max_plus: float

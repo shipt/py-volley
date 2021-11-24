@@ -14,7 +14,7 @@ from volley.queues import Queue, available_queues
 def main() -> None:
     """produces example data to a topic. mimics a data producer external to Volley"""
     queues: Dict[str, Queue] = available_queues("./example/volley_config.yml")
-    input_topic = queues["input-queue"].value
+    input_topic = queues["input-topic"].value
     logger.info(f"{input_topic=}")
     p = KafkaProducer()
     i = 0
@@ -24,7 +24,7 @@ def main() -> None:
         data["request_id"] = f"{uuid}-{i}"
         p.publish(input_topic, data, serialize=True)
         logger.info(f"{data=}")
-        time.sleep(10)
+        time.sleep(2)
         i += 1
 
 

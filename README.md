@@ -29,6 +29,8 @@ pip install py-volley \
 
 ## Getting started
 
+A full example is provided in `./example`. Run this example locally with `make run.example`.
+
 Components are implemented as a function decorated with an instance of the `volley.engine.Engine`. A component consumes from one queue and can publish to one or many queues.
 
 A component function takes in `input_object` of type: `ComponentMessage`, which is a Pydantic model that accepts extra attributes. This model defines the schema of messages on the INPUT_QUEUE. The component function can process and modify that object to meet its needs.

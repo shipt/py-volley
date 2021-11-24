@@ -341,7 +341,6 @@ All metrics contain the label `volley_app` which is directly tied to the `app_na
     - `read` : time to read a message from the queue
     - `delete` : time to delete a message from the queue
     - `write` : time to add a message to the queue
-    - `delete` : time to delete a message from the queue
 
 
 Applications can export their own metrics as well. Examples in the Prometheus official [python client](https://github.com/prometheus/client_python) are a greaet place to start. The Volley exporter will collect these metrics are export expose them to be scraped by a Prometheus server.

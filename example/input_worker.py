@@ -1,11 +1,7 @@
 from typing import List, Tuple
 
-from example.data_models import (
-    ComponentMessage,
-    InputMessage,
-    PostgresMessage,
-    Queue1Message,
-)
+from example.data_models import InputMessage, PostgresMessage, Queue1Message
+from volley.data_models import ComponentMessage
 from volley.engine import Engine
 from volley.logging import logger
 
@@ -18,7 +14,7 @@ eng = Engine(
 
 
 @eng.stream_app
-def main(msg: InputMessage) -> List[Tuple[str, Queue1Message]]:
+def main(msg: InputMessage) -> List[Tuple[str, ComponentMessage]]:
 
     req_id = msg.request_id
     values = msg.list_of_values

@@ -1,6 +1,11 @@
 from typing import List, Tuple
 
-from example.data_models import Queue1Message, InputMessage, ComponentMessage, PostgresMessage
+from example.data_models import (
+    ComponentMessage,
+    InputMessage,
+    PostgresMessage,
+    Queue1Message,
+)
 from volley.engine import Engine
 from volley.logging import logger
 
@@ -24,11 +29,8 @@ def main(msg: InputMessage) -> List[Tuple[str, Queue1Message]]:
     q1_msg = Queue1Message(request_id=req_id, max_value=max_val)
     pg_msg = PostgresMessage(request_id=req_id, max_plus=max_val)
 
-    return [
-        ("redis_queue", q1_msg),
-        ("postgres_queue", pg_msg),
-        ("output-topic", q1_msg)
-    ]
+    return [("redis_queue", q1_msg), ("postgres_queue", pg_msg), ("output-topic", q1_msg)]
+
 
 if __name__ == "__main__":
     main()

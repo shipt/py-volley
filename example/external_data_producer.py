@@ -6,7 +6,6 @@ from uuid import uuid4
 
 from pyshipt_streams import KafkaProducer
 
-from example.data_models import InputMessage
 from volley.logging import logger
 from volley.queues import Queue, available_queues
 

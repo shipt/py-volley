@@ -68,15 +68,17 @@ class Engine:
             cfg: dict[str, List[dict[str, str]]] = dict_to_config(self.queue_config)
         else:
             logger.info(f"loading configuration from {self.yaml_config_path}")
+            cfg = yaml_to_dict_config(yaml_path=self.yaml_config_path)
 
         # handle DLQ
         if self.dead_letter_queue is not None:
             # if provided by user, DLQ becomes a producer target
+            if not any([self.dead_letter_queue == x["name"] for x in cfg["queues"]]):
+                raise ValueError(f"{self.dead_letter_queue} not present in configuration")
             self.output_queues.append(self.dead_letter_queue)
         else:
             logger.warning("DLQ not provided. Application will crash on schema violations")
 
-            cfg = yaml_to_dict_config(yaml_path=self.yaml_config_path)
         cfg = apply_defaults(cfg)
         self.queue_map = config_to_queue_map(cfg["queues"])
         logger.info(f"Queues initialized: {list(self.queue_map.keys())}")

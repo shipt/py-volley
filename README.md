@@ -2,6 +2,8 @@
 
 Forked from https://github.com/shipt/ml-bundle-engine. Provides an extensible interface to queues with built in support for Kafka and [RSMQ](https://github.com/mlasevich/PyRSMQ) (Redis Simple Message Queue).
 
+Use Volley if you need to quickly get up and running with a Python streaming application that consumes messages, processes them (and do other things), then publish results to some place.
+
 # Installation
 
 1. Acquire creds to pypi.shipt.com #ask-machine-learning or #ask-info-sec
@@ -28,6 +30,11 @@ pip install py-volley \
 - `./example/external_data_consumer.py` consumes from `output-topic` and logs to console.
 
 ## Getting started
+
+Check out projects already using Volley:
+  - [TLMD Future Route Actualizer](https://github.com/shipt/tlmd-future-route-actualizer) - Single worker that consumes from Kafka, does processing and invokes ML models, then publishes results to Kafka.
+  - [Bundle Optimization Engine](https://github.com/shipt/ml-bundle-engine) - Collection of workers that consume/produce to Kafka, Redis, and Postgres. 
+
 
 A full example is provided in `./example`. Run this example locally with `make run.example`.
 

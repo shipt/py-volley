@@ -12,9 +12,8 @@ queue_config = {
     "redis_queue": {
         "value": "long_name_1",
         "type": "rsmq",
+        # parse messages from RSMQ to a dictionary
         "schema": "dict",
-        "producer": "example.plugins.my_plugin.MyPGProducer",
-        "consumer": "example.plugins.my_plugin.MyPGConsumer",
     },
     "postgres_queue": {
         "value": "my_long_table_name",

@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 from dataclasses import dataclass
@@ -31,8 +30,9 @@ class KafkaConsumer(Consumer):
             try:
                 component_name = sys.argv[1]
                 consumer_group = f"{APP_ENV}_{component_name}"
-            except KeyError:
+            except Exception:
                 logger.exception("Kafka Consumer group not specified")
+                raise
 
         logger.info(f"Kafka {consumer_group=}")
         self.consumer_group: str = consumer_group
@@ -60,8 +60,7 @@ class KafkaConsumer(Consumer):
             logger.warning(message.error())
             message = None
         else:
-            msg = json.loads(message.value().decode("utf-8"))
-            return QueueMessage(message_id=message, message=msg)
+            return QueueMessage(message_id=message, message=message.value())
 
     def delete_message(self, queue_name: str, message_id: str = None) -> bool:
         # self.c.consumer.store_offsets(message=message_id)
@@ -81,9 +80,8 @@ class KafkaProducer(Producer):
         self.p = KProducer()
         logger.info(f"Kafka Config: {self.p.config}")
 
-    def produce(self, queue_name: str, message: QueueMessage) -> bool:
-        value = json.dumps(message.message, default=str).encode("utf-8")
-        self.p.publish(topic=queue_name, value=value)
+    def produce(self, queue_name: str, message: bytes) -> bool:
+        self.p.publish(topic=queue_name, value=message)
         return True
 
     def shutdown(self) -> None:

@@ -1,17 +1,44 @@
 import os
 import time
+from typing import Dict, NamedTuple
 
 import confluent_kafka.admin
+from pytest import fixture
 
-# time for Kafka broker to init
-time.sleep(5)
+from volley.queues import Queue, available_queues
 
-input_topic = "localhost.bus.ds-marketplace.v1.bundle_engine_input"
-output_topic = "localhost.bus.ds-marketplace.v1.bundle_engine_output"
-dlq = "localhost.bus.ds-marketplace.v1.bundle_engine_dlq"
-brokers = os.environ["KAFKA_BROKERS"]
-conf = {"bootstrap.servers": brokers}
-admin = confluent_kafka.admin.AdminClient(conf)
-topics = [confluent_kafka.admin.NewTopic(x, 1, 1) for x in [input_topic, output_topic, dlq]]
-admin.create_topics(topics)
-# TODO: can we stop here and validate topics are created before proceeding?
+queues: Dict[str, Queue] = available_queues("./example/volley_config.yml")
+
+
+class Environment(NamedTuple):
+    brokers: str
+    input_topic: str
+    output_topic: str
+    dlq: str
+
+
+env = Environment(
+    brokers=os.environ["KAFKA_BROKERS"],
+    input_topic=queues["input-queue"].value,
+    output_topic=queues["output-queue"].value,
+    dlq=queues["dead-letter-queue"].value,
+)
+
+
+@fixture
+def environment() -> Environment:
+    return env
+
+
+def create_topics() -> None:
+    # time for Kafka broker to init
+    time.sleep(5)
+    conf = {"bootstrap.servers": env.brokers}
+    admin = confluent_kafka.admin.AdminClient(conf)
+    topics = [confluent_kafka.admin.NewTopic(x, 1, 1) for x in [env.input_topic, env.output_topic, env.dlq]]
+    admin.create_topics(topics)
+    # TODO: add assertion for topics successfully created
+    assert True
+
+
+create_topics()

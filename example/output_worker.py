@@ -12,6 +12,7 @@ queue_config = {
     "postgres_queue": {
         "value": "longer_name",
         "type": "postgres",
+        "serializer": "disabled",
         "schema": "volley.data_models.ComponentMessage",
         "producer": "example.plugins.my_plugin.MyPGProducer",
         "consumer": "example.plugins.my_plugin.MyPGConsumer",
@@ -30,11 +31,11 @@ eng = Engine(input_queue="queue_2", output_queues=["output-topic"], queue_config
 def main(msg: ComponentMessage) -> Optional[List[Tuple[str, ComponentMessage]]]:
     if msg.results:  # type: ignore
         req_id = msg.results[0]["request_id"]  # type: ignore
-        max_plus_1 = msg.results[0]["max_plus_1"]  # type: ignore
+        max_plus = msg.results[0]["max_plus"]  # type: ignore
 
-        output_msg = OutputMessage(request_id=req_id, max_plus=max_plus_1)
+        output_msg = OutputMessage(request_id=req_id, max_plus=max_plus)
 
-        logger.info(f"{req_id=}: {max_plus_1=}")
+        logger.info(f"{req_id=}: {max_plus=}")
         return [("postgres_queue", output_msg)]
     else:
         time.sleep(1)

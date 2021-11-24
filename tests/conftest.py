@@ -1,10 +1,9 @@
 import json
 import os
-from dataclasses import dataclass
-from typing import Any, Callable, Generator
+from random import randint
+from typing import Any, Callable, Generator, Optional
 from unittest.mock import MagicMock, patch
 
-import numpy as np
 from pytest import MonkeyPatch, fixture
 
 from volley.connectors import KafkaConsumer, KafkaProducer, RSMQConsumer, RSMQProducer
@@ -56,12 +55,13 @@ def mock_rsmq_consumer() -> RSMQConsumer:
         return c
 
 
-@dataclass
 class KafkaMessage:
+    _offset: int = randint(1, 200)
+    _error_msg = "MOCK ERROR"
 
-    _error: bool = False
-    _offset: int = np.random.randint(1, 200)
-    _value: bytes = json.dumps({"kafka": "message"}).encode("utf-8")
+    def __init__(self, error: bool = False, msg: Optional[bytes] = None) -> None:
+        self._error = error
+        self._value = msg
 
     def error(self) -> bool:
         return self._error
@@ -69,7 +69,7 @@ class KafkaMessage:
     def offset(self) -> int:
         return self._offset
 
-    def value(self) -> bytes:
+    def value(self) -> Optional[bytes]:
         return self._value
 
 
@@ -77,7 +77,7 @@ class KafkaMessage:
 def mock_kafka_consumer() -> KafkaConsumer:
     with patch("volley.connectors.kafka.KConsumer"):
         c = KafkaConsumer(host="kafka", queue_name="test")
-        c.c.poll = MagicMock(return_value=KafkaMessage())
+        c.c.poll = MagicMock(return_value=KafkaMessage(msg=b'{"random": "message"}'))
         return c
 
 

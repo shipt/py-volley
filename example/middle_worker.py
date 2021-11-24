@@ -7,8 +7,8 @@ from volley.engine import Engine
 from volley.logging import logger
 
 eng = Engine(
-    input_queue="queue_1",
-    output_queues=["queue_2", "output-topic"],
+    input_queue="redis_queue",
+    output_queues=["postgres_queue", "output-topic"],
     yaml_config_path="./example/volley_config.yml",
 )
 
@@ -27,7 +27,7 @@ def main(msg: Any) -> List[Tuple[str, ComponentMessage]]:
 
     logger.info(f"{req_id=}: {max_val=}")
     return [
-        ("queue_2", output_msg),
+        ("postgres_queue", output_msg),
         ("output-topic", output_msg)
     ]
 

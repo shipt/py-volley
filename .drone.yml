@@ -50,6 +50,16 @@ steps:
       POETRY_HTTP_BASIC_SHIPT_PASSWORD:
         from_secret: SHIPT_PYPI_PASSWORD
 
+  - name: cleanup-test-integration
+    image: docker/compose
+    volumes:
+      - name: docker_socket
+        path: /var/run/docker.sock
+    commands:
+      - docker-compose down --remove-orphans
+    depends_on:
+      - test-integration
+
   - name: publish-release
     image: python:3.9.4
     environment:

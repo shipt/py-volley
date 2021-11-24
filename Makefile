@@ -58,7 +58,6 @@ test.clean:
 	-docker image prune -f
 test.integration: run.datastores run.components
 	docker-compose up int-tests
-	docker-compose down
 test.unit: setup
 	poetry run coverage run -m pytest -s \
 			--ignore=tests/integration_tests \

@@ -67,7 +67,11 @@ test.unit: setup
             --cov-report term
 
 run.components:
-	docker-compose up -d input_component component_1 output_component
+	docker-compose up -d input_worker middle_worker
+run.example: run.datastores run.components run.externals
+	docker compose up --build -d data_producer input_worker middle_worker data_consumer
+run.externals:
+	docker compose up --build -d data_producer data_consumer
 run.datastores:
 	docker-compose up -d redis kafka zookeeper postgres
 run:

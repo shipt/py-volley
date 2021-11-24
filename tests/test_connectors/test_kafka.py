@@ -28,7 +28,7 @@ def test_kafka_consumer_success(mock_kafka_consumer: Consumer) -> None:
 @patch("volley.connectors.kafka.KConsumer")
 def test_consume(mock_consumer: MagicMock) -> None:
     mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=b'{"random": "message"}')
-    b = KafkaConsumer(host="localhost", queue_name="input-queue")
+    b = KafkaConsumer(host="localhost", queue_name="input-topic")
     q_message = b.consume()
     assert isinstance(q_message, QueueMessage)
 
@@ -37,7 +37,7 @@ def test_consume(mock_consumer: MagicMock) -> None:
 @patch("volley.connectors.kafka.KConsumer")
 def test_consume_none(mock_consumer: MagicMock) -> None:
     mock_consumer.return_value.poll = lambda x: None
-    b = KafkaConsumer(host="localhost", queue_name="input-queue")
+    b = KafkaConsumer(host="localhost", queue_name="input-topic")
     q_message = b.consume()
     assert q_message is None
 
@@ -46,7 +46,7 @@ def test_consume_none(mock_consumer: MagicMock) -> None:
 @patch("volley.connectors.kafka.KConsumer")
 def test_consume_error(mock_consumer: MagicMock) -> None:
     mock_consumer.return_value.poll = lambda x: KafkaMessage(error=True)
-    b = KafkaConsumer(host="localhost", queue_name="input-queue")
+    b = KafkaConsumer(host="localhost", queue_name="input-topic")
     q_message = b.consume()
     assert q_message is None
 
@@ -57,14 +57,15 @@ def test_consumer_group_init(mock_consumer: MagicMock, monkeypatch: MonkeyPatch)
         random_consumer_group = str(uuid4())
         m.setenv("KAFKA_CONSUMER_GROUP", random_consumer_group)
         m.setenv("KAFKA_BROKERS", "rando_kafka:9092")
-        consumer = KafkaConsumer(queue_name="input-queue")
+
+        consumer = KafkaConsumer(queue_name="input-topic")
         assert consumer.consumer_group == random_consumer_group
 
         m.delenv("KAFKA_CONSUMER_GROUP")
-        consumer = KafkaConsumer(queue_name="input-queue")
+        consumer = KafkaConsumer(queue_name="input-topic")
         assert APP_ENV in consumer.consumer_group
 
         m.setattr(sys, "argv", "")
         with raises(Exception):
             # fallback to parsing sys.argv fails if its not provided
-            KafkaConsumer(queue_name="input-queue")
+            KafkaConsumer(queue_name="input-topic")

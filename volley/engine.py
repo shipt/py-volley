@@ -126,15 +126,15 @@ class Engine:
                     serializer=input_con.serializer, operation="deserialize", message=in_message.message
                 )
 
+                validated_success: bool = False
                 if deserialized_success:
                     # schema validation can only happen if deserialization succeeds
                     validated_message: ComponentMessageType
-                    validated_success: bool = False
                     validated_message, validated_success = schema_handler(
                         schema=input_con.schema, message=deserialized_msg
                     )
                 else:
-                    # serialized failed, try to send this message to DLQ
+                    # serialize failed, try to send this message to DLQ
                     dlq_message = in_message.message
 
                 if not validated_success:

@@ -1,24 +1,24 @@
 queues:
-  - name: input-queue
-    value: "{{ env }}.kafka.input"
+  - name: input-topic
+    value: "localhost.kafka.input"
     type: kafka
     schema: example.data_models.InputMessage
-  - name: comp_1
-    value: comp1
+  - name: redis_queue
+    value: long_name_1
     type: rsmq
     schema: dict
-  - name: test_queue_plugin
-    value: q42
+  - name: postgres_queue
+    value: my_long_table_name
     type: postgres
-    schema: volley.data_models.ComponentMessage
+    schema: example.data_models.PostgresMessage
     serializer: None
     producer: example.plugins.my_plugin.MyPGProducer
     consumer: example.plugins.my_plugin.MyPGConsumer
-  - name: output-queue
-    value: "{{ env }}.kafka.output"
+  - name: output-topic
+    value: "localhost.kafka.output"
     type: kafka
     schema: example.data_models.OutputMessage
   - name: dead-letter-queue
-    value: "{{ env }}.kafka.dlq"
+    value: "localhost.kafka.dlq"
     type: kafka
     schema: volley.data_models.ComponentMessage

@@ -1,10 +1,12 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any
 
 from sqlalchemy import Column, Float, MetaData, String, Table, create_engine, text
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.sqltypes import DateTime
 
 from volley.connectors.base import Consumer, Producer
 from volley.data_models import QueueMessage
@@ -20,10 +22,11 @@ metadata_obj = MetaData()
 
 
 queue_table = Table(
-    "my_queue_table",
+    "my_long_table_name",
     metadata_obj,
     Column("request_id", String(40), nullable=False),
-    Column("max_plus_1", Float),
+    Column("max_plus", Float),
+    Column("message_sent_at", DateTime),
 )
 
 
@@ -43,15 +46,15 @@ class MyPGConsumer(Consumer):
         """returns a random value"""
         sql = """
             BEGIN;
-            DELETE FROM my_queue_table
+            DELETE FROM my_long_table_name
             USING (
                 SELECT *
-                FROM my_queue_table
+                FROM my_long_table_name
                 LIMIT 1
                 FOR UPDATE SKIP LOCKED
             ) q
-            WHERE q.request_id = my_queue_table.request_id
-            RETURNING my_queue_table.*;
+            WHERE q.request_id = my_long_table_name.request_id
+            RETURNING my_long_table_name.*;
         """
         records = [r._mapping for r in self.session.execute(text(sql))]
 
@@ -78,8 +81,9 @@ class MyPGProducer(Producer):
     def produce(self, queue_name: str, message: dict[str, Any]) -> bool:
         logger.info(f"produced message to: {queue_name=} - message={message}")
         vals = {
+            "message_sent_at": datetime.now(),
             "request_id": message["request_id"],
-            "max_plus_1": message["max_plus_1"],
+            "max_plus": message["max_plus"],
         }
         insert_stmt = insert(queue_table).values(**vals)
         with self.engine.begin() as c:

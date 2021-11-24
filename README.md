@@ -24,10 +24,10 @@ pip install py-volley \
 4. Run the pre-built exampe:
 `docker-compose up --build`
 
-- `./example/external_data_producer.py` publishes sample data to `input-queue` Kafka topic.
-- `./example/input_component/py` consumes from `input-queue` and publishes to `comp_1` RSMQ queue. 
-- `./example/comp1.py` consumes from `comp_1` RSMQ and publishes to `output-queue` Kafka topic.
-- `./example/external_data_consumer.py` consumes from `output-queue` and logs to console.
+- `./example/external_data_producer.py` publishes sample data to `input-topic` Kafka topic.
+- `./example/input_worker.py` consumes from `input-topic` and publishes to `comp_1` RSMQ queue. 
+- `./example/comp1.py` consumes from `comp_1` RSMQ and publishes to `output-topic` Kafka topic.
+- `./example/external_data_consumer.py` consumes from `output-topic` and logs to console.
 
 ## Getting started
 
@@ -39,9 +39,9 @@ Components output a list of tuples, where the tuple is defined as `(<name_of_que
  The returned component message type must agree with the type accepted by the queue you are publishing to.
 
 Below is a basic example that:
-1) consumes from `input-queue` (a kafka topic).
+1) consumes from `input-topic` (a kafka topic).
 2) evaluates the message from the queue
-3) publishes a message to `output-queue` (also kafka topic)
+3) publishes a message to `output-topic` (also kafka topic)
 4) Provides a path to a pydantic model that provides schema validation to both inputs and outputs.
 5) Configures a dead-letter queue for any incoming messages that violate the specified schema.
 
@@ -52,12 +52,12 @@ from volley.engine import Engine
 from volley.data_models import ComponentMessage
 
 queue_config = {
-    "input-queue": {
+    "input-topic": {
       "value": "stg.kafka.myapp.input",
       "type": "kafka",
       "schema": "example.data_models.InputMessage",  # for input validation
     },
-    "output-queue": {
+    "output-topic": {
       "value": "stg.ds-marketplace.v1.my_kafka_topic_output",
       "type": "kafka",
       "schema": "example.data_models.OutputMessage",  # for output validation
@@ -69,8 +69,8 @@ queue_config = {
 }
 
 engine = Engine(
-  input_queue="input-queue",
-  output_queues=["output-queue"],
+  input_queue="input-topic",
+  output_queues=["output-topic"],
   dead_letter_queue="dead-letter-queue",
   queue_config=queue_config
 )
@@ -84,7 +84,7 @@ def hello_world(msg: InputMessage) -> List[Tuple[str, OutputMessage]]:
   
   out = ComponentMessage(hello=out_value)
 
-  return [("output-queue", out)]
+  return [("output-topic", out)]
 ```
 
 ## Another Example:

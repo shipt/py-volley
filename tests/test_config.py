@@ -55,7 +55,7 @@ def test_dict_to_config(config_dict: dict[str, dict[str, str]]) -> None:
 
 def test_apply_defaults(config_dict: dict[str, dict[str, str]]) -> None:
     """assert global defaults get applied when not specified"""
-    del config_dict["input-queue"]["schema"]
+    del config_dict["input-topic"]["schema"]
     config = dict_to_config(config_dict)
     defaulted = apply_defaults(config)
     for q in defaulted["queues"]:

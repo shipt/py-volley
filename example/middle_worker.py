@@ -13,7 +13,7 @@ queue_config = {
         "value": "long_name_1",
         "type": "rsmq",
         # parse messages from RSMQ to a dictionary
-        "schema": "dict",
+        "schema": "volley.data_models.ComponentMessage",
     },
     "postgres_queue": {
         "value": "my_long_table_name",

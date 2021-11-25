@@ -140,9 +140,10 @@ class Engine:
                 else:
                     # serialize failed, try to send this message to DLQ
                     dlq_message = in_message.message
-                    logger.error(f"{input_con.serializer=} failed")
+                    logger.warning(f"{input_con.serializer=} failed")
 
-                if not validated_success:
+                if not validated_success and deserialized_success:
+                    logger.warning(f"schema '{input_con.schema=}' validation failed")
                     dlq_message = deserialized_msg
 
                 if dlq_message == "NONE":
@@ -177,13 +178,13 @@ class Engine:
                         try:
                             out_queue = self.queue_map[qname]
                         except KeyError as e:
-                            raise NameError(
-                                f"Function returned output queue {e} but it is not defined in this component's output queue list"
-                            )
+                            raise NameError(f"App not configured for output queue {e}")
 
                         # prepare and validate output message
                         if not isinstance(component_msg, out_queue.schema) and out_queue.schema is not None:
-                            raise TypeError(f"{out_queue.name} requires message of type {out_queue.schema}")
+                            raise TypeError(
+                                f"{out_queue.name=} expected '{out_queue.schema}' - object is '{component_msg}'"
+                            )
 
                         q_msg = QueueMessage(message_id=None, message=component_msg.dict())
                         try:
@@ -194,7 +195,7 @@ class Engine:
                                 volley_app=self.app_name, source=input_con.name, destination=qname
                             ).inc()
                         except Exception:
-                            logger.exception("failed producing message")
+                            logger.exception(f"failed producing message to {out_queue.name}")
                             status = False
                         all_produce_status.append(status)
 

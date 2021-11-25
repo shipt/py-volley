@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Dict, List
+from typing import Any, Dict, List, Optional
 
 from jinja2 import Template
 
@@ -47,14 +47,18 @@ class Queue:
     consumer_con: Consumer = field(init=False)
     producer_con: Producer = field(init=False)
 
+    # optional configurations to pass through to connectors
+    consumer_config: dict[str, str] = field(default_factory=dict)
+    producer_config: dict[str, str] = field(default_factory=dict)
+
     def connect(self, con_type: ConnectionType) -> None:
         """instantiate the connector class"""
         if con_type == ConnectionType.CONSUMER:
             _class = import_module_from_string(self.consumer)
-            self.consumer_con = _class(queue_name=self.value)
+            self.consumer_con = _class(queue_name=self.value, config=self.consumer_config)
         elif con_type == ConnectionType.PRODUCER:
             _class = import_module_from_string(self.producer)
-            self.producer_con = _class(queue_name=self.value)
+            self.producer_con = _class(queue_name=self.value, config=self.producer_config)
         else:
             raise TypeError(f"{con_type=} is not valid")
 
@@ -144,6 +148,8 @@ def config_to_queue_map(configs: List[dict[str, str]]) -> Dict[str, Queue]:
                 consumer=q["consumer"],
                 producer=q["producer"],
                 serializer=serializer,
+                consumer_config=q.get("consumer_config", {}), # type: ignore
+                producer_config=q.get("producer_config", {}), # type: ignore
             )
         except KeyError as e:
             logger.exception(f"{qname} is missing the {e} attribute")

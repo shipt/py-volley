@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from volley.data_models import QueueMessage
@@ -11,6 +11,7 @@ class Consumer(ABC):
 
     queue_name: str
     host: Optional[str] = None
+    config: dict[str, str] = field(default_factory=dict)
 
     @abstractmethod
     def consume(self, queue_name: str, timeout: float = 30, poll_interval: float = 1) -> Optional[QueueMessage]:
@@ -34,6 +35,7 @@ class Producer(ABC):
 
     queue_name: str
     host: Optional[str] = None
+    config: dict[str, str] = field(default_factory=dict)
 
     @abstractmethod
     def produce(self, queue_name: str, message: Any) -> bool:

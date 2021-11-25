@@ -56,7 +56,7 @@ class Queue:
             _class = import_module_from_string(self.producer)
             self.producer_con = _class(queue_name=self.value)
         else:
-            logger.error(f"{con_type=} is not valid")
+            raise TypeError(f"{con_type=} is not valid")
 
 
 def yaml_to_dict_config(yaml_path: str) -> Dict[str, List[dict[str, str]]]:

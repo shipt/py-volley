@@ -1,16 +1,23 @@
 import threading
+import time
+from typing import Any
 from unittest.mock import MagicMock, patch
 
-from example.input_worker import eng, main
+from example.input_worker import eng
 
 
-@patch("volley.engine.METRICS_ENABLED", False)
+@patch("volley.engine.METRICS_ENABLED", True)
 @patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
 @patch("volley.connectors.kafka.KConsumer", MagicMock())
 def test_graceful_kill() -> None:
-    t = threading.Thread(target=main, daemon=True)
+    @eng.stream_app
+    def func(*args: Any) -> None:
+        return None
+
+    t = threading.Thread(target=func, daemon=True)
     t.start()
 
+    time.sleep(1)
     eng.killer.exit_gracefully(100, None)
     assert eng.killer.kill_now is True
     t.join(timeout=10.0)

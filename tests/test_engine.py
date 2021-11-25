@@ -125,7 +125,7 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
         msg_dict = msg.dict()
         unique_val = msg_dict["uuid"]
         out = ComponentMessage(hello="world", unique_val=unique_val)
-        return [("output-topic", out)]
+        return [("comp_1", out)]
 
     # must not raise any exceptions
     hello_world()
@@ -144,17 +144,17 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[st
     input_queue = "input-topic"
     output_queues = list(config_dict.keys())
 
-    with pytest.raises(ValueError):
+    with pytest.raises(NameError):
         Engine(
             input_queue=input_queue,
-            output_queues=output_queues,
+            output_queues=output_queues.copy(),
             dead_letter_queue="wrong-DLQ",
             queue_config=config_dict,
         )
 
     eng = Engine(
         input_queue=input_queue,
-        output_queues=output_queues,
+        output_queues=output_queues.copy(),
         dead_letter_queue="dead-letter-queue",
         queue_config=config_dict,
     )
@@ -184,7 +184,10 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[st
 def test_null_serializer_fail(
     mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]], caplog: LogCaptureFixture
 ) -> None:
-    """disable serialization for a message off input-topic"""
+    """disable serialization for a message off input-topic
+
+    this should cause schema validation to fail
+    """
     config_dict["input-topic"]["serializer"] = "disabled"
 
     data = InputMessage.schema()["examples"][0]
@@ -227,3 +230,66 @@ def test_null_serializer_fail(
     # we disabled serializer though, so it will be fail pydantic validation
     with pytest.raises(DLQNotConfiguredError):
         func2()
+
+
+@patch("volley.engine.RUN_ONCE", True)
+@patch("volley.engine.METRICS_ENABLED", False)
+@patch("volley.connectors.rsmq.RedisSMQ")
+def test_engine_config_failures(mock_rsmq: MagicMock) -> None:
+    m = {"uuid": str(uuid4)}
+    rsmq_msg = {
+        "id": "rsmq_id",
+        "message": json.dumps(m),
+    }
+    mock_rsmq.return_value.receiveMessage.return_value.exceptions.return_value.execute = lambda: rsmq_msg
+    mock_rsmq.return_value.sendMessage.return_value.execute = lambda: True
+    cfg = {
+        "comp_1": {
+            "value": "random_val",
+            "type": "rsmq",
+        }
+    }
+
+    # faulty output queue
+    with pytest.raises(NameError):
+        Engine(input_queue="comp_1", output_queues=["DOES_NOT_EXIST", "comp_1"], queue_config=cfg)
+
+    # faulty input queue
+    with pytest.raises(NameError):
+        Engine(input_queue="DOES_NOT_EXIST", output_queues=["comp_1"], queue_config=cfg)
+
+    # faulty DLQ
+    with pytest.raises(NameError):
+        Engine(input_queue="comp_1", output_queues=["comp_1"], dead_letter_queue="DOES_NOT_EXIST", queue_config=cfg)
+
+    # missing required attribute in config
+    missing_cfg = cfg.copy()
+    missing_cfg["comp_1"] = cfg["comp_1"].copy()
+    del missing_cfg["comp_1"]["type"]
+    with pytest.raises(KeyError):
+        Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=missing_cfg)
+
+    with pytest.raises(NameError):
+        Engine(input_queue="comp_1", output_queues=["comp_1"], dead_letter_queue="DOES_NOT_EXIST", queue_config=cfg)
+
+    eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg)
+
+    @eng.stream_app
+    def bad_return_queue(msg: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
+        out = ComponentMessage(hello="world")
+        return [("DOES_NOT_EXIST", out)]
+
+    # trying to return a message to a queue that does not exist
+    with pytest.raises(NameError):
+        bad_return_queue()
+
+    eng2 = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg)
+
+    @eng2.stream_app
+    def bad_return_type(msg: ComponentMessage) -> Any:
+        out = dict(hello="world")
+        return [("comp_1", out)]
+
+    # trying to return a message to a queue of the wrong type
+    with pytest.raises(TypeError):
+        bad_return_type()

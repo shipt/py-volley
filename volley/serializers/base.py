@@ -55,5 +55,5 @@ def handle_serializer(
         success_msg = op(message, *args, **kwargs)
         return (success_msg, True)
     except Exception:
-        logger.exception(f"Failed {operation} on {message=}")
+        logger.exception(f"Failed {operation} on {message=}. {serializer=}")
         return (message, False)

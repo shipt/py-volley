@@ -302,7 +302,7 @@ def test_serialization_fail_to_dlq(mock_rsmq: MagicMock) -> None:
     mock_rsmq.return_value.sendMessage.return_value.execute = lambda: True
 
     cfg = {
-        "comp_1": {"value": "random_val", "type": "rsmq", "schema": "dict"},
+        "comp_1": {"value": "random_val", "type": "rsmq", "schema": "volley.data_models.ComponentMessage"},
         "DLQ": {"value": "random_val", "type": "rsmq", "schema": "volley.data_models.ComponentMessage"},
     }
 

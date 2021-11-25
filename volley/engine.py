@@ -183,7 +183,7 @@ class Engine:
                         # prepare and validate output message
                         if not isinstance(component_msg, out_queue.schema) and out_queue.schema is not None:
                             raise TypeError(
-                                f"{out_queue.name=} expected '{out_queue.schema}' - object is '{component_msg}'"
+                                f"{out_queue.name=} expected '{out_queue.schema}' - object is '{type(component_msg)}'"
                             )
 
                         q_msg = QueueMessage(message_id=None, message=component_msg.dict())

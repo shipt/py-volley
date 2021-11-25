@@ -133,10 +133,7 @@ def config_to_queue_map(configs: List[dict[str, str]]) -> Dict[str, Queue]:
 
         # init schema data models
         config_schema: str = q["schema"]
-        if config_schema not in ("dict"):
-            schema: type = import_module_from_string(config_schema)
-        else:
-            schema = dict
+        schema: type = import_module_from_string(config_schema)
 
         try:
             input_output_queues[qname] = Queue(

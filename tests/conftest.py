@@ -116,7 +116,7 @@ def config_dict() -> dict[str, dict[str, str]]:
         "comp_1": {
             "value": "comp1",
             "type": "rsmq",
-            "schema": "dict",
+            "schema": "volley.data_models.ComponentMessage",
         },
         "output-topic": {
             "value": "localhost.kafka.output",

@@ -59,7 +59,7 @@ run.omit = [
     "./tests/*"
     ]
 report.show_missing = true
-report.fail_under = 95
+report.fail_under = 98
 
 [tool.black]
 line-length = 120

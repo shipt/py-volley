@@ -344,3 +344,18 @@ def test_fail_produce(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:
 
     # assert that the on_fail was called
     assert mocked_fail.called
+
+
+@patch("volley.connectors.rsmq.RSMQConsumer.on_fail")
+@patch("volley.connectors.rsmq.RedisSMQ")
+def test_init_no_output(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:
+    cfg = {"comp_1": {"value": "random_val", "type": "rsmq", "schema": "volley.data_models.ComponentMessage"}}
+
+    # cant produce anywhere, and thats ok
+    eng = Engine(input_queue="comp_1", queue_config=cfg)
+    assert eng.output_queues == []
+
+    cfg["DLQ"] = {"value": "dlq-topic", "type": "kafka"}
+    # DLQ should become an output, even without any outputs defined
+    eng2 = Engine(input_queue="comp_1", dead_letter_queue="DLQ", queue_config=cfg)
+    assert "DLQ" in eng2.output_queues

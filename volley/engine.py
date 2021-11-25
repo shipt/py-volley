@@ -73,14 +73,18 @@ class Engine:
         # handle DLQ
         if self.dead_letter_queue is not None:
             # if provided by user, DLQ becomes a producer target
-            if not any([self.dead_letter_queue == x["name"] for x in cfg["queues"]]):
-                raise ValueError(f"{self.dead_letter_queue} not present in configuration")
             self.output_queues.append(self.dead_letter_queue)
         else:
             logger.warning("DLQ not provided. Application will crash on schema violations")
 
         cfg = apply_defaults(cfg)
         self.queue_map = config_to_queue_map(cfg["queues"])
+
+        # validate input_queue, output_queues, and DLQ (optional) are valid configurations
+        for q in [self.input_queue] + self.output_queues:
+            if q not in self.queue_map:
+                raise NameError(f"Queue '{q}' not found in configuration")
+
         logger.info(f"Queues initialized: {list(self.queue_map.keys())}")
 
     def stream_app(  # noqa: C901
@@ -136,6 +140,7 @@ class Engine:
                 else:
                     # serialize failed, try to send this message to DLQ
                     dlq_message = in_message.message
+                    logger.error(f"{input_con.serializer=} failed")
 
                 if not validated_success:
                     dlq_message = deserialized_msg
@@ -168,13 +173,19 @@ class Engine:
                         if component_msg is None:
                             # this is deprecated: components should just return None
                             continue
-                        q_msg = QueueMessage(message_id=None, message=component_msg.dict())
 
                         try:
                             out_queue = self.queue_map[qname]
-                        except KeyError:
-                            logger.exception(f"{qname} is not defined in this component's output queue list")
+                        except KeyError as e:
+                            raise NameError(
+                                f"Function returned output queue {e} but it is not defined in this component's output queue list"
+                            )
 
+                        # prepare and validate output message
+                        if not isinstance(component_msg, out_queue.schema) and out_queue.schema is not None:
+                            raise TypeError(f"{out_queue.name} requires message of type {out_queue.schema}")
+
+                        q_msg = QueueMessage(message_id=None, message=component_msg.dict())
                         try:
                             # serialize message
                             serialized = out_queue.serializer.serialize(q_msg.message)

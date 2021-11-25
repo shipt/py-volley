@@ -45,7 +45,7 @@ class Engine:
     """initializes configuration for input and output workers"""
 
     input_queue: str
-    output_queues: List[str]
+    output_queues: List[str] = field(default_factory=list)
 
     app_name: str = "volley"
     dead_letter_queue: Optional[str] = None
@@ -59,10 +59,10 @@ class Engine:
     yaml_config_path: str = "./volley_config.yml"
 
     def __post_init__(self) -> None:
-        self._construct_queues()
-
-    def _construct_queues(self) -> None:
         """loads configurations and connectors"""
+        if self.output_queues == []:
+            logger.warning("No output queues provided")
+
         # if user provided config, use it
         if self.queue_config:
             cfg: dict[str, List[dict[str, str]]] = dict_to_config(self.queue_config)

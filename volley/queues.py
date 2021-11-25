@@ -148,8 +148,9 @@ def config_to_queue_map(configs: List[dict[str, str]]) -> Dict[str, Queue]:
                 producer=q["producer"],
                 serializer=serializer,
             )
-        except KeyError:
-            logger.warning(f"Queue '{qname}' not found in configuraiton")
+        except KeyError as e:
+            logger.exception(f"{qname} is missing the {e} attribute")
+            raise
     return input_output_queues
 
 

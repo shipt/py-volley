@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from pytest import MonkeyPatch, raises
 
-from tests.conftest import KafkaMessage
+from tests.conftest import KafkaMessage, config_dict
 from volley.config import APP_ENV
 from volley.connectors import KafkaConsumer
 from volley.connectors.base import Consumer, Producer
@@ -68,3 +68,11 @@ def test_consumer_group_init(mock_consumer: MagicMock, monkeypatch: MonkeyPatch)
         with raises(Exception):
             # fallback to parsing sys.argv fails if its not provided
             KafkaConsumer(queue_name="input-topic")
+
+
+@patch("pyshipt_streams.consumer.Consumer", MagicMock())
+def test_config_override() -> None:
+    cfg = {"group.id": "test-group"}
+    c = KafkaConsumer(config=cfg, queue_name="input-topic")
+    assert c.consumer_group == cfg["group.id"]
+    assert c.config == cfg

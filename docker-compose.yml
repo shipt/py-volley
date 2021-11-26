@@ -74,7 +74,6 @@ services:
             - APP_ENV=localhost
             - REDIS_HOST=redis
             - REDIS_PORT=6379
-            - KAFKA_BROKERS=kafka:29092
         build:
             target: dev
             context: .

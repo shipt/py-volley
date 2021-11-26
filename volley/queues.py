@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from jinja2 import Template
 
@@ -47,16 +47,19 @@ class Queue:
     consumer_con: Consumer = field(init=False)
     producer_con: Producer = field(init=False)
 
+    # optional configurations to pass through to connectors
+    pass_through_config: dict[str, str] = field(default_factory=dict)
+
     def connect(self, con_type: ConnectionType) -> None:
         """instantiate the connector class"""
         if con_type == ConnectionType.CONSUMER:
             _class = import_module_from_string(self.consumer)
-            self.consumer_con = _class(queue_name=self.value)
+            self.consumer_con = _class(queue_name=self.value, config=self.pass_through_config)
         elif con_type == ConnectionType.PRODUCER:
             _class = import_module_from_string(self.producer)
-            self.producer_con = _class(queue_name=self.value)
+            self.producer_con = _class(queue_name=self.value, config=self.pass_through_config)
         else:
-            logger.error(f"{con_type=} is not valid")
+            raise TypeError(f"{con_type=} is not valid")
 
 
 def yaml_to_dict_config(yaml_path: str) -> Dict[str, List[dict[str, str]]]:
@@ -113,15 +116,13 @@ def apply_defaults(config: Dict[str, List[Dict[str, str]]]) -> Dict[str, List[Di
 
 def config_to_queue_map(configs: List[dict[str, str]]) -> Dict[str, Queue]:
     """
-
-    Overrides anything in yaml.
-
     Returns a map of {queue_name: Queue}
     """
     input_output_queues: Dict[str, Queue] = {}
 
     for q in configs:
         qname = q["name"]
+        qtype = q["type"]
 
         # serializers are optional
         # users are allowed to pass message to a producer "as is"
@@ -133,23 +134,31 @@ def config_to_queue_map(configs: List[dict[str, str]]) -> Dict[str, Queue]:
 
         # init schema data models
         config_schema: str = q["schema"]
-        if config_schema not in ("dict"):
-            schema: type = import_module_from_string(config_schema)
-        else:
-            schema = dict
+        schema: type = import_module_from_string(config_schema)
+
+        # config to pass through to specific connector
+        _connector_config: Any = q.get("config", {})
+        if not isinstance(_connector_config, dict):
+            _dtype = type(_connector_config)
+            raise TypeError(
+                f"Expected {qtype} connector config is type  {_dtype}, expected `dict`: {_connector_config=}"
+            )
+        pass_through_config: dict[str, str] = _connector_config
 
         try:
             input_output_queues[qname] = Queue(
                 name=qname,
                 value=q["value"],
                 schema=schema,
-                type=q["type"],
+                type=qtype,
                 consumer=q["consumer"],
                 producer=q["producer"],
                 serializer=serializer,
+                pass_through_config=pass_through_config,
             )
-        except KeyError:
-            logger.warning(f"Queue '{qname}' not found in configuraiton")
+        except KeyError as e:
+            logger.exception(f"{qname} is missing the {e} attribute")
+            raise
     return input_output_queues
 
 

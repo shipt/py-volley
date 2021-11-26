@@ -24,3 +24,5 @@ def test_return_none(mocked_rsmq: MagicMock) -> None:
     consumer = RSMQConsumer(host="redis", queue_name="test")
     msg = consumer.consume(queue_name="test")
     assert msg is None
+
+    consumer.on_fail()

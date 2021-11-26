@@ -1,7 +1,12 @@
 from random import randint
-from typing import Any, List, Tuple
+from typing import List, Tuple
 
-from example.data_models import InputMessage, OutputMessage, PostgresMessage
+from example.data_models import (
+    InputMessage,
+    OutputMessage,
+    PostgresMessage,
+    Queue1Message,
+)
 from volley.data_models import ComponentMessage
 from volley.engine import Engine
 from volley.logging import logger
@@ -13,7 +18,7 @@ queue_config = {
         "value": "long_name_1",
         "type": "rsmq",
         # parse messages from RSMQ to a dictionary
-        "schema": "dict",
+        "schema": "volley.data_models.ComponentMessage",
     },
     "postgres_queue": {
         "value": "my_long_table_name",
@@ -40,17 +45,17 @@ eng = Engine(
 
 
 @eng.stream_app
-def main(msg: Any) -> List[Tuple[str, ComponentMessage]]:
+def main(msg: Queue1Message) -> List[Tuple[str, ComponentMessage]]:
     """adds one to a value
     using dict as schema, which provides no schema validation
     """
-    req_id = msg["request_id"]
-    max_val = msg["max_value"]
+    req_id = msg.request_id
+    max_val = msg.max_value
 
     random_value = randint(0, 20)
     max_plus_jiggle = max_val + random_value
     # how many times have we seen this message?
-    msg_count = msg["msg_counter"]
+    msg_count = msg.msg_counter
     logger.info(f"{msg_count=}")
 
     if random_value > 10:

@@ -20,6 +20,7 @@ queues:
     schema: example.data_models.OutputMessage
     config:
       group.id: localhost.example.consumer
+      bootstrap.servers: kafka:29092
   - name: dead-letter-queue
     value: "localhost.kafka.dlq"
     type: kafka

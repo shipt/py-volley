@@ -95,13 +95,31 @@ def hello_world(msg: InputMessage) -> List[Tuple[str, OutputMessage]]:
   return [("output-topic", out)]
 ```
 
-Set environment variables for Kafka:
+Set environment variables for the Kafka connector:
 ```
 KAFKA_KEY=<kafka username>
 KAFKA_SECRET=<kafka password>
 KAFKA_BROKERS=<host:port of the brokers>
-
 ```
+
+Alternatively, all consumer and producer configurations can be passed through to the connectors.
+For reference
+- [Kafka Configs](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md)
+```python
+queue_config = {
+    "input-topic": {
+      "config": {  # configs to pass to kafka connector
+        "group.id": "my-consumer-group",
+        "bootstrap.servers": os.environ["KAFKA_BROKERS"],
+        "sasl.username": os.environ["KAFKA_KEY"],
+        "sasl.password": os.environ["KAFKA_SECRET"],
+      },
+      "value": "stg.kafka.myapp.input",
+      "type": "kafka",
+      "schema": "example.data_models.InputMessage",
+    },
+```
+
 
 ## Another Example:
 

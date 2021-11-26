@@ -116,6 +116,7 @@ class Engine:
                 if in_message is None:
                     # if no messages, handle poll interval
                     # TODO: this should be dynamic with some sort of backoff
+                    logger.info(f"No messages - sleeping for {POLL_INTERVAL}")
                     time.sleep(POLL_INTERVAL)
                     continue
 

@@ -1,6 +1,5 @@
 import json
 import logging
-import uuid
 from datetime import datetime
 from typing import Any, List, Tuple
 from unittest.mock import MagicMock, patch
@@ -10,7 +9,6 @@ import pytest
 from pytest import LogCaptureFixture
 
 from example.data_models import InputMessage, OutputMessage
-from tests.conftest import config_dict
 from tests.test_connectors.test_kafka import KafkaMessage
 from volley.data_models import ComponentMessage
 from volley.engine import Engine
@@ -390,7 +388,6 @@ def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture) 
 
     @eng.stream_app
     def func(msg: ComponentMessage) -> None:
-        out = ComponentMessage(hello="world")
         return None
 
     with caplog.at_level(logging.INFO):

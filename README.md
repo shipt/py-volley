@@ -95,6 +95,32 @@ def hello_world(msg: InputMessage) -> List[Tuple[str, OutputMessage]]:
   return [("output-topic", out)]
 ```
 
+Set environment variables for the Kafka connector:
+```
+KAFKA_KEY=<kafka username>
+KAFKA_SECRET=<kafka password>
+KAFKA_BROKERS=<host:port of the brokers>
+```
+
+Alternatively, all consumer and producer configurations can be passed through to the connectors.
+For reference
+- [Kafka Configs](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md)
+```python
+queue_config = {
+    "input-topic": {
+      "config": {  # configs to pass to kafka connector
+        "group.id": "my-consumer-group",
+        "bootstrap.servers": os.environ["KAFKA_BROKERS"],
+        "sasl.username": os.environ["KAFKA_KEY"],
+        "sasl.password": os.environ["KAFKA_SECRET"],
+      },
+      "value": "stg.kafka.myapp.input",
+      "type": "kafka",
+      "schema": "example.data_models.InputMessage",
+    },
+```
+
+
 ## Another Example:
 
 By default Volley will read queue configuration from a specified yaml. Let's define three queues, `my_input`, `queue_a`, `queue_b` and assume `my_input` is a Kafka topic populated by some external service. Let's decide that `queue_a` is an RSMQ type and `queue_b` is a Postgres. We define these in `./volley_config.yml`. Queues have `names`, which is how we reference them, and `values`. The engine interacts with the queue using the `value` and components (developers) interact with queue using the `name`.
@@ -268,25 +294,43 @@ Consumers:
 
 - `shutdown` - gracefully disconnect the consumer.
 
-## Supported Connectors
+# Supported Connectors
 
-Queues are the broker and backend that handle messages. Volley has connectors for two types of queue: 
-- [pyRSMQ](https://github.com/mlasevich/PyRSMQ) is the python implementation of the [RSMQ](https://github.com/smrchy/rsmq) project. It is lightweight but full featured message queue system built on Redis. It provides clean interface to producing and consuming messages from a queue. It only supports strict FIFO - you cannot modify or update a message on the queue once it is produced. The number of messages that can exist in the queue is limited by the amount of memory available to Redis.
+Queues are the broker and backend that handle messages. Volley has built in support for two types of queue technoloigies; RSMQ and Kafka.
 
-- Kafka - Volley's integration with Kafka is built on [confluent_kafka](https://docs.confluent.io/platform/current/clients/confluent-kafka-python/html/index.html) and [pyshipt-streams](https://github.com/shipt/pyshipt-streams)
+### 1. [pyRSMQ](https://github.com/mlasevich/PyRSMQ)
 
-Supported connectors are specified in `volley_config.yml` by name.
+The python implementation of the [RSMQ](https://github.com/smrchy/rsmq) project. It is lightweight but full featured message queue system built on Redis. It provides clean interface to producing and consuming messages from a queue. It only supports strict FIFO - you cannot modify or update a message on the queue once it is produced. The number of messages that can exist in the queue is limited by the amount of memory available to Redis.
 
-```yml
-- name: main_queue
-  value: main_rsmq_queue
-  type: rsmq
-  schema: volley.data_models.ComponentMessage
+Environment variables:
+```bash
+REDIS_HOST=host_to_run_rsmq
 ```
 
-# Extending Connectors with Plugins
+### 2. Kafka - [confluent_kafka](https://docs.confluent.io/platform/current/clients/confluent-kafka-python/html/index.html) and [pyshipt-streams](https://github.com/shipt/pyshipt-streams)
 
-Users can write their own connectors as needed. This is done by subclassing `volley.connects.base.Consumer|Producer`, then registering the connectors in `volley_config.yml`, along with the queue they are intended to connect to. The configuration below specifies an example connetor defined in `example.plugins.my_plugin` in the `MyPGProducer` and `MyPGConsumer` classes.
+Environment variables:
+```bash
+KAFKA_CONSUMER_GROUP=<kafka_consumer_group>
+KAFKA_KEY=<kafka username>
+KAFKA_SECRET=<kafka password>
+KAFKA_BROKERS=<host:port of the brokers>
+```
+
+All [librdkafka configurations](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) can be passed through to the connector.
+
+```yml
+- name: output_topic
+  value: output.kafka.topic.name
+  type: kafka
+  schema: volley.data_models.ComponentMessage
+  config:
+    bootstrap.servers: kafka_broker_host:9092
+```
+
+# Extending Connectors with Custom Plugins
+
+Users can write their own connectors as needed. This is done by subclassing `volley.connects.base.Consumer|Producer`, then registering the connectors in `volley_config.yml`, along with the queue they are intended to connect to. The configuration below specifies an example connetor defined in `example.plugins.my_plugin` in the `MyPGProducer` and `MyPGConsumer` classes. The example connector can be found at [./example/plugins/my_plugin.py](./example/plugins/my_plugin.py)
 
 ```yml
 - name: postgres_queue

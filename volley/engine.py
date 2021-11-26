@@ -45,7 +45,7 @@ class Engine:
     """initializes configuration for input and output workers"""
 
     input_queue: str
-    output_queues: List[str]
+    output_queues: List[str] = field(default_factory=list)
 
     app_name: str = "volley"
     dead_letter_queue: Optional[str] = None
@@ -59,10 +59,10 @@ class Engine:
     yaml_config_path: str = "./volley_config.yml"
 
     def __post_init__(self) -> None:
-        self._construct_queues()
-
-    def _construct_queues(self) -> None:
         """loads configurations and connectors"""
+        if self.output_queues == []:
+            logger.warning("No output queues provided")
+
         # if user provided config, use it
         if self.queue_config:
             cfg: dict[str, List[dict[str, str]]] = dict_to_config(self.queue_config)
@@ -73,14 +73,18 @@ class Engine:
         # handle DLQ
         if self.dead_letter_queue is not None:
             # if provided by user, DLQ becomes a producer target
-            if not any([self.dead_letter_queue == x["name"] for x in cfg["queues"]]):
-                raise ValueError(f"{self.dead_letter_queue} not present in configuration")
             self.output_queues.append(self.dead_letter_queue)
         else:
             logger.warning("DLQ not provided. Application will crash on schema violations")
 
         cfg = apply_defaults(cfg)
         self.queue_map = config_to_queue_map(cfg["queues"])
+
+        # validate input_queue, output_queues, and DLQ (optional) are valid configurations
+        for q in [self.input_queue] + self.output_queues:
+            if q not in self.queue_map:
+                raise NameError(f"Queue '{q}' not found in configuration")
+
         logger.info(f"Queues initialized: {list(self.queue_map.keys())}")
 
     def stream_app(  # noqa: C901
@@ -112,6 +116,7 @@ class Engine:
                 if in_message is None:
                     # if no messages, handle poll interval
                     # TODO: this should be dynamic with some sort of backoff
+                    logger.info(f"No messages - sleeping {POLL_INTERVAL=}")
                     time.sleep(POLL_INTERVAL)
                     continue
 
@@ -136,8 +141,10 @@ class Engine:
                 else:
                     # serialize failed, try to send this message to DLQ
                     dlq_message = in_message.message
+                    logger.warning(f"{input_con.serializer=} failed")
 
-                if not validated_success:
+                if not validated_success and deserialized_success:
+                    logger.warning(f"schema '{input_con.schema=}' validation failed")
                     dlq_message = deserialized_msg
 
                 if dlq_message == "NONE":
@@ -168,13 +175,19 @@ class Engine:
                         if component_msg is None:
                             # this is deprecated: components should just return None
                             continue
-                        q_msg = QueueMessage(message_id=None, message=component_msg.dict())
 
                         try:
                             out_queue = self.queue_map[qname]
-                        except KeyError:
-                            logger.exception(f"{qname} is not defined in this component's output queue list")
+                        except KeyError as e:
+                            raise NameError(f"App not configured for output queue {e}")
 
+                        # prepare and validate output message
+                        if not isinstance(component_msg, out_queue.schema) and out_queue.schema is not None:
+                            raise TypeError(
+                                f"{out_queue.name=} expected '{out_queue.schema}' - object is '{type(component_msg)}'"
+                            )
+
+                        q_msg = QueueMessage(message_id=None, message=component_msg.dict())
                         try:
                             # serialize message
                             serialized = out_queue.serializer.serialize(q_msg.message)
@@ -183,7 +196,7 @@ class Engine:
                                 volley_app=self.app_name, source=input_con.name, destination=qname
                             ).inc()
                         except Exception:
-                            logger.exception("failed producing message")
+                            logger.exception(f"failed producing message to {out_queue.name}")
                             status = False
                         all_produce_status.append(status)
 

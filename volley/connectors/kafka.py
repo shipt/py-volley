@@ -17,8 +17,6 @@ RUN_ONCE = False
 @dataclass
 class KafkaConsumer(Consumer):
     def __post_init__(self) -> None:
-        self.host = os.environ["KAFKA_BROKERS"]
-
         # self.config provided from base Consumer class
         # consumer group assignment
         # try config, then env var, then command line argument w/ env
@@ -82,7 +80,6 @@ class KafkaConsumer(Consumer):
 @dataclass
 class KafkaProducer(Producer):
     def __post_init__(self) -> None:
-        self.host = os.environ["KAFKA_BROKERS"]
         self.p = KProducer()
         logger.info(f"Kafka Config: {self.p.config}")
 

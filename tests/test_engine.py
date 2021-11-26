@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
-from pytest import LogCaptureFixture
+from pytest import LogCaptureFixture, MonkeyPatch
 
 from example.data_models import InputMessage, OutputMessage
 from tests.test_connectors.test_kafka import KafkaMessage
@@ -365,19 +365,20 @@ def test_init_no_output(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:
 @patch("volley.engine.METRICS_ENABLED", False)
 @patch("volley.logging.logger.propagate", True)
 @patch("volley.connectors.kafka.KConsumer")
-def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture) -> None:
+def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture, monkeypatch: MonkeyPatch) -> None:
     """init volley with a kafka queue with user provided kafka config"""
+    monkeypatch.delenv("KAFKA_BROKERS", raising=True)
+
     msg = b"""{"x":"y"}"""
     mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
     consumer_group = str(uuid4())
+    kafka_brokers = f"my_broker_{str(uuid4())}:29092"
     cfg = {
         "comp_1": {
             "value": "kafka.topic",
             "type": "kafka",
             "schema": "volley.data_models.ComponentMessage",
-            "config": {
-                "group.id": consumer_group,
-            },
+            "config": {"group.id": consumer_group, "bootstrap.servers": kafka_brokers},
         }
     }
 
@@ -395,3 +396,4 @@ def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture) 
         # kafka connector prints out its raw config
         # consumer group should be in that text
         assert consumer_group in caplog.text
+        assert kafka_brokers in caplog.text

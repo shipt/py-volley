@@ -18,6 +18,8 @@ queues:
     value: "localhost.kafka.output"
     type: kafka
     schema: example.data_models.OutputMessage
+    config:
+      group.id: localhost.example.consumer
   - name: dead-letter-queue
     value: "localhost.kafka.dlq"
     type: kafka

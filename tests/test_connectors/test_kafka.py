@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from pytest import MonkeyPatch, raises
 
-from tests.conftest import KafkaMessage, config_dict
+from tests.conftest import KafkaMessage
 from volley.config import APP_ENV
 from volley.connectors import KafkaConsumer
 from volley.connectors.base import Consumer, Producer

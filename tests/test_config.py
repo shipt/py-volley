@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Type
 
 import pytest
 from pydantic.main import BaseModel
@@ -89,3 +89,29 @@ def test_interpolate_kafka_topics() -> None:
     interpolated = interpolate_kafka_topics(cfg)
 
     assert interpolated["value"] == "localhost.kafka.input"
+
+
+def test_bad_connector_config(config_dict: dict[str, dict[str, str]]) -> None:
+    """asserts TypeError raised when malformed connector config provided"""
+    # from dict
+    config_dict["input-topic"]["config"] = "bad_configuration"  # this needs to be a dict
+    config = dict_to_config(config_dict)
+    defaulted = apply_defaults(config)
+    with pytest.raises(TypeError):
+        config_to_queue_map(defaulted["queues"])
+
+    # from yaml
+    cfg = yaml_to_dict_config(yaml_path="./example/volley_config.yml")
+    cfg["queues"][0]["config"] = "bad_configuration"
+    defaulted = apply_defaults(cfg)
+    with pytest.raises(TypeError):
+        config_to_queue_map(defaulted["queues"])
+
+
+def test_missing_queue_attr(config_dict: dict[str, dict[str, str]]) -> None:
+    del config_dict["input-topic"]["value"]
+    config = dict_to_config(config_dict)
+    defaulted = apply_defaults(config)
+
+    with pytest.raises(KeyError):
+        config_to_queue_map(defaulted["queues"])

@@ -1,5 +1,6 @@
 import json
 import logging
+import uuid
 from datetime import datetime
 from typing import Any, List, Tuple
 from unittest.mock import MagicMock, patch
@@ -9,6 +10,7 @@ import pytest
 from pytest import LogCaptureFixture
 
 from example.data_models import InputMessage, OutputMessage
+from tests.conftest import config_dict
 from tests.test_connectors.test_kafka import KafkaMessage
 from volley.data_models import ComponentMessage
 from volley.engine import Engine
@@ -359,3 +361,40 @@ def test_init_no_output(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:
     # DLQ should become an output, even without any outputs defined
     eng2 = Engine(input_queue="comp_1", dead_letter_queue="DLQ", queue_config=cfg)
     assert "DLQ" in eng2.output_queues
+
+
+@patch("volley.engine.RUN_ONCE", True)
+@patch("volley.engine.METRICS_ENABLED", False)
+@patch("volley.logging.logger.propagate", True)
+@patch("volley.connectors.kafka.KConsumer")
+def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture) -> None:
+    """init volley with a kafka queue with user provided kafka config"""
+    msg = b"""{"x":"y"}"""
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
+    consumer_group = str(uuid4())
+    cfg = {
+        "comp_1": {
+            "value": "kafka.topic",
+            "type": "kafka",
+            "schema": "volley.data_models.ComponentMessage",
+            "config": {
+                "group.id": consumer_group,
+            },
+        }
+    }
+
+    eng = Engine(
+        input_queue="comp_1",
+        queue_config=cfg,
+    )
+
+    @eng.stream_app
+    def func(msg: ComponentMessage) -> None:
+        out = ComponentMessage(hello="world")
+        return None
+
+    with caplog.at_level(logging.INFO):
+        func()
+        # kafka connector prints out its raw config
+        # consumer group should be in that text
+        assert consumer_group in caplog.text

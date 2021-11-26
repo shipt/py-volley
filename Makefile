@@ -57,7 +57,7 @@ test.clean:
 	-docker images -a | grep ${PROJECT} | awk '{print $3}' | xargs docker rmi
 	-docker image prune -f
 test.integration: run.datastores run.components
-	docker-compose up --build int-tests --exit-code-from int-tests
+	docker-compose up --exit-code-from int-tests --build int-tests
 test.unit: setup
 	poetry run coverage run -m pytest -s \
 			--ignore=tests/integration_tests \

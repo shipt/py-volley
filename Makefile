@@ -79,3 +79,14 @@ stop.components:
 	docker compose down
 stop:
 	docker compose down --remove-orphans
+
+publish:
+	poetry publish --repository=shipt --build
+
+publish.pre.patch:
+	poetry version prepatch
+publish.pre.minor:
+	poetry version preminor
+publish.pre.major:
+	poetry version premajor
+	$(MAKE) publish

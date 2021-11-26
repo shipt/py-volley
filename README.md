@@ -95,6 +95,14 @@ def hello_world(msg: InputMessage) -> List[Tuple[str, OutputMessage]]:
   return [("output-topic", out)]
 ```
 
+Set environment variables for Kafka:
+```
+KAFKA_KEY=<kafka username>
+KAFKA_SECRET=<kafka password>
+KAFKA_BROKERS=<host:port of the brokers>
+
+```
+
 ## Another Example:
 
 By default Volley will read queue configuration from a specified yaml. Let's define three queues, `my_input`, `queue_a`, `queue_b` and assume `my_input` is a Kafka topic populated by some external service. Let's decide that `queue_a` is an RSMQ type and `queue_b` is a Postgres. We define these in `./volley_config.yml`. Queues have `names`, which is how we reference them, and `values`. The engine interacts with the queue using the `value` and components (developers) interact with queue using the `name`.

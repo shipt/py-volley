@@ -148,8 +148,8 @@ def config_to_queue_map(configs: List[dict[str, str]]) -> Dict[str, Queue]:
                 consumer=q["consumer"],
                 producer=q["producer"],
                 serializer=serializer,
-                consumer_config=q.get("consumer_config", {}), # type: ignore
-                producer_config=q.get("producer_config", {}), # type: ignore
+                consumer_config=q.get("consumer_config", {}),  # type: ignore
+                producer_config=q.get("producer_config", {}),  # type: ignore
             )
         except KeyError as e:
             logger.exception(f"{qname} is missing the {e} attribute")

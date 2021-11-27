@@ -62,7 +62,7 @@ test.unit: setup
 	poetry run coverage run -m pytest -s \
 			--ignore=tests/integration_tests \
             --cov=./ \
-            --cov-report=xml:cov.xml \
+            --cov-report=xml:coverage.xml \
             --cov-report term
 
 run.components:

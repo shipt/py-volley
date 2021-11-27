@@ -1,0 +1,41 @@
+site_name: Volley
+theme:
+  name: material
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/weather-night
+        name: dark mode
+    - scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: light mode
+
+nav:
+  - Introduction: 'index.md'
+  - Basic Example: 'example.md'
+  - Configuration: 'configuration.md'
+  - Connectors: 'connectors.md'
+  - Serialization: 'serialization.md'
+  - Schema Validation: 'validation.md'
+  - Dead Letter Queues: 'deadletterqueue.md'
+  - Metrics: 'metrics.md'
+  - Advanced Example: 'advanced_example.md'
+markdown_extensions:
+- toc:
+    permalink: true
+- markdown.extensions.codehilite:
+    guess_lang: false
+- mdx_include:
+    base_path: docs
+- admonition
+- codehilite
+- extra
+- pymdownx.superfences:
+    custom_fences:
+    - name: mermaid
+      class: mermaid
+      format: !!python/name:pymdownx.superfences.fence_code_format ''
+- pymdownx.tabbed
+extra_css:
+  - stylesheets/extra.css

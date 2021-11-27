@@ -1,4 +1,4 @@
-[![Build Status](https://drone.shipt.com/api/badges/shipt/volley/status.svg?ref=refs/heads/main)](https://drone.shipt.com/shipt/volley)
+[![Build Status](https://drone.shipt.com/api/badges/shipt/volley/status.svg?ref=refs/heads/main)](https://drone.shipt.com/shipt/volley)[![codecov](https://codecov.io/gh/shipt/volley/branch/main/graph/badge.svg?token=axP0uxJwPX)](https://codecov.io/gh/shipt/volley)
 
 Forked from https://github.com/shipt/ml-bundle-engine. Provides an extensible interface to queues with built in support for Kafka and [RSMQ](https://github.com/mlasevich/PyRSMQ) (Redis Simple Message Queue).
 

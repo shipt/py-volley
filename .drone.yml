@@ -1,5 +1,6 @@
 kind: pipeline
 name: test
+type: docker
 
 trigger:
   event:

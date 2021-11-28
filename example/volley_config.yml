@@ -6,6 +6,7 @@ queues:
   - name: redis_queue
     value: long_name_1
     type: rsmq
+    serializer: volley.serializers.MsgPackSerialization
     schema: volley.data_models.ComponentMessage
   - name: postgres_queue
     value: my_long_table_name

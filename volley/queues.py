@@ -127,7 +127,7 @@ def config_to_queue_map(configs: List[dict[str, str]]) -> Dict[str, Queue]:
         # serializers are optional
         # users are allowed to pass message to a producer "as is"
         if q["serializer"] in (None, "disabled", "None"):
-            serializer = import_module_from_string("volley.serializers.base.NullSerializer")()
+            serializer: BaseSerialization = import_module_from_string("volley.serializers.base.NullSerializer")()
         else:
             # serializer is initialized
             serializer = import_module_from_string(q["serializer"])()

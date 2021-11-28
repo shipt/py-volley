@@ -45,8 +45,10 @@ def test_fail(serializers: List[BaseSerialization]) -> None:
     msg = {"time": datetime.now(), "number": 42}
 
     for serializer in serializers:
-        with pytest.raises(TypeError):
-            serializer.serialize(msg, default=None)
+        if not isinstance(serializer, OrJsonSerialization):
+            # orjson can handle datetimes
+            with pytest.raises(TypeError):
+                serializer.serialize(msg, default=None)
 
         bad_json = b"abc : 123}"
         with pytest.raises((JSONDecodeError, ExtraData)):
@@ -54,7 +56,7 @@ def test_fail(serializers: List[BaseSerialization]) -> None:
 
         non_str = CannotBeString()
         with pytest.raises((JSONDecodeError, TypeError)):  # type: ignore
-            serializer.deserialize(non_str)
+            serializer.deserialize(non_str)  # type: ignore
 
 
 def test_handler_fail(serializers: List[BaseSerialization]) -> None:

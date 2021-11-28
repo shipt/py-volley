@@ -177,6 +177,7 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[st
     func()
 
 
+@patch("volley.logging.logger.propagate", True)
 @patch("volley.engine.RUN_ONCE", True)
 @patch("volley.engine.METRICS_ENABLED", False)
 @patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
@@ -186,7 +187,6 @@ def test_null_serializer_fail(
     mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]], caplog: LogCaptureFixture
 ) -> None:
     """disable serialization for a message off input-topic
-
     this should cause schema validation to fail
     """
     config_dict["input-topic"]["serializer"] = "disabled"
@@ -211,11 +211,9 @@ def test_null_serializer_fail(
     # but messages will route to DLQ with exceptions handles
     with caplog.at_level(logging.WARNING):
         func()
-    # this is a WARNING level, because rollbar is swallowing the log locally
-    # its coming from logger.exception in volley.data_models.schema_handler
-    # should only be one warning log - for the DLQ
-    assert len(caplog.records) == 1
-    assert caplog.records[0].levelname == "WARNING"
+
+    assert "validation failed" in caplog.text
+    assert "failed producing message to" not in caplog.text
 
     # do not specifiy the DLQ
     eng = Engine(

@@ -45,7 +45,7 @@ app = Engine(
 
 
 # decorate your function
-@app.stream_app
+@app.stream_app  # type: ignore
 def my_app(msg: InputMessage) -> List[Tuple[str, OutputMessage]]:
     max_value = msg.list_of_values
     output = OutputMessage(max_value=max_value)

@@ -8,5 +8,6 @@ connectors:
 schemas:
   default: volley.data_models.ComponentMessage
 serializers:
-  default: volley.serializers.json_serializer.JsonSerialization
+  default: volley.serializers.orjson_serializer.OrJsonSerialization
   json: volley.serializers.json_serializer.JsonSerialization
+  orjson: volley.serializers.orjson_serializer.OrJsonSerialization

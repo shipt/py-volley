@@ -140,7 +140,7 @@ class Engine:
                     )
                 else:
                     # serialize failed, try to send this message to DLQ
-                    dlq_message = in_message.message
+                    dlq_message = str(in_message.message)
                     logger.warning(f"{input_con.serializer=} failed")
 
                 if not validated_success and deserialized_success:
@@ -187,10 +187,9 @@ class Engine:
                                 f"{out_queue.name=} expected '{out_queue.schema}' - object is '{type(component_msg)}'"
                             )
 
-                        q_msg = QueueMessage(message_id=None, message=component_msg.dict())
                         try:
                             # serialize message
-                            serialized = out_queue.serializer.serialize(q_msg.message)
+                            serialized = out_queue.serializer.serialize(component_msg.dict())
                             status = out_queue.producer_con.produce(queue_name=out_queue.value, message=serialized)
                             MESSAGES_PRODUCED.labels(
                                 volley_app=self.app_name, source=input_con.name, destination=qname

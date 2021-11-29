@@ -19,7 +19,7 @@ PROCESS_TIME = Summary("redis_process_time_seconds", "Time spent interacting wit
 class RSMQConsumer(Consumer):
     def __post_init__(self) -> None:
         self.host = os.environ["REDIS_HOST"]
-        self.queue = RedisSMQ(host=self.host, qname=self.queue_name)
+        self.queue = RedisSMQ(host=self.host, qname=self.queue_name, options={"decode_responses": False})
         # TODO: visibility timeout (vt) probably be configurable
         self.queue.createQueue(delay=0).vt(60).exceptions(False).execute()
 

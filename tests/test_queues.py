@@ -12,7 +12,7 @@ def test_bad_type() -> None:
         type="kafka",
         consumer="consumer",
         producer="producer",
-        serializer=NullSerializer,
+        serializer=NullSerializer(),
     )
 
     with pytest.raises(TypeError):

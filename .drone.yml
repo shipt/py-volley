@@ -1,5 +1,6 @@
 kind: pipeline
 name: test
+type: docker
 
 trigger:
   event:
@@ -16,11 +17,15 @@ steps:
     - pip install poetry==1.1.10
     - poetry install
     - make test.unit
+    - poetry run codecov
     environment:
       POETRY_HTTP_BASIC_SHIPT_USERNAME:
         from_secret: SHIPT_PYPI_USERNAME
       POETRY_HTTP_BASIC_SHIPT_PASSWORD:
         from_secret: SHIPT_PYPI_PASSWORD
+      CODECOV_TOKEN:
+        from_secret: CODECOV_TOKEN
+
 
   - name: lints
     image: python:3.9.4

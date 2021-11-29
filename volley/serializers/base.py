@@ -8,11 +8,11 @@ class BaseSerialization(ABC):
     """Base class for serializing and deserializing queue data"""
 
     @abstractmethod
-    def serialize(self, message: Any, *args: Any, **kwargs: Any) -> bytes:
+    def serialize(self, message: dict[Any, Any], *args: Any, **kwargs: Any) -> bytes:
         """serialize to queue"""
 
     @abstractmethod
-    def deserialize(self, message: Any, *args: Any, **kwargs: Any) -> Any:
+    def deserialize(self, message: bytes, *args: Any, **kwargs: Any) -> Any:
         """deserialize from queue"""
 
 

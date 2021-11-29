@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py_volley"
-version = "0.4.0"
+version = "0.5.0"
 description = "send messages everywhere"
 authors = ["ask-machine-learning <shipt@shipt.com>"]
 
@@ -20,14 +20,12 @@ prometheus-client = "^0.11.0"
 psycopg2-binary = "^2.9.1"
 pydantic = "^1.8.2"
 PyRSMQ = "^0.4.5"
-pyshipt-logging = "^0.0.2"
 pyshipt-streams = "^1.1.0"
 PyYAML = "^5.4.1"
-rollbar = "^0.16.2"
 SQLAlchemy = "^1.4.25"
-sqlmodel = "^0.0.4"
-uvicorn = {extras = ["standard"], version = "^0.15.0"}
 hiredis = "^2.0.0"
+orjson = "^3.6.4"
+msgpack = "^1.0.3"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.2"
@@ -44,6 +42,10 @@ pylint = "^2.11.1"
 jupyter = "^1.0.0"
 types-requests = "^2.25.11"
 types-pytz = "^2021.3.0"
+mkdocs = "^1.2.3"
+mkdocs-material = "^7.3.6"
+mdx-include = "^1.4.1"
+mkdocs-markdownextradata-plugin = "^0.2.4"
 
 [tool.isort]
 profile = "black"

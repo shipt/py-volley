@@ -1,8 +1,19 @@
-[![Build Status](https://drone.shipt.com/api/badges/shipt/volley/status.svg?ref=refs/heads/main)](https://drone.shipt.com/shipt/volley)
+# Volley
 
+Documentation: https://animated-guacamole-53e254cf.pages.github.io/
+
+<p align="left">
 Forked from https://github.com/shipt/ml-bundle-engine. Provides an extensible interface to queues with built in support for Kafka and [RSMQ](https://github.com/mlasevich/PyRSMQ) (Redis Simple Message Queue).
-
-Use Volley if you need to quickly get up and running with a Python streaming application that consumes messages, processes them (and do other things), then publish results to some place.
+</p>
+<p align="left">
+Use Volley if you need to quickly develop a Python streaming application to consumes messages, processes them (and do other things), then publish results to some place. Dead letters queues are easily configured.
+</p>
+<a href="https://drone.shipt.com/shipt/volley" target="_blank">
+    <img src="https://drone.shipt.com/api/badges/shipt/volley/status.svg?ref=refs/heads/main" alt="Test">
+</a>
+<a href="https://codecov.io/gh/shipt/volley" target="_blank">
+    <img src="https://codecov.io/gh/shipt/volley/branch/main/graph/badge.svg?token=axP0uxJwPX" alt="Test">
+</a>
 
 # Installation
 
@@ -21,24 +32,13 @@ pip install py-volley \
   --extra-index-url=https://${POETRY_HTTP_BASIC_SHIPT_USERNAME}:${POETRY_HTTP_BASIC_SHIPT_PASSWORD}@pypi.shipt.com/simple
 ```
 
-4. Run the pre-built exampe:
-`docker-compose up --build`
-
-- `./example/external_data_producer.py` publishes sample data to `input-topic` Kafka topic.
-- `./example/input_worker.py` consumes from `input-topic` and publishes to `comp_1` RSMQ queue. 
-- `./example/comp1.py` consumes from `comp_1` RSMQ and publishes to `output-topic` Kafka topic.
-- `./example/external_data_consumer.py` consumes from `output-topic` and logs to console.
-
 ## Getting started
 
 Check out projects already using Volley:
   - [TLMD Future Route Actualizer](https://github.com/shipt/tlmd-future-route-actualizer) - Single worker that consumes from Kafka, does processing and invokes ML models, then publishes results to Kafka.
   - [Bundle Optimization Engine](https://github.com/shipt/ml-bundle-engine) - Collection of workers that consume/produce to Kafka, Redis, and Postgres. 
 
-
-A full example is provided in `./example`. Run this example locally with `make run.example`.
-
-Components are implemented as a function decorated with an instance of the `volley.engine.Engine`. A component consumes from one queue and can publish to one or many queues.
+Volley applications, "workers", are implemented as a function decorated with an instance of the `volley.engine.Engine`. A component consumes from one queue and can publish to one or many queues.
 
 A component function takes in `input_object` of type: `ComponentMessage`, which is a Pydantic model that accepts extra attributes. This model defines the schema of messages on the INPUT_QUEUE. The component function can process and modify that object to meet its needs.
 
@@ -96,7 +96,7 @@ def hello_world(msg: InputMessage) -> List[Tuple[str, OutputMessage]]:
 ```
 
 Set environment variables for the Kafka connector:
-```
+```bash
 KAFKA_KEY=<kafka username>
 KAFKA_SECRET=<kafka password>
 KAFKA_BROKERS=<host:port of the brokers>
@@ -260,87 +260,6 @@ And are run by invoking the function.
 python main.py
 ```
 
-# Engine
-
-The engine itself is a python decorator that wraps a component worker and runs as headless services. The engine interacts with `Connectors`, `QueueMessages`, and the component function that it wraps.
-
-On initialization:
-- setup connections to the queues using the connectors specified by the components inputs and outputs
-- determines the data schema required by the component
-
-Once the engine has initialized, it will continuously poll the input queue for new messages. When it receives a message, it will process the message and pass it to the wrapped component function. It takes the output of the component function and produces it to the output queues. It will repeat this process until terminated.
-
-## Connectors
-
-Connectors are specific implementations of producers and consumers for a data store. There are currently connectors implemented for pyRSMQ and Kafka. 
-
-Consumers and producers handle converting the `QueueMessage` objects to whichever data type and serialization is implemented in the specfic queue. For example, the pyRSMQ implementation stores messages as `JSON`, so the pyRSMQ producer converts the message in `QueueMessage` to JSON, then places the message on the queue. Likewise, pyRMSQ consumer read from JSON and convert to `QueueMessage`.
-
-Components consume from one queue and produce to zero or many queues. Volley consumers and produces adhere to a consistent interface to conduct the following operations on any of the supported queues. These interfaces are designed in [Consumer and Producer](./volley/connectors/base.py) base classes.
-
-Producers:
-
-- `produce` - place a message on the queue.
-
-- `shutdown` - gracefully disconnect the producer.
-
-Consumers:
-
-- `consume` - pull a message off the queue.
-
-- `delete` - delete a message on the queue.
-
-- `on_fail` - operation to conduct if a component worker fails processing a message. For example, place the message back on the queue, rollback a transaction, etc.
-
-- `shutdown` - gracefully disconnect the consumer.
-
-# Supported Connectors
-
-Queues are the broker and backend that handle messages. Volley has built in support for two types of queue technoloigies; RSMQ and Kafka.
-
-### 1. [pyRSMQ](https://github.com/mlasevich/PyRSMQ)
-
-The python implementation of the [RSMQ](https://github.com/smrchy/rsmq) project. It is lightweight but full featured message queue system built on Redis. It provides clean interface to producing and consuming messages from a queue. It only supports strict FIFO - you cannot modify or update a message on the queue once it is produced. The number of messages that can exist in the queue is limited by the amount of memory available to Redis.
-
-Environment variables:
-```bash
-REDIS_HOST=host_to_run_rsmq
-```
-
-### 2. Kafka - [confluent_kafka](https://docs.confluent.io/platform/current/clients/confluent-kafka-python/html/index.html) and [pyshipt-streams](https://github.com/shipt/pyshipt-streams)
-
-Environment variables:
-```bash
-KAFKA_CONSUMER_GROUP=<kafka_consumer_group>
-KAFKA_KEY=<kafka username>
-KAFKA_SECRET=<kafka password>
-KAFKA_BROKERS=<host:port of the brokers>
-```
-
-All [librdkafka configurations](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) can be passed through to the connector.
-
-```yml
-- name: output_topic
-  value: output.kafka.topic.name
-  type: kafka
-  schema: volley.data_models.ComponentMessage
-  config:
-    bootstrap.servers: kafka_broker_host:9092
-```
-
-# Extending Connectors with Custom Plugins
-
-Users can write their own connectors as needed. This is done by subclassing `volley.connects.base.Consumer|Producer`, then registering the connectors in `volley_config.yml`, along with the queue they are intended to connect to. The configuration below specifies an example connetor defined in `example.plugins.my_plugin` in the `MyPGProducer` and `MyPGConsumer` classes. The example connector can be found at [./example/plugins/my_plugin.py](./example/plugins/my_plugin.py)
-
-```yml
-- name: postgres_queue
-  value: pg_queue_table
-  type: postgres
-  schema: volley.data_models.ComponentMessage
-  producer: example.plugins.my_plugin.MyPGProducer
-  consumer: example.plugins.my_plugin.MyPGConsumer
-```
-
 # CI / CD
 
 See `.drone.yml` for test gates. A Semantic tagged release triggers a build and publish to pypi.shipt.com.
@@ -351,43 +270,6 @@ See `.drone.yml` for test gates. A Semantic tagged release triggers a build and 
 
 `make test.integration` Runs an "end-to-end" test against the example project in `./example`. The tests validate messages make it through all supported connectors and queus, plus a user defined connector plugin (postgres).
 
-# Metrics
-
-Volley exports selected [Prometheus metrics](https://prometheus.io/docs/concepts/metric_types/) on all workers.
-
-All metrics contain the label `volley_app` which is directly tied to the `app_name` parameter passed in when initializing `volley.engine.Engine()`.
-
-### `messages_consumed_count` - [Counter](https://prometheus.io/docs/concepts/metric_types/#counter) 
-- increments each time a message is consumed by the worker.
-- Labels:
-  - `status` : `success|fail`. If the worker consumes a message, but fails the corresponding produce operation, the message gets marked as a `fail`. Otherwise, it is a `success`.
-
-
-### `messages_produced_count` - [Counter](https://prometheus.io/docs/concepts/metric_types/#counter)
-- increments each time a message is produced
-- Labels:
-  - `source` : name of the queue the worker consumed from.
-  - `destination` : name of the queue the message was produced to
-
-
-### `process_time_seconds` - [Summary](https://prometheus.io/docs/concepts/metric_types/#summary)
-- observed the amount of time various processes take to run
-- Labels:
-  - `process_name` : name of the process that is tracked
-    - Values:
-      - `component` : time associated with the processing time for the function that Volley wraps. This is isolated to the logic in the user's function.
-      - `cycle` : one full cycle of consume message, serialize, schema validation, component processing, and publishing to all outputs. `component` is a subset of `cycle`
-
-### `redis_process_time_seconds` - [Summary](https://prometheus.io/docs/concepts/metric_types/#summary)
-- similar to `process_time_seconds` but is isolated to the RSMQ connector.
-- Labels:
-  - `operation`: name of the operation
-    - `read` : time to read a message from the queue
-    - `delete` : time to delete a message from the queue
-    - `write` : time to add a message to the queue
-
-
-Applications can export their own metrics as well. Examples in the Prometheus official [python client](https://github.com/prometheus/client_python) are a greaet place to start. The Volley exporter will collect these metrics are export expose them to be scraped by a Prometheus server.
 
 # Support
 

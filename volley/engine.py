@@ -140,7 +140,7 @@ class Engine:
                     )
                 else:
                     # serialize failed, try to send this message to DLQ
-                    dlq_message = str(in_message.message)
+                    dlq_message = in_message.message
                     logger.warning(f"{input_con.serializer=} failed")
 
                 if not validated_success and deserialized_success:

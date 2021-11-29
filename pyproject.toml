@@ -20,11 +20,12 @@ prometheus-client = "^0.11.0"
 psycopg2-binary = "^2.9.1"
 pydantic = "^1.8.2"
 PyRSMQ = "^0.4.5"
-pyshipt-logging = "^0.0.2"
 pyshipt-streams = "^1.1.0"
 PyYAML = "^5.4.1"
 SQLAlchemy = "^1.4.25"
 hiredis = "^2.0.0"
+orjson = "^3.6.4"
+msgpack = "^1.0.3"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.2"

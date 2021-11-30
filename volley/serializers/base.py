@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Tuple
-
-from volley.logging import logger
+from typing import Any
 
 
 class BaseSerialization(ABC):
@@ -31,29 +29,3 @@ class NullSerializer(BaseSerialization):
     def deserialize(self, message: Any, *args: Any, **kwargs: Any) -> Any:
         """returns the message"""
         return message
-
-
-def handle_serializer(
-    serializer: BaseSerialization, message: Any, operation: str, *args: Any, **kwargs: Any
-) -> Tuple[Any, bool]:
-    """handles errors in serializer opertions (serialize|deserialize)
-
-    Args:
-        serializer (BaseSerialization): the provided serilization plugin
-        message (Any): message to serialize|deserialize
-        operation (str): enum of serialize|deserialize
-
-    Returns:
-        Tuple[Any, bool]: returns the processed message and a success/fail status.
-            on fail, the message will be the same original, unprocessed message
-    """
-    if operation not in ("serialize", "deserialize"):
-        raise NotImplementedError(f"{operation} not a valid serilizer method")
-
-    op = getattr(serializer, operation)
-    try:
-        success_msg = op(message, *args, **kwargs)
-        return (success_msg, True)
-    except Exception:
-        logger.exception(f"Failed {operation} on {message=}. {serializer=}")
-        return (message, False)

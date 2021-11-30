@@ -1,12 +1,15 @@
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from jinja2 import Template
 
 from volley.config import APP_ENV, GLOBALS, import_module_from_string, load_yaml
 from volley.connectors.base import Consumer, Producer
 from volley.logging import logger
+from volley.models import PydanticModelHandler
+from volley.models.base import BaseModelHandler
+from volley.serializers import OrJsonSerialization
 from volley.serializers.base import BaseSerialization
 
 
@@ -35,12 +38,14 @@ class Queue:
     value: str
 
     schema: type
+
     type: str
 
     consumer: str
     producer: str
 
-    serializer: BaseSerialization
+    serializer: Optional[BaseSerialization] = field(default=OrJsonSerialization())
+    model_handler: BaseModelHandler = field(default=PydanticModelHandler())
 
     # initialized queue connection
     # these get initialized by calling connect()
@@ -94,6 +99,7 @@ def apply_defaults(config: Dict[str, List[Dict[str, str]]]) -> Dict[str, List[Di
     global_connectors = global_configs["connectors"]
     default_queue_schema = global_configs["schemas"]["default"]
     default_serializer = global_configs["serializers"]["default"]
+    default_model_handler = global_configs["model_handler"]["default"]
     # apply default queue configurations
     for queue in config["queues"]:
         # for each defined queue, validate there is a consumer & producer defined
@@ -111,6 +117,9 @@ def apply_defaults(config: Dict[str, List[Dict[str, str]]]) -> Dict[str, List[Di
         if "serializer" not in queue:
             queue["serializer"] = default_serializer
 
+        if "model_handler" not in queue:
+            queue["model_handler"] = default_model_handler
+
     return config
 
 
@@ -127,14 +136,18 @@ def config_to_queue_map(configs: List[dict[str, str]]) -> Dict[str, Queue]:
         # serializers are optional
         # users are allowed to pass message to a producer "as is"
         if q["serializer"] in (None, "disabled", "None"):
-            serializer: BaseSerialization = import_module_from_string("volley.serializers.base.NullSerializer")()
+            serializer = None
         else:
             # serializer is initialized
             serializer = import_module_from_string(q["serializer"])()
 
-        # init schema data models
+        # import schema data models
         config_schema: str = q["schema"]
         schema: type = import_module_from_string(config_schema)
+
+        # init validator
+        config_handler: str = q["model_handler"]
+        model_handler: BaseModelHandler = import_module_from_string(config_handler)()
 
         # config to pass through to specific connector
         _connector_config: Any = q.get("config", {})
@@ -155,6 +168,7 @@ def config_to_queue_map(configs: List[dict[str, str]]) -> Dict[str, Queue]:
                 producer=q["producer"],
                 serializer=serializer,
                 pass_through_config=pass_through_config,
+                model_handler=model_handler,
             )
         except KeyError as e:
             logger.exception(f"{qname} is missing the {e} attribute")

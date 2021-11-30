@@ -35,6 +35,9 @@ queue_config = {
         "value": "localhost.kafka.output",
         "type": "kafka",
         "schema": "example.data_models.OutputMessage",
+        # disable serializer - using PydanticParserModelHandler to handle parsing from bytes to model
+        "serializer": "disabled",
+        "model_handler": "volley.models.PydanticParserModelHandler",
     },
 }
 

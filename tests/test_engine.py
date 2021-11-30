@@ -108,7 +108,7 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
     m = {"uuid": str(uuid4())}
     rsmq_msg = {
         "id": "rsmq_id",
-        "message": json.dumps(m),
+        "message": json.dumps(m).encode("utf8"),
     }
     mock_rsmq.return_value.receiveMessage.return_value.exceptions.return_value.execute = lambda: rsmq_msg
     mock_rsmq.return_value.sendMessage.return_value.execute = lambda: True
@@ -208,11 +208,11 @@ def test_null_serializer_fail(
         return None
 
     # serializer disable, schema validation will fail
-    # but messages will route to DLQ with exceptions handles
+    # but messages will route to DLQ with exceptions handled
     with caplog.at_level(logging.WARNING):
         func()
 
-    assert "validation failed" in caplog.text
+    assert "validation error" in caplog.text
     assert "failed producing message to" not in caplog.text
 
     # do not specifiy the DLQ
@@ -294,7 +294,7 @@ def test_engine_configuration_failures(mock_rsmq: MagicMock) -> None:
 @patch("volley.engine.RUN_ONCE", True)
 @patch("volley.engine.METRICS_ENABLED", False)
 @patch("volley.connectors.rsmq.RedisSMQ")
-def test_serialization_fail_to_dlq(mock_rsmq: MagicMock) -> None:
+def test_serialization_fail_crash(mock_rsmq: MagicMock, caplog: LogCaptureFixture) -> None:
     rsmq_msg = {"id": 123, "message": {"key": datetime.now()}}
     mock_rsmq.return_value.receiveMessage.return_value.exceptions.return_value.execute = lambda: rsmq_msg
     mock_rsmq.return_value.sendMessage.return_value.execute = lambda: True
@@ -311,9 +311,9 @@ def test_serialization_fail_to_dlq(mock_rsmq: MagicMock) -> None:
     def func(msg: ComponentMessage) -> Any:
         return [("comp_1", {"hello": "world"})]
 
-    # this shouldnt raise anything, which should mean message made it to DLQ successfully
-    # TODO find a way assert ^^
-    func()
+    with pytest.raises(Exception):
+        func()
+        assert "Deserialization failed" in caplog.text
 
 
 @patch("volley.engine.RUN_ONCE", True)
@@ -395,3 +395,33 @@ def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture, 
         # consumer group should be in that text
         assert consumer_group in caplog.text
         assert kafka_brokers in caplog.text
+
+
+@patch("volley.engine.RUN_ONCE", True)
+@patch("volley.engine.METRICS_ENABLED", False)
+@patch("volley.logging.logger.propagate", True)
+@patch("volley.connectors.rsmq.RedisSMQ")
+@patch("volley.engine.message_model_handler")
+def test_wild_dlq_error(mock_handler: MagicMock, mock_rsmq: MagicMock, caplog: LogCaptureFixture) -> None:
+    mock_handler.return_value = False, False
+
+    m = {"uuid": str(uuid4())}
+    rsmq_msg = {
+        "id": "rsmq_id",
+        "message": json.dumps(m),
+    }
+    mock_rsmq.return_value.receiveMessage.return_value.exceptions.return_value.execute = lambda: rsmq_msg
+    cfg = {
+        "comp_1": {"value": "random_val", "type": "rsmq", "schema": "volley.data_models.ComponentMessage"},
+        "dlq": {"type": "rsmq", "value": "my_dlq"},
+    }
+
+    eng = Engine(input_queue="comp_1", dead_letter_queue="dlq", queue_config=cfg)
+
+    @eng.stream_app
+    def fun(msg: Any) -> None:
+        return None
+
+    with pytest.raises(Exception):
+        fun()
+    assert caplog

@@ -5,9 +5,9 @@ connectors:
   rsmq:
     consumer: volley.connectors.rsmq.RSMQConsumer
     producer: volley.connectors.rsmq.RSMQProducer
+model_handler:
+  default: volley.models.PydanticModelHandler
 schemas:
   default: volley.data_models.ComponentMessage
 serializers:
   default: volley.serializers.orjson_serializer.OrJsonSerialization
-  json: volley.serializers.json_serializer.JsonSerialization
-  orjson: volley.serializers.orjson_serializer.OrJsonSerialization

@@ -7,7 +7,10 @@ from jinja2 import Template
 from volley.config import APP_ENV, GLOBALS, import_module_from_string, load_yaml
 from volley.connectors.base import Consumer, Producer
 from volley.logging import logger
+from volley.serializers import OrJsonSerialization
 from volley.serializers.base import BaseSerialization
+from volley.validators import PydanticValidator
+from volley.validators.base import BaseValidation
 
 
 class DLQNotConfiguredError(Exception):
@@ -35,12 +38,14 @@ class Queue:
     value: str
 
     schema: type
+
     type: str
 
     consumer: str
     producer: str
 
-    serializer: BaseSerialization
+    serializer: BaseSerialization = field(default=OrJsonSerialization())
+    validator: BaseValidation = field(default=PydanticValidator())
 
     # initialized queue connection
     # these get initialized by calling connect()
@@ -94,6 +99,7 @@ def apply_defaults(config: Dict[str, List[Dict[str, str]]]) -> Dict[str, List[Di
     global_connectors = global_configs["connectors"]
     default_queue_schema = global_configs["schemas"]["default"]
     default_serializer = global_configs["serializers"]["default"]
+    default_validator = global_configs["validator"]["default"]
     # apply default queue configurations
     for queue in config["queues"]:
         # for each defined queue, validate there is a consumer & producer defined
@@ -110,6 +116,9 @@ def apply_defaults(config: Dict[str, List[Dict[str, str]]]) -> Dict[str, List[Di
 
         if "serializer" not in queue:
             queue["serializer"] = default_serializer
+
+        if "validator" not in queue:
+            queue["validator"] = default_validator
 
     return config
 
@@ -132,9 +141,13 @@ def config_to_queue_map(configs: List[dict[str, str]]) -> Dict[str, Queue]:
             # serializer is initialized
             serializer = import_module_from_string(q["serializer"])()
 
-        # init schema data models
+        # import schema data models
         config_schema: str = q["schema"]
         schema: type = import_module_from_string(config_schema)
+
+        # init validator
+        config_validator: str = q["validator"]
+        validator: BaseValidation = import_module_from_string(config_validator)()
 
         # config to pass through to specific connector
         _connector_config: Any = q.get("config", {})
@@ -155,6 +168,7 @@ def config_to_queue_map(configs: List[dict[str, str]]) -> Dict[str, Queue]:
                 producer=q["producer"],
                 serializer=serializer,
                 pass_through_config=pass_through_config,
+                validator=validator,
             )
         except KeyError as e:
             logger.exception(f"{qname} is missing the {e} attribute")

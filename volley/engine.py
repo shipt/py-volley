@@ -70,7 +70,7 @@ class Engine:
         default_factory=list,
     )
 
-    app_name: str = field(default="volley")
+    app_name: str = "volley"
     dead_letter_queue: Optional[str] = None
 
     killer: GracefulKiller = GracefulKiller()

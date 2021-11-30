@@ -7,7 +7,7 @@ from uuid import uuid4
 import pytest
 from msgpack.exceptions import ExtraData
 
-from volley.serializers.base import BaseSerialization, handle_serializer
+from volley.serializers.base import BaseSerialization
 from volley.serializers.json_serializer import JsonSerialization
 from volley.serializers.msgpack_serializer import MsgPackSerialization
 from volley.serializers.orjson_serializer import OrJsonSerialization
@@ -57,30 +57,3 @@ def test_fail(serializers: List[BaseSerialization]) -> None:
         non_str = CannotBeString()
         with pytest.raises((JSONDecodeError, TypeError)):  # type: ignore
             serializer.deserialize(non_str)  # type: ignore
-
-
-def test_handler_fail(serializers: List[BaseSerialization]) -> None:
-    raw_msg = b"abc"
-
-    for serializer in serializers:
-        msg, status = handle_serializer(serializer=serializer, operation="deserialize", message=raw_msg)
-        assert raw_msg == msg
-        assert status is False
-
-        non_str = CannotBeString()
-        msg, status = handle_serializer(serializer=serializer, operation="serialize", message=non_str)
-        assert msg == non_str
-        assert status is False
-
-
-def test_handler_success(serializers: List[BaseSerialization]) -> None:
-    raw_msg = {"hello": f"world-{uuid4()}"}
-
-    for serializer in serializers:
-        ser_msg, status = handle_serializer(serializer=serializer, operation="serialize", message=raw_msg)
-        assert ser_msg != raw_msg
-        assert status is True
-
-        deser_msg, status = handle_serializer(serializer=serializer, operation="deserialize", message=ser_msg)
-        assert deser_msg == raw_msg
-        assert status is True

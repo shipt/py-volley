@@ -82,11 +82,12 @@ stop:
 
 publish:
 	poetry publish --repository=shipt --build
-
 publish.pre.patch:
 	poetry version prepatch
+	$(MAKE) publish
 publish.pre.minor:
 	poetry version preminor
+	$(MAKE) publish
 publish.pre.major:
 	poetry version premajor
 	$(MAKE) publish

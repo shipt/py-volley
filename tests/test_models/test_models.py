@@ -1,3 +1,4 @@
+import logging
 from unittest.mock import patch
 
 from pytest import LogCaptureFixture, raises
@@ -22,6 +23,7 @@ def test_message_to_model_handler_fail() -> None:
 def test_model_to_message_handler_fail(caplog: LogCaptureFixture) -> None:
     # force an error anyehere in the block
     with raises(Exception):
-        # PydanticParserModelHandler expects no serialization
-        model_message_handler(data_model=None, model_handler=None, serializer=None)  # type: ignore
+        with caplog.at_level(logging.INFO):
+            # PydanticParserModelHandler expects no serialization
+            model_message_handler(data_model=None, model_handler=None, serializer=None)  # type: ignore
     assert "failed transporting" in caplog.text

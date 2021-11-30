@@ -6,12 +6,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from prometheus_client import Counter, Summary, start_http_server
 
 from volley.config import METRICS_ENABLED, METRICS_PORT
-from volley.data_models import (
-    ComponentMessage,
-    ComponentMessageType,
-    QueueMessage,
-    schema_handler,
-)
+from volley.data_models import ComponentMessage, ComponentMessageType, QueueMessage
 from volley.logging import logger
 from volley.queues import (
     ConnectionType,
@@ -24,6 +19,7 @@ from volley.queues import (
 )
 from volley.serializers.base import handle_serializer
 from volley.util import GracefulKiller
+from volley.validators.base import handle_validator
 
 # enables mocking the infinite loop to finite
 RUN_ONCE = False
@@ -163,8 +159,8 @@ class Engine:
                 if deserialized_success:
                     # schema validation can only happen if deserialization succeeds
                     validated_message: ComponentMessageType
-                    validated_message, validated_success = schema_handler(
-                        schema=input_con.schema, message=deserialized_msg
+                    validated_message, validated_success = handle_validator(
+                        validator=input_con.validator, schema=input_con.schema, message=deserialized_msg
                     )
                 else:
                     # serialize failed, try to send this message to DLQ

@@ -83,5 +83,5 @@ def model_message_handler(
         else:
             return raw
     except Exception:
-        logger.exception(f"failed transporting message to connector: {raw}")
+        logger.exception(f"failed transporting message to connector: {data_model}")
         raise

@@ -42,12 +42,29 @@ POLL_INTERVAL = 1
 
 @dataclass
 class Engine:
-    """initializes configuration for input and output workers"""
+    """Initializes the Volley application and prepares the main function decorator
+
+    Attributes:
+        app_name: Name of the applicaiton. Added as a label to all logged metrics
+        input_queue: Name of the input queue. Corresponds to the name of one queue defined in queue_config or yaml_config_path
+        output_queues: List of queues the application needs to be able to publish to. Provie `None` if the application does not produce anywhere.
+        dead_letter_queue: Points to the queue in configuration used as the dead letter queue.
+        queue_config: dictionary provided all queue configurations. Must provide one of queue_config or yaml_config_path
+        yaml_config_path: path to a yaml config file. Must provide one of yaml_config_path or queue_config
+
+    Raises:
+        NameError: input_queue, dead_letter_queue or output_queues reference a queue that does not exist in queue configuration
+
+    Returns:
+        Engine: Instance of the engine with a prepared `stream_app` decorator
+    """
 
     input_queue: str
-    output_queues: List[str] = field(default_factory=list)
+    output_queues: Optional[List[str]] = field(
+        default_factory=list,
+    )
 
-    app_name: str = "volley"
+    app_name: str = field(default="volley")
     dead_letter_queue: Optional[str] = None
 
     killer: GracefulKiller = GracefulKiller()
@@ -59,7 +76,10 @@ class Engine:
     yaml_config_path: str = "./volley_config.yml"
 
     def __post_init__(self) -> None:
-        """loads configurations and connectors"""
+        """Validates configuration and initializes queue configs
+
+        Database connections are initialized within stream_app decorator
+        """
         if self.output_queues == []:
             logger.warning("No output queues provided")
 
@@ -90,6 +110,9 @@ class Engine:
     def stream_app(  # noqa: C901
         self, func: Callable[[Union[ComponentMessageType, Any]], Optional[List[Tuple[str, Any]]]]
     ) -> Callable[..., Any]:
+        """Main decorator for applications
+        """
+
         @wraps(func)
         def run_component() -> None:
             if METRICS_ENABLED:

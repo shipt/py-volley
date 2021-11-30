@@ -14,10 +14,12 @@ theme:
 nav:
   - Introduction: 'index.md'
   - Basic Example: 'example.md'
-  - Configuration: 'configuration.md'
-  - Connectors: 'connectors.md'
-  - Serialization: 'serialization.md'
-  - Schema Validation: 'validation.md'
+  - Configuration:
+    - Queues: 'queue_config.md'
+    - Application: 'engine.md'
+    - Connectors: 'connectors.md'
+    - Serializers: 'serialization.md'
+    - Schema Validation: 'validation.md'
   - Dead Letter Queues: 'deadletterqueue.md'
   - Metrics: 'metrics.md'
   - Advanced Example: 'advanced_example.md'
@@ -31,6 +33,7 @@ markdown_extensions:
 - admonition
 - codehilite
 - extra
+- pymdownx.snippets
 - pymdownx.superfences:
     custom_fences:
     - name: mermaid
@@ -39,3 +42,6 @@ markdown_extensions:
 - pymdownx.tabbed
 extra_css:
   - stylesheets/extra.css
+plugins:
+  - search
+  - mkdocstrings

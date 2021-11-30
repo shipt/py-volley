@@ -108,7 +108,7 @@ def test_dead_letter_queue(environment: Environment) -> None:
     conusumed_ids = []
     for m in consumed_messages:
         # assert all consumed IDs were from the list we produced
-        _id = m["error_msg"]["request_id"]
+        _id = m["request_id"]
         assert _id in request_ids
         conusumed_ids.append(_id)
 

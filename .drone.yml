@@ -68,26 +68,6 @@ steps:
       status:
       - failure
       - success
-
-  - name: publish-pre-release
-    image: python:3.9.4
-    environment:
-      POETRY_HTTP_BASIC_SHIPT_USERNAME:
-        from_secret: SHIPT_PYPI_USERNAME
-      POETRY_HTTP_BASIC_SHIPT_PASSWORD:
-        from_secret: SHIPT_PYPI_PASSWORD
-    commands:
-      - pip install poetry==1.1.10
-      - make publish.pre.minor
-    when:
-      branch:
-        - main
-      event:
-        - push
-    depends_on:
-      - lints
-      - unit-test
-      - test-integration
   
   - name: publish-release
     image: python:3.9.4

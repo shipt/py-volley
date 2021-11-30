@@ -5,6 +5,9 @@ connectors:
   rsmq:
     consumer: volley.connectors.rsmq.RSMQConsumer
     producer: volley.connectors.rsmq.RSMQProducer
+validator:
+  default: volley.validators.PydanticValidator
+  pydantic: volley.validators.PydanticValidator
 schemas:
   default: volley.data_models.ComponentMessage
 serializers:

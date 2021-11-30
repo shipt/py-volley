@@ -12,6 +12,4 @@ from volley.engine import Engine
 app = Engine(...)
 ```
 
-Engine attributes are described below:
-
 ::: volley.engine.Engine

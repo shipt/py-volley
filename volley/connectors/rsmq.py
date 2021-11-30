@@ -15,13 +15,39 @@ QUIET = bool(os.getenv("DEBUG", True))
 PROCESS_TIME = Summary("redis_process_time_seconds", "Time spent interacting with rsmq", ["operation"])
 
 
+class RSMQConfigError(Exception):
+    """problems with RSMQ config"""
+
+
 @dataclass
 class RSMQConsumer(Consumer):
     def __post_init__(self) -> None:
-        self.host = os.environ["REDIS_HOST"]
-        self.queue = RedisSMQ(host=self.host, qname=self.queue_name, options={"decode_responses": False})
-        # TODO: visibility timeout (vt) probably be configurable
-        self.queue.createQueue(delay=0).vt(60).exceptions(False).execute()
+        if "host" in self.config:
+            # pass the value directly to the constructor
+            pass
+        elif host := os.getenv("REDIS_HOST"):
+            self.config["host"] = host
+        else:
+            raise RSMQConfigError("RSMQ host not found in environment nor config")
+
+        if "options" in self.config:
+            if "decode_responses" in self.config["options"]:
+                # if client is providing their own value, use it
+                pass
+            else:
+                # otherwise set it to False. Serialization is handled elsewhere
+                self.config["options"]["decode_responses"] = False
+        else:
+            # if no options provided, then provide these default options
+            self.config["options"] = {"decode_responses": False}
+
+        defaults = {"qname": self.queue_name, "exceptions": False, "vt": 60}
+
+        defaults.update(self.config)
+        self.config = defaults
+        logger.info(f"RSMQ Consumer configs: {self.config}")
+        self.queue = RedisSMQ(**self.config)
+        self.queue.createQueue().execute()
 
     def consume(self, queue_name: str, timeout: float = 30.0, poll_interval: float = 1) -> Optional[QueueMessage]:
         _start = time.time()
@@ -50,9 +76,21 @@ class RSMQConsumer(Consumer):
 @dataclass
 class RSMQProducer(Producer):
     def __post_init__(self) -> None:
-        self.host = os.environ["REDIS_HOST"]
-        self.queue = RedisSMQ(host=self.host, qname=self.queue_name)
-        self.queue.createQueue(delay=0).vt(60).exceptions(False).execute()
+        if "host" in self.config:
+            # pass the value directly to the constructor
+            pass
+        elif host := os.getenv("REDIS_HOST"):
+            self.config["host"] = host
+        else:
+            raise RSMQConfigError("RSMQ host not found in environment nor config")
+
+        defaults = {"qname": self.queue_name, "delay": 0, "exceptions": False}
+
+        defaults.update(self.config)
+        self.config = defaults
+        logger.info(f"RSMQ Producer configs: {self.config}")
+        self.queue = RedisSMQ(**self.config)
+        self.queue.createQueue().execute()
 
     def produce(self, queue_name: str, message: bytes) -> bool:
         m = message

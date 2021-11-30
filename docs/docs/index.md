@@ -14,7 +14,7 @@ Volley is a lightweight message stream processor for Python.
 Use Volley to quickly build applications that need to poll streaming sources like Kafka, then process the data is receives, and publish results to one or many other streaming destinations.
 
 
-## Setup
+## Pseudo Example
 
 Volley turns your Python function into a stream processor. If you can write a Python function you can build stream a stream processor with Volley.
 

@@ -2,17 +2,17 @@
 
 Volley exports selected [Prometheus metrics](https://prometheus.io/docs/concepts/metric_types/) on all workers.
 
-All metrics contain the label `volley_app` which is directly tied to the `app_name` parameter passed in when initializing `volley.engine.Engine()`.
+All metrics contain the label `volley_app` which is directly tied to the `app_name` parameter passed in when initializing `volley.engine.Engine()`. Below are descriptions of each of the metrics produced by Volley.
 
 ## `messages_consumed_count` 
-- [Counter](https://prometheus.io/docs/concepts/metric_types/#counter) 
+- Type: [Counter](https://prometheus.io/docs/concepts/metric_types/#counter) 
 - increments each time a message is consumed by the worker.
 - Labels:
   - `status` : `success|fail`. If the worker consumes a message, but fails the corresponding produce operation, the message gets marked as a `fail`. Otherwise, it is a `success`.
 
 
 ## `messages_produced_count` 
-- [Counter](https://prometheus.io/docs/concepts/metric_types/#counter)
+- Type: [Counter](https://prometheus.io/docs/concepts/metric_types/#counter)
 - increments each time a message is produced
 - Labels:
   - `source` : name of the queue the worker consumed from.
@@ -20,7 +20,7 @@ All metrics contain the label `volley_app` which is directly tied to the `app_na
 
 
 ## `process_time_seconds` 
-- [Summary](https://prometheus.io/docs/concepts/metric_types/#summary)
+- Type: [Summary](https://prometheus.io/docs/concepts/metric_types/#summary)
 - observed the amount of time various processes take to run
 - Labels:
   - `process_name` : name of the process that is tracked
@@ -29,7 +29,7 @@ All metrics contain the label `volley_app` which is directly tied to the `app_na
       - `cycle` : one full cycle of consume message, serialize, schema validation, component processing, and publishing to all outputs. `component` is a subset of `cycle`
 
 ## `redis_process_time_seconds` 
-- [Summary](https://prometheus.io/docs/concepts/metric_types/#summary)
+- Type: [Summary](https://prometheus.io/docs/concepts/metric_types/#summary)
 - similar to `process_time_seconds` but is isolated to the RSMQ connector.
 - Labels:
   - `operation`: name of the operation

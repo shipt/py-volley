@@ -63,7 +63,7 @@ def my_app(msg: ComponentMessage) -> Optional[List[Tuple[str, ComponentMessage]]
     return output
 ```
 
-Volley creates WARNING level logs whenever messages fail serialization or validation. There are also Prometheus metrics logged each time a message is published to any queue, including dead-letter-queues. It is recommended to create alerts on these metrics to help monitor this process.
+Volley creates WARNING level logs whenever messages fail serialization or validation. There are also Prometheus [metrics](./metrics.md) logged each time a message is published to any queue, including dead-letter-queues. It is recommended to create alerts on these metrics to help monitor this process. For example, the below Prometheus query would result in the total number of messages that have been produced to the dead letter topic over the prior 24h time window.
 
 ```promql
 increase(messages_produced_count_total{destination="my-dead-letter-queue"}[24h])

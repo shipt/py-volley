@@ -24,10 +24,10 @@ It is recommended to define Volley's configuration by passing a dictionary direc
 : (str) - *optional* : Defaults to `volley.serializers.OrJsonSerializer`. Path to the serializer.
 
 `producer`
-: (str) - *optional* : Used for providing a custom producer connector. Overwrides the producer pertaining to that provided in `type`. Provide the dot path to the producer class. e.g. for Kafka, defautls to `volley.connectors.kafka.KafkaProducer`; cf. [Extending Connectors](connectors.md#extending-connectors-with-plugins).
+: (str) - *optional* : Used for providing a custom producer connector. Overrides the producer pertaining to that provided in `type`. Provide the dot path to the producer class. e.g. for Kafka, defaults to `volley.connectors.kafka.KafkaProducer`; cf. [Extending Connectors](connectors.md#extending-connectors-with-plugins).
 
 `consumer`
-: (str) - *optional* : Used for providing a custom consumer connector. Overwrides the consumer pertaining to that provided in `type`. Provide the dot path to the consumer class. e.g. for Kafka, defautls to `volley.connectors.kafka.KafkaConsumer`; cf. [Extending Connectors](connectors.md#extending-connectors-with-plugins).
+: (str) - *optional* : Used for providing a custom consumer connector. Overrides the consumer pertaining to that provided in `type`. Provide the dot path to the consumer class. e.g. for Kafka, defaults to `volley.connectors.kafka.KafkaConsumer`; cf. [Extending Connectors](connectors.md#extending-connectors-with-plugins).
 
 `config`
 : (dict) - *optional* : Any configuration to be passed directly to the queue connector. For example, all [librdkafka configurations](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) can be passed through to the connector via a dictionary here.
@@ -67,7 +67,7 @@ app = Engine(
 )
 ```
 
-Queue configuration can also be defined via a yml file. The below is equivalent to the example shown above. This can be useful when needing to configure multiple Volley workers, particularly when multiple workers may need to publish to the same queue. Define the queus in one place and import the configuration everywhere.
+Queue configuration can also be defined via a yml file. The below is equivalent to the example shown above. This can be useful when needing to configure multiple Volley workers, particularly when multiple workers may need to publish to the same queue. Define the queues in one place and import the configuration everywhere.
 
 
 ```yml

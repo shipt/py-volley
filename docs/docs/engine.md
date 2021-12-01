@@ -1,19 +1,15 @@
-# Engine
+# Application
 
-The engine is a Python decorator that wraps a Python worker and runs as headless services.
+The engine prepares a Python decorator that wraps a worker function to be run as a headless service.
 
-On initialization:
-- setup connections to the queues using the connectors specified by the components inputs and outputs
-- determines the data schema required by the component
+## App Configuration
 
+All configuration is passed in and initalized via the `Engine` class
 
-At runtime:
-- The application runs a main loop which consists of:
-  - polling the specified `queue` for new messages via a `connector`
-  - `connector` passes message through `serialization`
-  - `serialization` passes the message to a specified `validator`
-  - messages enters the client provides Python function.
+```python hl_lines="3"
+from volley.engine import Engine
 
-This process is executed in reverse order on the message returned by the client Python function.
+app = Engine(...)
+```
 
-Messages that fail either `serialization` or `validation` are routed to a dead-letter-queue, if specified.
+::: volley.engine.Engine

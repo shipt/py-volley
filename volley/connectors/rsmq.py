@@ -50,6 +50,16 @@ class RSMQConsumer(Consumer):
         self.queue.createQueue().execute()
 
     def consume(self, queue_name: str, timeout: float = 30.0, poll_interval: float = 1) -> Optional[QueueMessage]:
+        """Polls RSMQ for a single message.
+
+        Args:
+            queue_name (str): name of queue to poll.
+            timeout (float, optional): alias for RSMQ visibility_timeout Defaults to 30.0.
+            poll_interval (float, optional): Defaults to 1.
+
+        Returns:
+            Optional[QueueMessage]: The message and it's RSMQ.
+        """
         _start = time.time()
         msg = self.queue.receiveMessage(qname=queue_name, vt=timeout, quiet=QUIET).exceptions(False).execute()
         _duration = time.time() - _start

@@ -268,7 +268,7 @@ See `.drone.yml` for test gates. A Semantic tagged release triggers a build and 
 
 `make test.unit` Runs unit tests on individual components with mocked responses dependencies external to the code. Docker is not involved in this process.
 
-`make test.integration` Runs an "end-to-end" test against the example project in `./example`. The tests validate messages make it through all supported connectors and queus, plus a user defined connector plugin (postgres).
+`make test.integration` Runs an "end-to-end" test against the example project in `./example`. The tests validate messages make it through all supported connectors and queues, plus a user defined connector plugin (postgres).
 
 
 # Support

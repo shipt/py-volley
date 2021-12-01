@@ -60,7 +60,7 @@ When run, Volley invokes a continuous loop of the following:
 
   - message is passed to your function, and your function messages returns zero to many messages back to Volley
 
-  - message passes through schema validation for specified for the `output_queue`
+  - message passes through schema validation specified for the `output_queue`
 
   - message is serialized for `output_queue`
 

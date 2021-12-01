@@ -12,7 +12,7 @@ Producers have two functions:
 
 - `shutdown` - gracefully disconnect the producer.
 
-Consumers are more complicated the producers. They have four functions;
+Consumers have four functions:
 
 - `consume` - pull a message off the queue.
 
@@ -110,7 +110,7 @@ config = {
         "type": "postgres",
         "schema": "volley.data_models.ComponentMessage,
         "producer": "example.plugins.my_plugin.MyPGProducer"
-        "consumer": "example.plugins.my_plugin.MyPGConsumer "
+        "consumer": "example.plugins.my_plugin.MyPGConsumer"
     }
 }
 ```

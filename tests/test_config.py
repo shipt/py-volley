@@ -12,7 +12,6 @@ from volley.queues import (
     config_to_queue_map,
     dict_to_config,
     import_module_from_string,
-    interpolate_kafka_topics,
     yaml_to_dict_config,
 )
 
@@ -81,14 +80,6 @@ def test_import_module_from_string() -> None:
 
     assert issubclass(class_module, BaseModel)
     assert isinstance(instance, QueueMessage)
-
-
-def test_interpolate_kafka_topics() -> None:
-    templated = "{{ env }}.kafka.input"
-    cfg = {"type": "kafka", "value": templated}
-    interpolated = interpolate_kafka_topics(cfg)
-
-    assert interpolated["value"] == "localhost.kafka.input"
 
 
 def test_bad_connector_config(config_dict: dict[str, dict[str, str]]) -> None:

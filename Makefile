@@ -57,7 +57,7 @@ test.clean:
 	-docker images -a | grep ${PROJECT} | awk '{print $3}' | xargs docker rmi
 	-docker image prune -f
 test.integration: run.datastores run.components
-	docker-compose up --build int-tests
+	docker-compose up --exit-code-from int-tests --build int-tests
 test.unit: setup
 	poetry run coverage run -m pytest -s \
 			--ignore=tests/integration_tests \
@@ -79,3 +79,15 @@ stop.components:
 	docker compose down
 stop:
 	docker compose down --remove-orphans
+
+publish:
+	poetry publish --repository=shipt --build
+poetry.pre.patch:
+	poetry version prepatch
+poetry.pre.minor:
+	poetry version preminor
+poetry.pre.major:
+	poetry version premajor
+publish.pre.patch: poetry.pre.patch publish
+publish.pre.minor: poetry.pre.minor publish
+publish.pre.major: poetry.pre.major publish

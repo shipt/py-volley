@@ -6,13 +6,9 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from prometheus_client import Counter, Summary, start_http_server
 
 from volley.config import METRICS_ENABLED, METRICS_PORT
-from volley.data_models import (
-    ComponentMessage,
-    ComponentMessageType,
-    QueueMessage,
-    schema_handler,
-)
+from volley.data_models import ComponentMessage, ComponentMessageType, QueueMessage
 from volley.logging import logger
+from volley.models.base import message_model_handler, model_message_handler
 from volley.queues import (
     ConnectionType,
     DLQNotConfiguredError,
@@ -22,7 +18,6 @@ from volley.queues import (
     dict_to_config,
     yaml_to_dict_config,
 )
-from volley.serializers.base import handle_serializer
 from volley.util import GracefulKiller
 
 # enables mocking the infinite loop to finite
@@ -151,36 +146,29 @@ class Engine:
                 # typing for producing
                 outputs: Optional[List[Tuple[str, ComponentMessage]]] = []
 
-                # input serialization
-                deserialized_msg: Any
-                deserialized_success: bool = False
-                dlq_message: str = "NONE"
-                deserialized_msg, deserialized_success = handle_serializer(
-                    serializer=input_con.serializer, operation="deserialize", message=in_message.message
+                data_model, status = message_model_handler(
+                    message=in_message.message,
+                    schema=input_con.schema,
+                    model_handler=input_con.model_handler,
+                    serializer=input_con.serializer,
                 )
 
-                validated_success: bool = False
-                if deserialized_success:
-                    # schema validation can only happen if deserialization succeeds
-                    validated_message: ComponentMessageType
-                    validated_message, validated_success = schema_handler(
-                        schema=input_con.schema, message=deserialized_msg
-                    )
-                else:
-                    # serialize failed, try to send this message to DLQ
-                    dlq_message = in_message.message
-                    logger.warning(f"{input_con.serializer=} failed")
-
-                if not validated_success and deserialized_success:
-                    logger.warning(f"schema '{input_con.schema=}' validation failed")
-                    dlq_message = deserialized_msg
-
-                if dlq_message == "NONE":
+                if status:
                     # happy path
                     pass
-                elif self.dead_letter_queue in self.queue_map and dlq_message != "NONE":
-                    # DLQ is configured and there is a message ready for the DLQ
-                    outputs = [(self.dead_letter_queue, ComponentMessage(error_msg=dlq_message))]
+                elif self.dead_letter_queue is not None and self.dead_letter_queue in self.queue_map:
+                    dlq = self.queue_map[self.dead_letter_queue]
+                    msg, status = message_model_handler(
+                        message=in_message.message,
+                        schema=dlq.schema,
+                        model_handler=dlq.model_handler,
+                        serializer=dlq.serializer,
+                    )
+                    if not status:
+                        raise Exception(f"DLQ unable to handle message: {in_message.message}")
+                    else:
+                        # DLQ is configured and there is a message ready for the DLQ
+                        outputs = [(self.dead_letter_queue, msg)]
                 else:
                     # things have gone wrong w/ the message and no DLQ configured
                     raise DLQNotConfiguredError(f"Deserializing {in_message.message} failed")
@@ -190,7 +178,7 @@ class Engine:
                     # this is happy path
                     # if outputs have been assigned it means this message is destined for a DLQ
                     _start_main = time.time()
-                    outputs = func(validated_message)
+                    outputs = func(data_model)
                     _fun_duration = time.time() - _start_main
                     PROCESS_TIME.labels(volley_app=self.app_name, process_name="component").observe(_fun_duration)
 
@@ -217,7 +205,12 @@ class Engine:
 
                         try:
                             # serialize message
-                            serialized = out_queue.serializer.serialize(component_msg.dict())
+                            serialized = model_message_handler(
+                                data_model=component_msg,
+                                model_handler=out_queue.model_handler,
+                                serializer=out_queue.serializer,
+                            )
+
                             status = out_queue.producer_con.produce(queue_name=out_queue.value, message=serialized)
                             MESSAGES_PRODUCED.labels(
                                 volley_app=self.app_name, source=input_con.name, destination=qname

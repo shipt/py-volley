@@ -18,6 +18,8 @@ queues:
   - name: output-topic
     value: "localhost.kafka.output"
     type: kafka
+    serializer: None
+    model_handler: volley.models.PydanticParserModelHandler
     schema: example.data_models.OutputMessage
     config:
       group.id: localhost.example.consumer

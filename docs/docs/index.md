@@ -1,6 +1,6 @@
 # **Volley**
 
-Volley is a lightweight message stream processor for Python.
+Volley is a lightweight and highly configurable message stream processor for Python.
 
 
 
@@ -11,7 +11,7 @@ Volley is a lightweight message stream processor for Python.
 
 **Repository**: [https://github.com/shipt/volley](https://github.com/shipt/volley)
 
-Use Volley to quickly build applications that need to poll streaming sources like Kafka, then process the data is receives, and publish results to one or many other streaming destinations.
+Use Volley to quickly build applications that need to poll streaming sources like Kafka, then process the data that it receives and publish results to one or many other streaming destinations.
 
 
 ## Pseudo Example
@@ -46,6 +46,7 @@ Volley is production-ready, and provides the following to all functions that it 
 - Data validation via [Pydantic](https://pydantic-docs.helpmanual.io/)
 - Built-in support for both Kafka and [pyRSMQ](https://github.com/mlasevich/PyRSMQ)(Redis)
 - Serialization in JSON and [MessagePack](https://msgpack.org/index.html)
+- Data validation and schemas, data store connectors, and serialization are all extensible with plugins
 - Optional [dead-letter-queues](deadletterqueue.md) for serialization and schema validation failures
 
 ## Operations

@@ -71,3 +71,31 @@ target-version = ['py39']
 [tool.pytest.ini_options]
 log_cli = true
 log_cli_level = "INFO"
+
+[tool.pylint.master]
+load-plugins="pylint.extensions.docparams"
+
+[tool.pylint.messages_control]
+disable = "all"
+enable = """
+abstract-method,
+arguments-differ,
+differing-param-doc,
+differing-type-doc,
+invalid-overridden-method,
+missing-param-doc,
+missing-raises-doc,
+missing-return-doc,
+missing-return-type-doc,
+missing-yield-doc,
+missing-yield-type-doc,
+multiple-constructor-doc,
+protected-access,
+redundant-returns-doc,
+redundant-yields-doc,
+signature-differs,
+super-init-not-called,
+unused-argument,
+unused-variable,
+useless-object-inheritance
+"""

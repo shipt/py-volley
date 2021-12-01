@@ -75,9 +75,6 @@ def yaml_to_dict_config(yaml_path: str) -> Dict[str, List[dict[str, str]]]:
     cfg: Dict[str, List[dict[str, str]]] = load_yaml(file_path=yaml_path)
 
     out_configs: Dict[str, List[dict[str, str]]] = {"queues": []}
-    for q_config in cfg["queues"]:
-        q_config = interpolate_kafka_topics(q_config)
-        out_configs["queues"].append(q_config)
 
     return out_configs
 
@@ -182,24 +179,6 @@ def available_queues(yaml_path: str) -> Dict[str, Queue]:
     """
     cfg = load_yaml(yaml_path)
 
-    for queue_config in cfg["queues"]:
-        queue_config = interpolate_kafka_topics(queue_config)
     cfg = apply_defaults(cfg)
 
     return config_to_queue_map(cfg["queues"])
-
-
-def interpolate_kafka_topics(cfg: Dict[str, str]) -> Dict[str, str]:
-    """interpolates Shipt env prefix to templates kafka topic"""
-    kafka_env_map = {
-        "production": "prd",
-        "staging": "stg",
-        "development": "dev",
-        "localhost": "localhost",
-    }
-    kafka_env = kafka_env_map.get(APP_ENV)
-
-    if cfg["type"] == "kafka":
-        _t = Template(cfg["value"])
-        cfg["value"] = _t.render(env=kafka_env)
-    return cfg

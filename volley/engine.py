@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from prometheus_client import Counter, Summary, start_http_server
 
-from volley.config import METRICS_ENABLED, METRICS_PORT
+from volley.config import METRICS_ENABLED, METRICS_PORT, load_yaml
 from volley.data_models import ComponentMessage, ComponentMessageType, QueueMessage
 from volley.logging import logger
 from volley.models.base import message_model_handler, model_message_handler
@@ -16,7 +16,6 @@ from volley.queues import (
     apply_defaults,
     config_to_queue_map,
     dict_to_config,
-    yaml_to_dict_config,
 )
 from volley.util import GracefulKiller
 
@@ -89,7 +88,7 @@ class Engine:
             cfg: dict[str, List[dict[str, str]]] = dict_to_config(self.queue_config)
         else:
             logger.info(f"loading configuration from {self.yaml_config_path}")
-            cfg = yaml_to_dict_config(yaml_path=self.yaml_config_path)
+            cfg = load_yaml(yaml_path=self.yaml_config_path)
 
         # handle DLQ
         if self.dead_letter_queue is not None:

@@ -82,7 +82,7 @@ def test_bad_connector_config(config_dict: dict[str, dict[str, str]]) -> None:
         config_to_queue_map(defaulted["queues"])
 
     # from yaml
-    cfg = load_yaml(yaml_path="./example/volley_config.yml")
+    cfg = load_yaml(file_path="./example/volley_config.yml")
     cfg["queues"][0]["config"] = "bad_configuration"
     defaulted = apply_defaults(cfg)
     with pytest.raises(TypeError):

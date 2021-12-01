@@ -36,6 +36,9 @@ def message_model_handler(
 
     Returns:
         Tuple[Any, bool]: (data_model, True) on success, or (raw_message, False)
+
+    Raises:
+        Exception: surfaced serializer or model handler
     """
     # input serialization
     # optional - some frameworks may handle model constuction and serialization in one-shot

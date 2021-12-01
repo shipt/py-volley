@@ -88,7 +88,7 @@ class Engine:
             cfg: dict[str, List[dict[str, str]]] = dict_to_config(self.queue_config)
         else:
             logger.info(f"loading configuration from {self.yaml_config_path}")
-            cfg = load_yaml(yaml_path=self.yaml_config_path)
+            cfg = load_yaml(file_path=self.yaml_config_path)
 
         # handle DLQ
         if self.dead_letter_queue is not None:

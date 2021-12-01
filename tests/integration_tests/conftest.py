@@ -5,6 +5,7 @@ from typing import Dict, NamedTuple
 import confluent_kafka.admin
 from pytest import fixture
 
+from volley.logging import logger
 from volley.queues import Queue, available_queues
 
 queues: Dict[str, Queue] = available_queues("./example/volley_config.yml")
@@ -30,15 +31,28 @@ def environment() -> Environment:
     return env
 
 
-def create_topics() -> None:
-    # time for Kafka broker to init
-    time.sleep(5)
+def pytest_configure() -> None:
+    """creates topics and validates topic creation
+    https://docs.pytest.org/en/latest/reference/reference.html#_pytest.hookspec.pytest_configure
+    """
+    all_topics = [env.input_topic, env.output_topic, env.dlq]
     conf = {"bootstrap.servers": env.brokers}
-    admin = confluent_kafka.admin.AdminClient(conf)
-    topics = [confluent_kafka.admin.NewTopic(x, 1, 1) for x in [env.input_topic, env.output_topic, env.dlq]]
-    admin.create_topics(topics)
-    # TODO: add assertion for topics successfully created
-    assert True
+    topics = [confluent_kafka.admin.NewTopic(x, 1, 1) for x in all_topics]
+    for _ in range(30):
+        do_retry = 0
+        broker_topics = []
+        try:
+            admin = confluent_kafka.admin.AdminClient(conf)
+            admin.create_topics(topics)
+            broker_topics = admin.list_topics(timeout=1).topics
+        except Exception:
+            logger.exception("list topic failed. waiting...")
+        for t in all_topics:
+            if t not in broker_topics:
+                do_retry += 1
+        if do_retry == 0:
+            logger.info(f"{all_topics} present and accounted for")
+            break
+        time.sleep(2)
 
-
-create_topics()
+    assert do_retry == 0

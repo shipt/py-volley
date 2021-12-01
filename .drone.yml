@@ -61,10 +61,15 @@ steps:
       - name: docker_socket
         path: /var/run/docker.sock
     commands:
+      - docker-compose logs
       - docker-compose down --remove-orphans
     depends_on:
       - test-integration
-
+    when:
+      status:
+      - failure
+      - success
+  
   - name: publish-release
     image: python:3.9.4
     environment:

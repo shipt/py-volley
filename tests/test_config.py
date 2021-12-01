@@ -12,7 +12,6 @@ from volley.queues import (
     config_to_queue_map,
     dict_to_config,
     import_module_from_string,
-    yaml_to_dict_config,
 )
 
 
@@ -33,15 +32,6 @@ def test_available_queues() -> None:
     for qname, q in all_queues.items():
         assert isinstance(qname, str)
         assert isinstance(q, Queue)
-
-
-def test_yaml_to_dict_config() -> None:
-    config = yaml_to_dict_config(yaml_path="./example/volley_config.yml")
-    assert isinstance(config, dict)
-    for q in config["queues"]:
-        assert isinstance(q, dict)
-        assert q["name"]
-        assert q["value"]
 
 
 def test_dict_to_config(config_dict: dict[str, dict[str, str]]) -> None:
@@ -92,7 +82,7 @@ def test_bad_connector_config(config_dict: dict[str, dict[str, str]]) -> None:
         config_to_queue_map(defaulted["queues"])
 
     # from yaml
-    cfg = yaml_to_dict_config(yaml_path="./example/volley_config.yml")
+    cfg = load_yaml(yaml_path="./example/volley_config.yml")
     cfg["queues"][0]["config"] = "bad_configuration"
     defaulted = apply_defaults(cfg)
     with pytest.raises(TypeError):

@@ -2,9 +2,7 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Any, Dict, List, Optional
 
-from jinja2 import Template
-
-from volley.config import APP_ENV, GLOBALS, import_module_from_string, load_yaml
+from volley.config import GLOBALS, import_module_from_string, load_yaml
 from volley.connectors.base import Consumer, Producer
 from volley.logging import logger
 from volley.models import PydanticModelHandler
@@ -65,18 +63,6 @@ class Queue:
             self.producer_con = _class(queue_name=self.value, config=self.pass_through_config)
         else:
             raise TypeError(f"{con_type=} is not valid")
-
-
-def yaml_to_dict_config(yaml_path: str) -> Dict[str, List[dict[str, str]]]:
-    """loads config from yaml then filters to those needed for specific implementation
-
-    yaml config file is allowed to contain more configurations than needed
-    """
-    cfg: Dict[str, List[dict[str, str]]] = load_yaml(file_path=yaml_path)
-
-    out_configs: Dict[str, List[dict[str, str]]] = {"queues": []}
-
-    return out_configs
 
 
 def dict_to_config(config: dict[str, dict[str, str]]) -> dict[str, List[dict[str, str]]]:

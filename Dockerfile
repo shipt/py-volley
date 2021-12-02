@@ -1,4 +1,3 @@
-
 FROM python:3.9.4 as base
 
 ARG SHIPT_PYPI_USERNAME

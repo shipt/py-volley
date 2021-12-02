@@ -3,10 +3,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Union
 
-import yaml  # type: ignore
-from yaml import Loader
-
-from volley.logging import logger
+from yaml import Loader, load  # type: ignore
 
 GLOBALS = Path(__file__).parent.resolve().joinpath("global.yml")
 
@@ -24,12 +21,8 @@ def load_yaml(file_path: Union[str, Path]) -> Dict[str, Any]:
         path = Path(file_path)
     else:
         path = file_path
-    try:
-        with path.open() as f:
-            cfg: Dict[str, Any] = yaml.load(f, Loader=Loader)
-    except FileNotFoundError:
-        logger.error(f"file {file_path} not found")
-        raise
+    with path.open() as f:
+        cfg: Dict[str, Any] = load(f, Loader=Loader)
     return cfg
 
 

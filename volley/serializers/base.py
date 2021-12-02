@@ -6,11 +6,11 @@ class BaseSerialization(ABC):
     """Base class for serializing and deserializing queue data"""
 
     @abstractmethod
-    def serialize(self, message: dict[Any, Any], *args: Any, **kwargs: Any) -> bytes:
+    def serialize(self, message: dict[Any, Any]) -> bytes:
         """serialize to queue"""
 
     @abstractmethod
-    def deserialize(self, message: bytes, *args: Any, **kwargs: Any) -> Any:
+    def deserialize(self, message: bytes) -> Any:
         """deserialize from queue"""
 
 
@@ -22,10 +22,10 @@ class NullSerializer(BaseSerialization):
         directly in the connector.
     """
 
-    def serialize(self, message: Any, *args: Any, **kwargs: Any) -> Any:
+    def serialize(self, message: Any) -> Any:
         """returns the message"""
         return message
 
-    def deserialize(self, message: Any, *args: Any, **kwargs: Any) -> Any:
+    def deserialize(self, message: Any) -> Any:
         """returns the message"""
         return message

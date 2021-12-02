@@ -52,7 +52,7 @@ def test_consume_error(mock_consumer: MagicMock) -> None:
 
 
 @patch("volley.connectors.kafka.KConsumer")
-def test_consumer_group_init(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> None:
+def test_consumer_group_init(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> None:  # pylint: disable=W0613
     with monkeypatch.context() as m:
         random_consumer_group = str(uuid4())
         m.setenv("KAFKA_CONSUMER_GROUP", random_consumer_group)

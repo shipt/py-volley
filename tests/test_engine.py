@@ -19,7 +19,7 @@ from volley.queues import DLQNotConfiguredError
 @patch("volley.engine.METRICS_ENABLED", False)
 @patch("volley.connectors.kafka.KProducer")
 @patch("volley.connectors.kafka.KConsumer")
-def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:
+def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:  # pylint: disable=W0613
     """test a stubbed component that does not produce messages
     passes so long as no exception is raised
     """
@@ -37,7 +37,7 @@ def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -
     # component returns "just none"
 
     @eng.stream_app
-    def func(*args: ComponentMessage) -> List[Tuple[str, OutputMessage]]:
+    def func(*args: ComponentMessage) -> List[Tuple[str, OutputMessage]]:  # pylint: disable=W0613
         return [("output-topic", output_msg)]
 
     func()
@@ -47,7 +47,7 @@ def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -
 @patch("volley.engine.METRICS_ENABLED", False)
 @patch("volley.connectors.kafka.KProducer")
 @patch("volley.connectors.kafka.KConsumer")
-def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:
+def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:  # pylint: disable=W0613
     """test a stubbed component that does not produce messages
     passes so long as no exception is raised
     """
@@ -63,14 +63,14 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
 
     # component returns "just none"
     @eng.stream_app
-    def func(*args: ComponentMessage) -> None:
+    def func(*args: ComponentMessage) -> None:  # pylint: disable=W0613
         return None
 
     func()
 
     # component returns None, deprecated method
     @eng.stream_app
-    def func_depr(*args: ComponentMessage) -> List[Tuple[str, None]]:
+    def func_depr(*args: ComponentMessage) -> List[Tuple[str, None]]:  # pylint: disable=W0613
         return [("n/a", None)]
 
     func_depr()
@@ -80,7 +80,7 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
 @patch("volley.engine.METRICS_ENABLED", False)
 @patch("volley.connectors.kafka.KProducer")
 @patch("volley.connectors.kafka.KConsumer")
-def test_dlq_not_implemented(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:
+def test_dlq_not_implemented(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:  # pylint: disable=W0613
     """test a stubbed component that does not produce messages
     passes so long as no exception is raised
     """
@@ -94,7 +94,7 @@ def test_dlq_not_implemented(mock_consumer: MagicMock, mock_producer: MagicMock)
 
     # component returns "just none"
     @eng.stream_app
-    def func(*args: ComponentMessage) -> None:
+    def func(*args: ComponentMessage) -> None:  # pylint: disable=W0613
         return None
 
     with pytest.raises(DLQNotConfiguredError):
@@ -171,7 +171,7 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[st
     # use a function that returns None
     # not to be confused with a consumer that returns None
     @eng.stream_app
-    def func(*args: Any) -> None:
+    def func(*args: Any) -> None:  # pylint: disable=W0613
         return None
 
     func()
@@ -204,7 +204,7 @@ def test_null_serializer_fail(
     )
 
     @eng.stream_app
-    def func(*args: Any) -> None:
+    def func(*args: Any) -> None:  # pylint: disable=W0613
         return None
 
     # serializer disable, schema validation will fail
@@ -223,7 +223,7 @@ def test_null_serializer_fail(
     )
 
     @eng.stream_app
-    def func2(*args: Any) -> None:
+    def func2(*args: Any) -> None:  # pylint: disable=W0613
         return None
 
     # we disabled serializer though, so it will be fail pydantic validation
@@ -271,7 +271,7 @@ def test_engine_configuration_failures(mock_rsmq: MagicMock) -> None:
     eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg)
 
     @eng.stream_app
-    def bad_return_queue(msg: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
+    def bad_return_queue(msg: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:  # pylint: disable=W0613
         out = ComponentMessage(hello="world")
         return [("DOES_NOT_EXIST", out)]
 
@@ -282,7 +282,7 @@ def test_engine_configuration_failures(mock_rsmq: MagicMock) -> None:
     eng2 = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg)
 
     @eng2.stream_app
-    def bad_return_type(msg: ComponentMessage) -> Any:
+    def bad_return_type(msg: ComponentMessage) -> Any:  # pylint: disable=W0613
         out = dict(hello="world")
         return [("comp_1", out)]
 
@@ -308,7 +308,7 @@ def test_serialization_fail_crash(mock_rsmq: MagicMock, caplog: LogCaptureFixtur
     eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, dead_letter_queue="DLQ")
 
     @eng.stream_app
-    def func(msg: ComponentMessage) -> Any:
+    def func(msg: ComponentMessage) -> Any:  # pylint: disable=W0613
         return [("comp_1", {"hello": "world"})]
 
     with pytest.raises(Exception):
@@ -334,7 +334,7 @@ def test_fail_produce(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:
     eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg)
 
     @eng.stream_app
-    def func(msg: ComponentMessage) -> Any:
+    def func(msg: ComponentMessage) -> Any:  # pylint: disable=W0613
         out = ComponentMessage(hello="world")
         return [("comp_1", out)]
 
@@ -346,7 +346,7 @@ def test_fail_produce(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:
 
 @patch("volley.connectors.rsmq.RSMQConsumer.on_fail")
 @patch("volley.connectors.rsmq.RedisSMQ")
-def test_init_no_output(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:
+def test_init_no_output(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:  # pylint: disable=W0613
     cfg = {"comp_1": {"value": "random_val", "type": "rsmq", "schema": "volley.data_models.ComponentMessage"}}
 
     # cant produce anywhere, and thats ok
@@ -386,7 +386,7 @@ def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture, 
     )
 
     @eng.stream_app
-    def func(msg: ComponentMessage) -> None:
+    def func(msg: ComponentMessage) -> None:  # pylint: disable=W0613
         return None
 
     with caplog.at_level(logging.INFO):
@@ -419,7 +419,7 @@ def test_wild_dlq_error(mock_handler: MagicMock, mock_rsmq: MagicMock, caplog: L
     eng = Engine(input_queue="comp_1", dead_letter_queue="dlq", queue_config=cfg)
 
     @eng.stream_app
-    def fun(msg: Any) -> None:
+    def fun(msg: Any) -> None:  # pylint: disable=W0613
         return None
 
     with pytest.raises(Exception):

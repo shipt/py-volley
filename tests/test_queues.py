@@ -19,7 +19,7 @@ def test_bad_type() -> None:
         q.connect("BAD_TYPE")  # type: ignore
 
 
-def test_config_to_queue_map_missing_attr(config_dict: dict[str, dict[str, str]]) -> None:
+def test_config_to_queue_map_missing_attr() -> None:
     """if a config is missing an attribute, like "type", should raise error"""
     queues = [{"name": "myqueue", "serializer": "disabled", "schema": "volley.data_models.ComponentMessage"}]
     with pytest.raises(KeyError):

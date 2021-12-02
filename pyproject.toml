@@ -15,14 +15,11 @@ secondary = true
 
 [tool.poetry.dependencies]
 python = "^3.9,<3.11"
-Jinja2 = "^3.0.2"
 prometheus-client = "^0.11.0"
-psycopg2-binary = "^2.9.1"
 pydantic = "^1.8.2"
 PyRSMQ = "^0.4.5"
 pyshipt-streams = "^1.1.0"
 PyYAML = "^5.4.1"
-SQLAlchemy = "^1.4.25"
 hiredis = "^2.0.0"
 orjson = "^3.6.4"
 msgpack = "^1.0.3"
@@ -38,8 +35,6 @@ pydantic = "^1.8.2"
 codecov = "^2.1.12"
 debugpy = "^1.5.0"
 pytest-cov = "^3.0.0"
-pylint = "^2.11.1"
-jupyter = "^1.0.0"
 types-requests = "^2.25.11"
 types-pytz = "^2021.3.0"
 mkdocs = "^1.2.3"
@@ -47,6 +42,9 @@ mkdocs-material = "^7.3.6"
 mdx-include = "^1.4.1"
 mkdocs-markdownextradata-plugin = "^0.2.4"
 mkdocstrings = "^0.16.2"
+psycopg2-binary = "^2.9.2"
+SQLAlchemy = "^1.4.27"
+pylint = "^2.12.1"
 
 [tool.isort]
 profile = "black"
@@ -71,3 +69,32 @@ target-version = ['py39']
 [tool.pytest.ini_options]
 log_cli = true
 log_cli_level = "INFO"
+
+[tool.pylint.master]
+ignore="example"
+
+[tool.pylint.messages_control]
+disable = "all"
+enable = [
+    "abstract-method",
+    "arguments-differ",
+    "differing-param-doc",
+    "differing-type-doc",
+    "invalid-overridden-method",
+    "logging-fstring-interpolation",
+    "missing-param-doc",
+    "missing-raises-doc",
+    "missing-return-doc",
+    "missing-return-type-doc",
+    "missing-yield-doc",
+    "missing-yield-type-doc",
+    "multiple-constructor-doc",
+    "protected-access",
+    "redundant-returns-doc",
+    "redundant-yields-doc",
+    "signature-differs",
+    "super-init-not-called",
+    "unused-argument",
+    "unused-variable",
+    "useless-object-inheritance"
+]

@@ -5,6 +5,7 @@ from volley.data_models import ComponentMessage
 from volley.engine import Engine
 from volley.logging import logger
 
+
 eng = Engine(
     input_queue="input-topic",
     output_queues=["redis_queue"],

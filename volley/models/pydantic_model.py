@@ -2,7 +2,7 @@ from typing import Any, Dict, Type, TypeVar
 
 from pydantic import BaseModel, Extra
 
-from ..models.base import BaseModelHandler
+from volley.models.base import BaseModelHandler
 
 BaseModelType = TypeVar("BaseModelType", bound=BaseModel)
 

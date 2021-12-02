@@ -2,7 +2,7 @@ from typing import Any
 
 import orjson
 
-from volley.serializers.base import BaseSerialization
+from ..serializers.base import BaseSerialization
 
 
 class OrJsonSerialization(BaseSerialization):

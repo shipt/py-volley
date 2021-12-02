@@ -12,3 +12,7 @@ def main(input_message: ComponentMessage) -> None:
     logger.info(input_message.dict())
 
     return None
+
+
+if __name__ == "__main__":
+    main()

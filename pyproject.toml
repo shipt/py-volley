@@ -35,7 +35,6 @@ pydantic = "^1.8.2"
 codecov = "^2.1.12"
 debugpy = "^1.5.0"
 pytest-cov = "^3.0.0"
-pylint = "^2.11.1"
 types-requests = "^2.25.11"
 types-pytz = "^2021.3.0"
 mkdocs = "^1.2.3"
@@ -45,6 +44,7 @@ mkdocs-markdownextradata-plugin = "^0.2.4"
 mkdocstrings = "^0.16.2"
 psycopg2-binary = "^2.9.2"
 SQLAlchemy = "^1.4.27"
+pylint = "^2.12.1"
 
 [tool.isort]
 profile = "black"
@@ -71,29 +71,30 @@ log_cli = true
 log_cli_level = "INFO"
 
 [tool.pylint.master]
-load-plugins="pylint.extensions.docparams"
+ignore="example"
 
 [tool.pylint.messages_control]
 disable = "all"
-enable = """
-abstract-method,
-arguments-differ,
-differing-param-doc,
-differing-type-doc,
-invalid-overridden-method,
-missing-param-doc,
-missing-raises-doc,
-missing-return-doc,
-missing-return-type-doc,
-missing-yield-doc,
-missing-yield-type-doc,
-multiple-constructor-doc,
-protected-access,
-redundant-returns-doc,
-redundant-yields-doc,
-signature-differs,
-super-init-not-called,
-unused-argument,
-unused-variable,
-useless-object-inheritance
-"""
+enable = [
+    "abstract-method",
+    "arguments-differ",
+    "differing-param-doc",
+    "differing-type-doc",
+    "invalid-overridden-method",
+    "logging-fstring-interpolation",
+    "missing-param-doc",
+    "missing-raises-doc",
+    "missing-return-doc",
+    "missing-return-type-doc",
+    "missing-yield-doc",
+    "missing-yield-type-doc",
+    "multiple-constructor-doc",
+    "protected-access",
+    "redundant-returns-doc",
+    "redundant-yields-doc",
+    "signature-differs",
+    "super-init-not-called",
+    "unused-argument",
+    "unused-variable",
+    "useless-object-inheritance"
+]

@@ -18,7 +18,7 @@ from volley.queues import (
     dict_to_config,
 )
 
-from .util import GracefulKiller
+from volley.util import GracefulKiller
 
 # enables mocking the infinite loop to finite
 RUN_ONCE = False

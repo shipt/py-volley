@@ -3,6 +3,9 @@ queues:
     value: "localhost.kafka.input"
     type: kafka
     schema: example.data_models.InputMessage
+    config:
+      group.id: localhost.input.consumer
+      bootstrap.servers: kafka:29092
   - name: redis_queue
     value: long_name_1
     type: rsmq

@@ -2,7 +2,7 @@ from typing import Any
 
 import msgpack
 
-from volley.serializers.base import BaseSerialization
+from ..serializers.base import BaseSerialization
 
 
 class MsgPackSerialization(BaseSerialization):

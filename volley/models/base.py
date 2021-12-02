@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any, Optional, Tuple
 
-from volley.logging import logger
-from volley.serializers.base import BaseSerialization
+from ..logging import logger
+from ..serializers.base import BaseSerialization
 
 
 class BaseModelHandler(ABC):

@@ -12,6 +12,17 @@ typing-extensions = {version = ">=3.10", markers = "python_version < \"3.10\""}
 wrapt = ">=1.11,<1.14"
 
 [[package]]
+name = "astunparse"
+version = "1.6.3"
+description = "An AST unparser for Python"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+six = ">=1.6.1,<2.0"
+
+[[package]]
 name = "atomicwrites"
 version = "1.4.0"
 description = "Atomic file writes."
@@ -625,7 +636,7 @@ redis = "*"
 
 [[package]]
 name = "pyshipt-logging"
-version = "0.0.3"
+version = "0.1.0"
 description = "Common logging interface for Python"
 category = "main"
 optional = false
@@ -642,7 +653,7 @@ reference = "shipt"
 
 [[package]]
 name = "pyshipt-streams"
-version = "1.1.1"
+version = "1.2.0"
 description = "Python interface to kafka and other streaming data technologies"
 category = "main"
 optional = false
@@ -651,7 +662,7 @@ python-versions = ">=3.8,<4.0"
 [package.dependencies]
 confluent-kafka = ">=1.7.0,<2.0.0"
 pydantic = ">=1.8.2,<2.0.0"
-pyshipt-logging = ">=0.0.3,<0.0.4"
+pyshipt-logging = ">=0.1.0,<0.2.0"
 
 [package.source]
 type = "legacy"
@@ -720,6 +731,9 @@ description = "Load Python objects documentation."
 category = "dev"
 optional = false
 python-versions = ">=3.6.1"
+
+[package.dependencies]
+astunparse = {version = ">=1.6,<2.0", markers = "python_version < \"3.9\""}
 
 [package.extras]
 numpy-style = ["docstring_parser (>=0.7,<1.0)"]
@@ -929,13 +943,17 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.9,<3.11"
-content-hash = "49be781b27b13d0ea24a87f2a61647a3d55c5305321ebfe801d6edbd95f27378"
+python-versions = "^3.8,<3.11"
+content-hash = "61a5545eab8df242885c735294b3b625fad2b582b843680823da7be502967a37"
 
 [metadata.files]
 astroid = [
     {file = "astroid-2.9.0-py3-none-any.whl", hash = "sha256:776ca0b748b4ad69c00bfe0fff38fa2d21c338e12c84aa9715ee0d473c422778"},
     {file = "astroid-2.9.0.tar.gz", hash = "sha256:5939cf55de24b92bda00345d4d0659d01b3c7dafb5055165c330bc7c568ba273"},
+]
+astunparse = [
+    {file = "astunparse-1.6.3-py2.py3-none-any.whl", hash = "sha256:c2652417f2c8b5bb325c885ae329bdf3f86424075c4fd1a128674bc6fba4b8e8"},
+    {file = "astunparse-1.6.3.tar.gz", hash = "sha256:5ad93a8456f0d084c3456d059fd9a92cce667963232cbf763eac3bc5b7940872"},
 ]
 atomicwrites = [
     {file = "atomicwrites-1.4.0-py2.py3-none-any.whl", hash = "sha256:6d1784dea7c0c8d4a5172b6c620f40b6e4cbfdf96d783691f2e1302a7b88e197"},
@@ -1499,12 +1517,12 @@ pyrsmq = [
     {file = "PyRSMQ-0.4.5.tar.gz", hash = "sha256:2cd1883029fc3bcedd6fdfd98529146ce218818a5073cae5e2e117881e077d4f"},
 ]
 pyshipt-logging = [
-    {file = "pyshipt_logging-0.0.3-py3-none-any.whl", hash = "sha256:72cf13903a633fcf5569bbb1f0ca61866b760374de76814bcffecedae2a5bf49"},
-    {file = "pyshipt_logging-0.0.3.tar.gz", hash = "sha256:83b6dd7d5b570517f678d352ea4f2c77c782041e2119a444708ffd316124ea1c"},
+    {file = "pyshipt_logging-0.1.0-py3-none-any.whl", hash = "sha256:026ce2e59246e0bc68ccaf01ab13c82fc9c065b34fb10229c59e36510a8efaed"},
+    {file = "pyshipt_logging-0.1.0.tar.gz", hash = "sha256:673bca519b0ff56832dbb7edc12cbc5af76cc4901d6c0191ee9f54c40a39bda5"},
 ]
 pyshipt-streams = [
-    {file = "pyshipt_streams-1.1.1-py3-none-any.whl", hash = "sha256:678681d7740b0d36fd65ccfb4bf2e7d3f5912471845ec74b7f207965e2926f70"},
-    {file = "pyshipt_streams-1.1.1.tar.gz", hash = "sha256:0cf09a3a56dd10fce06f3168315a29aa0b55d682c8a0b505c656ee02fa667415"},
+    {file = "pyshipt_streams-1.2.0-py3-none-any.whl", hash = "sha256:f97e3772e5fd63f7972085c9d945f3a8e20e67702e64c1f45c28c9999972f18b"},
+    {file = "pyshipt_streams-1.2.0.tar.gz", hash = "sha256:290a66891e7cd3bad51da1a0c6f741cb9850f6b3fef85a0c830ec25a3ae58125"},
 ]
 pytest = [
     {file = "pytest-6.2.5-py3-none-any.whl", hash = "sha256:7310f8d27bc79ced999e760ca304d69f6ba6c6649c0b60fb0e04a4a77cacc134"},

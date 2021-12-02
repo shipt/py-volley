@@ -47,7 +47,7 @@ def message_model_handler(
         try:
             deserialized_msg = serializer.deserialize(message)
         except Exception:
-            logger.exception(f"Deserialization failed {message=} - {serializer=}")
+            logger.exception("Deserialization failed message=%s - serializer=%s", message, serializer)
             raise
     else:
         # serializer is disabled
@@ -62,7 +62,7 @@ def message_model_handler(
         )
         return (data_model, True)
     except Exception:
-        logger.exception(f"Failed model construction. message={deserialized_msg}. schema={schema}")
+        logger.exception("Failed model construction. message=%s - schema=%s", deserialized_msg, schema)
         return (deserialized_msg, False)
 
 
@@ -86,5 +86,5 @@ def model_message_handler(
         else:
             return raw
     except Exception:
-        logger.exception(f"failed transporting message to connector: {data_model}")
+        logger.exception("failed transporting message to connector: data_model=%s", data_model)
         raise

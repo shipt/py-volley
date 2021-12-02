@@ -1,7 +1,7 @@
 import json
 from typing import Any
 
-from volley.serializers.base import BaseSerialization
+from ..serializers.base import BaseSerialization
 
 
 class JsonSerialization(BaseSerialization):

@@ -2,13 +2,13 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Any, Dict, List, Optional
 
-from volley.config import GLOBALS, import_module_from_string, load_yaml
-from volley.connectors.base import Consumer, Producer
-from volley.logging import logger
-from volley.models import PydanticModelHandler
-from volley.models.base import BaseModelHandler
-from volley.serializers import OrJsonSerialization
-from volley.serializers.base import BaseSerialization
+from .config import GLOBALS, import_module_from_string, load_yaml
+from .connectors.base import Consumer, Producer
+from .logging import logger
+from .models import PydanticModelHandler
+from .models.base import BaseModelHandler
+from .serializers import OrJsonSerialization
+from .serializers.base import BaseSerialization
 
 
 class DLQNotConfiguredError(Exception):

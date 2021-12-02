@@ -45,7 +45,7 @@ class RSMQConsumer(Consumer):
 
         defaults.update(self.config)
         self.config = defaults
-        logger.info(f"RSMQ Consumer configs: {self.config}")
+        logger.info("RSMQ Consumer configs %s", self.config)
         self.queue = RedisSMQ(**self.config)
         self.queue.createQueue().execute()
 
@@ -98,13 +98,12 @@ class RSMQProducer(Producer):
 
         defaults.update(self.config)
         self.config = defaults
-        logger.info(f"RSMQ Producer configs: {self.config}")
+        logger.info("RSMQ Producer configs: %s", self.config)
         self.queue = RedisSMQ(**self.config)
         self.queue.createQueue().execute()
 
     def produce(self, queue_name: str, message: bytes) -> bool:
         m = message
-        logger.info(f"queue_name - {queue_name}")
         _start = time.time()
         msg_id: str = self.queue.sendMessage(qname=queue_name, message=m, encode=False).execute()
         _duration = time.time() - _start

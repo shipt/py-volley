@@ -154,7 +154,7 @@ def config_to_queue_map(configs: List[dict[str, str]]) -> Dict[str, Queue]:
                 model_handler=model_handler,
             )
         except KeyError as e:
-            logger.exception(f"{qname} is missing the {e} attribute")
+            logger.exception("%s is missing the %s attribute", qname, e)
             raise
     return input_output_queues
 

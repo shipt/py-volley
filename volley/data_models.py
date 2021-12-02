@@ -1,6 +1,6 @@
 from typing import TypeVar
 
-from .models.pydantic_model import ComponentMessage, QueueMessage
+from volley.models.pydantic_model import ComponentMessage, QueueMessage
 
 ComponentMessageType = TypeVar("ComponentMessageType", bound=ComponentMessage)
 

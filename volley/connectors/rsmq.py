@@ -6,9 +6,9 @@ from typing import Optional
 from prometheus_client import Summary
 from rsmq import RedisSMQ
 
-from ..connectors.base import Consumer, Producer
-from ..data_models import QueueMessage
-from ..logging import logger
+from volley.connectors.base import Consumer, Producer
+from volley.data_models import QueueMessage
+from volley.logging import logger
 
 QUIET = bool(os.getenv("DEBUG", True))
 

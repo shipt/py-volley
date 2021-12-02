@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
-from ..data_models import QueueMessage
+from volley.data_models import QueueMessage
 
 
 @dataclass  # type: ignore

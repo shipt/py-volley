@@ -1,5 +1,4 @@
 """handles tests for both base json and orjson serializers"""
-from datetime import datetime
 from json import JSONDecodeError
 from typing import List
 from uuid import uuid4
@@ -42,13 +41,11 @@ def test_success(serializers: List[BaseSerialization]) -> None:
 
 
 def test_fail(serializers: List[BaseSerialization]) -> None:
-    msg = {"time": datetime.now(), "number": 42}
+    msg = {"time": CannotBeString(), "number": 42}
 
     for serializer in serializers:
-        if not isinstance(serializer, OrJsonSerialization):
-            # orjson can handle datetimes
-            with pytest.raises(TypeError):
-                serializer.serialize(msg, default=None)
+        with pytest.raises(TypeError):
+            serializer.serialize(msg)
 
         bad_json = b"abc : 123}"
         with pytest.raises((JSONDecodeError, ExtraData)):

@@ -6,7 +6,7 @@ from volley.connectors.base import Consumer, Producer
 
 @patch("example.plugins.my_plugin.Session")
 @patch("example.plugins.my_plugin.get_eng")
-def test_load_plugin(mock_eng: MagicMock, mock_sess: MagicMock) -> None:
+def test_load_plugin(mock_eng: MagicMock, mock_sess: MagicMock) -> None:  # pylint: disable=W0613
     module_str = "example.plugins.my_plugin.MyPGConsumer"
     class_obj = import_module_from_string(module_str)
     assert issubclass(class_obj, Consumer)

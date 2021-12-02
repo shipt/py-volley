@@ -32,7 +32,7 @@ def test_return_none(mocked_rsmq: MagicMock) -> None:
 
 
 @patch("volley.connectors.rsmq.RedisSMQ")
-def test_init_config(mocked_rsmq: MagicMock, monkeypatch: MonkeyPatch) -> None:
+def test_init_config(mocked_rsmq: MagicMock, monkeypatch: MonkeyPatch) -> None:  # pylint: disable=W0613
     monkeypatch.setenv("REDIS_HOST", "env_redis")
     config = {
         "queue_name": "overwridden",

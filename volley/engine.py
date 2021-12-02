@@ -87,7 +87,7 @@ class Engine:
         if self.queue_config:
             cfg: dict[str, List[dict[str, str]]] = dict_to_config(self.queue_config)
         else:
-            logger.info(f"loading configuration from {self.yaml_config_path}")
+            logger.info("loading configuration from %s", self.yaml_config_path)
             cfg = load_yaml(file_path=self.yaml_config_path)
 
         # handle DLQ
@@ -105,7 +105,7 @@ class Engine:
             if q not in self.queue_map:
                 raise NameError(f"Queue '{q}' not found in configuration")
 
-        logger.info(f"Queues initialized: {list(self.queue_map.keys())}")
+        logger.info("Queues initialized: %s", list(self.queue_map.keys()))
 
     def stream_app(  # noqa: C901
         self, func: Callable[[Union[ComponentMessageType, Any]], Optional[List[Tuple[str, Any]]]]
@@ -138,7 +138,7 @@ class Engine:
                 if in_message is None:
                     # if no messages, handle poll interval
                     # TODO: this should be dynamic with some sort of backoff
-                    logger.info(f"No messages - sleeping {POLL_INTERVAL=}")
+                    logger.info("No messages - sleeping POLL_INTERVAL=%s", POLL_INTERVAL)
                     time.sleep(POLL_INTERVAL)
                     continue
 
@@ -215,7 +215,7 @@ class Engine:
                                 volley_app=self.app_name, source=input_con.name, destination=qname
                             ).inc()
                         except Exception:
-                            logger.exception(f"failed producing message to {out_queue.name}")
+                            logger.exception("failed producing message to %s" % out_queue.name)
                             status = False
                         all_produce_status.append(status)
 
@@ -238,13 +238,13 @@ class Engine:
                     break
 
             # graceful shutdown of ALL queues
-            logger.info(f"Shutting down {input_con.value}")
+            logger.info("Shutting down %s", input_con.value)
             input_con.consumer_con.shutdown()
             for q_name in self.output_queues:
                 out_queue = self.queue_map[q_name]
-                logger.info(f"Shutting down {out_queue.value}")
+                logger.info("Shutting down %s", out_queue.value)
                 out_queue.producer_con.shutdown()
-                logger.info(f"{q_name} shutdown complete")
+                logger.info("%s shutdown complete", q_name)
 
         # used for unit testing as a means to access the wrapped component without the decorator
         run_component.__wrapped__ = func  # type: ignore

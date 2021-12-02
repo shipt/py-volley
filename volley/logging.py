@@ -1,4 +1,3 @@
-from pyshipt_logging.logger import ShiptLogging
+import logging
 
-logger = ShiptLogging.get_logger(name="volley")
-logger.propagate = False
+logger = logging.getLogger("volley")

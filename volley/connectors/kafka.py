@@ -6,10 +6,10 @@ from typing import Optional
 from pyshipt_streams import KafkaConsumer as KConsumer
 from pyshipt_streams import KafkaProducer as KProducer
 
-from volley.config import APP_ENV
-from volley.connectors.base import Consumer, Producer
-from volley.data_models import QueueMessage
-from volley.logging import logger
+from ..config import APP_ENV
+from ..connectors.base import Consumer, Producer
+from ..data_models import QueueMessage
+from ..logging import logger
 
 RUN_ONCE = False
 

@@ -1,4 +1,5 @@
 import sys
+
 def run() -> None:
     component = sys.argv[1]
     if component == "external_producer":
@@ -7,8 +8,6 @@ def run() -> None:
         from example.input_worker import main
     elif component == "middle_worker":
         from example.middle_worker import main
-    elif component == "output_worker":
-        from example.output_worker import main
     elif component == "external_consumer":
         from example.external_data_consumer import main
     else:

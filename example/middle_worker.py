@@ -60,7 +60,7 @@ def main(msg: Queue1Message) -> List[Tuple[str, ComponentMessage]]:
     max_plus_jiggle = max_val + random_value
     # how many times have we seen this message?
     msg_count = msg.msg_counter
-    logger.info("message count", msg_count)
+    logger.info(f"{msg_count=}")
 
     if random_value > 10:
         recycled_msg = InputMessage(request_id=req_id, list_of_values=[max_plus_jiggle], msg_counter=msg_count + 1)

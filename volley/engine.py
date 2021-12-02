@@ -5,11 +5,11 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from prometheus_client import Counter, Summary, start_http_server
 
-from volley.config import METRICS_ENABLED, METRICS_PORT, load_yaml
-from volley.data_models import ComponentMessage, ComponentMessageType, QueueMessage
-from volley.logging import logger
-from volley.models.base import message_model_handler, model_message_handler
-from volley.queues import (
+from .config import METRICS_ENABLED, METRICS_PORT, load_yaml
+from .data_models import ComponentMessage, ComponentMessageType, QueueMessage
+from .logging import logger
+from .models.base import message_model_handler, model_message_handler
+from .queues import (
     ConnectionType,
     DLQNotConfiguredError,
     Queue,
@@ -17,7 +17,7 @@ from volley.queues import (
     config_to_queue_map,
     dict_to_config,
 )
-from volley.util import GracefulKiller
+from .util import GracefulKiller
 
 # enables mocking the infinite loop to finite
 RUN_ONCE = False

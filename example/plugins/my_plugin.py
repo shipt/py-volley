@@ -64,10 +64,10 @@ class MyPGConsumer(Consumer):
         self.session.execute(text("COMMIT;"))
         return True
 
-    def on_fail(self) -> None:
+    def on_fail(self, message_id: Any = None) -> None:
         self.session.execute(text("ROLLBACK;"))
 
-    def shutdown(self) -> None:
+    def shutdown(self, message_id: Any = None) -> None:
         self.session.close()
 
 

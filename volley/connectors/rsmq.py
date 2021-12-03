@@ -76,10 +76,10 @@ class RSMQConsumer(Consumer):
         PROCESS_TIME.labels("delete").observe(_duration)
         return result
 
-    def on_fail(self) -> None:
+    def on_fail(self, message_id: str = None) -> None:
         pass
 
-    def shutdown(self) -> None:
+    def shutdown(self, message_id: str = None) -> None:
         self.queue.quit()
 
 

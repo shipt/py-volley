@@ -3,6 +3,7 @@ import sys
 from dataclasses import dataclass
 from typing import Optional
 
+from confluent_kafka import Message
 from pyshipt_streams import KafkaConsumer as KConsumer
 from pyshipt_streams import KafkaProducer as KProducer
 
@@ -66,14 +67,14 @@ class KafkaConsumer(Consumer):
         else:
             return QueueMessage(message_id=message, message=message.value())
 
-    def delete_message(self, queue_name: str, message_id: str = None) -> bool:
+    def delete_message(self, queue_name: str, message_id: Message = None) -> bool:
         # self.c.consumer.store_offsets(message=message_id)
         return True
 
-    def on_fail(self) -> None:
+    def on_fail(self, message_id: Message = None) -> None:
         pass
 
-    def shutdown(self) -> None:
+    def shutdown(self, message_id: Message = None) -> None:
         self.c.close()
 
 

@@ -63,8 +63,8 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
 
     # component returns "just none"
     @eng.stream_app
-    def func(*args: ComponentMessage) -> None:  # pylint: disable=W0613
-        return None
+    def func(*args: ComponentMessage) -> bool:  # pylint: disable=W0613
+        return True
 
     func()
 
@@ -94,8 +94,8 @@ def test_dlq_not_implemented(mock_consumer: MagicMock, mock_producer: MagicMock)
 
     # component returns "just none"
     @eng.stream_app
-    def func(*args: ComponentMessage) -> None:  # pylint: disable=W0613
-        return None
+    def func(*args: ComponentMessage) -> bool:  # pylint: disable=W0613
+        return True
 
     with pytest.raises(DLQNotConfiguredError):
         func()
@@ -171,8 +171,8 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[st
     # use a function that returns None
     # not to be confused with a consumer that returns None
     @eng.stream_app
-    def func(*args: Any) -> None:  # pylint: disable=W0613
-        return None
+    def func(*args: Any) -> bool:  # pylint: disable=W0613
+        return True
 
     func()
 
@@ -204,8 +204,8 @@ def test_null_serializer_fail(
     )
 
     @eng.stream_app
-    def func(*args: Any) -> None:  # pylint: disable=W0613
-        return None
+    def func(*args: Any) -> bool:  # pylint: disable=W0613
+        return True
 
     # serializer disable, schema validation will fail
     # but messages will route to DLQ with exceptions handled
@@ -223,8 +223,8 @@ def test_null_serializer_fail(
     )
 
     @eng.stream_app
-    def func2(*args: Any) -> None:  # pylint: disable=W0613
-        return None
+    def func2(*args: Any) -> bool:  # pylint: disable=W0613
+        return True
 
     # we disabled serializer though, so it will be fail pydantic validation
     with pytest.raises(DLQNotConfiguredError):
@@ -386,8 +386,8 @@ def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture, 
     )
 
     @eng.stream_app
-    def func(msg: ComponentMessage) -> None:  # pylint: disable=W0613
-        return None
+    def func(msg: ComponentMessage) -> bool:  # pylint: disable=W0613
+        return True
 
     with caplog.at_level(logging.INFO):
         func()
@@ -419,8 +419,8 @@ def test_wild_dlq_error(mock_handler: MagicMock, mock_rsmq: MagicMock, caplog: L
     eng = Engine(input_queue="comp_1", dead_letter_queue="dlq", queue_config=cfg)
 
     @eng.stream_app
-    def fun(msg: Any) -> None:  # pylint: disable=W0613
-        return None
+    def fun(msg: Any) -> bool:  # pylint: disable=W0613
+        return True
 
     with pytest.raises(Exception):
         fun()

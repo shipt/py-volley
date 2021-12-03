@@ -99,8 +99,8 @@ def none_producer_decorated(monkeypatch: MonkeyPatch) -> Generator[Callable[...,
     monkeypatch.setattr("volley.connectors.kafka", "KConsumer", MagicMock())
 
     @eng.stream_app
-    def func(*args: Any) -> None:  # pylint: disable=W0613
-        return None
+    def func(*args: Any) -> bool:  # pylint: disable=W0613
+        return True
 
     yield func
 

@@ -108,7 +108,7 @@ class Engine:
         logger.info("Queues initialized: %s", list(self.queue_map.keys()))
 
     def stream_app(  # noqa: C901
-        self, func: Callable[[Union[ComponentMessageType, Any]], Optional[List[Tuple[str, Any]]]]
+        self, func: Callable[[Union[ComponentMessageType, Any]], Union[List[Tuple[str, Any]], bool]]
     ) -> Callable[..., Any]:
         """Main decorator for applications"""
 
@@ -143,7 +143,7 @@ class Engine:
                     continue
 
                 # typing for producing
-                outputs: Optional[List[Tuple[str, ComponentMessage]]] = []
+                outputs: Union[List[Tuple[str, ComponentMessage]], bool] = []
 
                 data_model, status = message_model_handler(
                     message=in_message.message,
@@ -182,15 +182,11 @@ class Engine:
                     PROCESS_TIME.labels(volley_app=self.app_name, process_name="component").observe(_fun_duration)
 
                 all_produce_status: List[bool] = []
-                if outputs is None:
+                if isinstance(outputs, bool):
                     # assume a "None" output is a successful read of the input
-                    all_produce_status.append(True)
+                    all_produce_status.append(outputs)
                 else:
                     for qname, component_msg in outputs:
-                        if component_msg is None:
-                            # this is deprecated: components should just return None
-                            continue
-
                         try:
                             out_queue = self.queue_map[qname]
                         except KeyError as e:

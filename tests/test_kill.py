@@ -11,8 +11,8 @@ from example.input_worker import eng
 @patch("volley.connectors.kafka.KConsumer", MagicMock())
 def test_graceful_kill() -> None:
     @eng.stream_app
-    def func(*args: Any) -> None:  # pylint: disable=W0613
-        return None
+    def func(*args: Any) -> bool:  # pylint: disable=W0613
+        return True
 
     t = threading.Thread(target=func, daemon=True)
     t.start()

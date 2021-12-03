@@ -224,7 +224,7 @@ class Engine:
                     )
                     MESSAGE_CONSUMED.labels(volley_app=self.app_name, status="success").inc()
                 else:
-                    input_con.consumer_con.on_fail()
+                    input_con.consumer_con.on_fail(in_message.message_id)
                     MESSAGE_CONSUMED.labels(volley_app=self.app_name, status="fail").inc()
                 _duration = time.time() - _start_time
                 PROCESS_TIME.labels(volley_app=self.app_name, process_name="cycle").observe(_duration)

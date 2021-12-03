@@ -22,10 +22,10 @@ class Consumer(ABC):
         """deletes a message from a queue"""
 
     @abstractmethod
-    def on_fail(self) -> None:
+    def on_fail(self, message_id: Any = None) -> None:
         """perform some action when downstream operation fails"""
 
-    def shutdown(self) -> None:
+    def shutdown(self, message_id: Any = None) -> None:
         """perform some action when shutting down the application"""
 
 

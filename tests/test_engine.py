@@ -68,13 +68,6 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
 
     func()
 
-    # component returns None, deprecated method
-    @eng.stream_app
-    def func_depr(*args: ComponentMessage) -> List[Tuple[str, None]]:  # pylint: disable=W0613
-        return [("n/a", None)]
-
-    func_depr()
-
 
 @patch("volley.engine.RUN_ONCE", True)
 @patch("volley.engine.METRICS_ENABLED", False)

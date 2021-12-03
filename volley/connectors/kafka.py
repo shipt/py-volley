@@ -44,8 +44,9 @@ class KafkaConsumer(Consumer):
             # TODO: develop commit strategy to minimize duplicates and guarantee no loss
             # config_override={"enable.auto.offset.store": False}
         )
-        logger.info("Kafka Configuration: %s", self.config)
+        logger.info("Kafka Consumer Configuration: %s", self.config)
         self.c.subscribe([self.queue_name])
+        logger.info(f"Subscribed to {self.queue_name}")
 
     def consume(  # type: ignore
         self,
@@ -81,7 +82,7 @@ class KafkaProducer(Producer):
     def __post_init__(self) -> None:
         self.p = KProducer()
         # self.config comes from super class
-        logger.info("Kafka Configuration: %s", self.config)
+        logger.info("Kafka Producer Configuration: %s", self.config)
 
     def produce(self, queue_name: str, message: bytes) -> bool:
         self.p.publish(topic=queue_name, value=message)

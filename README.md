@@ -234,16 +234,16 @@ def my_component_function(input_object: ComponentMessage) -> Optional[List[Tuple
       output_a = MessageA(mean_value=mean_value)
       return [("queue_a", output_a)]
     else:
-      return None
+      return False
 ```
 
 A component can also produce nothing.
 
 ```python
 @engine.stream_app
-def my_component_function(input_object: ComponentMessage) -> None:
+def my_component_function(input_object: ComponentMessage) -> bool:
     print(input_object.list_of_values)
-    return None
+    return False
 ```
 
 ## Running a worker component

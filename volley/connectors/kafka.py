@@ -46,7 +46,7 @@ class KafkaConsumer(Consumer):
         )
         logger.info("Kafka Consumer Configuration: %s", self.config)
         self.c.subscribe([self.queue_name])
-        logger.info(f"Subscribed to {self.queue_name}")
+        logger.info("Subscribed to %s", self.queue_name)
 
     def consume(  # type: ignore
         self,

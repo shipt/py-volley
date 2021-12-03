@@ -6,12 +6,12 @@ eng = Engine(input_queue="output-topic", output_queues=[], yaml_config_path="./e
 
 
 @eng.stream_app
-def main(input_message: ComponentMessage) -> None:
+def main(input_message: ComponentMessage) -> bool:
     """mimics an data consumer external to Volley"""
 
     logger.info(input_message.dict())
 
-    return None
+    return True
 
 
 if __name__ == "__main__":

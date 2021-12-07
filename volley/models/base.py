@@ -6,14 +6,32 @@ from volley.serializers.base import BaseSerialization
 
 
 class BaseModelHandler(ABC):
-    """base definition for a schema validator
+    """Pase definition for a schema validator
 
     Provides the method for constructing an object with a schema
     """
 
     @abstractmethod
     def construct(self, message: Any, schema: Any) -> Any:
-        """turns a raw message into a data model"""
+        """turns a raw message into a data model
+
+        The purpose is to provide the definitions on how to turn a
+        message from a serializer into a message that an application
+        is ready to consume. If the serializer will return a dict, then
+        the type of the param `message` would be `dict`. The construct
+        method would parse the `dict` into whatever data model that the 
+        application is expecting to received.
+
+        Args:
+            message (Any): A message to construct into a data model specified by `schema`.
+                The message can be of any type so long as  .construct() and .deconstruct()
+                have implementation details to handle the type.
+            schema (Any): The data model definition. `message` is used to create an instance
+                of `schema`
+
+        Returns:
+            Any: an instance of class `schema`
+        """
 
     @abstractmethod
     def deconstruct(self, model: Any) -> Any:

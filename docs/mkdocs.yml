@@ -17,23 +17,25 @@ nav:
   - Configuration:
     - Queues: 'queue_config.md'
     - Application: 'engine.md'
-  - Connectors:
-    - Overview: 'connectors/overview.md'
-    - ConfluentKafka: 'connectors/kafka.md'
-    - RSMQ: 'connectors/rsmq.md' 
-  - Serializers:
-    - Overview: 'serializers/overview.md'
-    - JsonSerialization: 'serializers/JsonSerialization.md'
-    - MsgPackSerialization: 'serializers/MsgPackSerialization.md'
-    - OrJsonSerialization: 'serializers/OrJsonSerialization.md'
-  - Model Handlers:
-    - Overview: 'models/overview.md'
-    - BaseModelHandler: 'models/BaseModelHandler.md'
-    - PydanticModelHandler: 'models/PydanticModelHandler.md'
-    - PydanticParserModelHandler: 'models/PydanticParserModelHandler.md'
   - Dead Letter Queues: 'deadletterqueue.md'
   - Metrics: 'metrics.md'
   - Advanced Example: 'advanced_example.md'
+  - Extending Volley:
+    - Overview: 'extending.md'
+    - Connectors:
+      - Overview: 'connectors/overview.md'
+      - ConfluentKafka: 'connectors/kafka.md'
+      - RSMQ: 'connectors/rsmq.md' 
+    - Serializers:
+      - Overview: 'serializers/overview.md'
+      - JsonSerialization: 'serializers/JsonSerialization.md'
+      - MsgPackSerialization: 'serializers/MsgPackSerialization.md'
+      - OrJsonSerialization: 'serializers/OrJsonSerialization.md'
+    - Model Handlers:
+      - Overview: 'models/overview.md'
+      - BaseModelHandler: 'models/BaseModelHandler.md'
+      - PydanticModelHandler: 'models/PydanticModelHandler.md'
+      - PydanticParserModelHandler: 'models/PydanticParserModelHandler.md'
 markdown_extensions:
 - toc:
     permalink: true

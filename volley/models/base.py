@@ -6,7 +6,7 @@ from volley.serializers.base import BaseSerialization
 
 
 class BaseModelHandler(ABC):
-    """Pase definition for a schema validator
+    """Base definition for a schema validator
 
     Provides the method for constructing an object with a schema
     """

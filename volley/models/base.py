@@ -19,7 +19,7 @@ class BaseModelHandler(ABC):
         message from a serializer into a message that an application
         is ready to consume. If the serializer will return a dict, then
         the type of the param `message` would be `dict`. The construct
-        method would parse the `dict` into whatever data model that the 
+        method would parse the `dict` into whatever data model that the
         application is expecting to received.
 
         Args:

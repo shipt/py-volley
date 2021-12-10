@@ -1,8 +1,13 @@
 from abc import ABC, abstractmethod
+from time import time
 from typing import Any, Optional, Tuple
+
+from prometheus_client import Summary
 
 from volley.logging import logger
 from volley.serializers.base import BaseSerialization
+
+PROCESS_TIME = Summary("data_model_process_seconds", "Time handling message to data model (seconds)", ["process"])
 
 
 class BaseModelHandler(ABC):
@@ -63,7 +68,11 @@ def message_model_handler(
     deserialized_msg: Any
     if serializer is not None:
         try:
+            start = time()
             deserialized_msg = serializer.deserialize(message)
+            duration = time() - start
+            PROCESS_TIME.labels("deserialize").observe(duration)
+
         except Exception:
             logger.exception("Deserialization failed message=%s - serializer=%s", message, serializer)
             raise
@@ -74,10 +83,13 @@ def message_model_handler(
     # model construction
     # schema validation can only happen if deserialization succeeds
     try:
+        start = time()
         data_model = model_handler.construct(
             message=deserialized_msg,
             schema=schema,
         )
+        duration = time() - start
+        PROCESS_TIME.labels("construct").observe(duration)
         return (data_model, True)
     except Exception:
         logger.exception("Failed model construction. message=%s - schema=%s", deserialized_msg, schema)
@@ -96,11 +108,18 @@ def model_message_handler(
         # we dont want to try to recover if we cant publish
 
         # convert data model to raw type
+        start = time()
         raw = model_handler.deconstruct(data_model)
+        duration = time() - start
+        PROCESS_TIME.labels("deconstruct").observe(duration)
 
         if serializer is not None:
+            start = time()
             # serialize if asked
-            return serializer.serialize(raw)
+            serialized = serializer.serialize(raw)
+            duration = time() - start
+            PROCESS_TIME.labels("serialize").observe(duration)
+            return serialized
         else:
             return raw
     except Exception:

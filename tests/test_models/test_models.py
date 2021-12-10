@@ -27,3 +27,27 @@ def test_model_to_message_handler_fail(caplog: LogCaptureFixture) -> None:
             # PydanticParserModelHandler expects no serialization
             model_message_handler(data_model=None, model_handler=None, serializer=None)  # type: ignore
     assert "failed transporting" in caplog.text
+
+
+def test_message_to_model_handler_success() -> None:
+    msg = b"""{"bad":"json"}"""
+    ser = JsonSerialization()
+    schema = ComponentMessage
+    model_handler = PydanticModelHandler()
+
+    message_model_handler(message=msg, schema=schema, model_handler=model_handler, serializer=ser)
+
+
+def test_model_to_message_handler_success() -> None:
+    msg = b"""{"good":"json"}"""
+    data_model = ComponentMessage.parse_raw(msg)
+    ser = JsonSerialization()
+    model_handler = PydanticModelHandler()
+
+    handled = model_message_handler(
+        data_model=data_model,
+        model_handler=model_handler,
+        serializer=ser
+    )
+
+    assert handled == msg

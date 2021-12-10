@@ -14,5 +14,5 @@ class ProtoModelHandler(BaseModelHandler):
         obj.ParseFromString(message)
         return obj
 
-    def deconstruct(self, model: ProtoMessage) -> Any:
+    def deconstruct(self, model: ProtoMessage) -> bytes:
         return model.SerializeToString()

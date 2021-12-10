@@ -36,7 +36,9 @@ setup.project:
 	@poetry env use $$(python -c "import sys; print(sys.executable)")
 	@echo "Active interpreter path: $$(poetry env info --path)/bin/python"
 	poetry install
+
 setup.protos:
+	protoc -I=example/protos --python_out example/protos/compiled example/protos/*.proto
 	protoc -I=tests/protos --python_out tests/protos/compiled tests/protos/*.proto
 
 setup.python.activation:

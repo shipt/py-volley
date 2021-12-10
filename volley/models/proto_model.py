@@ -8,7 +8,7 @@ ProtoMessage = TypeVar("ProtoMessage", bound=Message)
 
 
 class ProtoModelHandler(BaseModelHandler):
-    def construct(self, message: bytes, schema: type) -> ProtoMessage:
+    def construct(self, message: bytes, schema: Type[ProtoMessage]) -> ProtoMessage:
         assert schema is not None
         obj: ProtoMessage = schema()
         obj.ParseFromString(message)

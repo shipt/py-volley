@@ -1,7 +1,7 @@
 import json
 
-from volley.models.proto_model import ProtoModelHandler
 from tests.protos.compiled import messages_pb2
+from volley.models.proto_model import ProtoModelHandler
 
 
 def test_proto() -> None:

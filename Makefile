@@ -10,7 +10,7 @@ format.black:
 	poetry run black ${SOURCE_OBJECTS}
 format.isort:
 	poetry run isort --atomic ${SOURCE_OBJECTS}
-format: format.black format.isort 
+format: format.black format.isort
 
 lints.format.check:
 	poetry run black --check ${SOURCE_OBJECTS}
@@ -26,7 +26,7 @@ lints.pylint:
 lints: lints.flake8 lints.format.check lints.mypy  lints.pylint
 lints.strict: lints.pylint lints.flake8.strict lints.mypy lints.format.check
 
-setup: setup.python setup.sysdep.poetry setup.project
+setup: setup.python setup.sysdep.poetry setup.project setup.protos
 setup.uninstall: setup.python
 	poetry env remove ${PYTHON_VERSION} || true
 setup.ci: setup.ci.poetry setup.project
@@ -36,6 +36,9 @@ setup.project:
 	@poetry env use $$(python -c "import sys; print(sys.executable)")
 	@echo "Active interpreter path: $$(poetry env info --path)/bin/python"
 	poetry install
+setup.protos:
+	protoc -I=tests/protos --python_out tests/protos/compiled tests/protos/*.proto
+
 setup.python.activation:
 	@pyenv local ${PYTHON_VERSION} >/dev/null 2>&1 || true
 	@asdf local python ${PYTHON_VERSION} >/dev/null 2>&1 || true

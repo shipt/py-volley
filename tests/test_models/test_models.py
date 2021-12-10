@@ -44,10 +44,6 @@ def test_model_to_message_handler_success() -> None:
     ser = JsonSerialization()
     model_handler = PydanticModelHandler()
 
-    handled = model_message_handler(
-        data_model=data_model,
-        model_handler=model_handler,
-        serializer=ser
-    )
+    handled = model_message_handler(data_model=data_model, model_handler=model_handler, serializer=ser)
 
     assert handled == msg

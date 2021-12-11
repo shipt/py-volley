@@ -6,7 +6,6 @@ from unittest.mock import MagicMock, patch
 from example.input_worker import eng
 
 
-@patch("volley.engine.METRICS_ENABLED", True)
 @patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
 @patch("volley.connectors.kafka.KConsumer", MagicMock())
 def test_graceful_kill() -> None:

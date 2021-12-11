@@ -1,4 +1,4 @@
-from typing import Any, Dict, NamedTuple, Optional, Type, TypeVar
+from typing import Any, Dict, Type, TypeVar
 
 from pydantic import BaseModel, Extra
 
@@ -46,17 +46,3 @@ class QueueMessage(BaseModel):
 
     message_id: Any
     message: Any
-
-
-class ConnectorTransport(NamedTuple):
-    """transport object between connector and  engine
-
-    message_context: any object. used to pass data or configuration between
-        consumption actions; consume, delete, on_fail, shutdown.
-        for example - database connection, Kafka message context, etc.
-    message: raw message from connector
-    timeout: when a connector returns none -
-    """
-
-    message_context: Optional[Any]
-    message: Optional[Any]

@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from prometheus_client import Counter, Summary, start_http_server
 
-from volley.config import METRICS_ENABLED, METRICS_PORT, load_yaml
+from volley.config import load_yaml
 from volley.data_models import ComponentMessage, ComponentMessageType, QueueMessage
 from volley.logging import logger
 from volley.models.base import message_model_handler, model_message_handler
@@ -74,6 +74,7 @@ class Engine:
 
     queue_config: Optional[Dict[str, Any]] = None
     yaml_config_path: str = "./volley_config.yml"
+    metrics_port: Optional[int] = 3000
 
     def __post_init__(self) -> None:
         """Validates configuration and initializes queue configs
@@ -114,8 +115,8 @@ class Engine:
 
         @wraps(func)
         def run_component() -> None:
-            if METRICS_ENABLED:
-                start_http_server(port=METRICS_PORT)
+            if self.metrics_port is not None:
+                start_http_server(port=self.metrics_port)
             # the component function is passed in as `func`
             # first setup the connections to the input and outputs queues that the component will need
             # we only want to set these up once, before the component is invoked

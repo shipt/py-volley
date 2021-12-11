@@ -30,16 +30,20 @@ def test_model_to_message_handler_fail(caplog: LogCaptureFixture) -> None:
 
 
 def test_message_to_model_handler_success() -> None:
-    msg = b"""{"bad":"json"}"""
+    msg = b"""{"good":"json"}"""
     ser = JsonSerialization()
     schema = ComponentMessage
     model_handler = PydanticModelHandler()
 
-    message_model_handler(message=msg, schema=schema, model_handler=model_handler, serializer=ser)
+    handled_model, status = message_model_handler(
+        message=msg, schema=schema, model_handler=model_handler, serializer=ser
+    )
+    assert status is True
+    assert handled_model == ComponentMessage.parse_raw(msg)
 
 
 def test_model_to_message_handler_success() -> None:
-    msg = b"""{"good":"json"}"""
+    msg = b"""{"good": "json"}"""
     data_model = ComponentMessage.parse_raw(msg)
     ser = JsonSerialization()
     model_handler = PydanticModelHandler()

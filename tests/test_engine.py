@@ -16,7 +16,6 @@ from volley.queues import DLQNotConfiguredError
 
 
 @patch("volley.engine.RUN_ONCE", True)
-@patch("volley.engine.METRICS_ENABLED", False)
 @patch("volley.connectors.kafka.KProducer")
 @patch("volley.connectors.kafka.KConsumer")
 def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:  # pylint: disable=W0613
@@ -29,6 +28,7 @@ def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -
         output_queues=["output-topic"],
         yaml_config_path="./example/volley_config.yml",
         dead_letter_queue="dead-letter-queue",
+        metrics_port=None,
     )
     input_msg = json.dumps(InputMessage.schema()["examples"][0]).encode("utf-8")
     mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=input_msg)
@@ -44,7 +44,6 @@ def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -
 
 
 @patch("volley.engine.RUN_ONCE", True)
-@patch("volley.engine.METRICS_ENABLED", False)
 @patch("volley.connectors.kafka.KProducer")
 @patch("volley.connectors.kafka.KConsumer")
 def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:  # pylint: disable=W0613
@@ -57,6 +56,7 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
         output_queues=["output-topic"],
         yaml_config_path="./example/volley_config.yml",
         dead_letter_queue="dead-letter-queue",
+        metrics_port=None,
     )
     msg = json.dumps(InputMessage.schema()["examples"][0]).encode("utf-8")
     mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
@@ -70,7 +70,6 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
 
 
 @patch("volley.engine.RUN_ONCE", True)
-@patch("volley.engine.METRICS_ENABLED", False)
 @patch("volley.connectors.kafka.KProducer")
 @patch("volley.connectors.kafka.KConsumer")
 def test_dlq_not_implemented(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:  # pylint: disable=W0613
@@ -82,6 +81,7 @@ def test_dlq_not_implemented(mock_consumer: MagicMock, mock_producer: MagicMock)
         output_queues=["output-topic"],
         yaml_config_path="./example/volley_config.yml",
         dead_letter_queue=None,
+        metrics_port=None,
     )
     mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=b'{"random": "message"}')
 
@@ -95,7 +95,6 @@ def test_dlq_not_implemented(mock_consumer: MagicMock, mock_producer: MagicMock)
 
 
 @patch("volley.engine.RUN_ONCE", True)
-@patch("volley.engine.METRICS_ENABLED", False)
 @patch("volley.connectors.rsmq.RedisSMQ")
 def test_rsmq_component(mock_rsmq: MagicMock) -> None:
     m = {"uuid": str(uuid4())}
@@ -112,7 +111,7 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
             "type": "rsmq",
         }
     }
-    eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg)
+    eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, metrics_port=None)
 
     @eng.stream_app
     def hello_world(msg: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
@@ -126,7 +125,6 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
 
 
 @patch("volley.engine.RUN_ONCE", True)
-@patch("volley.engine.METRICS_ENABLED", False)
 @patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
 @patch("volley.connectors.kafka.KProducer", MagicMock())
 @patch("volley.connectors.kafka.KConsumer")
@@ -144,6 +142,7 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[st
             output_queues=output_queues.copy(),
             dead_letter_queue="wrong-DLQ",
             queue_config=config_dict,
+            metrics_port=None,
         )
 
     eng = Engine(
@@ -151,6 +150,7 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[st
         output_queues=output_queues.copy(),
         dead_letter_queue="dead-letter-queue",
         queue_config=config_dict,
+        metrics_port=None,
     )
 
     assert eng.input_queue == input_queue
@@ -172,7 +172,6 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[st
 
 @patch("volley.logging.logger.propagate", True)
 @patch("volley.engine.RUN_ONCE", True)
-@patch("volley.engine.METRICS_ENABLED", False)
 @patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
 @patch("volley.connectors.kafka.KProducer", MagicMock())
 @patch("volley.connectors.kafka.KConsumer")
@@ -194,6 +193,7 @@ def test_null_serializer_fail(
         output_queues=output_queues,
         queue_config=config_dict,
         dead_letter_queue="dead-letter-queue",
+        metrics_port=None,
     )
 
     @eng.stream_app
@@ -209,11 +209,7 @@ def test_null_serializer_fail(
     assert "failed producing message to" not in caplog.text
 
     # do not specifiy the DLQ
-    eng = Engine(
-        input_queue=input_queue,
-        output_queues=output_queues,
-        queue_config=config_dict,
-    )
+    eng = Engine(input_queue=input_queue, output_queues=output_queues, queue_config=config_dict, metrics_port=None)
 
     @eng.stream_app
     def func2(*args: Any) -> bool:  # pylint: disable=W0613
@@ -225,7 +221,6 @@ def test_null_serializer_fail(
 
 
 @patch("volley.engine.RUN_ONCE", True)
-@patch("volley.engine.METRICS_ENABLED", False)
 @patch("volley.connectors.rsmq.RedisSMQ")
 def test_engine_configuration_failures(mock_rsmq: MagicMock) -> None:
     m = {"uuid": str(uuid4())}
@@ -244,24 +239,30 @@ def test_engine_configuration_failures(mock_rsmq: MagicMock) -> None:
 
     # try to init on a output queue that does not exist
     with pytest.raises(NameError):
-        Engine(input_queue="comp_1", output_queues=["DOES_NOT_EXIST", "comp_1"], queue_config=cfg)
+        Engine(input_queue="comp_1", output_queues=["DOES_NOT_EXIST", "comp_1"], queue_config=cfg, metrics_port=None)
 
     # try to init on a input queue that does not exist
     with pytest.raises(NameError):
-        Engine(input_queue="DOES_NOT_EXIST", output_queues=["comp_1"], queue_config=cfg)
+        Engine(input_queue="DOES_NOT_EXIST", output_queues=["comp_1"], queue_config=cfg, metrics_port=None)
 
     # try to init on a DLQ that does not exist
     with pytest.raises(NameError):
-        Engine(input_queue="comp_1", output_queues=["comp_1"], dead_letter_queue="DOES_NOT_EXIST", queue_config=cfg)
+        Engine(
+            input_queue="comp_1",
+            output_queues=["comp_1"],
+            dead_letter_queue="DOES_NOT_EXIST",
+            queue_config=cfg,
+            metrics_port=None,
+        )
 
     # try to init when missing required attribute in config
     missing_cfg = cfg.copy()
     missing_cfg["comp_1"] = cfg["comp_1"].copy()
     del missing_cfg["comp_1"]["type"]
     with pytest.raises(KeyError):
-        Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=missing_cfg)
+        Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=missing_cfg, metrics_port=None)
 
-    eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg)
+    eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, metrics_port=None)
 
     @eng.stream_app
     def bad_return_queue(msg: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:  # pylint: disable=W0613
@@ -272,7 +273,7 @@ def test_engine_configuration_failures(mock_rsmq: MagicMock) -> None:
     with pytest.raises(NameError):
         bad_return_queue()
 
-    eng2 = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg)
+    eng2 = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, metrics_port=None)
 
     @eng2.stream_app
     def bad_return_type(msg: ComponentMessage) -> Any:  # pylint: disable=W0613
@@ -285,7 +286,6 @@ def test_engine_configuration_failures(mock_rsmq: MagicMock) -> None:
 
 
 @patch("volley.engine.RUN_ONCE", True)
-@patch("volley.engine.METRICS_ENABLED", False)
 @patch("volley.connectors.rsmq.RedisSMQ")
 def test_serialization_fail_crash(mock_rsmq: MagicMock, caplog: LogCaptureFixture) -> None:
     rsmq_msg = {"id": 123, "message": {"key": datetime.now()}}
@@ -298,7 +298,9 @@ def test_serialization_fail_crash(mock_rsmq: MagicMock, caplog: LogCaptureFixtur
     }
 
     # using comp_1 as a DLQ, just to make things run for the test
-    eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, dead_letter_queue="DLQ")
+    eng = Engine(
+        input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, dead_letter_queue="DLQ", metrics_port=None
+    )
 
     @eng.stream_app
     def func(msg: ComponentMessage) -> Any:  # pylint: disable=W0613
@@ -310,7 +312,6 @@ def test_serialization_fail_crash(mock_rsmq: MagicMock, caplog: LogCaptureFixtur
 
 
 @patch("volley.engine.RUN_ONCE", True)
-@patch("volley.engine.METRICS_ENABLED", False)
 @patch("volley.connectors.rsmq.RSMQConsumer.on_fail")
 @patch("volley.connectors.rsmq.RedisSMQ")
 def test_fail_produce(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:
@@ -324,7 +325,7 @@ def test_fail_produce(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:
     cfg = {"comp_1": {"value": "random_val", "type": "rsmq", "schema": "volley.data_models.ComponentMessage"}}
 
     # using comp_1 as a DLQ, just to make things run for the test
-    eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg)
+    eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, metrics_port=None)
 
     @eng.stream_app
     def func(msg: ComponentMessage) -> Any:  # pylint: disable=W0613
@@ -348,12 +349,11 @@ def test_init_no_output(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:  
 
     cfg["DLQ"] = {"value": "dlq-topic", "type": "kafka"}
     # DLQ should become an output, even without any outputs defined
-    eng2 = Engine(input_queue="comp_1", dead_letter_queue="DLQ", queue_config=cfg)
+    eng2 = Engine(input_queue="comp_1", dead_letter_queue="DLQ", queue_config=cfg, metrics_port=None)
     assert "DLQ" in eng2.output_queues
 
 
 @patch("volley.engine.RUN_ONCE", True)
-@patch("volley.engine.METRICS_ENABLED", False)
 @patch("volley.logging.logger.propagate", True)
 @patch("volley.connectors.kafka.KConsumer")
 def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture, monkeypatch: MonkeyPatch) -> None:
@@ -373,10 +373,7 @@ def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture, 
         }
     }
 
-    eng = Engine(
-        input_queue="comp_1",
-        queue_config=cfg,
-    )
+    eng = Engine(input_queue="comp_1", queue_config=cfg, metrics_port=None)
 
     @eng.stream_app
     def func(msg: ComponentMessage) -> bool:  # pylint: disable=W0613
@@ -391,7 +388,6 @@ def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture, 
 
 
 @patch("volley.engine.RUN_ONCE", True)
-@patch("volley.engine.METRICS_ENABLED", False)
 @patch("volley.logging.logger.propagate", True)
 @patch("volley.connectors.rsmq.RedisSMQ")
 @patch("volley.engine.message_model_handler")
@@ -409,7 +405,7 @@ def test_wild_dlq_error(mock_handler: MagicMock, mock_rsmq: MagicMock, caplog: L
         "dlq": {"type": "rsmq", "value": "my_dlq"},
     }
 
-    eng = Engine(input_queue="comp_1", dead_letter_queue="dlq", queue_config=cfg)
+    eng = Engine(input_queue="comp_1", dead_letter_queue="dlq", queue_config=cfg, metrics_port=None)
 
     @eng.stream_app
     def fun(msg: Any) -> bool:  # pylint: disable=W0613

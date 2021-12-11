@@ -90,13 +90,15 @@ def mock_kafka_producer() -> KafkaProducer:
 
 @fixture
 def none_producer_decorated(monkeypatch: MonkeyPatch) -> Generator[Callable[..., None], None, None]:
-    eng = Engine(
-        input_queue="input-topic", output_queues=["output-topic"], yaml_config_path="./example/volley_config.yml"
-    )
-
-    monkeypatch.setattr("volley.engine", "METRICS_ENABLED", False)
     monkeypatch.setattr("volley.connectors.kafka", "KProducer", MagicMock())
     monkeypatch.setattr("volley.connectors.kafka", "KConsumer", MagicMock())
+
+    eng = Engine(
+        input_queue="input-topic",
+        output_queues=["output-topic"],
+        yaml_config_path="./example/volley_config.yml",
+        metrics_port=None,
+    )
 
     @eng.stream_app
     def func(*args: Any) -> bool:  # pylint: disable=W0613

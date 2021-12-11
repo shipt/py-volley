@@ -8,8 +8,6 @@ from yaml import Loader, load  # type: ignore
 GLOBALS = Path(__file__).parent.resolve().joinpath("global.yml")
 
 APP_ENV = os.getenv("APP_ENV", "localhost")
-METRICS_ENABLED = True
-METRICS_PORT = 3000
 
 
 def load_yaml(file_path: Union[str, Path]) -> Dict[str, Any]:

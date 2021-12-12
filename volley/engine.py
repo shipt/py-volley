@@ -109,7 +109,11 @@ class Engine:
         logger.info("Queues initialized: %s", list(self.queue_map.keys()))
 
     def stream_app(  # noqa: C901
-        self, func: Callable[[Union[ComponentMessageType, Any]], Union[List[Tuple[str, Any]], bool]]
+        self,
+        func: Callable[
+            [Any],
+            Union[List[Tuple[str, ComponentMessage, Optional[dict[str, Any]]]], bool],
+        ],
     ) -> Callable[..., Any]:
         """Main decorator for applications"""
 
@@ -144,7 +148,7 @@ class Engine:
                     continue
 
                 # typing for producing
-                outputs: Union[List[Tuple[str, ComponentMessage]], bool] = []
+                outputs: Union[List[Tuple[str, ComponentMessage, Optional[dict[str, Any]]]], bool] = []
 
                 data_model, status = message_model_handler(
                     message=in_message.message,
@@ -168,7 +172,7 @@ class Engine:
                         raise Exception(f"DLQ unable to handle message: {in_message.message}")
                     else:
                         # DLQ is configured and there is a message ready for the DLQ
-                        outputs = [(self.dead_letter_queue, msg)]
+                        outputs = [(self.dead_letter_queue, msg, {})]
                 else:
                     # things have gone wrong w/ the message and no DLQ configured
                     raise DLQNotConfiguredError(f"Deserializing {in_message.message} failed")
@@ -184,10 +188,10 @@ class Engine:
 
                 all_produce_status: List[bool] = []
                 if isinstance(outputs, bool):
-                    # assume a "None" output is a successful read of the input
+                    # func returned either True or False, and nothing more
                     all_produce_status.append(outputs)
                 else:
-                    for qname, component_msg in outputs:
+                    for qname, component_msg, *args in outputs:
                         try:
                             out_queue = self.queue_map[qname]
                         except KeyError as e:
@@ -206,8 +210,13 @@ class Engine:
                                 model_handler=out_queue.model_handler,
                                 serializer=out_queue.serializer,
                             )
-
-                            status = out_queue.producer_con.produce(queue_name=out_queue.value, message=serialized)
+                            if args:
+                                kwargs = args[0]
+                            else:
+                                kwargs = {}
+                            status = out_queue.producer_con.produce(
+                                queue_name=out_queue.value, message=serialized, **kwargs
+                            )
                             MESSAGES_PRODUCED.labels(
                                 volley_app=self.app_name, source=input_con.name, destination=qname
                             ).inc()

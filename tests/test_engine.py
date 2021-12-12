@@ -414,3 +414,34 @@ def test_wild_dlq_error(mock_handler: MagicMock, mock_rsmq: MagicMock, caplog: L
     with pytest.raises(Exception):
         fun()
     assert caplog
+
+
+@patch("volley.engine.RUN_ONCE", True)
+@patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
+@patch("volley.connectors.kafka.KProducer", MagicMock())
+@patch("volley.connectors.kafka.KConsumer")
+def test_connector_tuple_runtime_config(mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]]) -> None:
+    """test wrapped func can return variable length tuples"""
+    data = InputMessage.schema()["examples"][0]
+    msg = json.dumps(data).encode("utf-8")
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
+    input_queue = "input-topic"
+    output_queues = list(config_dict.keys())
+
+    eng = Engine(
+        input_queue=input_queue,
+        output_queues=output_queues.copy(),
+        dead_letter_queue="dead-letter-queue",
+        queue_config=config_dict,
+        metrics_port=None,
+    )
+
+    m = ComponentMessage(hello="world")
+
+    # define function the returns producer runtime configs
+    # also does not return them for a different queue
+    @eng.stream_app
+    def tuple_two(*args: Any) -> bool:  # pylint: disable=W0613
+        return [("output-topic", m), ("output-topic", m, {"key": "abc"})]
+    # function must not raise
+    tuple_two()

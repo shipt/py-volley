@@ -14,7 +14,7 @@ class Consumer(ABC):
     config: dict[str, Any] = field(default_factory=dict)
 
     @abstractmethod
-    def consume(self, queue_name: str, timeout: float = 30, poll_interval: float = 1) -> Optional[QueueMessage]:
+    def consume(self, queue_name: str) -> Optional[QueueMessage]:
         """consumes a message to any queue. return None when there are no messages to consume"""
 
     @abstractmethod
@@ -38,7 +38,7 @@ class Producer(ABC):
     config: dict[str, Any] = field(default_factory=dict)
 
     @abstractmethod
-    def produce(self, queue_name: str, message: Any) -> bool:
+    def produce(self, queue_name: str, message: Any, **kwargs: Any) -> bool:
         """publishes a message to any queue"""
 
     def shutdown(self) -> None:

@@ -1,7 +1,7 @@
 import os
 import sys
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Union
 
 from pyshipt_streams import KafkaConsumer as KConsumer
 from pyshipt_streams import KafkaProducer as KProducer
@@ -84,8 +84,13 @@ class KafkaProducer(Producer):
         # self.config comes from super class
         logger.info("Kafka Producer Configuration: %s", self.config)
 
-    def produce(self, queue_name: str, message: bytes) -> bool:
-        self.p.publish(topic=queue_name, value=message)
+    def produce(self, queue_name: str, message: bytes, **kwargs: Union[str, int]) -> bool:
+        self.p.publish(
+            key=kwargs.get("key"),
+            topic=queue_name,
+            value=message,
+            headers=kwargs.get("headers"),
+        )
         return True
 
     def shutdown(self) -> None:

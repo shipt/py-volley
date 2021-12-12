@@ -1,7 +1,7 @@
 import os
 import time
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Union
 
 from prometheus_client import Summary
 from rsmq import RedisSMQ
@@ -102,10 +102,16 @@ class RSMQProducer(Producer):
         self.queue = RedisSMQ(**self.config)
         self.queue.createQueue().execute()
 
-    def produce(self, queue_name: str, message: bytes) -> bool:
+    def produce(self, queue_name: str, message: bytes, **kwargs: Union[str, int]) -> bool:
         m = message
         _start = time.time()
-        msg_id: str = self.queue.sendMessage(qname=queue_name, message=m, encode=False).execute()
+        msg_id: str = self.queue.sendMessage(
+            qname=queue_name,
+            message=m,
+            encode=kwargs.get("encode", False),
+            delay=kwargs.get("delay", None),
+            quiet=kwargs.get("quiet", False),
+        ).execute()
         _duration = time.time() - _start
         PROCESS_TIME.labels("write").observe(_duration)
         return bool(msg_id)

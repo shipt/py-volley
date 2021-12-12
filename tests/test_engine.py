@@ -36,8 +36,8 @@ def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -
     output_msg = OutputMessage.parse_obj(OutputMessage.schema()["examples"][0])
     # component returns "just none"
 
-    @eng.stream_app
-    def func(*args: ComponentMessage) -> List[Tuple[str, OutputMessage]]:  # pylint: disable=W0613
+    @eng.stream_app  # type: ignore
+    def func(msg: Any) -> List[Tuple[str, OutputMessage]]:  # pylint: disable=W0613
         return [("output-topic", output_msg)]
 
     func()
@@ -113,7 +113,7 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
     }
     eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, metrics_port=None)
 
-    @eng.stream_app
+    @eng.stream_app  # type: ignore
     def hello_world(msg: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
         msg_dict = msg.dict()
         unique_val = msg_dict["uuid"]
@@ -264,7 +264,7 @@ def test_engine_configuration_failures(mock_rsmq: MagicMock) -> None:
 
     eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, metrics_port=None)
 
-    @eng.stream_app
+    @eng.stream_app  # type: ignore
     def bad_return_queue(msg: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:  # pylint: disable=W0613
         out = ComponentMessage(hello="world")
         return [("DOES_NOT_EXIST", out)]
@@ -420,7 +420,7 @@ def test_wild_dlq_error(mock_handler: MagicMock, mock_rsmq: MagicMock, caplog: L
 @patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
 @patch("volley.connectors.kafka.KProducer", MagicMock())
 @patch("volley.connectors.kafka.KConsumer")
-def test_connector_tuple_runtime_config(mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]]) -> None:
+def test_runtime_connector_configs(mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]]) -> None:
     """test wrapped func can return variable length tuples"""
     data = InputMessage.schema()["examples"][0]
     msg = json.dumps(data).encode("utf-8")
@@ -439,9 +439,11 @@ def test_connector_tuple_runtime_config(mock_consumer: MagicMock, config_dict: d
     m = ComponentMessage(hello="world")
 
     # define function the returns producer runtime configs
-    # also does not return them for a different queue
-    @eng.stream_app
-    def tuple_two(*args: Any) -> bool:  # pylint: disable=W0613
-        return [("output-topic", m), ("output-topic", m, {"key": "abc"})]
+    @eng.stream_app  # type: ignore
+    def tuple_two(msg: Any) -> List[Tuple[str, ComponentMessage, dict[str, Any]]]:  # pylint: disable=W0613
+        send_rsmq = ("comp_1", m, {"delay": 10})
+        send_kafka = ("output-topic", m, {"key": "abc"})
+        return [send_rsmq, send_kafka]
+
     # function must not raise
     tuple_two()

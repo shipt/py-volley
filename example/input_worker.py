@@ -14,7 +14,7 @@ eng = Engine(
 
 
 @eng.stream_app
-def main(msg: InputMessage) -> List[Tuple[str, ComponentMessage]]:
+def main(msg: InputMessage) -> List[Tuple[str, Queue1Message]]:
 
     req_id = msg.request_id
     values = msg.list_of_values

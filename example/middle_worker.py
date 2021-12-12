@@ -50,9 +50,7 @@ eng = Engine(
 
 @eng.stream_app
 def main(msg: Queue1Message) -> List[Tuple[str, ComponentMessage]]:
-    """adds one to a value
-    using dict as schema, which provides no schema validation
-    """
+    """adds one to a value"""
     req_id = msg.request_id
     max_val = msg.max_value
 

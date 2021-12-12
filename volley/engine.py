@@ -1,3 +1,4 @@
+import builtins
 import time
 from dataclasses import dataclass, field
 from functools import wraps
@@ -110,10 +111,7 @@ class Engine:
 
     def stream_app(  # noqa: C901
         self,
-        func: Callable[
-            [Any],
-            Union[List[Tuple[str, ComponentMessage, Optional[dict[str, Any]]]], bool],
-        ],
+        func: Callable[[Any], Union[List[Tuple[str, Any]], List[Tuple[str, Any, dict[str, Any]]], bool]],
     ) -> Callable[..., Any]:
         """Main decorator for applications"""
 
@@ -148,7 +146,7 @@ class Engine:
                     continue
 
                 # typing for producing
-                outputs: Union[List[Tuple[str, ComponentMessage, Optional[dict[str, Any]]]], bool] = []
+                outputs: Union[List[Tuple[str, Any]], List[Tuple[str, Any, dict[str, Any]]], bool] = False
 
                 data_model, status = message_model_handler(
                     message=in_message.message,
@@ -172,7 +170,7 @@ class Engine:
                         raise Exception(f"DLQ unable to handle message: {in_message.message}")
                     else:
                         # DLQ is configured and there is a message ready for the DLQ
-                        outputs = [(self.dead_letter_queue, msg, {})]
+                        outputs = [(self.dead_letter_queue, msg)]
                 else:
                     # things have gone wrong w/ the message and no DLQ configured
                     raise DLQNotConfiguredError(f"Deserializing {in_message.message} failed")
@@ -187,11 +185,11 @@ class Engine:
                     PROCESS_TIME.labels(volley_app=self.app_name, process_name="component").observe(_fun_duration)
 
                 all_produce_status: List[bool] = []
-                if isinstance(outputs, bool):
-                    # func returned either True or False, and nothing more
+                if isinstance(outputs, builtins.bool):
+                    # if func returns a bool, its just a bool and nothing more
                     all_produce_status.append(outputs)
                 else:
-                    for qname, component_msg, *args in outputs:
+                    for qname, component_msg, *args in outputs:  # type: ignore  # (mypy thinks outputs is bool)
                         try:
                             out_queue = self.queue_map[qname]
                         except KeyError as e:
@@ -210,8 +208,8 @@ class Engine:
                                 model_handler=out_queue.model_handler,
                                 serializer=out_queue.serializer,
                             )
-                            if args:
-                                kwargs = args[0]
+                            if len(args):
+                                kwargs: dict[str, Any] = args[0]  # type: ignore
                             else:
                                 kwargs = {}
                             status = out_queue.producer_con.produce(

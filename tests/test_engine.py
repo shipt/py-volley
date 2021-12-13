@@ -36,7 +36,7 @@ def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -
     output_msg = OutputMessage.parse_obj(OutputMessage.schema()["examples"][0])
     # component returns "just none"
 
-    @eng.stream_app  # type: ignore
+    @eng.stream_app
     def func(msg: Any) -> List[Tuple[str, OutputMessage]]:  # pylint: disable=W0613
         return [("output-topic", output_msg)]
 
@@ -113,7 +113,7 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
     }
     eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, metrics_port=None)
 
-    @eng.stream_app  # type: ignore
+    @eng.stream_app
     def hello_world(msg: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
         msg_dict = msg.dict()
         unique_val = msg_dict["uuid"]
@@ -264,7 +264,7 @@ def test_engine_configuration_failures(mock_rsmq: MagicMock) -> None:
 
     eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, metrics_port=None)
 
-    @eng.stream_app  # type: ignore
+    @eng.stream_app
     def bad_return_queue(msg: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:  # pylint: disable=W0613
         out = ComponentMessage(hello="world")
         return [("DOES_NOT_EXIST", out)]
@@ -439,7 +439,7 @@ def test_runtime_connector_configs(mock_consumer: MagicMock, config_dict: dict[s
     m = ComponentMessage(hello="world")
 
     # define function the returns producer runtime configs
-    @eng.stream_app  # type: ignore
+    @eng.stream_app
     def tuple_two(msg: Any) -> List[Tuple[str, ComponentMessage, dict[str, Any]]]:  # pylint: disable=W0613
         send_rsmq = ("comp_1", m, {"delay": 10})
         send_kafka = ("output-topic", m, {"key": "abc"})

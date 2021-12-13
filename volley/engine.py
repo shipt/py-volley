@@ -7,7 +7,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from prometheus_client import Counter, Summary, start_http_server
 
 from volley.config import load_yaml
-from volley.data_models import ComponentMessage, ComponentMessageType, QueueMessage
+from volley.data_models import QueueMessage
 from volley.logging import logger
 from volley.models.base import message_model_handler, model_message_handler
 from volley.queues import (

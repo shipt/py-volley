@@ -189,7 +189,7 @@ class Engine:
                     # if func returns a bool, its just a bool and nothing more
                     all_produce_status.append(outputs)
                 else:
-                    for qname, component_msg, *args in outputs:  # type: ignore  # (mypy thinks outputs is bool)
+                    for qname, component_msg, *args in outputs:
                         try:
                             out_queue = self.queue_map[qname]
                         except KeyError as e:
@@ -209,7 +209,7 @@ class Engine:
                                 serializer=out_queue.serializer,
                             )
                             if len(args):
-                                kwargs: dict[str, Any] = args[0]  # type: ignore
+                                kwargs: dict[str, Any] = args[0]
                             else:
                                 kwargs = {}
                             status = out_queue.producer_con.produce(

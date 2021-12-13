@@ -41,7 +41,7 @@ class RSMQConsumer(Consumer):
             # if no options provided, then provide these default options
             self.config["options"] = {"decode_responses": False}
 
-        defaults = {"qname": self.queue_name, "exceptions": False, "vt": 60}
+        defaults = {"qname": self.queue_name, "exceptions": False, "vt": 60, "quiet": QUIET}
 
         defaults.update(self.config)
         self.config = defaults
@@ -49,19 +49,18 @@ class RSMQConsumer(Consumer):
         self.queue = RedisSMQ(**self.config)
         self.queue.createQueue().execute()
 
-    def consume(self, queue_name: str, timeout: float = 30.0, poll_interval: float = 1) -> Optional[QueueMessage]:
+    def consume(self, queue_name: str) -> Optional[QueueMessage]:
         """Polls RSMQ for a single message.
 
         Args:
             queue_name (str): name of queue to poll.
             timeout (float, optional): alias for RSMQ visibility_timeout Defaults to 30.0.
-            poll_interval (float, optional): Defaults to 1.
 
         Returns:
             Optional[QueueMessage]: The message and it's RSMQ.
         """
         _start = time.time()
-        msg = self.queue.receiveMessage(qname=queue_name, vt=timeout, quiet=QUIET).exceptions(False).execute()
+        msg = self.queue.receiveMessage(qname=queue_name).exceptions(False).execute()
         _duration = time.time() - _start
         PROCESS_TIME.labels("read").observe(_duration)
         if isinstance(msg, dict):

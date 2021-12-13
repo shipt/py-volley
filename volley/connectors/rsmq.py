@@ -21,6 +21,7 @@ class RSMQConfigError(Exception):
 
 @dataclass
 class RSMQConsumer(Consumer):
+    # https://github.com/mlasevich/PyRSMQ#quick-intro-to-rsmq
     def __post_init__(self) -> None:
         if "host" in self.config:
             # pass the value directly to the constructor
@@ -54,7 +55,6 @@ class RSMQConsumer(Consumer):
 
         Args:
             queue_name (str): name of queue to poll.
-            timeout (float, optional): alias for RSMQ visibility_timeout Defaults to 30.0.
 
         Returns:
             Optional[QueueMessage]: The message and it's RSMQ.
@@ -76,6 +76,9 @@ class RSMQConsumer(Consumer):
         return result
 
     def on_fail(self) -> None:
+        """no action on fail
+        consumed message becomes available again once visibility timeout (vt) expires
+        """
         pass
 
     def shutdown(self) -> None:

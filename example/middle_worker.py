@@ -1,5 +1,7 @@
 from random import randint
-from typing import List, Tuple
+from typing import List, Tuple, Union
+
+from pydantic.main import BaseModel
 
 from example.data_models import (
     InputMessage,
@@ -7,7 +9,6 @@ from example.data_models import (
     PostgresMessage,
     Queue1Message,
 )
-from volley.data_models import ComponentMessage
 from volley.engine import Engine
 from volley.logging import logger
 
@@ -49,7 +50,7 @@ eng = Engine(
 
 
 @eng.stream_app
-def main(msg: Queue1Message) -> List[Tuple[str, ComponentMessage]]:
+def main(msg: Queue1Message) -> Union[List[Tuple[str, BaseModel, dict[str, str]]], List[Tuple[str, InputMessage]]]:
     """adds one to a value"""
     req_id = msg.request_id
     max_val = msg.max_value
@@ -71,7 +72,7 @@ def main(msg: Queue1Message) -> List[Tuple[str, ComponentMessage]]:
 
     logger.info(output_msg.dict())
     logger.info(pg_msg.dict())
-    return [("postgres_queue", pg_msg), ("output-topic", output_msg)]
+    return [("postgres_queue", pg_msg), ("output-topic", output_msg, {"key": "partitionKeyOne"})]  # type: ignore
 
 
 if __name__ == "__main__":

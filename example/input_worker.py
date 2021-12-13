@@ -1,7 +1,6 @@
 from typing import List, Tuple
 
 from example.data_models import InputMessage, Queue1Message
-from volley.data_models import ComponentMessage
 from volley.engine import Engine
 from volley.logging import logger
 

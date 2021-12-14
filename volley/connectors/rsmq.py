@@ -1,7 +1,7 @@
 import os
 import time
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Union
 
 from prometheus_client import Summary
 from rsmq import RedisSMQ
@@ -21,6 +21,7 @@ class RSMQConfigError(Exception):
 
 @dataclass
 class RSMQConsumer(Consumer):
+    # https://github.com/mlasevich/PyRSMQ#quick-intro-to-rsmq
     def __post_init__(self) -> None:
         if "host" in self.config:
             # pass the value directly to the constructor
@@ -41,7 +42,7 @@ class RSMQConsumer(Consumer):
             # if no options provided, then provide these default options
             self.config["options"] = {"decode_responses": False}
 
-        defaults = {"qname": self.queue_name, "exceptions": False, "vt": 60}
+        defaults = {"qname": self.queue_name, "exceptions": False, "vt": 60, "quiet": QUIET}
 
         defaults.update(self.config)
         self.config = defaults
@@ -49,19 +50,17 @@ class RSMQConsumer(Consumer):
         self.queue = RedisSMQ(**self.config)
         self.queue.createQueue().execute()
 
-    def consume(self, queue_name: str, timeout: float = 30.0, poll_interval: float = 1) -> Optional[QueueMessage]:
+    def consume(self, queue_name: str) -> Optional[QueueMessage]:
         """Polls RSMQ for a single message.
 
         Args:
             queue_name (str): name of queue to poll.
-            timeout (float, optional): alias for RSMQ visibility_timeout Defaults to 30.0.
-            poll_interval (float, optional): Defaults to 1.
 
         Returns:
             Optional[QueueMessage]: The message and it's RSMQ.
         """
         _start = time.time()
-        msg = self.queue.receiveMessage(qname=queue_name, vt=timeout, quiet=QUIET).exceptions(False).execute()
+        msg = self.queue.receiveMessage(qname=queue_name).exceptions(False).execute()
         _duration = time.time() - _start
         PROCESS_TIME.labels("read").observe(_duration)
         if isinstance(msg, dict):
@@ -77,6 +76,9 @@ class RSMQConsumer(Consumer):
         return result
 
     def on_fail(self) -> None:
+        """no action on fail
+        consumed message becomes available again once visibility timeout (vt) expires
+        """
         pass
 
     def shutdown(self) -> None:
@@ -102,10 +104,16 @@ class RSMQProducer(Producer):
         self.queue = RedisSMQ(**self.config)
         self.queue.createQueue().execute()
 
-    def produce(self, queue_name: str, message: bytes) -> bool:
+    def produce(self, queue_name: str, message: bytes, **kwargs: Union[str, int]) -> bool:
         m = message
         _start = time.time()
-        msg_id: str = self.queue.sendMessage(qname=queue_name, message=m, encode=False).execute()
+        msg_id: str = self.queue.sendMessage(
+            qname=queue_name,
+            message=m,
+            encode=kwargs.get("encode", False),
+            delay=kwargs.get("delay", None),
+            quiet=kwargs.get("quiet", False),
+        ).execute()
         _duration = time.time() - _start
         PROCESS_TIME.labels("write").observe(_duration)
         return bool(msg_id)

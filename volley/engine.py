@@ -1,3 +1,4 @@
+import builtins
 import time
 from dataclasses import dataclass, field
 from functools import wraps
@@ -6,7 +7,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from prometheus_client import Counter, Summary, start_http_server
 
 from volley.config import load_yaml
-from volley.data_models import ComponentMessage, ComponentMessageType, QueueMessage
+from volley.data_models import QueueMessage
 from volley.logging import logger
 from volley.models.base import message_model_handler, model_message_handler
 from volley.queues import (
@@ -109,7 +110,8 @@ class Engine:
         logger.info("Queues initialized: %s", list(self.queue_map.keys()))
 
     def stream_app(  # noqa: C901
-        self, func: Callable[[Union[ComponentMessageType, Any]], Union[List[Tuple[str, Any]], bool]]
+        self,
+        func: Callable[[Any], Union[List[Tuple[str, Any]], List[Tuple[str, Any, dict[str, Any]]], bool]],
     ) -> Callable[..., Any]:
         """Main decorator for applications"""
 
@@ -144,7 +146,7 @@ class Engine:
                     continue
 
                 # typing for producing
-                outputs: Union[List[Tuple[str, ComponentMessage]], bool] = []
+                outputs: Union[List[Tuple[str, Any]], List[Tuple[str, Any, dict[str, Any]]], bool] = False
 
                 data_model, status = message_model_handler(
                     message=in_message.message,
@@ -183,11 +185,11 @@ class Engine:
                     PROCESS_TIME.labels(volley_app=self.app_name, process_name="component").observe(_fun_duration)
 
                 all_produce_status: List[bool] = []
-                if isinstance(outputs, bool):
-                    # assume a "None" output is a successful read of the input
+                if isinstance(outputs, builtins.bool):
+                    # if func returns a bool, its just a bool and nothing more
                     all_produce_status.append(outputs)
                 else:
-                    for qname, component_msg in outputs:
+                    for qname, component_msg, *args in outputs:
                         try:
                             out_queue = self.queue_map[qname]
                         except KeyError as e:
@@ -206,8 +208,13 @@ class Engine:
                                 model_handler=out_queue.model_handler,
                                 serializer=out_queue.serializer,
                             )
-
-                            status = out_queue.producer_con.produce(queue_name=out_queue.value, message=serialized)
+                            if len(args):
+                                kwargs: dict[str, Any] = args[0]
+                            else:
+                                kwargs = {}
+                            status = out_queue.producer_con.produce(
+                                queue_name=out_queue.value, message=serialized, **kwargs
+                            )
                             MESSAGES_PRODUCED.labels(
                                 volley_app=self.app_name, source=input_con.name, destination=qname
                             ).inc()

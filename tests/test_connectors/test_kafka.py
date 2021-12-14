@@ -1,4 +1,5 @@
 import sys
+from random import random
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
@@ -73,7 +74,9 @@ def test_consumer_group_init(mock_consumer: MagicMock, monkeypatch: MonkeyPatch)
 
 @patch("pyshipt_streams.consumer.Consumer", MagicMock())
 def test_config_override() -> None:
-    cfg = {"group.id": "test-group"}
+    poll_interval = random() * 3
+    cfg = {"group.id": "test-group", "poll_interval": poll_interval}
     c = KafkaConsumer(config=cfg, queue_name="input-topic")
     assert c.consumer_group == cfg["group.id"]
     assert c.config == cfg
+    assert c.poll_interval == poll_interval

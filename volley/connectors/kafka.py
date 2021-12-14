@@ -1,7 +1,7 @@
 import os
 import sys
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Union
 
 from pyshipt_streams import KafkaConsumer as KConsumer
 from pyshipt_streams import KafkaProducer as KProducer
@@ -16,6 +16,9 @@ RUN_ONCE = False
 
 @dataclass
 class KafkaConsumer(Consumer):
+
+    poll_interval: float = 10
+
     def __post_init__(self) -> None:
         # self.config provided from base Consumer class
         # consumer group assignment
@@ -37,6 +40,12 @@ class KafkaConsumer(Consumer):
                     logger.exception("Kafka Consumer group not specified")
                     raise
 
+        if "poll_interval" in self.config:
+            # poll_interval can be overridden by a user provided Engine init config
+            # but it should not be passed to base Confluent Consumer init
+            # confluent will ignore it with a warning, however
+            self.poll_interval = self.config.pop("poll_interval")
+
         self.consumer_group = self.config["group.id"]
         self.c = KConsumer(
             consumer_group=self.config["group.id"],
@@ -51,13 +60,11 @@ class KafkaConsumer(Consumer):
     def consume(  # type: ignore
         self,
         queue_name: str = None,
-        timeout: float = 60,
-        poll_interval: float = 0.25,
     ) -> Optional[QueueMessage]:
         if queue_name is None:
             queue_name = self.queue_name
 
-        message = self.c.poll(poll_interval)
+        message = self.c.poll(self.poll_interval)
         if message is None:
             pass
         elif message.error():
@@ -84,8 +91,13 @@ class KafkaProducer(Producer):
         # self.config comes from super class
         logger.info("Kafka Producer Configuration: %s", self.config)
 
-    def produce(self, queue_name: str, message: bytes) -> bool:
-        self.p.publish(topic=queue_name, value=message)
+    def produce(self, queue_name: str, message: bytes, **kwargs: Union[str, int]) -> bool:
+        self.p.publish(
+            key=kwargs.get("key"),
+            topic=queue_name,
+            value=message,
+            headers=kwargs.get("headers"),
+        )
         return True
 
     def shutdown(self) -> None:

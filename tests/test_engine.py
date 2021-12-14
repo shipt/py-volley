@@ -37,7 +37,7 @@ def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -
     # component returns "just none"
 
     @eng.stream_app
-    def func(*args: ComponentMessage) -> List[Tuple[str, OutputMessage]]:  # pylint: disable=W0613
+    def func(msg: Any) -> List[Tuple[str, OutputMessage]]:  # pylint: disable=W0613
         return [("output-topic", output_msg)]
 
     func()
@@ -414,3 +414,36 @@ def test_wild_dlq_error(mock_handler: MagicMock, mock_rsmq: MagicMock, caplog: L
     with pytest.raises(Exception):
         fun()
     assert caplog
+
+
+@patch("volley.engine.RUN_ONCE", True)
+@patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
+@patch("volley.connectors.kafka.KProducer", MagicMock())
+@patch("volley.connectors.kafka.KConsumer")
+def test_runtime_connector_configs(mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]]) -> None:
+    """test wrapped func can return variable length tuples"""
+    data = InputMessage.schema()["examples"][0]
+    msg = json.dumps(data).encode("utf-8")
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
+    input_queue = "input-topic"
+    output_queues = list(config_dict.keys())
+
+    eng = Engine(
+        input_queue=input_queue,
+        output_queues=output_queues.copy(),
+        dead_letter_queue="dead-letter-queue",
+        queue_config=config_dict,
+        metrics_port=None,
+    )
+
+    m = ComponentMessage(hello="world")
+
+    # define function the returns producer runtime configs
+    @eng.stream_app
+    def tuple_two(msg: Any) -> List[Tuple[str, ComponentMessage, dict[str, Any]]]:  # pylint: disable=W0613
+        send_rsmq = ("comp_1", m, {"delay": 10})
+        send_kafka = ("output-topic", m, {"key": "abc"})
+        return [send_rsmq, send_kafka]
+
+    # function must not raise
+    tuple_two()

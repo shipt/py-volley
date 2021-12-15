@@ -2,18 +2,12 @@
 
 Documentation: https://animated-guacamole-53e254cf.pages.github.io/
 
-<p align="left">
-Forked from https://github.com/shipt/ml-bundle-engine. Provides an extensible interface to queues with built in support for Kafka and [RSMQ](https://github.com/mlasevich/PyRSMQ) (Redis Simple Message Queue).
-</p>
-<p align="left">
+Provides an extensible Python interface to queue-like technologies with built in support for Kafka and [RSMQ](https://github.com/mlasevich/PyRSMQ) (Redis Simple Message Queue).
+
 Use Volley if you need to quickly develop a Python streaming application to consumes messages, processes them (and do other things), then publish results to some place. Dead letters queues are easily configured.
-</p>
 
 
-</a>
 
-
-</a>
 
 # Installation
 

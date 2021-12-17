@@ -55,8 +55,16 @@ The Kafka producer is an implementation of Confluent's Python Producer. Some com
 
 A complete set of available configurations can be found in [Confluent's Producer Docs](https://docs.confluent.io/platform/current/clients/confluent-kafka-python/html/index.html#producer) and [librdkafka](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md)
 
+The following environment variables can be set in lieu of passing them as configuration:
+
+`KAFKA_BROKERS` - maps to `bootstrap.servers`
+`KAFKA_KEY` - maps to `sasl.username`
+`KAFKA_SECRET` - maps to `sasl.password`
+
 ### Redis
 The Redis producer is an implementation of the pyRSMQ project's producer. Most commonly used configurations:
 - `delay: float` - amount of time for message to remain "invisible" to other consumers.
 
-The complete list of configurations can be found in pyRSMQ's [sendMessage docs](https://github.com/mlasevich/PyRSMQ#redissmq-controller-api-usage) 
+The complete list of configurations can be found in pyRSMQ's [sendMessage docs](https://github.com/mlasevich/PyRSMQ#redissmq-controller-api-usage)
+
+`REDIS_HOST` environment variables maps to the `host` parameter in RSMQ configuration.

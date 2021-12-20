@@ -21,12 +21,19 @@ All metrics contain the label `volley_app` which is directly tied to the `app_na
 
 ## `process_time_seconds` 
 - Type: [Summary](https://prometheus.io/docs/concepts/metric_types/#summary)
-- observed the amount of time various processes take to run
+- observed amount of time various processes take to run
 - Labels:
     - `process_name` : name of the process that is tracked
         - Values:
             - `component` : time associated with the processing time for the function that Volley wraps. This is isolated to the logic in the user's function.
             - `cycle` : one full cycle of consume message, serialize, schema validation, component processing, and publishing to all outputs. `component` is a subset of `cycle`
+
+## `data_model_process_seconds`
+- Type: [Summary](https://prometheus.io/docs/concepts/metric_types/#summary)
+- observed time for serialization/deserialization and data model construct/deconstruct
+- Labels:
+    - `process` : the observed process
+        - Values: `deserialize`, `serialize`, `construct`, `deconstruct` 
 
 ## `redis_process_time_seconds` 
 - Type: [Summary](https://prometheus.io/docs/concepts/metric_types/#summary)

@@ -2,18 +2,12 @@
 
 Documentation: https://animated-guacamole-53e254cf.pages.github.io/
 
-<p align="left">
-Forked from https://github.com/shipt/ml-bundle-engine. Provides an extensible interface to queues with built in support for Kafka and [RSMQ](https://github.com/mlasevich/PyRSMQ) (Redis Simple Message Queue).
-</p>
-<p align="left">
+Provides an extensible Python interface to queue-like technologies with built in support for Kafka and [RSMQ](https://github.com/mlasevich/PyRSMQ) (Redis Simple Message Queue).
+
 Use Volley if you need to quickly develop a Python streaming application to consumes messages, processes them (and do other things), then publish results to some place. Dead letters queues are easily configured.
-</p>
-<a href="https://drone.shipt.com/shipt/volley" target="_blank">
-    <img src="https://drone.shipt.com/api/badges/shipt/volley/status.svg?ref=refs/heads/main" alt="Test">
-</a>
-<a href="https://codecov.io/gh/shipt/volley" target="_blank">
-    <img src="https://codecov.io/gh/shipt/volley/branch/main/graph/badge.svg?token=axP0uxJwPX" alt="Test">
-</a>
+
+[![Build Status](https://drone.shipt.com/api/badges/shipt/volley/status.svg)](https://drone.shipt.com/shipt/volley)
+[![codecov](https://codecov.io/gh/shipt/volley/branch/main/graph/badge.svg?token=axP0uxJwPX)](https://codecov.io/gh/shipt/volley)
 
 # Installation
 
@@ -118,146 +112,6 @@ queue_config = {
       "type": "kafka",
       "schema": "example.data_models.InputMessage",
     },
-```
-
-
-## Another Example:
-
-By default Volley will read queue configuration from a specified yaml. Let's define three queues, `my_input`, `queue_a`, `queue_b` and assume `my_input` is a Kafka topic populated by some external service. Let's decide that `queue_a` is an RSMQ type and `queue_b` is a Postgres. We define these in `./volley_config.yml`. Queues have `names`, which is how we reference them, and `values`. The engine interacts with the queue using the `value` and components (developers) interact with queue using the `name`.
-
-Queues also have a schema. These are defined by subclassing `engine.data_models.ComponentMessage`. `ComponentMessage` are Pydantic models that accept extra attributes. This means if you do not provide a strictly subclass to a `ComponentMessage`, the message will get passed through to your component as key-value pairs from a `dict` of message on the queue, and constructed via `ComponentMessage(**message)`. The location of the data model for a queue is defined as the value of the `schema` attribute in the config file.
-
-```yml
-# ./volley_config.yml
-queues:
-  - name: my_input
-    value: "stg.bus.kafka.topic.name"
-    type: kafka
-    schema: components.data_models.InputMessage
-  - name: queue_a
-    value: queue_a
-    type: rsmq
-    schema: components.data_models.MessageA
-  - name: queue_b
-    value: name_of_table
-    type: rsmq
-    schema: components.data_models.MessageA
-```
-
-Reminder: schemas for a queue are defined by subclassing `ComponentMessage`.
-
-```python
-# ./components/data_models.py
-from engine.data_models import ComponentMessage
-
-class InputMessage(ComponentMessage):
-    list_of_values: List[float]
-
-
-class MessageA(ComponentMessage):
-    mean_value: float
-
-class MessageB(ComponentMessage):
-    max_value: float
-```
-
-
-## A multi-output example
-
-`my_component_function` is implemented below. It consumes from `my_input` and publishes to `queue_a` and `queue_b` (defined above in `./volley_config.yml`).
-
-
-```python
-# my_components/my_component.py
-engine = Engine(
-  app_name="my_volley_app",
-  input_queue="my_input",
-  output_queues=["queue_a", "queue_b"]
-)
-
-
-@engine.stream_app
-def my_component_function(input_object: ComponentMessage) -> List[(str, ComponentMessage)]
-    """component function that computes some basics stats on a list of values
-    
-    Consumes from a queue named "my_input".
-    Publishes to two queues, "queue_a", "queue_b"
-    """
-
-    # we can access the input models attributes like any other pydantic model
-    mean_value = sum(input_object.list_of_values)/len(input_object.list_of_values)
-
-    # or convert to a dict
-    input_dict = input_object.dict()
-    max_value = max(input_object["list_of_values"])
-
-    # queue_a expects an object of type MessageA
-    output_a = MessageA(mean_value=mean_value)
-
-    # queue_b expects an object of type MessageB
-    output_b = MessageB(max_value=max_value)
-
-    # send the messages to the specificed queues
-    return [
-        ("queue_a", output_a),
-        ("queue_b", output_b)
-    ]
-```
-
-## No output example:
-
-A component is not required to output anywhere. A typical use case would be if the component is filtering messages off a stream, and only producing if the message meets certain criteria. To do this, simply return `None` from the component function.
-
-
-```python
-from volley.engine import Engine
-
-
-engine = Engine(
-  app_name="my_volley_app",
-  input_queue="my_input",
-  output_queues=["queue_a"]
-)
-
-
-@engine.stream_app
-def my_component_function(input_object: ComponentMessage) -> Optional[List[Tuple[str, ComponentMessage]]]:
-    """component function that filters messages off a stream.
-    
-    Consumes from a queue named "my_input".
-    Conditionally publishes to "queue_a" if the mean value is above 2
-    """
-    mean_value = sum(input_object.list_of_values)/len(input_object.list_of_values)
-
-    if mean_value > 2:
-      # queue_a expects an object of type MessageA
-      output_a = MessageA(mean_value=mean_value)
-      return [("queue_a", output_a)]
-    else:
-      return False
-```
-
-A component can also produce nothing.
-
-```python
-@engine.stream_app
-def my_component_function(input_object: ComponentMessage) -> bool:
-    print(input_object.list_of_values)
-    return False
-```
-
-## Running a worker component
-Components are run as stand-alone workers.
-
-```python
-# main.py
-from my_components import my_component_function
-my_component_function()
-```
-
-And are run by invoking the function.
-```bash
-python main.py
 ```
 
 # CI / CD

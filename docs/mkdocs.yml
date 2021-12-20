@@ -17,6 +17,7 @@ nav:
   - Configuration:
     - Queues: 'queue_config.md'
     - Application: 'engine.md'
+    - Consumer & Producer: 'connectors.md'
   - Dead Letter Queues: 'deadletterqueue.md'
   - Metrics: 'metrics.md'
   - Advanced Example: 'advanced_example.md'

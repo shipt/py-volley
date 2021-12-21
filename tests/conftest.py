@@ -128,6 +128,5 @@ def config_dict() -> dict[str, dict[str, str]]:
         "dead-letter-queue": {
             "value": "localhost.kafka.dlq",
             "type": "kafka",
-            "schema": "volley.data_models.ComponentMessage",
         },
     }

@@ -46,7 +46,7 @@ class BaseModelHandler(ABC):
 def message_model_handler(
     message: Any,
     schema: Any,
-    model_handler: BaseModelHandler,
+    model_handler: Optional[BaseModelHandler] = None,
     serializer: Optional[BaseSerialization] = None,
 ) -> Tuple[Any, bool]:
     """handles converting data from connector to data model for application
@@ -58,7 +58,7 @@ def message_model_handler(
         serializer (Optional[BaseSerialization], optional): [description]. Defaults to None.
 
     Returns:
-        Tuple[Any, bool]: (data_model, True) on success, or (raw_message, False)
+        Tuple[Any, bool]: (data_model, True) on success, or (message, False)
 
     Raises:
         Exception: surfaced serializer or model handler
@@ -75,33 +75,37 @@ def message_model_handler(
 
         except Exception:
             logger.exception("Deserialization failed message=%s - serializer=%s", message, serializer)
-            raise
+            return (message, False)
     else:
         # serializer is disabled
         deserialized_msg = message
 
     # model construction
-    # schema validation can only happen if deserialization succeeds
-    try:
-        start = time()
-        data_model = model_handler.construct(
-            message=deserialized_msg,
-            schema=schema,
-        )
-        duration = time() - start
-        PROCESS_TIME.labels("construct").observe(duration)
-        return (data_model, True)
-    except Exception:
-        logger.exception("Failed model construction. message=%s - schema=%s", deserialized_msg, schema)
-        return (deserialized_msg, False)
+    if model_handler is not None:
+        try:
+            start = time()
+            data_model = model_handler.construct(
+                message=deserialized_msg,
+                schema=schema,
+            )
+            duration = time() - start
+            PROCESS_TIME.labels("construct").observe(duration)
+            return (data_model, True)
+        except Exception:
+            logger.exception("Failed model construction. message=%s - schema=%s", deserialized_msg, schema)
+            return (message, False)
+    else:
+        return (deserialized_msg, True)
 
 
 def model_message_handler(
     data_model: Any,
-    model_handler: BaseModelHandler,
+    model_handler: Optional[BaseModelHandler] = None,
     serializer: Optional[BaseSerialization] = None,
 ) -> Any:
-    """converts a data model to data ready for a connector"""
+    """handles the convertion of a data model to data ready for a connector
+    Most commonly this is a Pydantic model to bytes
+    """
 
     try:
         # one block - if any of this fails, we crash hard because
@@ -109,7 +113,10 @@ def model_message_handler(
 
         # convert data model to raw type
         start = time()
-        raw = model_handler.deconstruct(data_model)
+        if model_handler is not None:
+            raw = model_handler.deconstruct(data_model)
+        else:
+            raw = data_model
         duration = time() - start
         PROCESS_TIME.labels("deconstruct").observe(duration)
 

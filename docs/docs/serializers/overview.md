@@ -38,8 +38,9 @@ Or via yaml:
 
 ```yml
 # ./my_volly_config.yml
-- name: my_topic
-  value: my_topic_name
-  type: kafka
-  serializer: path.to.mySerializer
+queues:
+  my_topic:
+    value: my_topic_name
+    type: kafka
+    serializer: path.to.mySerializer
 ```

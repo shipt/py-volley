@@ -205,7 +205,8 @@ def test_null_serializer_fail(
     with caplog.at_level(logging.WARNING):
         func()
 
-    assert "validation error" in caplog.text
+    assert "Failed model construction" in caplog.text
+    assert "pydantic.error_wrappers.ValidationError" in caplog.text
     assert "failed producing message to" not in caplog.text
 
     # do not specifiy the DLQ
@@ -215,7 +216,8 @@ def test_null_serializer_fail(
     def func2(*args: Any) -> bool:  # pylint: disable=W0613
         return True
 
-    # we disabled serializer though, so it will be fail pydantic validation
+    # with no DLQ configured, will raise DLQNotConfiguredError when
+    # unhandled exception in serialization or model construction
     with pytest.raises(DLQNotConfiguredError):
         func2()
 

@@ -1,4 +1,3 @@
-import logging
 from unittest.mock import patch
 
 from pytest import LogCaptureFixture, raises
@@ -14,19 +13,26 @@ def test_message_to_model_handler_fail() -> None:
     schema = ComponentMessage
     model_handler = PydanticModelHandler()
 
-    with raises(Exception):
-        # bad json should crash serializer
-        message_model_handler(message=msg, schema=schema, model_handler=model_handler, serializer=ser)
+    _msg, status = message_model_handler(message=msg, schema=schema, model_handler=model_handler, serializer=ser)
+
+    # serialization failure should return raw message and failure status
+    assert _msg == msg
+    assert status is False
 
 
 @patch("volley.logging.logger.propagate", True)
 def test_model_to_message_handler_fail(caplog: LogCaptureFixture) -> None:
-    # force an error anyehere in the block
+    """force errors within the data model to message handling"""
+
     with raises(Exception):
-        with caplog.at_level(logging.INFO):
-            # PydanticParserModelHandler expects no serialization
-            model_message_handler(data_model=None, model_handler=None, serializer=None)  # type: ignore
-    assert "failed transporting" in caplog.text
+        model_message_handler(
+            data_model=None, model_handler="bad_handler", serializer=None  # type: ignore  # passing bad data
+        )
+
+    with raises(Exception):
+        model_message_handler(
+            data_model=None, model_handler=None, serializer="bad_serializer"  # type: ignore  # passing bad data
+        )
 
 
 def test_message_to_model_handler_success() -> None:
@@ -41,6 +47,11 @@ def test_message_to_model_handler_success() -> None:
     assert status is True
     assert handled_model == ComponentMessage.parse_raw(msg)
 
+    # model, schema, serializer disabled should also succeed
+    handled_model, status = message_model_handler(message=msg, schema=None, model_handler=None, serializer=None)
+    assert handled_model == msg
+    assert status is True
+
 
 def test_model_to_message_handler_success() -> None:
     msg = b"""{"good": "json"}"""
@@ -51,3 +62,7 @@ def test_model_to_message_handler_success() -> None:
     handled = model_message_handler(data_model=data_model, model_handler=model_handler, serializer=ser)
 
     assert handled == msg
+
+    # model, schema, serializer disabled should also succeed
+    handled = model_message_handler(data_model=data_model, model_handler=None, serializer=None)
+    assert handled == data_model

@@ -1,8 +1,7 @@
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
-from volley import serializers
 from volley.config import GLOBALS, import_module_from_string, load_yaml
 from volley.connectors.base import Consumer, Producer
 from volley.logging import logger
@@ -68,13 +67,7 @@ class Queue:
 
 def dict_to_config(config: dict[str, dict[str, str]]) -> dict[str, dict[str, dict[str, Any]]]:
     """convert dict provided by user to common configuration schema"""
-    # assign the name of the queue to the queue object
-    for qname, _config in config.items():
-        _config["name"] = qname
-    # put all queues configs into a list
-    standard_schema = {"queues": {k: v for k, v in config.items()}}
-    # configuration is now in same schema as yaml
-    return standard_schema
+    return {"queues": config}
 
 
 def apply_defaults(config: dict[str, dict[str, dict[str, str]]]) -> dict[str, dict[str, dict[str, str]]]:
@@ -90,6 +83,7 @@ def apply_defaults(config: dict[str, dict[str, dict[str, str]]]) -> dict[str, di
         # for each defined queue, validate there is a consumer & producer defined
         # or fallback to the global default
         q_type = queue["type"]
+        queue["name"] = qname
         for conn in ["consumer", "producer"]:
             if conn not in queue:
                 # if there isn't a connector (produce/consume) defined,
@@ -136,13 +130,13 @@ def config_to_queue_map(configs: dict[str, dict[str, str]]) -> Dict[str, Queue]:
 
         # import schema data models
         if q["schema"] not in (None, "disabled", "None"):
-            schema: type = import_module_from_string(q["schema"])
+            schema: Optional[type] = import_module_from_string(q["schema"])
         else:
             schema = None
 
         # init validator
         if q["model_handler"] not in (None, "disabled", "None"):
-            model_handler: BaseModelHandler = import_module_from_string(q["model_handler"])()
+            model_handler: Optional[BaseModelHandler] = import_module_from_string(q["model_handler"])()
         else:
             model_handler = None
 

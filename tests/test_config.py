@@ -36,10 +36,7 @@ def test_available_queues() -> None:
 
 def test_dict_to_config(config_dict: dict[str, dict[str, str]]) -> None:
     d = dict_to_config(config_dict)
-    assert d["queues"]
-    for qname, q in d["queues"].items():
-        assert q["name"] == qname
-        assert q["type"]
+    assert d["queues"] == config_dict
 
 
 def test_apply_defaults(config_dict: dict[str, dict[str, str]]) -> None:
@@ -52,6 +49,11 @@ def test_apply_defaults(config_dict: dict[str, dict[str, str]]) -> None:
             assert q["producer"] == "volley.connectors.kafka.KafkaProducer"
             assert q["consumer"] == "volley.connectors.kafka.KafkaConsumer"
             assert q["schema"] == "volley.data_models.ComponentMessage"
+
+        if q["is_dlq"]:
+            assert q["schema"] is None
+            assert q["model_handler"] is None
+            assert q["serializer"] is None
 
 
 def test_config_to_queue_map(config_dict: dict[str, dict[str, str]]) -> None:
@@ -83,7 +85,8 @@ def test_bad_connector_config(config_dict: dict[str, dict[str, str]]) -> None:
 
     # from yaml
     cfg = load_yaml(file_path="./example/volley_config.yml")
-    cfg["queues"][0]["config"] = "bad_configuration"
+    for _, q in cfg["queues"].items():
+        q["config"] = "bad_configuration"
     defaulted = apply_defaults(cfg)
     with pytest.raises(TypeError):
         config_to_queue_map(defaulted["queues"])

@@ -37,8 +37,8 @@ def test_available_queues() -> None:
 def test_dict_to_config(config_dict: dict[str, dict[str, str]]) -> None:
     d = dict_to_config(config_dict)
     assert d["queues"]
-    for q in d["queues"]:
-        assert q["name"]
+    for qname, q in d["queues"].items():
+        assert q["name"] == qname
         assert q["type"]
 
 
@@ -47,7 +47,7 @@ def test_apply_defaults(config_dict: dict[str, dict[str, str]]) -> None:
     del config_dict["input-topic"]["schema"]
     config = dict_to_config(config_dict)
     defaulted = apply_defaults(config)
-    for q in defaulted["queues"]:
+    for _, q in defaulted["queues"].items():
         if q["type"] == "kafka":
             assert q["producer"] == "volley.connectors.kafka.KafkaProducer"
             assert q["consumer"] == "volley.connectors.kafka.KafkaConsumer"

@@ -73,17 +73,17 @@ Queue configuration can also be defined via a yml file. The below is equivalent 
 ```yml
 # ./my_config.yml
 queues:
-  - name: my_alias_for_input_queue
-    value: value_for_input_queue_name
-    type: kafka
-    schema: my.models.InputMessage
-  - name: output-topic
-    value: outgoing.kafka.topic
-    type: kafka
-    schema: my.models.OutputMessage
-  - name: dead-letter-queue
-    value: deadletter.kafka.topic
-    type: kafka
+    my_alias_for_input_queue:
+        value: value_for_input_queue_name
+        type: kafka
+        schema: my.models.InputMessage
+    output-topic:
+        value: outgoing.kafka.topic
+        type: kafka
+        schema: my.models.OutputMessage
+    dead-letter-queue:
+        value: deadletter.kafka.topic
+        type: kafka
 ```
 
 Then reference the file when instantiating the application.

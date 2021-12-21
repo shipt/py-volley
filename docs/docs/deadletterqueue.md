@@ -9,20 +9,25 @@ To configure a dead letter queue, provide it in queue configration (either yaml 
 
 ```yml
 # ./my_volly_config.yml
-input-topic:
-  value: long.name.of.kafka.input.topic
-  type: kafka
-my-dead-letter-queue:
-  value: long.name.of.kafka.DLQ.topic
-  type: kafka
+queues:
+  input-topic:
+    value: long.name.of.kafka.input.topic
+    type: kafka
+  my-dead-letter-queue:
+    value: long.name.of.kafka.DLQ.topic
+    type: kafka
 ```
 
 or alternatively:
 
 ```python
 config = {
+    "input-topic": {
+      "value": "long.name.of.kafka.input.topic",
+      "type": "kafka",
+    }
     "my-dead-letter-queue": {
-        "value": "long.name.of.kafka.topic",
+        "value": "long.name.of.kafka.DLQ.topic",
         "type": "kafka",
     }
 }

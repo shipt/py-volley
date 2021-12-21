@@ -50,7 +50,7 @@ def test_apply_defaults(config_dict: dict[str, dict[str, str]]) -> None:
             assert q["consumer"] == "volley.connectors.kafka.KafkaConsumer"
             assert q["schema"] == "volley.data_models.ComponentMessage"
 
-        if q["is_dlq"]:
+        if q.get("is_dlq") is True:
             assert q["schema"] is None
             assert q["model_handler"] is None
             assert q["serializer"] is None

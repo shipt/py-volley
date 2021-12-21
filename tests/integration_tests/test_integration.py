@@ -3,12 +3,11 @@ import time
 from typing import Any, List
 from uuid import uuid4
 
-from confluent_kafka import OFFSET_END, Consumer, Producer, TopicPartition
+from confluent_kafka import OFFSET_END, Consumer, TopicPartition
 from pyshipt_streams import KafkaConsumer, KafkaProducer
 
 from example.data_models import InputMessage
 from tests.integration_tests.conftest import Environment
-from volley import serializers
 from volley.logging import logger
 
 POLL_TIMEOUT = 30
@@ -118,7 +117,7 @@ def test_dlq_schema_violation(environment: Environment) -> None:
 
 def test_dlq_serialization_failure(environment: Environment) -> None:
     """publish malformed json to input queue
-    it should cause serialization failure and successful publish to the DLQ
+    expect serialization failure and successful publish to the DLQ
     """
     logger.info(f"{environment.input_topic=}")
     p = KafkaProducer()
@@ -141,7 +140,7 @@ def test_dlq_serialization_failure(environment: Environment) -> None:
         p.publish(environment.input_topic, value=_d.encode("utf-8"))
     p.flush()
 
-    # dont try to serialize off - we already know it will fail serialization
+    # dont try to serialize - we already know it will fail serialization
     consumed_messages = consume_messages(consumer=c, num_expected=len(request_ids), serialize=False)
 
     conusumed_ids = []

@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Any, Dict, List, Optional
 
+from volley import serializers
 from volley.config import GLOBALS, import_module_from_string, load_yaml
 from volley.connectors.base import Consumer, Producer
 from volley.logging import logger
@@ -35,7 +36,7 @@ class Queue:
     # system name for the queue. for example, some really long kafka topic name
     value: str
 
-    schema: type
+    schema: Optional[type]
 
     type: str
 
@@ -43,7 +44,7 @@ class Queue:
     producer: str
 
     serializer: Optional[BaseSerialization] = field(default=OrJsonSerialization())
-    model_handler: BaseModelHandler = field(default=PydanticModelHandler())
+    model_handler: Optional[BaseModelHandler] = field(default=PydanticModelHandler())
 
     # initialized queue connection
     # these get initialized by calling connect()
@@ -65,26 +66,27 @@ class Queue:
             raise TypeError(f"{con_type=} is not valid")
 
 
-def dict_to_config(config: dict[str, dict[str, str]]) -> dict[str, List[dict[str, str]]]:
+def dict_to_config(config: dict[str, dict[str, str]]) -> dict[str, dict[str, dict[str, Any]]]:
     """convert dict provided by user to common configuration schema"""
     # assign the name of the queue to the queue object
     for qname, _config in config.items():
         _config["name"] = qname
     # put all queues configs into a list
-    standard_schema = {"queues": [v for k, v in config.items()]}
+    standard_schema = {"queues": {k: v for k, v in config.items()}}
     # configuration is now in same schema as yaml
     return standard_schema
 
 
-def apply_defaults(config: Dict[str, List[Dict[str, str]]]) -> Dict[str, List[Dict[str, str]]]:
+def apply_defaults(config: dict[str, dict[str, dict[str, str]]]) -> dict[str, dict[str, dict[str, str]]]:
     """when a config is not provided, apply the global default"""
     global_configs = load_yaml(GLOBALS)
     global_connectors = global_configs["connectors"]
     default_queue_schema = global_configs["schemas"]["default"]
     default_serializer = global_configs["serializers"]["default"]
     default_model_handler = global_configs["model_handler"]["default"]
+    dlq_defaults = global_configs["dead-letter-queue"]
     # apply default queue configurations
-    for queue in config["queues"]:
+    for qname, queue in config["queues"].items():
         # for each defined queue, validate there is a consumer & producer defined
         # or fallback to the global default
         q_type = queue["type"]
@@ -93,44 +95,56 @@ def apply_defaults(config: Dict[str, List[Dict[str, str]]]) -> Dict[str, List[Di
                 # if there isn't a connector (produce/consume) defined,
                 #   assign it from global defalt
                 queue[conn] = global_connectors[q_type][conn]
+        if queue.get("is_dlq"):
+            schema = dlq_defaults["schema"]
+            serializer = dlq_defaults["serializer"]
+            model_handler = dlq_defaults["model_handler"]
+        else:
+            schema = default_queue_schema
+            serializer = default_serializer
+            model_handler = default_model_handler
+
         # handle data schema
         if "schema" not in queue:
-            queue["schema"] = default_queue_schema
+            queue["schema"] = schema
 
         if "serializer" not in queue:
-            queue["serializer"] = default_serializer
+            queue["serializer"] = serializer
 
         if "model_handler" not in queue:
-            queue["model_handler"] = default_model_handler
+            queue["model_handler"] = model_handler
 
     return config
 
 
-def config_to_queue_map(configs: List[dict[str, str]]) -> Dict[str, Queue]:
+def config_to_queue_map(configs: dict[str, dict[str, str]]) -> Dict[str, Queue]:
     """
     Returns a map of {queue_name: Queue}
     """
     input_output_queues: Dict[str, Queue] = {}
 
-    for q in configs:
-        qname = q["name"]
+    for qname, q in configs.items():
         qtype = q["type"]
 
         # serializers are optional
         # users are allowed to pass message to a producer "as is"
-        if q["serializer"] in (None, "disabled", "None"):
-            serializer = None
-        else:
+        if q["serializer"] not in (None, "disabled", "None"):
             # serializer is initialized
             serializer = import_module_from_string(q["serializer"])()
+        else:
+            serializer = None
 
         # import schema data models
-        config_schema: str = q["schema"]
-        schema: type = import_module_from_string(config_schema)
+        if q["schema"] not in (None, "disabled", "None"):
+            schema: type = import_module_from_string(q["schema"])
+        else:
+            schema = None
 
         # init validator
-        config_handler: str = q["model_handler"]
-        model_handler: BaseModelHandler = import_module_from_string(config_handler)()
+        if q["model_handler"] not in (None, "disabled", "None"):
+            model_handler: BaseModelHandler = import_module_from_string(q["model_handler"])()
+        else:
+            model_handler = None
 
         # config to pass through to specific connector
         _connector_config: Any = q.get("config", {})

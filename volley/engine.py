@@ -87,7 +87,7 @@ class Engine:
 
         # if user provided config, use it
         if self.queue_config:
-            cfg: dict[str, List[dict[str, str]]] = dict_to_config(self.queue_config)
+            cfg: dict[str, dict[str, dict[str, Any]]] = dict_to_config(self.queue_config)
         else:
             logger.info("loading configuration from %s", self.yaml_config_path)
             cfg = load_yaml(file_path=self.yaml_config_path)
@@ -95,6 +95,11 @@ class Engine:
         # handle DLQ
         if self.dead_letter_queue is not None:
             # if provided by user, DLQ becomes a producer target
+            # flag the queue as "dlq"
+            try:
+                cfg["queues"][self.dead_letter_queue]["is_dlq"] = True
+            except KeyError:
+                logger.error(f"{self.dead_letter_queue} not present in configuration")
             self.output_queues.append(self.dead_letter_queue)
         else:
             logger.warning("DLQ not provided. Application will crash on schema violations")
@@ -196,7 +201,7 @@ class Engine:
                             raise NameError(f"App not configured for output queue {e}")
 
                         # prepare and validate output message
-                        if not isinstance(component_msg, out_queue.schema) and out_queue.schema is not None:
+                        if out_queue.schema is not None and not isinstance(component_msg, out_queue.schema):
                             raise TypeError(
                                 f"{out_queue.name=} expected '{out_queue.schema}' - object is '{type(component_msg)}'"
                             )

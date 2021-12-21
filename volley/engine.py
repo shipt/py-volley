@@ -99,7 +99,7 @@ class Engine:
             try:
                 cfg["queues"][self.dead_letter_queue]["is_dlq"] = True
             except KeyError:
-                logger.error(f"{self.dead_letter_queue} not present in configuration")
+                logger.error("%s not present in configuration", self.dead_letter_queue)
             self.output_queues.append(self.dead_letter_queue)
         else:
             logger.warning("DLQ not provided. Application will crash on schema violations")

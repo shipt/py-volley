@@ -46,7 +46,7 @@ class BaseModelHandler(ABC):
 def message_model_handler(
     message: Any,
     schema: Any,
-    model_handler: BaseModelHandler,
+    model_handler: Optional[BaseModelHandler] = None,
     serializer: Optional[BaseSerialization] = None,
 ) -> Tuple[Any, bool]:
     """handles converting data from connector to data model for application

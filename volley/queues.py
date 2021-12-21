@@ -89,7 +89,7 @@ def apply_defaults(config: dict[str, dict[str, dict[str, str]]]) -> dict[str, di
                 # if there isn't a connector (produce/consume) defined,
                 #   assign it from global defalt
                 queue[conn] = global_connectors[q_type][conn]
-        if queue.get("is_dlq"):
+        if queue.get("is_dlq") is True:
             schema = dlq_defaults["schema"]
             serializer = dlq_defaults["serializer"]
             model_handler = dlq_defaults["model_handler"]

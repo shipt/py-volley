@@ -11,3 +11,7 @@ schemas:
   default: volley.data_models.ComponentMessage
 serializers:
   default: volley.serializers.orjson_serializer.OrJsonSerialization
+dead-letter-queue:
+  serializer: None
+  schema: None
+  model_handler: None

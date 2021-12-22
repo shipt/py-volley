@@ -12,8 +12,6 @@ from example.data_models import InputMessage
 from tests.integration_tests.conftest import Environment
 from volley.logging import logger
 
-# from pyshipt_streams import KafkaConsumer, KafkaProducer
-
 
 POLL_TIMEOUT = 30
 

@@ -72,7 +72,7 @@ def test_consumer_group_init(mock_consumer: MagicMock, monkeypatch: MonkeyPatch)
             KafkaConsumer(queue_name="input-topic")
 
 
-@patch("pyshipt_streams.consumer.Consumer", MagicMock())
+@patch("confluent_kafka.Consumer", MagicMock())
 def test_config_override() -> None:
     poll_interval = random() * 3
     cfg = {"group.id": "test-group", "poll_interval": poll_interval}

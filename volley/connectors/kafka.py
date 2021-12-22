@@ -3,8 +3,8 @@ import sys
 from dataclasses import dataclass
 from typing import Optional, Union
 
-from pyshipt_streams import KafkaConsumer as KConsumer
-from pyshipt_streams import KafkaProducer as KProducer
+from confluent_kafka import Consumer as KConsumer
+from confluent_kafka import Producer as KProducer
 
 from volley.config import APP_ENV
 from volley.connectors.base import Consumer, Producer
@@ -48,8 +48,7 @@ class KafkaConsumer(Consumer):
 
         self.consumer_group = self.config["group.id"]
         self.c = KConsumer(
-            consumer_group=self.config["group.id"],
-            config_override=self.config,
+            self.config,
             # TODO: develop commit strategy to minimize duplicates and guarantee no loss
             # config_override={"enable.auto.offset.store": False}
         )

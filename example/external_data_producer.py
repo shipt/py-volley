@@ -4,7 +4,8 @@ import time
 from typing import Dict
 from uuid import uuid4
 
-from pyshipt_streams import KafkaProducer
+# from pyshipt_streams import KafkaProducer
+from confluent_kafka import Producer as KafkaProducer
 
 from volley.logging import logger
 from volley.queues import Queue, available_queues

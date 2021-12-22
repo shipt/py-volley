@@ -14,18 +14,13 @@ steps:
   - name: unit-test
     image: python:3.9.4
     commands:
-    - pip install poetry==1.1.10
-    - poetry install
-    - make test.unit
-    - poetry run codecov
+      - pip install poetry==1.1.10
+      - poetry install
+      - make test.unit
+      - poetry run codecov
     environment:
-      POETRY_HTTP_BASIC_SHIPT_USERNAME:
-        from_secret: SHIPT_PYPI_USERNAME
-      POETRY_HTTP_BASIC_SHIPT_PASSWORD:
-        from_secret: SHIPT_PYPI_PASSWORD
       CODECOV_TOKEN:
         from_secret: CODECOV_TOKEN
-
 
   - name: lints
     image: python:3.9.4
@@ -33,11 +28,6 @@ steps:
       - pip install poetry==1.1.10
       - poetry install
       - make lints
-    environment:
-      POETRY_HTTP_BASIC_SHIPT_USERNAME:
-        from_secret: SHIPT_PYPI_USERNAME
-      POETRY_HTTP_BASIC_SHIPT_PASSWORD:
-        from_secret: SHIPT_PYPI_PASSWORD
 
   - name: test-integration
     image: docker/compose
@@ -45,15 +35,11 @@ steps:
       - name: docker_socket
         path: /var/run/docker.sock
     commands:
-    - apk add make
-    - sed -i -e '/volumes:/,+1d' docker-compose.yml
-    - make test.integration
+      - apk add make
+      - sed -i -e '/volumes:/,+1d' docker-compose.yml
+      - make test.integration
     environment:
       APP_ENV: localhost
-      POETRY_HTTP_BASIC_SHIPT_USERNAME:
-        from_secret: SHIPT_PYPI_USERNAME
-      POETRY_HTTP_BASIC_SHIPT_PASSWORD:
-        from_secret: SHIPT_PYPI_PASSWORD
 
   - name: cleanup-test-integration
     image: docker/compose
@@ -67,9 +53,9 @@ steps:
       - test-integration
     when:
       status:
-      - failure
-      - success
-  
+        - failure
+        - success
+
   - name: publish-release
     image: python:3.9.4
     environment:

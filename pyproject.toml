@@ -24,6 +24,7 @@ PyYAML = "^5.4.1"
 hiredis = "^2.0.0"
 orjson = "^3.6.4"
 msgpack = "^1.0.3"
+anyio = "^3.4.0"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.2"

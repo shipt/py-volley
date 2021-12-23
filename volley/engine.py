@@ -1,3 +1,4 @@
+import asyncio
 import builtins
 import time
 from dataclasses import dataclass, field
@@ -6,6 +7,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from prometheus_client import Counter, Summary, start_http_server
 
+from volley.concurrency import run_async, run_worker_function
 from volley.config import load_yaml
 from volley.data_models import QueueMessage
 from volley.logging import logger
@@ -120,8 +122,11 @@ class Engine:
     ) -> Callable[..., Any]:
         """Main decorator for applications"""
 
+        is_coroutine = asyncio.iscoroutinefunction(func)
+
+        @run_async
         @wraps(func)
-        def run_component() -> None:
+        async def run_component() -> None:
             if self.metrics_port is not None:
                 start_http_server(port=self.metrics_port)
             # the component function is passed in as `func`
@@ -185,7 +190,7 @@ class Engine:
                     # this is happy path
                     # if outputs have been assigned it means this message is destined for a DLQ
                     _start_main = time.time()
-                    outputs = func(data_model)
+                    outputs = await run_worker_function(func, message=data_model, is_coroutine=is_coroutine)
                     _fun_duration = time.time() - _start_main
                     PROCESS_TIME.labels(volley_app=self.app_name, process_name="component").observe(_fun_duration)
 
@@ -257,4 +262,5 @@ class Engine:
 
         # used for unit testing as a means to access the wrapped component without the decorator
         run_component.__wrapped__ = func  # type: ignore
+
         return run_component

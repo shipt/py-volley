@@ -2,7 +2,7 @@ import asyncio
 import contextvars
 import functools
 import typing
-from typing import Any
+from typing import Any, Callable
 
 import anyio
 
@@ -23,8 +23,8 @@ async def run_worker_function(func: Any, message: Any, is_coroutine: bool) -> An
         return await run_in_threadpool(func, message)
 
 
-def run_async(func):
-    def wrapper():
+def run_async(func: Callable[..., Any]) -> Callable[..., None]:
+    def wrapper() -> None:
         asyncio.run(func())
 
     return wrapper

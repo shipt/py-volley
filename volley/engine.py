@@ -3,7 +3,7 @@ import builtins
 import time
 from dataclasses import dataclass, field
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple, Union
 
 from prometheus_client import Counter, Summary, start_http_server
 
@@ -118,8 +118,10 @@ class Engine:
 
     def stream_app(  # noqa: C901
         self,
-        func: Callable[[Any], Union[List[Tuple[str, Any]], List[Tuple[str, Any, dict[str, Any]]], bool]],
-    ) -> Callable[..., Any]:
+        func: Callable[
+            [Any], Union[Awaitable[Any], List[Tuple[str, Any]], List[Tuple[str, Any, dict[str, Any]]], bool]
+        ],
+    ) -> Callable[..., None]:
         """Main decorator for applications"""
 
         is_coroutine = asyncio.iscoroutinefunction(func)

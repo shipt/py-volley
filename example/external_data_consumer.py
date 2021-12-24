@@ -1,6 +1,10 @@
+import logging
+
 from volley.data_models import ComponentMessage
 from volley.engine import Engine
 from volley.logging import logger
+
+logging.basicConfig(level=logging.INFO)
 
 eng = Engine(input_queue="output-topic", output_queues=[], yaml_config_path="./example/volley_config.yml")
 

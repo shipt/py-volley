@@ -19,9 +19,8 @@ Use Volley to quickly build applications that need to poll streaming sources lik
 Volley turns your Python function into a stream processor. If you can write a Python function you can build stream a stream processor with Volley.
 
 ```python
-from volley.engine import Engine
+from volley import Engine
 
-from pydantic import BaseModel
 
 app = Engine(
     input_queue="my_input_kafka_topic",
@@ -29,14 +28,35 @@ app = Engine(
 )
 
 @app.stream_app
-def my_fun(msg: BaseModel):
+def my_fun(msg: Any):
     print(msg)
     return [("my_output_kakfa_topic", msg)]
 
+if __name__ == "__main__":
+    my_fun()
 ```
 
-See our [example](./example.md) for setting up a basic application.
+And if your application needs to support `async` + `await`, define the function with `async def`:
 
+```python
+@app.stream_app
+async def my_fun(msg: Any):
+    out_msg = await some_awaitable(msg)
+    return [("my_output_kakfa_topic", out_msg)]
+
+if __name__ == "__main__":
+    my_fun()
+```
+
+And start the worker:
+
+```bash
+python -m my_module.my_fun
+```
+
+
+
+See our [example](./example.md) for setting up a basic application.
 
 ## Features
 

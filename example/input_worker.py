@@ -22,12 +22,12 @@ async def run_parallel(*functions: Any) -> None:
 
 
 async def fun1() -> None:
-    time.sleep(2)
+    time.sleep(0.5)
     logger.info("one")
 
 
 async def fun2() -> None:
-    time.sleep(2)
+    time.sleep(0.5)
     logger.info("two")
 
 
@@ -48,6 +48,7 @@ async def main(msg: InputMessage) -> List[Tuple[str, Queue1Message, dict[str, fl
 
     # send the message to "redis_queue".
     # give it a delay of 0.25 seconds before becoming visibilty for consumption
+    # "delay" is an RSMQ configuration https://github.com/mlasevich/PyRSMQ#quick-intro-to-rsmq
     out_message = [("redis_queue", q1_msg, {"delay": 0.25})]
     return out_message
 

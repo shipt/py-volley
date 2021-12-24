@@ -1,14 +1,12 @@
 import asyncio
 import contextvars
 import functools
-import typing
-from typing import Any, Callable
+from typing import Any, Awaitable, Callable
 
 import anyio
 
 
-async def run_in_threadpool(func: typing.Callable[..., Any], *args: typing.Any) -> Any:
-    # Ensure we run in the same context
+async def run_in_threadpool(func: Callable[..., Any], *args: Any) -> Any:
     child = functools.partial(func, *args)
     context = contextvars.copy_context()
     func = context.run
@@ -23,7 +21,7 @@ async def run_worker_function(func: Any, message: Any, is_coroutine: bool) -> An
         return await run_in_threadpool(func, message)
 
 
-def run_async(func: Callable[..., Any]) -> Callable[..., None]:
+def run_async(func: Callable[..., Awaitable[Any]]) -> Callable[..., None]:
     def wrapper() -> None:
         asyncio.run(func())
 

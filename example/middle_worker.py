@@ -1,3 +1,4 @@
+import logging
 from random import randint
 from typing import List, Tuple, Union
 
@@ -11,6 +12,9 @@ from example.data_models import (
 )
 from volley.engine import Engine
 from volley.logging import logger
+
+logging.basicConfig(level=logging.INFO)
+
 
 queue_config = {
     # define queue configurations in a dict

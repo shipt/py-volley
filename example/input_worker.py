@@ -1,4 +1,6 @@
+import asyncio
 import logging
+import time
 from typing import Any, List, Tuple
 
 from example.data_models import InputMessage, Queue1Message
@@ -13,8 +15,6 @@ eng = Engine(
     yaml_config_path="./example/volley_config.yml",
     dead_letter_queue="dead-letter-queue",
 )
-import asyncio
-import time
 
 
 async def run_parallel(*functions: Any) -> None:

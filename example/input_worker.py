@@ -17,10 +17,6 @@ eng = Engine(
 )
 
 
-async def run_parallel(*functions: Any) -> None:
-    await asyncio.gather(*functions)
-
-
 async def fun1() -> None:
     time.sleep(0.5)
     logger.info("one")
@@ -44,7 +40,8 @@ async def main(msg: InputMessage) -> List[Tuple[str, Queue1Message, dict[str, fl
 
     logger.info(q1_msg.dict())
 
-    await run_parallel(fun1(), fun2())
+    # demonstration of support for asyncio
+    await asyncio.gather(fun1(), fun2())
 
     # send the message to "redis_queue".
     # give it a delay of 0.25 seconds before becoming visibilty for consumption

@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import time
-from typing import Any, List, Tuple
+from typing import List, Tuple
 
 from example.data_models import InputMessage, Queue1Message
 from volley.engine import Engine

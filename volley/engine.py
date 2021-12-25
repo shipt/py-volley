@@ -11,7 +11,7 @@ from volley.concurrency import run_async, run_worker_function
 from volley.config import load_yaml
 from volley.data_models import QueueMessage
 from volley.logging import logger
-from volley.models.base import message_model_handler, model_message_handler
+from volley.models.base import message_model_handler
 from volley.queues import (
     ConnectionType,
     DLQNotConfiguredError,
@@ -20,6 +20,7 @@ from volley.queues import (
     config_to_queue_map,
     dict_to_config,
 )
+from volley.transport import produce_handler
 from volley.util import GracefulKiller
 
 # enables mocking the infinite loop to finite
@@ -30,9 +31,6 @@ PROCESS_TIME = Summary("process_time_seconds", "Time spent running a process", [
 MESSAGE_CONSUMED = Counter(
     "messages_consumed_count", "Messages consumed from input", ["volley_app", "status"]
 )  # success or fail
-MESSAGES_PRODUCED = Counter(
-    "messages_produced_count", "Messages produced to output destination(s)", ["volley_app", "source", "destination"]
-)
 
 POLL_INTERVAL = 1
 
@@ -160,29 +158,18 @@ class Engine:
                 # typing for producing
                 outputs: Union[List[Tuple[str, Any]], List[Tuple[str, Any, dict[str, Any]]], bool] = False
 
-                data_model, status = message_model_handler(
+                data_model, consume_status = message_model_handler(
                     message=in_message.message,
                     schema=input_con.schema,
                     model_handler=input_con.model_handler,
                     serializer=input_con.serializer,
                 )
 
-                if status:
+                if consume_status:
                     # happy path
                     pass
                 elif self.dead_letter_queue is not None and self.dead_letter_queue in self.queue_map:
-                    dlq = self.queue_map[self.dead_letter_queue]
-                    msg, status = message_model_handler(
-                        message=in_message.message,
-                        schema=dlq.schema,
-                        model_handler=dlq.model_handler,
-                        serializer=dlq.serializer,
-                    )
-                    if not status:
-                        raise Exception(f"DLQ unable to handle message: {in_message.message}")
-                    else:
-                        # DLQ is configured and there is a message ready for the DLQ
-                        outputs = [(self.dead_letter_queue, msg)]
+                    outputs = [(self.dead_letter_queue, data_model)]
                 else:
                     # things have gone wrong w/ the message and no DLQ configured
                     raise DLQNotConfiguredError(f"Deserializing {in_message.message} failed")
@@ -200,40 +187,11 @@ class Engine:
                 if isinstance(outputs, builtins.bool):
                     # if func returns a bool, its just a bool and nothing more
                     all_produce_status.append(outputs)
+
                 else:
-                    for qname, component_msg, *args in outputs:
-                        try:
-                            out_queue = self.queue_map[qname]
-                        except KeyError as e:
-                            raise NameError(f"App not configured for output queue {e}")
-
-                        # prepare and validate output message
-                        if out_queue.schema is not None and not isinstance(component_msg, out_queue.schema):
-                            raise TypeError(
-                                f"{out_queue.name=} expected '{out_queue.schema}' - object is '{type(component_msg)}'"
-                            )
-
-                        try:
-                            # serialize message
-                            serialized = model_message_handler(
-                                data_model=component_msg,
-                                model_handler=out_queue.model_handler,
-                                serializer=out_queue.serializer,
-                            )
-                            if len(args):
-                                kwargs: dict[str, Any] = args[0]
-                            else:
-                                kwargs = {}
-                            status = out_queue.producer_con.produce(
-                                queue_name=out_queue.value, message=serialized, **kwargs
-                            )
-                            MESSAGES_PRODUCED.labels(
-                                volley_app=self.app_name, source=input_con.name, destination=qname
-                            ).inc()
-                        except Exception:
-                            logger.exception("failed producing message to %s" % out_queue.name)
-                            status = False
-                        all_produce_status.append(status)
+                    all_produce_status = produce_handler(
+                        outputs=outputs, queue_map=self.queue_map, app_name=self.app_name, input_name=input_con.name
+                    )
 
                 if all(all_produce_status):
                     # TODO - better handling of success criteria

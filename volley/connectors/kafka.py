@@ -1,10 +1,11 @@
+import json
 import os
 import sys
 from dataclasses import dataclass
-from typing import Optional, Union
+from typing import Any, Dict, Literal, Optional, Union
 
-from pyshipt_streams import KafkaConsumer as KConsumer
-from pyshipt_streams import KafkaProducer as KProducer
+from confluent_kafka import Consumer as KConsumer
+from confluent_kafka import Producer as KProducer
 
 from volley.config import APP_ENV
 from volley.connectors.base import Consumer, Producer
@@ -16,10 +17,44 @@ RUN_ONCE = False
 
 @dataclass
 class KafkaConsumer(Consumer):
+    """
+    Class to easily interact consuming message(s) from Kafka brokers.
+    At a minimum brokers and consumer_group must be set
+    """
 
-    poll_interval: float = 10
+    poll_interval: Optional[float] = 10
+    brokers: str = os.environ["KAFKA_BROKERS"]
+    username: Optional[str] = os.getenv("KAFKA_KEY")
+    password: Optional[str] = os.getenv("KAFKA_SECRET")
+    auto_offset_reset: Optional[
+        Literal["smallest", "earliest", "beginning", "largest", "latest", "end", "error"]
+    ] = "earliest"
+    config_override: Optional[Dict[str, Any]] = None
 
     def __post_init__(self) -> None:
+        offset_options = ["smallest", "earliest", "beginning", "largest", "latest", "end", "error"]
+        if self.auto_offset_reset not in offset_options:
+            raise ValueError(f"auto_offset_reset must be : {offset_options}")
+
+        self.config.update(
+            {
+                "bootstrap.servers": self.brokers,
+                "auto.offset.reset": self.auto_offset_reset,
+            }
+        )
+        # No key == dev mode
+        if self.username is not None and self.password is not None:
+            self.config.update(
+                {
+                    "sasl.username": self.username,
+                    "sasl.password": self.password,
+                    "security.protocol": "SASL_SSL",
+                    "sasl.mechanism": "PLAIN",
+                }
+            )
+        if self.config_override is not None:
+            self.config.update(self.config_override)
+
         # self.config provided from base Consumer class
         # consumer group assignment
         # try config, then env var, then command line argument w/ env
@@ -46,10 +81,8 @@ class KafkaConsumer(Consumer):
             # confluent will ignore it with a warning, however
             self.poll_interval = self.config.pop("poll_interval")
 
-        self.consumer_group = self.config["group.id"]
         self.c = KConsumer(
-            consumer_group=self.config["group.id"],
-            config_override=self.config,
+            self.config,
             # TODO: develop commit strategy to minimize duplicates and guarantee no loss
             # config_override={"enable.auto.offset.store": False}
         )
@@ -86,13 +119,47 @@ class KafkaConsumer(Consumer):
 
 @dataclass
 class KafkaProducer(Producer):
+    """
+    Class to easily interact producing message(s) to Kafka brokers.
+    At a minimum brokers must be set.
+    """
+
+    brokers: str = os.environ["KAFKA_BROKERS"]
+    username: Optional[str] = os.getenv("KAFKA_KEY")
+    password: Optional[str] = os.getenv("KAFKA_SECRET")
+    compression_type: Optional[Literal[None, "gzip", "snappy", "lz4", "zstd", "inherit"]] = "gzip"
+    config_override: Optional[Dict[str, Any]] = None
+
     def __post_init__(self) -> None:
-        self.p = KProducer()
+        compression_type_options = [None, "gzip", "snappy", "lz4", "zstd", "inherit"]
+        if self.compression_type not in compression_type_options:
+            raise ValueError(f"compression_type must be option: {compression_type_options}")
+
+        self.config.update({"bootstrap.servers": self.brokers, "compression.type": self.compression_type})
+        # No key == dev mode
+        if self.username is not None and self.password is not None:
+            self.config.update(
+                {
+                    "sasl.username": self.username,
+                    "sasl.password": self.password,
+                    "security.protocol": "SASL_SSL",
+                    "sasl.mechanism": "PLAIN",
+                }
+            )
+        if self.config_override is not None:
+            self.config.update(self.config_override)
+
+        self.p = KProducer(self.config)
         # self.config comes from super class
         logger.info("Kafka Producer Configuration: %s", self.config)
 
     def produce(self, queue_name: str, message: bytes, **kwargs: Union[str, int]) -> bool:
-        self.p.publish(
+        if kwargs.get("serialize"):
+            message = json.dumps(message).encode()
+        elif not isinstance(message, (str, bytes)):
+            value_type = type(message)
+            raise TypeError(f"`value` must be type str|bytes, or set the `serialize` parameter to True - {value_type=}")
+        self.p.produce(
             key=kwargs.get("key"),
             topic=queue_name,
             value=message,

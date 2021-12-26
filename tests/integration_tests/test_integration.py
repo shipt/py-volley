@@ -3,8 +3,11 @@ import time
 from typing import Any, List
 from uuid import uuid4
 
-from confluent_kafka import OFFSET_END, Consumer, TopicPartition
-from pyshipt_streams import KafkaConsumer, KafkaProducer
+from confluent_kafka import OFFSET_END
+from confluent_kafka import Consumer
+from confluent_kafka import Consumer as KafkaConsumer
+from confluent_kafka import Producer as KafkaProducer
+from confluent_kafka import TopicPartition
 
 from example.data_models import InputMessage
 from tests.integration_tests.conftest import Environment
@@ -40,7 +43,8 @@ def test_end_to_end(environment: Environment) -> None:  # noqa
     """good data should make it all the way through app"""
     # get name of the input topic
     logger.info(f"{environment.input_topic=}")
-    p = KafkaProducer()
+    conf = {"bootstrap.servers": environment.brokers}
+    p = KafkaProducer(conf)
 
     # get some sample data
     data = InputMessage.schema()["examples"][0]
@@ -48,8 +52,9 @@ def test_end_to_end(environment: Environment) -> None:  # noqa
     # consumer the messages off the output topic
     consume_topic = environment.output_topic
     logger.info(f"{consume_topic=}")
-    c = KafkaConsumer(consumer_group="int-test-group")
-    c.consumer.assign([TopicPartition(topic=consume_topic, partition=0, offset=OFFSET_END)])
+    conf.update({"group.id": "int-test-group"})
+    c = KafkaConsumer(conf)
+    c.assign([TopicPartition(topic=consume_topic, partition=0, offset=OFFSET_END)])
     c.subscribe([consume_topic])
 
     # create some unique request id for tracking
@@ -58,7 +63,7 @@ def test_end_to_end(environment: Environment) -> None:  # noqa
     for req_id in request_ids:
         # publish the messages
         data["request_id"] = req_id
-        p.publish(environment.input_topic, value=json.dumps(data))
+        p.produce(environment.input_topic, value=json.dumps(data))
     p.flush()
 
     consumed_messages = consume_messages(consumer=c, num_expected=len(request_ids))
@@ -81,12 +86,14 @@ def test_dlq_schema_violation(environment: Environment) -> None:
     it should cause schema violation and end up on DLQ
     """
     logger.info(f"{environment.input_topic=}")
-    p = KafkaProducer()
+    conf = {"bootstrap.servers": environment.brokers}
+    p = KafkaProducer(conf)
     data = {"bad": "data"}
 
     logger.info(f"{environment.dlq=}")
-    c = KafkaConsumer(consumer_group="int-test-group")
-    c.consumer.assign([TopicPartition(topic=environment.dlq, partition=0, offset=OFFSET_END)])
+    conf.update({"group.id": "int-test-group"})
+    c = KafkaConsumer(conf)
+    c.assign([TopicPartition(topic=environment.dlq, partition=0, offset=OFFSET_END)])
     c.subscribe([environment.dlq])
 
     # publish data to input-topic that does not meet schema requirements
@@ -95,7 +102,7 @@ def test_dlq_schema_violation(environment: Environment) -> None:
     for req_id in request_ids:
         # publish the messages
         data["request_id"] = req_id
-        p.publish(environment.input_topic, value=json.dumps(data))
+        p.produce(environment.input_topic, value=json.dumps(data))
     p.flush()
 
     consumed_messages = []
@@ -120,14 +127,16 @@ def test_dlq_serialization_failure(environment: Environment) -> None:
     expect serialization failure and successful publish to the DLQ
     """
     logger.info(f"{environment.input_topic=}")
-    p = KafkaProducer()
+    conf = {"bootstrap.servers": environment.brokers}
+    p = KafkaProducer(conf)
 
     # message missing closing quote on the key
     data = """{"malformed:"json"}"""
 
     logger.info(f"{environment.dlq=}")
-    c = KafkaConsumer(consumer_group="int-test-group")
-    c.consumer.assign([TopicPartition(topic=environment.dlq, partition=0, offset=OFFSET_END)])
+    conf.update({"group.id": "int-test-group"})
+    c = KafkaConsumer(conf)
+    c.assign([TopicPartition(topic=environment.dlq, partition=0, offset=OFFSET_END)])
     c.subscribe([environment.dlq])
 
     # publish data to input-topic that does not meet schema requirements
@@ -137,7 +146,7 @@ def test_dlq_serialization_failure(environment: Environment) -> None:
         # publish the messages
         _d = data + req_id
         # data is just an extremely messy byte string
-        p.publish(environment.input_topic, value=_d.encode("utf-8"))
+        p.produce(environment.input_topic, value=_d.encode("utf-8"))
     p.flush()
 
     # dont try to serialize - we already know it will fail serialization

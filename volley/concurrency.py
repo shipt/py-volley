@@ -3,15 +3,14 @@ import contextvars
 import functools
 from typing import Any, Awaitable, Callable
 
-import anyio
-
 
 async def run_in_threadpool(func: Callable[..., Any], *args: Any) -> Any:
+    loop = asyncio.get_event_loop()
     child = functools.partial(func, *args)
     context = contextvars.copy_context()
     func = context.run
     args = (child,)
-    return await anyio.to_thread.run_sync(func, *args)
+    return await loop.run_in_executor(None, func, *args)
 
 
 async def run_worker_function(func: Any, message: Any, is_coroutine: bool) -> Any:

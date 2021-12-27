@@ -53,7 +53,11 @@ class KafkaConsumer(Consumer):
                     logger.exception("Kafka brokers not specified")
                     raise
 
-        self.config.update({"auto.offset.reset": self.auto_offset_reset,})
+        self.config.update(
+            {
+                "auto.offset.reset": self.auto_offset_reset,
+            }
+        )
         # No key == dev mode
         if self.username is not None and self.password is not None:
             self.config.update(

@@ -106,6 +106,9 @@ class KafkaConsumer(Consumer):
         self.c.subscribe([self.queue_name])
         logger.info("Subscribed to %s", self.queue_name)
 
+    def get_config(self) -> Dict[str, Any]:
+        return self.config
+
     def consume(  # type: ignore
         self,
         queue_name: str = None,
@@ -185,6 +188,9 @@ class KafkaProducer(Producer):
         self.p = KProducer(self.config)
         # self.config comes from super class
         logger.info("Kafka Producer Configuration: %s", self.config)
+
+    def get_config(self) -> Dict[str, Any]:
+        return self.config
 
     def produce(self, queue_name: str, message: bytes, **kwargs: Union[str, int]) -> bool:
         if kwargs.get("serialize"):

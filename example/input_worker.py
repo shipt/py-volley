@@ -1,8 +1,13 @@
+import asyncio
+import logging
+import time
 from typing import List, Tuple
 
 from example.data_models import InputMessage, Queue1Message
 from volley.engine import Engine
 from volley.logging import logger
+
+logging.basicConfig(level=logging.INFO)
 
 eng = Engine(
     input_queue="input-topic",
@@ -12,8 +17,18 @@ eng = Engine(
 )
 
 
+async def fun1() -> None:
+    time.sleep(0.5)
+    logger.info("one")
+
+
+async def fun2() -> None:
+    time.sleep(0.5)
+    logger.info("two")
+
+
 @eng.stream_app
-def main(msg: InputMessage) -> List[Tuple[str, Queue1Message, dict[str, float]]]:
+async def main(msg: InputMessage) -> List[Tuple[str, Queue1Message, dict[str, float]]]:
 
     req_id = msg.request_id
     values = msg.list_of_values
@@ -25,8 +40,12 @@ def main(msg: InputMessage) -> List[Tuple[str, Queue1Message, dict[str, float]]]
 
     logger.info(q1_msg.dict())
 
+    # demonstration of support for asyncio
+    await asyncio.gather(fun1(), fun2())
+
     # send the message to "redis_queue".
     # give it a delay of 0.25 seconds before becoming visibilty for consumption
+    # "delay" is an RSMQ configuration https://github.com/mlasevich/PyRSMQ#quick-intro-to-rsmq
     out_message = [("redis_queue", q1_msg, {"delay": 0.25})]
     return out_message
 

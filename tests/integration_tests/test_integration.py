@@ -4,7 +4,6 @@ from typing import Any, List
 from uuid import uuid4
 
 from confluent_kafka import OFFSET_END
-from confluent_kafka import Consumer
 from confluent_kafka import Consumer as KafkaConsumer
 from confluent_kafka import Producer as KafkaProducer
 from confluent_kafka import TopicPartition
@@ -16,7 +15,7 @@ from volley.logging import logger
 POLL_TIMEOUT = 30
 
 
-def consume_messages(consumer: Consumer, num_expected: int, serialize: bool = True) -> List[dict[str, Any]]:
+def consume_messages(consumer: KafkaConsumer, num_expected: int, serialize: bool = True) -> List[dict[str, Any]]:
     """helper function for polling 'everything' off a topic"""
     start = time.time()
     consumed_messages = []

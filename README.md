@@ -9,7 +9,7 @@ Use Volley if you need to quickly develop a Python streaming application to cons
 [![Build Status](https://drone.shipt.com/api/badges/shipt/volley/status.svg)](https://drone.shipt.com/shipt/volley)
 [![codecov](https://codecov.io/gh/shipt/volley/branch/main/graph/badge.svg?token=axP0uxJwPX)](https://codecov.io/gh/shipt/volley)
 
-shipt/volley is licensed under the [MIT license](./LICENSE.md).
+shipt/volley is licensed under the [Apache License](./LICENSE.md).
 
 # Installation
 

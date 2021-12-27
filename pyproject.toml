@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py_volley"
-version = "0.9.0"
+version = "0.10.0"
 description = "send messages everywhere"
 authors = ["ask-machine-learning <shipt@shipt.com>"]
 
@@ -46,6 +46,7 @@ mkdocstrings = "^0.16.2"
 psycopg2-binary = "^2.9.2"
 SQLAlchemy = "^1.4.27"
 pylint = "^2.12.1"
+pytest-asyncio = "^0.16.0"
 
 [tool.isort]
 profile = "black"

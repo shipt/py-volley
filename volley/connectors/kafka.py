@@ -1,8 +1,7 @@
-import json
 import os
 import sys
 from dataclasses import dataclass
-from typing import Any, Dict, Literal, Optional, Union
+from typing import Literal, Optional, Union
 
 from confluent_kafka import Consumer as KConsumer
 from confluent_kafka import Producer as KProducer
@@ -28,20 +27,13 @@ class KafkaConsumer(Consumer):
     auto_offset_reset: Optional[
         Literal["smallest", "earliest", "beginning", "largest", "latest", "end", "error"]
     ] = "earliest"
-    config_override: Optional[Dict[str, Any]] = None
 
-    def __post_init__(self) -> None:
-        offset_options = ["smallest", "earliest", "beginning", "largest", "latest", "end", "error"]
-        if self.auto_offset_reset not in offset_options:
-            raise ValueError(f"auto_offset_reset must be : {offset_options}")
-
+    def __post_init__(self) -> None:  # noqa: C901
         if "bootstrap.servers" in self.config:
-            self.brokers = self.config["bootstrap.servers"]
             pass
         else:
             try:
                 self.config["bootstrap.servers"] = os.environ["KAFKA_BROKERS"]
-                self.brokers = self.config["bootstrap.servers"]
             except KeyError:
                 # TODO: need a better way to do this
                 # keeping to prevent breaking change
@@ -68,9 +60,6 @@ class KafkaConsumer(Consumer):
                     "sasl.mechanism": "PLAIN",
                 }
             )
-        if self.config_override is not None:
-            self.config.update(self.config_override)
-
         # self.config provided from base Consumer class
         # consumer group assignment
         # try config, then env var, then command line argument w/ env
@@ -100,14 +89,10 @@ class KafkaConsumer(Consumer):
         self.c = KConsumer(
             self.config,
             # TODO: develop commit strategy to minimize duplicates and guarantee no loss
-            # config_override={"enable.auto.offset.store": False}
         )
         logger.info("Kafka Consumer Configuration: %s", self.config)
         self.c.subscribe([self.queue_name])
         logger.info("Subscribed to %s", self.queue_name)
-
-    def get_config(self) -> Dict[str, Any]:
-        return self.config
 
     def consume(  # type: ignore
         self,
@@ -146,20 +131,13 @@ class KafkaProducer(Producer):
     username: Optional[str] = os.getenv("KAFKA_KEY")
     password: Optional[str] = os.getenv("KAFKA_SECRET")
     compression_type: Optional[Literal[None, "gzip", "snappy", "lz4", "zstd", "inherit"]] = "gzip"
-    config_override: Optional[Dict[str, Any]] = None
 
-    def __post_init__(self) -> None:
-        compression_type_options = [None, "gzip", "snappy", "lz4", "zstd", "inherit"]
-        if self.compression_type not in compression_type_options:
-            raise ValueError(f"compression_type must be option: {compression_type_options}")
-
+    def __post_init__(self) -> None:  # noqa: C901
         if "bootstrap.servers" in self.config:
-            self.brokers = self.config["bootstrap.servers"]
             pass
         else:
             try:
                 self.config["bootstrap.servers"] = os.environ["KAFKA_BROKERS"]
-                self.brokers = self.config["bootstrap.servers"]
             except KeyError:
                 # TODO: need a better way to do this
                 # keeping to prevent breaking change
@@ -182,22 +160,12 @@ class KafkaProducer(Producer):
                     "sasl.mechanism": "PLAIN",
                 }
             )
-        if self.config_override is not None:
-            self.config.update(self.config_override)
 
         self.p = KProducer(self.config)
         # self.config comes from super class
         logger.info("Kafka Producer Configuration: %s", self.config)
 
-    def get_config(self) -> Dict[str, Any]:
-        return self.config
-
     def produce(self, queue_name: str, message: bytes, **kwargs: Union[str, int]) -> bool:
-        if kwargs.get("serialize"):
-            message = json.dumps(message).encode()
-        elif not isinstance(message, (str, bytes)):
-            value_type = type(message)
-            raise TypeError(f"`value` must be type str|bytes, or set the `serialize` parameter to True - {value_type=}")
         self.p.produce(
             key=kwargs.get("key"),
             topic=queue_name,

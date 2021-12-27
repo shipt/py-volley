@@ -23,7 +23,6 @@ class KafkaConsumer(Consumer):
     """
 
     poll_interval: Optional[float] = 10
-    brokers: str = os.environ["KAFKA_BROKERS"]
     username: Optional[str] = os.getenv("KAFKA_KEY")
     password: Optional[str] = os.getenv("KAFKA_SECRET")
     auto_offset_reset: Optional[
@@ -36,12 +35,25 @@ class KafkaConsumer(Consumer):
         if self.auto_offset_reset not in offset_options:
             raise ValueError(f"auto_offset_reset must be : {offset_options}")
 
-        self.config.update(
-            {
-                "bootstrap.servers": self.brokers,
-                "auto.offset.reset": self.auto_offset_reset,
-            }
-        )
+        if "bootstrap.servers" in self.config:
+            self.brokers = self.config["bootstrap.servers"]
+            pass
+        else:
+            try:
+                self.config["bootstrap.servers"] = os.environ["KAFKA_BROKERS"]
+                self.brokers = self.config["bootstrap.servers"]
+            except KeyError:
+                # TODO: need a better way to do this
+                # keeping to prevent breaking change
+                logger.warning("KAFKA_BROKERS not specified in environment")
+                try:
+                    component_name = sys.argv[1]
+                    self.config["bootstrap.servers"] = f"{APP_ENV}_{component_name}"
+                except Exception:
+                    logger.exception("Kafka brokers not specified")
+                    raise
+
+        self.config.update({"auto.offset.reset": self.auto_offset_reset,})
         # No key == dev mode
         if self.username is not None and self.password is not None:
             self.config.update(

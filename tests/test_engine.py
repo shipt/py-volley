@@ -394,7 +394,9 @@ def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture, 
 @patch("volley.connectors.rsmq.RedisSMQ")
 @patch("volley.engine.message_model_handler")
 def test_wild_dlq_error(mock_handler: MagicMock, mock_rsmq: MagicMock, caplog: LogCaptureFixture) -> None:
+    """test error level logs when message fails to successfully reach DLQ"""
     mock_handler.return_value = False, False
+    mock_rsmq.return_value.sendMessage.return_value.execute = lambda: False
 
     m = {"uuid": str(uuid4())}
     rsmq_msg = {
@@ -403,7 +405,7 @@ def test_wild_dlq_error(mock_handler: MagicMock, mock_rsmq: MagicMock, caplog: L
     }
     mock_rsmq.return_value.receiveMessage.return_value.exceptions.return_value.execute = lambda: rsmq_msg
     cfg = {
-        "comp_1": {"value": "random_val", "type": "rsmq", "schema": "volley.data_models.ComponentMessage"},
+        "comp_1": {"value": "random_val", "type": "rsmq"},
         "dlq": {"type": "rsmq", "value": "my_dlq"},
     }
 
@@ -413,9 +415,9 @@ def test_wild_dlq_error(mock_handler: MagicMock, mock_rsmq: MagicMock, caplog: L
     def fun(msg: Any) -> bool:  # pylint: disable=W0613
         return True
 
-    with pytest.raises(Exception):
+    with caplog.at_level(logging.ERROR):
         fun()
-    assert caplog
+    assert "failed producing message to dlq" in caplog.text
 
 
 @patch("volley.engine.RUN_ONCE", True)

@@ -1,6 +1,4 @@
 import sys
-from random import random
-from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
@@ -28,46 +26,34 @@ def test_kafka_consumer_success(mock_kafka_consumer: Consumer) -> None:
     assert isinstance(bundle_message, QueueMessage)
 
 
-def test_kafka_consumer_wrong_offset() -> None:
-    with pytest.raises(ValueError):
-        KafkaConsumer(queue_name="input-topic", auto_offset_reset="broke")  # type: ignore
-
-
-def test_kafka_producer_wrong_compression_type() -> None:
-    with pytest.raises(ValueError):
-        KafkaProducer(queue_name="input-topic", compression_type="broke")  # type: ignore
-
-
 def test_kafka_consumer_no_brokers(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.delenv("KAFKA_BROKERS", raising=True)
     monkeypatch.setattr("sys.argv", None)
     with pytest.raises(Exception):
-        cfg: Dict[str, Any] = {}
-        KafkaConsumer(queue_name="input-topic", config_override=cfg)
+        KafkaConsumer(queue_name="input-topic")
 
 
 def test_kafka_producer_no_brokers(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.delenv("KAFKA_BROKERS", raising=True)
     monkeypatch.setattr("sys.argv", None)
     with pytest.raises(Exception):
-        cfg: Dict[str, Any] = {}
-        KafkaProducer(queue_name="input-topic", config_override=cfg)
+        KafkaProducer(queue_name="input-topic")
 
 
 def test_kafka_consumer_creds() -> None:
     c = KafkaConsumer(username="test-user", password="test-password", queue_name="input-topic")
-    assert "sasl.username" in c.get_config()
-    assert "sasl.password" in c.get_config()
-    assert "sasl.mechanism" in c.get_config()
-    assert "security.protocol" in c.get_config()
+    assert "sasl.username" in c.config
+    assert "sasl.password" in c.config
+    assert "sasl.mechanism" in c.config
+    assert "security.protocol" in c.config
 
 
 def test_kafka_producer_creds() -> None:
     p = KafkaProducer(username="test-user", password="test-password", queue_name="input-topic")
-    assert "sasl.username" in p.get_config()
-    assert "sasl.password" in p.get_config()
-    assert "sasl.mechanism" in p.get_config()
-    assert "security.protocol" in p.get_config()
+    assert "sasl.username" in p.config
+    assert "sasl.password" in p.config
+    assert "sasl.mechanism" in p.config
+    assert "security.protocol" in p.config
 
 
 @patch("volley.connectors.kafka.KConsumer")
@@ -114,13 +100,3 @@ def test_consumer_group_init(mock_consumer: MagicMock, monkeypatch: MonkeyPatch)
         with raises(Exception):
             # fallback to parsing sys.argv fails if its not provided
             KafkaConsumer(queue_name="input-topic")
-
-
-@patch("confluent_kafka.Consumer", MagicMock())
-def test_config_override() -> None:
-    poll_interval = random() * 3
-    config_override = {"group.id": "test-group", "poll_interval": poll_interval}
-    c = KafkaConsumer(config=config_override, queue_name="input-topic")
-    # assert c.consumers_group == cfg["group.id"]
-    assert c.config == config_override
-    assert c.poll_interval == poll_interval

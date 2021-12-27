@@ -19,7 +19,7 @@ RUN_ONCE = False
 class KafkaConsumer(Consumer):
     """
     Class to easily interact consuming message(s) from Kafka brokers.
-    At a minimum brokers and consumer_group must be set
+    At a minimum bootstrap.servers and group.id must be set in the config dict
     """
 
     poll_interval: Optional[float] = 10
@@ -137,10 +137,9 @@ class KafkaConsumer(Consumer):
 class KafkaProducer(Producer):
     """
     Class to easily interact producing message(s) to Kafka brokers.
-    At a minimum brokers must be set.
+    At a minimum bootstrap.servers must be set in the config dict
     """
 
-    brokers: str = os.environ["KAFKA_BROKERS"]
     username: Optional[str] = os.getenv("KAFKA_KEY")
     password: Optional[str] = os.getenv("KAFKA_SECRET")
     compression_type: Optional[Literal[None, "gzip", "snappy", "lz4", "zstd", "inherit"]] = "gzip"
@@ -151,7 +150,25 @@ class KafkaProducer(Producer):
         if self.compression_type not in compression_type_options:
             raise ValueError(f"compression_type must be option: {compression_type_options}")
 
-        self.config.update({"bootstrap.servers": self.brokers, "compression.type": self.compression_type})
+        if "bootstrap.servers" in self.config:
+            self.brokers = self.config["bootstrap.servers"]
+            pass
+        else:
+            try:
+                self.config["bootstrap.servers"] = os.environ["KAFKA_BROKERS"]
+                self.brokers = self.config["bootstrap.servers"]
+            except KeyError:
+                # TODO: need a better way to do this
+                # keeping to prevent breaking change
+                logger.warning("KAFKA_BROKERS not specified in environment")
+                try:
+                    component_name = sys.argv[1]
+                    self.config["bootstrap.servers"] = f"{APP_ENV}_{component_name}"
+                except Exception:
+                    logger.exception("Kafka brokers not specified")
+                    raise
+
+        self.config.update({"compression.type": self.compression_type})
         # No key == dev mode
         if self.username is not None and self.password is not None:
             self.config.update(

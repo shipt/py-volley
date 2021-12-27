@@ -1,3 +1,6 @@
+# Copyright 2021, Shipt. All rights reserved.
+# Licensed under the Apache 2.0 License
+
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Any, Dict, Optional

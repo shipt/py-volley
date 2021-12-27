@@ -1,3 +1,7 @@
+# Copyright 2021, Shipt. All rights reserved.
+# Licensed under the Apache 2.0 License
+
+
 from abc import ABC, abstractmethod
 from typing import Any
 

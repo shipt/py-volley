@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py_volley"
-version = "0.10.0"
+version = "0.11.0"
 description = "send messages everywhere"
 authors = ["ask-machine-learning <shipt@shipt.com>"]
 

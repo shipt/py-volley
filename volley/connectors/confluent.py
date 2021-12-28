@@ -1,12 +1,10 @@
 import os
-import sys
 from dataclasses import dataclass
-from typing import Literal, Optional, Union, Dict
+from typing import Dict, Literal, Optional, Union
 
 from confluent_kafka import Consumer as KConsumer
 from confluent_kafka import Producer as KProducer
 
-from volley.config import APP_ENV
 from volley.connectors.base import Consumer, Producer
 from volley.data_models import QueueMessage
 from volley.logging import logger
@@ -88,8 +86,6 @@ class ConfluentKafkaProducer(Producer):
     At a minimum bootstrap.servers must be set in the config dict
     """
 
-    username: Optional[str] = os.getenv("KAFKA_KEY")
-    password: Optional[str] = os.getenv("KAFKA_SECRET")
     compression_type: Optional[Literal[None, "gzip", "snappy", "lz4", "zstd", "inherit"]] = "gzip"
 
     def __post_init__(self) -> None:  # noqa: C901
@@ -129,11 +125,10 @@ def handle_creds(config: dict) -> Dict[str, str]:
         pass
     else:
         sasl_username = os.getenv("KAFKA_KEY")
-        sasl_password = os.getenv("KAFKA_SCRET")
+        sasl_password = os.getenv("KAFKA_SECRET")
         if (sasl_username is not None) and (sasl_password is not None):
             config_dict["sasl.username"] = sasl_username
             config_dict["sasl.password"] = sasl_password
             config_dict["security.protocol"] = "SASL_SSL"
             config_dict["sasl.mechanism"] = "PLAIN"
     return config_dict
-

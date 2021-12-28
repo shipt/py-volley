@@ -23,6 +23,8 @@ PyYAML = "^5.4.1"
 hiredis = "^2.0.0"
 orjson = "^3.6.4"
 msgpack = "^1.0.3"
+confluent-kafka = "^1.7.0"
+pyshipt-streams = "^1.2.2"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.2"

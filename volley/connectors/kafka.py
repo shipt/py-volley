@@ -1,10 +1,10 @@
 import os
 import sys
 from dataclasses import dataclass
-from typing import Literal, Optional, Union
+from typing import Optional, Union
 
-from confluent_kafka import Consumer as KConsumer
-from confluent_kafka import Producer as KProducer
+from pyshipt_streams import KafkaConsumer as KConsumer
+from pyshipt_streams import KafkaProducer as KProducer
 
 from volley.config import APP_ENV
 from volley.connectors.base import Consumer, Producer
@@ -16,50 +16,10 @@ RUN_ONCE = False
 
 @dataclass
 class KafkaConsumer(Consumer):
-    """
-    Class to easily interact consuming message(s) from Kafka brokers.
-    At a minimum bootstrap.servers and group.id must be set in the config dict
-    """
 
-    poll_interval: Optional[float] = 10
-    username: Optional[str] = os.getenv("KAFKA_KEY")
-    password: Optional[str] = os.getenv("KAFKA_SECRET")
-    auto_offset_reset: Optional[
-        Literal["smallest", "earliest", "beginning", "largest", "latest", "end", "error"]
-    ] = "earliest"
+    poll_interval: float = 10
 
-    def __post_init__(self) -> None:  # noqa: C901
-        if "bootstrap.servers" in self.config:
-            pass
-        else:
-            try:
-                self.config["bootstrap.servers"] = os.environ["KAFKA_BROKERS"]
-            except KeyError:
-                # TODO: need a better way to do this
-                # keeping to prevent breaking change
-                logger.warning("KAFKA_BROKERS not specified in environment")
-                try:
-                    component_name = sys.argv[1]
-                    self.config["bootstrap.servers"] = f"{APP_ENV}_{component_name}"
-                except Exception:
-                    logger.exception("Kafka brokers not specified")
-                    raise
-
-        self.config.update(
-            {
-                "auto.offset.reset": self.auto_offset_reset,
-            }
-        )
-        # No key == dev mode
-        if self.username is not None and self.password is not None:
-            self.config.update(
-                {
-                    "sasl.username": self.username,
-                    "sasl.password": self.password,
-                    "security.protocol": "SASL_SSL",
-                    "sasl.mechanism": "PLAIN",
-                }
-            )
+    def __post_init__(self) -> None:
         # self.config provided from base Consumer class
         # consumer group assignment
         # try config, then env var, then command line argument w/ env
@@ -86,9 +46,12 @@ class KafkaConsumer(Consumer):
             # confluent will ignore it with a warning, however
             self.poll_interval = self.config.pop("poll_interval")
 
+        self.consumer_group = self.config["group.id"]
         self.c = KConsumer(
-            self.config,
+            consumer_group=self.config["group.id"],
+            config_override=self.config,
             # TODO: develop commit strategy to minimize duplicates and guarantee no loss
+            # config_override={"enable.auto.offset.store": False}
         )
         logger.info("Kafka Consumer Configuration: %s", self.config)
         self.c.subscribe([self.queue_name])
@@ -123,50 +86,13 @@ class KafkaConsumer(Consumer):
 
 @dataclass
 class KafkaProducer(Producer):
-    """
-    Class to easily interact producing message(s) to Kafka brokers.
-    At a minimum bootstrap.servers must be set in the config dict
-    """
-
-    username: Optional[str] = os.getenv("KAFKA_KEY")
-    password: Optional[str] = os.getenv("KAFKA_SECRET")
-    compression_type: Optional[Literal[None, "gzip", "snappy", "lz4", "zstd", "inherit"]] = "gzip"
-
-    def __post_init__(self) -> None:  # noqa: C901
-        if "bootstrap.servers" in self.config:
-            pass
-        else:
-            try:
-                self.config["bootstrap.servers"] = os.environ["KAFKA_BROKERS"]
-            except KeyError:
-                # TODO: need a better way to do this
-                # keeping to prevent breaking change
-                logger.warning("KAFKA_BROKERS not specified in environment")
-                try:
-                    component_name = sys.argv[1]
-                    self.config["bootstrap.servers"] = f"{APP_ENV}_{component_name}"
-                except Exception:
-                    logger.exception("Kafka brokers not specified")
-                    raise
-
-        self.config.update({"compression.type": self.compression_type})
-        # No key == dev mode
-        if self.username is not None and self.password is not None:
-            self.config.update(
-                {
-                    "sasl.username": self.username,
-                    "sasl.password": self.password,
-                    "security.protocol": "SASL_SSL",
-                    "sasl.mechanism": "PLAIN",
-                }
-            )
-
-        self.p = KProducer(self.config)
+    def __post_init__(self) -> None:
+        self.p = KProducer()
         # self.config comes from super class
         logger.info("Kafka Producer Configuration: %s", self.config)
 
     def produce(self, queue_name: str, message: bytes, **kwargs: Union[str, int]) -> bool:
-        self.p.produce(
+        self.p.publish(
             key=kwargs.get("key"),
             topic=queue_name,
             value=message,

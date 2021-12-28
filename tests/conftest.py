@@ -7,7 +7,6 @@ from unittest.mock import MagicMock, patch
 from pytest import MonkeyPatch, fixture
 
 from volley.connectors import KafkaConsumer, KafkaProducer, RSMQConsumer, RSMQProducer
-from volley.connectors.base import Consumer
 from volley.connectors.confluent import ConfluentKafkaConsumer, ConfluentKafkaProducer
 from volley.data_models import QueueMessage
 from volley.engine import Engine
@@ -89,6 +88,7 @@ def mock_kafka_producer() -> KafkaProducer:
         producer = KafkaProducer(host="kafka", queue_name="test")
         return producer
 
+
 @fixture
 def mock_confluent_producer() -> ConfluentKafkaProducer:
     with patch("volley.connectors.confluent.KProducer"):
@@ -101,6 +101,7 @@ def mock_confluent_consumer() -> ConfluentKafkaConsumer:
     with patch("volley.connectors.confluent.KConsumer"):
         consumer = ConfluentKafkaConsumer(queue_name="test")
         return consumer
+
 
 @fixture
 def none_producer_decorated(monkeypatch: MonkeyPatch) -> Generator[Callable[..., None], None, None]:

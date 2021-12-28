@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass
-from typing import Dict, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 from confluent_kafka import Consumer as KConsumer
 from confluent_kafka import Producer as KProducer
@@ -110,8 +110,7 @@ class ConfluentKafkaProducer(Producer):
         self.p.flush()
 
 
-def handle_creds(config: dict) -> Dict[str, str]:
-    config_dict = config.copy()
+def handle_creds(config_dict: Dict[str, Any]) -> Dict[str, Any]:
     if "bootstrap.servers" in config_dict:
         pass
     else:

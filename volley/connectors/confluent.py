@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass
-from typing import Dict, Literal, Optional, Union
+from typing import Dict, Optional, Union
 
 from confluent_kafka import Consumer as KConsumer
 from confluent_kafka import Producer as KProducer
@@ -19,14 +19,14 @@ class ConfluentKafkaConsumer(Consumer):
     At a minimum bootstrap.servers and group.id must be set in the config dict
     """
 
-    poll_interval: Optional[float] = 10
-    auto_offset_reset: Optional[
-        Literal["smallest", "earliest", "beginning", "largest", "latest", "end", "error"]
-    ] = "earliest"
+    poll_interval: float = 10
+    auto_offset_reset: str = "earliest"
 
     def __post_init__(self) -> None:  # noqa: C901
         self.config = handle_creds(self.config)
-        self.config["auto.offset.reset"] = self.auto_offset_reset
+
+        if "auto_offset_reset" in self.config:
+            self.config["auto.offset.reset"] = self.auto_offset_reset
 
         # self.config provided from base Consumer class
         # consumer group assignment
@@ -86,11 +86,12 @@ class ConfluentKafkaProducer(Producer):
     At a minimum bootstrap.servers must be set in the config dict
     """
 
-    compression_type: Optional[Literal[None, "gzip", "snappy", "lz4", "zstd", "inherit"]] = "gzip"
+    compression_type: str = "gzip"
 
     def __post_init__(self) -> None:  # noqa: C901
         self.config = handle_creds(self.config)
-        self.config.update({"compression.type": self.compression_type})
+        if "compression_type" in self.config:
+            self.config["compression.type"] = self.compression_type
 
         self.p = KProducer(self.config)
         # self.config comes from super class

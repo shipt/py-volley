@@ -2,7 +2,6 @@ import sys
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
-import pytest
 from pytest import MonkeyPatch, raises
 
 from tests.conftest import KafkaMessage
@@ -24,36 +23,6 @@ def test_kafka_consumer_fail(mock_kafka_consumer: Consumer) -> None:
 def test_kafka_consumer_success(mock_kafka_consumer: Consumer) -> None:
     bundle_message = mock_kafka_consumer.consume("test-q")
     assert isinstance(bundle_message, QueueMessage)
-
-
-def test_kafka_consumer_no_brokers(monkeypatch: MonkeyPatch) -> None:
-    monkeypatch.delenv("KAFKA_BROKERS", raising=True)
-    monkeypatch.setattr("sys.argv", None)
-    with pytest.raises(Exception):
-        KafkaConsumer(queue_name="input-topic")
-
-
-def test_kafka_producer_no_brokers(monkeypatch: MonkeyPatch) -> None:
-    monkeypatch.delenv("KAFKA_BROKERS", raising=True)
-    monkeypatch.setattr("sys.argv", None)
-    with pytest.raises(Exception):
-        KafkaProducer(queue_name="input-topic")
-
-
-def test_kafka_consumer_creds() -> None:
-    c = KafkaConsumer(username="test-user", password="test-password", queue_name="input-topic")
-    assert "sasl.username" in c.config
-    assert "sasl.password" in c.config
-    assert "sasl.mechanism" in c.config
-    assert "security.protocol" in c.config
-
-
-def test_kafka_producer_creds() -> None:
-    p = KafkaProducer(username="test-user", password="test-password", queue_name="input-topic")
-    assert "sasl.username" in p.config
-    assert "sasl.password" in p.config
-    assert "sasl.mechanism" in p.config
-    assert "security.protocol" in p.config
 
 
 @patch("volley.connectors.kafka.KConsumer")

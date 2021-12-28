@@ -57,10 +57,10 @@ class Queue:
         """instantiate the connector class"""
         if con_type == ConnectionType.CONSUMER:
             _class = import_module_from_string(self.consumer)
-            self.consumer_con = _class(queue_name=self.value, config=self.pass_through_config)
+            self.consumer_con = _class(queue_name=self.value, config=self.pass_through_config.copy())
         elif con_type == ConnectionType.PRODUCER:
             _class = import_module_from_string(self.producer)
-            self.producer_con = _class(queue_name=self.value, config=self.pass_through_config)
+            self.producer_con = _class(queue_name=self.value, config=self.pass_through_config.copy())
         else:
             raise TypeError(f"{con_type=} is not valid")
 

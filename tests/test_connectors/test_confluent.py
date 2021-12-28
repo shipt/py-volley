@@ -10,8 +10,9 @@ from volley.connectors.confluent import handle_creds
 from volley.data_models import QueueMessage
 
 
-def test_confluent_produce(mock_confluent_producer: ConfluentKafkaProducer) -> None:
+def test_confluent_producer(mock_confluent_producer: ConfluentKafkaProducer) -> None:
     assert mock_confluent_producer.produce(queue_name="test-topic", message=b"{'foo':'bar'}")
+    assert mock_confluent_producer.shutdown() is None
 
 
 def test_handle_creds(monkeypatch: MonkeyPatch) -> None:

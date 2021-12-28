@@ -4,15 +4,13 @@ from uuid import uuid4
 import pytest
 from pytest import MonkeyPatch, raises
 
-from tests.conftest import KafkaMessage
+from tests.conftest import KafkaMessage, mock_confluent_producer
 from volley.connectors import ConfluentKafkaConsumer, ConfluentKafkaProducer
 from volley.connectors.base import Consumer, Producer
 from volley.data_models import QueueMessage
 
-
-def test_confluent_producer(producer: ConfluentKafkaProducer, bundle_message: QueueMessage) -> None:
-
-    assert producer.produce(queue_name="test", message=bundle_message.json().encode("utf-8"))
+def test_confluent_produce(mock_kafka_producer: ConfluentKafkaProducer):
+    assert mock_kafka_producer.produce(queue_name="test-topic", message=b"{'foo':'bar'}")
 
 
 def test_confluent_consumer_no_consumer_group():

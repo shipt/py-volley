@@ -17,13 +17,13 @@ def test_confluent_produce(mock_confluent_producer: ConfluentKafkaProducer) -> N
 def test_handle_creds(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.delenv("KAFKA_BROKERS")
     with pytest.raises(KeyError):
-        handle_creds(config={})
+        handle_creds(config_dict={})
 
 
 def test_handle_creds_config_dict(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setenv("KAFKA_KEY", "get")
     monkeypatch.setenv("KAFKA_SECRET", "them")
-    result = handle_creds(config={})
+    result = handle_creds(config_dict={})
     assert result["sasl.username"] == "get"
     assert result["sasl.password"] == "them"
     assert result["security.protocol"] == "SASL_SSL"

@@ -1,5 +1,4 @@
 import sys
-from random import random
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
@@ -60,23 +59,13 @@ def test_consumer_group_init(mock_consumer: MagicMock, monkeypatch: MonkeyPatch)
         m.setenv("KAFKA_BROKERS", "rando_kafka:9092")
 
         consumer = KafkaConsumer(queue_name="input-topic")
-        assert consumer.consumer_group == random_consumer_group
+        assert consumer.config["group.id"] == random_consumer_group
 
         m.delenv("KAFKA_CONSUMER_GROUP")
         consumer = KafkaConsumer(queue_name="input-topic")
-        assert APP_ENV in consumer.consumer_group
+        assert APP_ENV in consumer.config["group.id"]
 
         m.setattr(sys, "argv", "")
         with raises(Exception):
             # fallback to parsing sys.argv fails if its not provided
             KafkaConsumer(queue_name="input-topic")
-
-
-@patch("pyshipt_streams.consumer.Consumer", MagicMock())
-def test_config_override() -> None:
-    poll_interval = random() * 3
-    cfg = {"group.id": "test-group", "poll_interval": poll_interval}
-    c = KafkaConsumer(config=cfg, queue_name="input-topic")
-    assert c.consumer_group == cfg["group.id"]
-    assert c.config == cfg
-    assert c.poll_interval == poll_interval

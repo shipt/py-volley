@@ -1,7 +1,7 @@
 connectors:
   kafka:
-    consumer: volley.connectors.kafka.KafkaConsumer
-    producer: volley.connectors.kafka.KafkaProducer
+    consumer: volley.connectors.ConfluentKafkaConsumer
+    producer: volley.connectors.ConfluentKafkaProducer
   rsmq:
     consumer: volley.connectors.rsmq.RSMQConsumer
     producer: volley.connectors.rsmq.RSMQProducer

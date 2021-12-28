@@ -47,7 +47,7 @@ class ConfluentKafkaConsumer(Consumer):
             # confluent will ignore it with a warning, however
             self.poll_interval = self.config.pop("poll_interval")
 
-        self.c = KConsumer(self.config)
+        self.c = KConsumer(self.config, logger=logger)
         logger.info("Kafka Consumer Configuration: %s", self.config)
         self.c.subscribe([self.queue_name])
         logger.info("Subscribed to %s", self.queue_name)
@@ -93,7 +93,7 @@ class ConfluentKafkaProducer(Producer):
         if "compression_type" in self.config:
             self.config["compression.type"] = self.compression_type
 
-        self.p = KProducer(self.config)
+        self.p = KProducer(self.config , logger=logger)
         # self.config comes from super class
         logger.info("Kafka Producer Configuration: %s", self.config)
 
@@ -103,7 +103,9 @@ class ConfluentKafkaProducer(Producer):
             topic=queue_name,
             value=message,
             headers=kwargs.get("headers"),
+            callback=acked
         )
+        self.p.poll(0)
         return True
 
     def shutdown(self) -> None:
@@ -132,3 +134,10 @@ def handle_creds(config_dict: Dict[str, Any]) -> Dict[str, Any]:
             config_dict["security.protocol"] = "SASL_SSL"
             config_dict["sasl.mechanism"] = "PLAIN"
     return config_dict
+
+
+def acked(err: str, msg: Any) -> None:
+    if err is not None:
+        logger.error(f"Failed to deliver message: {msg}: {err}")
+    else:
+        logger.info(f"Message produced for topic: {msg.topic()}")

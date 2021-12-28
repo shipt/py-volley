@@ -74,7 +74,7 @@ uvloop = ["uvloop (>=0.15.2)"]
 name = "certifi"
 version = "2021.10.8"
 description = "Python package for providing Mozilla's CA Bundle."
-category = "main"
+category = "dev"
 optional = false
 python-versions = "*"
 
@@ -82,7 +82,7 @@ python-versions = "*"
 name = "charset-normalizer"
 version = "2.0.9"
 description = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.5.0"
 
@@ -230,7 +230,7 @@ python-versions = ">=3.6"
 name = "idna"
 version = "3.3"
 description = "Internationalized Domain Names in Applications (IDNA)"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=3.5"
 
@@ -634,41 +634,6 @@ python-versions = "*"
 redis = "*"
 
 [[package]]
-name = "pyshipt-logging"
-version = "0.1.1"
-description = "Common logging interface for Python"
-category = "main"
-optional = false
-python-versions = ">=3.8,<4.0"
-
-[package.dependencies]
-python-json-logger = ">=2.0.2,<3.0.0"
-rollbar = ">=0.15.0"
-
-[package.source]
-type = "legacy"
-url = "https://pypi.shipt.com/simple"
-reference = "shipt"
-
-[[package]]
-name = "pyshipt-streams"
-version = "1.2.2"
-description = "Python interface to kafka and other streaming data technologies"
-category = "main"
-optional = false
-python-versions = ">=3.8,<4.0"
-
-[package.dependencies]
-confluent-kafka = ">=1.7.0,<2.0.0"
-pydantic = ">=1.8.2,<2.0.0"
-pyshipt-logging = ">=0.1.1,<0.2.0"
-
-[package.source]
-type = "legacy"
-url = "https://pypi.shipt.com/simple"
-reference = "shipt"
-
-[[package]]
 name = "pytest"
 version = "6.2.5"
 description = "pytest: simple powerful testing with Python"
@@ -730,14 +695,6 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 six = ">=1.5"
 
 [[package]]
-name = "python-json-logger"
-version = "2.0.2"
-description = "A python library adding a json log formatter"
-category = "main"
-optional = false
-python-versions = ">=3.5"
-
-[[package]]
 name = "pytkdocs"
 version = "0.12.0"
 description = "Load Python objects documentation."
@@ -796,7 +753,7 @@ hiredis = ["hiredis (>=1.0.0)"]
 name = "requests"
 version = "2.26.0"
 description = "Python HTTP for Humans."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 
@@ -811,22 +768,10 @@ socks = ["PySocks (>=1.5.6,!=1.5.7)", "win-inet-pton"]
 use_chardet_on_py3 = ["chardet (>=3.0.2,<5)"]
 
 [[package]]
-name = "rollbar"
-version = "0.16.2"
-description = "Easy and powerful exception tracking with Rollbar. Send messages and exceptions with arbitrary context, get back aggregates, and debug production issues quickly."
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-requests = {version = ">=0.12.1", markers = "python_version >= \"3.6\""}
-six = ">=1.9.0"
-
-[[package]]
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -906,7 +851,7 @@ python-versions = ">=3.6"
 name = "urllib3"
 version = "1.26.7"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
-category = "main"
+category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4"
 
@@ -949,7 +894,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.11"
-content-hash = "a706d4a24d896f005b1137bd23ba03013470899713807aa926459cadc01b1b61"
+content-hash = "d5ba95238d361439a9f3c7b02bc2a5cd7b1c6af8a0daac611113af49807807d2"
 
 [metadata.files]
 astroid = [
@@ -1572,14 +1517,6 @@ pyrsmq = [
     {file = "PyRSMQ-0.4.5-py3-none-any.whl", hash = "sha256:ed2cd1a11021f04f5a23996bc1f9f5dfae181e6b4e0ded7e731678c5adcfdcb7"},
     {file = "PyRSMQ-0.4.5.tar.gz", hash = "sha256:2cd1883029fc3bcedd6fdfd98529146ce218818a5073cae5e2e117881e077d4f"},
 ]
-pyshipt-logging = [
-    {file = "pyshipt_logging-0.1.1-py3-none-any.whl", hash = "sha256:d9071b94430a10662589dcd3b5223a93e4d1970c1a4994ede0f547b8783b5060"},
-    {file = "pyshipt_logging-0.1.1.tar.gz", hash = "sha256:5d63779931790a48efb3a941f1d70887c0d820b396754e99d67e5269e4da22b0"},
-]
-pyshipt-streams = [
-    {file = "pyshipt_streams-1.2.2-py3-none-any.whl", hash = "sha256:2c32b06e3e313a350f0d1c81a52dcfd6328469ab151e7c488d7cda4c64df84f8"},
-    {file = "pyshipt_streams-1.2.2.tar.gz", hash = "sha256:7382df28d85324532ca9011028b9659554c8bbd190630516ce7993567bcb5f79"},
-]
 pytest = [
     {file = "pytest-6.2.5-py3-none-any.whl", hash = "sha256:7310f8d27bc79ced999e760ca304d69f6ba6c6649c0b60fb0e04a4a77cacc134"},
     {file = "pytest-6.2.5.tar.gz", hash = "sha256:131b36680866a76e6781d13f101efb86cf674ebb9762eb70d3082b6f29889e89"},
@@ -1595,10 +1532,6 @@ pytest-cov = [
 python-dateutil = [
     {file = "python-dateutil-2.8.2.tar.gz", hash = "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86"},
     {file = "python_dateutil-2.8.2-py2.py3-none-any.whl", hash = "sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9"},
-]
-python-json-logger = [
-    {file = "python-json-logger-2.0.2.tar.gz", hash = "sha256:202a4f29901a4b8002a6d1b958407eeb2dd1d83c18b18b816f5b64476dde9096"},
-    {file = "python_json_logger-2.0.2-py3-none-any.whl", hash = "sha256:99310d148f054e858cd5f4258794ed6777e7ad2c3fd7e1c1b527f1cba4d08420"},
 ]
 pytkdocs = [
     {file = "pytkdocs-0.12.0-py3-none-any.whl", hash = "sha256:12cb4180d5eafc7819dba91142948aa7b85ad0a3ad0e956db1cdc6d6c5d0ef56"},
@@ -1650,9 +1583,6 @@ redis = [
 requests = [
     {file = "requests-2.26.0-py2.py3-none-any.whl", hash = "sha256:6c1246513ecd5ecd4528a0906f910e8f0f9c6b8ec72030dc9fd154dc1a6efd24"},
     {file = "requests-2.26.0.tar.gz", hash = "sha256:b8aa58f8cf793ffd8782d3d8cb19e66ef36f7aba4353eec859e74678b01b07a7"},
-]
-rollbar = [
-    {file = "rollbar-0.16.2.tar.gz", hash = "sha256:aa3b570062dd8dfb0e11537ba858f9e1633a604680e062a525434b8245540f87"},
 ]
 six = [
     {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},

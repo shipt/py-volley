@@ -1,5 +1,6 @@
-# Copyright 2021, Shipt. All rights reserved.
-# Licensed under the Apache 2.0 License
+# Copyright (c) Shipt.
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
 
 from dataclasses import dataclass, field
 from enum import Enum, auto

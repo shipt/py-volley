@@ -46,8 +46,8 @@ def test_apply_defaults(config_dict: dict[str, dict[str, str]]) -> None:
     defaulted = apply_defaults(config)
     for _, q in defaulted["queues"].items():
         if q["type"] == "kafka":
-            assert q["producer"] == "volley.connectors.kafka.KafkaProducer"
-            assert q["consumer"] == "volley.connectors.kafka.KafkaConsumer"
+            assert q["producer"] == "volley.connectors.confluent.ConfluentKafkaProducer"
+            assert q["consumer"] == "volley.connectors.confluent.ConfluentKafkaConsumer"
             assert q["schema"] == "volley.data_models.ComponentMessage"
 
         if q.get("is_dlq") is True:

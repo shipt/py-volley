@@ -1,13 +1,10 @@
 import importlib
-import os
 from pathlib import Path
 from typing import Any, Dict, Union
 
 from yaml import Loader, load  # type: ignore
 
 GLOBALS = Path(__file__).parent.resolve().joinpath("global.yml")
-
-APP_ENV = os.getenv("APP_ENV", "localhost")
 
 
 def load_yaml(file_path: Union[str, Path]) -> Dict[str, Any]:

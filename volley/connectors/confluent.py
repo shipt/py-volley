@@ -25,9 +25,8 @@ class ConfluentKafkaConsumer(Consumer):
     def __post_init__(self) -> None:  # noqa: C901
         self.config = handle_creds(self.config)
 
-        if "auto_offset_reset" in self.config:
-            self.config["auto.offset.reset"] = self.config["auto_offset_reset"]
-        else:
+        if "auto.offset.reset" not in self.config:
+            logger.info("Assigning auto.offset.reset default: %s", self.auto_offset_reset)
             self.config["auto.offset.reset"] = self.auto_offset_reset
 
         # self.config provided from base Consumer class
@@ -92,7 +91,8 @@ class ConfluentKafkaProducer(Producer):
 
     def __post_init__(self) -> None:  # noqa: C901
         self.config = handle_creds(self.config)
-        if "compression_type" in self.config:
+        if "compression.type" not in self.config:
+            logger.info("Assigning compression.type default: %s", self.compression_type)
             self.config["compression.type"] = self.compression_type
 
         self.p = KProducer(self.config, logger=logger)
@@ -142,7 +142,7 @@ def handle_creds(config_dict: Dict[str, Any]) -> Dict[str, Any]:
     return config_dict
 
 
-def acked(err: str, msg: Any) -> None:
+def acked(err: Optional[str], msg: Any) -> None:
     if err is not None:
         logger.error("Failed to deliver message: %s: %s", msg, err)
     else:

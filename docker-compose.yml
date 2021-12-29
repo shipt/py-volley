@@ -2,7 +2,6 @@ version: '3.5'
 services:
     data_producer:
         environment:
-            - APP_ENV=localhost
             - REDIS_HOST=redis
             - REDIS_PORT=6379
             - KAFKA_BROKERS=kafka:29092
@@ -24,7 +23,6 @@ services:
 
     input_worker:
         environment:
-            - APP_ENV=localhost
             - REDIS_HOST=redis
             - REDIS_PORT=6379
             - KAFKA_BROKERS=kafka:29092
@@ -48,7 +46,6 @@ services:
 
     middle_worker:
         environment:
-            - APP_ENV=localhost
             - REDIS_HOST=redis
             - REDIS_PORT=6379
             - KAFKA_BROKERS=kafka:29092
@@ -71,7 +68,6 @@ services:
 
     data_consumer:
         environment:
-            - APP_ENV=localhost
             - REDIS_HOST=redis
             - REDIS_PORT=6379
         build:
@@ -149,7 +145,6 @@ services:
                 SHIPT_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_USERNAME}
                 SHIPT_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_PASSWORD}
         environment:
-            APP_ENV: localhost
             KAFKA_BROKERS: kafka:29092
         volumes:
             - ./:/app/

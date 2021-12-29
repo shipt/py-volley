@@ -6,8 +6,12 @@ from unittest.mock import MagicMock, patch
 
 from pytest import MonkeyPatch, fixture
 
-from volley.connectors import KafkaConsumer, KafkaProducer, RSMQConsumer, RSMQProducer
-from volley.connectors.confluent import ConfluentKafkaConsumer, ConfluentKafkaProducer
+from volley.connectors import (
+    ConfluentKafkaConsumer,
+    ConfluentKafkaProducer,
+    RSMQConsumer,
+    RSMQProducer,
+)
 from volley.data_models import QueueMessage
 from volley.engine import Engine
 
@@ -15,6 +19,7 @@ os.environ["INPUT_QUEUE"] = "input"
 os.environ["OUTPUT_QUEUE"] = "output"
 os.environ["REDIS_HOST"] = "redis"
 os.environ["KAFKA_BROKERS"] = "kafka:29092"
+os.environ["KAFKA_CONSUMER_GROUP"] = "test-group"
 
 
 @fixture
@@ -60,9 +65,10 @@ class KafkaMessage:
     _offset: int = randint(1, 200)
     _error_msg = "MOCK ERROR"
 
-    def __init__(self, error: bool = False, msg: Optional[bytes] = None) -> None:
+    def __init__(self, error: bool = False, msg: Optional[bytes] = None, topic: Optional[str] = None) -> None:
         self._error = error
         self._value = msg
+        self._topic = topic
 
     def error(self) -> bool:
         return self._error
@@ -73,20 +79,8 @@ class KafkaMessage:
     def value(self) -> Optional[bytes]:
         return self._value
 
-
-@fixture()
-def mock_kafka_consumer() -> KafkaConsumer:
-    with patch("volley.connectors.kafka.KConsumer"):
-        c = KafkaConsumer(host="kafka", queue_name="test")
-        c.c.poll = MagicMock(return_value=KafkaMessage(msg=b'{"random": "message"}'))
-        return c
-
-
-@fixture
-def mock_kafka_producer() -> KafkaProducer:
-    with patch("volley.connectors.kafka.KProducer"):
-        producer = KafkaProducer(host="kafka", queue_name="test")
-        return producer
+    def topic(self) -> Optional[str]:
+        return self._topic
 
 
 @fixture
@@ -105,8 +99,8 @@ def mock_confluent_consumer() -> ConfluentKafkaConsumer:
 
 @fixture
 def none_producer_decorated(monkeypatch: MonkeyPatch) -> Generator[Callable[..., None], None, None]:
-    monkeypatch.setattr("volley.connectors.kafka", "KProducer", MagicMock())
-    monkeypatch.setattr("volley.connectors.kafka", "KConsumer", MagicMock())
+    monkeypatch.setattr("volley.connectors.confluent", "KProducer", MagicMock())
+    monkeypatch.setattr("volley.connectors.confluent", "KConsumer", MagicMock())
 
     eng = Engine(
         input_queue="input-topic",

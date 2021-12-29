@@ -25,7 +25,8 @@ class ConfluentKafkaConsumer(Consumer):
     def __post_init__(self) -> None:  # noqa: C901
         self.config = handle_creds(self.config)
 
-        if "auto_offset_reset" in self.config:
+        if "auto.offset.reset" not in self.config:
+            logger.info("Assigning auto.offset.reset default: %s", self.auto_offset_reset)
             self.config["auto.offset.reset"] = self.auto_offset_reset
 
         # self.config provided from base Consumer class
@@ -47,7 +48,7 @@ class ConfluentKafkaConsumer(Consumer):
             # confluent will ignore it with a warning, however
             self.poll_interval = self.config.pop("poll_interval")
 
-        self.c = KConsumer(self.config)
+        self.c = KConsumer(self.config, logger=logger)
         logger.info("Kafka Consumer Configuration: %s", self.config)
         self.c.subscribe([self.queue_name])
         logger.info("Subscribed to %s", self.queue_name)
@@ -90,10 +91,11 @@ class ConfluentKafkaProducer(Producer):
 
     def __post_init__(self) -> None:  # noqa: C901
         self.config = handle_creds(self.config)
-        if "compression_type" in self.config:
+        if "compression.type" not in self.config:
+            logger.info("Assigning compression.type default: %s", self.compression_type)
             self.config["compression.type"] = self.compression_type
 
-        self.p = KProducer(self.config)
+        self.p = KProducer(self.config, logger=logger)
         # self.config comes from super class
         logger.info("Kafka Producer Configuration: %s", self.config)
 
@@ -103,7 +105,10 @@ class ConfluentKafkaProducer(Producer):
             topic=queue_name,
             value=message,
             headers=kwargs.get("headers"),
+            callback=acked,
         )
+        self.p.poll(0)
+        logger.info("Sent to topic: %s", queue_name)
         return True
 
     def shutdown(self) -> None:
@@ -127,8 +132,18 @@ def handle_creds(config_dict: Dict[str, Any]) -> Dict[str, Any]:
         sasl_username = os.getenv("KAFKA_KEY")
         sasl_password = os.getenv("KAFKA_SECRET")
         if (sasl_username is not None) and (sasl_password is not None):
+            logger.info(
+                "KAFKA_KEY and KAFKA_SECRET found in environment. Assigning security.protocol and sasl.mechanism"
+            )
             config_dict["sasl.username"] = sasl_username
             config_dict["sasl.password"] = sasl_password
             config_dict["security.protocol"] = "SASL_SSL"
             config_dict["sasl.mechanism"] = "PLAIN"
     return config_dict
+
+
+def acked(err: Optional[str], msg: Any) -> None:
+    if err is not None:
+        logger.error("Failed to deliver message: %s: %s", msg, err)
+    else:
+        logger.info("Acknowledged success from topic: %s", msg.topic())

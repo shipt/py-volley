@@ -138,6 +138,6 @@ def handle_creds(config_dict: Dict[str, Any]) -> Dict[str, Any]:
 
 def acked(err: str, msg: Any) -> None:
     if err is not None:
-        logger.error(f"Failed to deliver message: {msg}: {err}")
+        logger.error("Failed to deliver message: %s: %s", msg, err)
     else:
-        logger.info(f"Message produced for topic: {msg.topic()}")
+        logger.info("Message produced for topic: %s", msg.topic())

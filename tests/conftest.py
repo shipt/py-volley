@@ -65,9 +65,10 @@ class KafkaMessage:
     _offset: int = randint(1, 200)
     _error_msg = "MOCK ERROR"
 
-    def __init__(self, error: bool = False, msg: Optional[bytes] = None) -> None:
+    def __init__(self, error: bool = False, msg: Optional[bytes] = None, topic: Optional[str] = None) -> None:
         self._error = error
         self._value = msg
+        self._topic = topic
 
     def error(self) -> bool:
         return self._error
@@ -77,6 +78,9 @@ class KafkaMessage:
 
     def value(self) -> Optional[bytes]:
         return self._value
+
+    def topic(self) -> Optional[str]:
+        return self._topic
 
 
 @fixture

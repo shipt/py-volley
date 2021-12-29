@@ -26,6 +26,8 @@ class ConfluentKafkaConsumer(Consumer):
         self.config = handle_creds(self.config)
 
         if "auto_offset_reset" in self.config:
+            self.config["auto.offset.reset"] = self.config["auto_offset_reset"]
+        else:
             self.config["auto.offset.reset"] = self.auto_offset_reset
 
         # self.config provided from base Consumer class

@@ -106,6 +106,7 @@ class ConfluentKafkaProducer(Producer):
             callback=acked,
         )
         self.p.poll(0)
+        logger.info("Sent to topic: %s", queue_name)
         return True
 
     def shutdown(self) -> None:
@@ -140,4 +141,4 @@ def acked(err: str, msg: Any) -> None:
     if err is not None:
         logger.error("Failed to deliver message: %s: %s", msg, err)
     else:
-        logger.info("Message produced for topic: %s", msg.topic())
+        logger.info("Acknowledged success from topic: %s", msg.topic())

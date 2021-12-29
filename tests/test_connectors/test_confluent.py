@@ -61,7 +61,6 @@ def test_consume(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> None:
     assert isinstance(q_message, QueueMessage)
 
 
-@patch("volley.connectors.confluent.RUN_ONCE", True)
 @patch("volley.connectors.confluent.KConsumer")
 def test_consume_none(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setenv("KAFKA_CONSUMER_GROUP", "test-group")
@@ -71,7 +70,6 @@ def test_consume_none(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> Non
     assert q_message is None
 
 
-@patch("volley.connectors.confluent.RUN_ONCE", True)
 @patch("volley.connectors.confluent.KConsumer")
 def test_consume_error(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setenv("KAFKA_CONSUMER_GROUP", "test-group")

@@ -49,7 +49,6 @@ steps:
     - sed -i -e '/volumes:/,+1d' docker-compose.yml
     - make test.integration
     environment:
-      APP_ENV: localhost
       POETRY_HTTP_BASIC_SHIPT_USERNAME:
         from_secret: SHIPT_PYPI_USERNAME
       POETRY_HTTP_BASIC_SHIPT_PASSWORD:

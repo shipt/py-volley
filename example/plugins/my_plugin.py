@@ -81,6 +81,7 @@ class MyPGProducer(Producer):
     def produce(self, queue_name: str, message: dict[str, Any], **kwargs: Any) -> bool:
         logger.info(f"produced message to: {queue_name=} - message={message}")
         vals = {
+            "message_sent_at": datetime.now(),
             "request_id": message["request_id"],
             "max_plus_1": message["max_plus_1"],
         }

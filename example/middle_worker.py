@@ -23,7 +23,6 @@ queue_config = {
         "value": "long_name_1",
         "type": "rsmq",
         "serializer": "volley.serializers.MsgPackSerialization",
-        # parse messages from RSMQ to a dictionary
         "schema": "volley.data_models.ComponentMessage",
     },
     "postgres_queue": {

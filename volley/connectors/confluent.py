@@ -130,6 +130,9 @@ def handle_creds(config_dict: Dict[str, Any]) -> Dict[str, Any]:
         sasl_username = os.getenv("KAFKA_KEY")
         sasl_password = os.getenv("KAFKA_SECRET")
         if (sasl_username is not None) and (sasl_password is not None):
+            logger.info(
+                "KAFKA_KEY and KAFKA_SECRET found in environment. "
+                "Assigning security.protocol and sasl.mechanism")
             config_dict["sasl.username"] = sasl_username
             config_dict["sasl.password"] = sasl_password
             config_dict["security.protocol"] = "SASL_SSL"

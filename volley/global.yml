@@ -1,16 +1,40 @@
-connectors:
-  kafka:
+profiles:
+  confluent-default:
     consumer: volley.connectors.confluent.ConfluentKafkaConsumer
     producer: volley.connectors.confluent.ConfluentKafkaProducer
-  rsmq:
+    model_handler: volley.models.PydanticParserModelHandler
+    schema: volley.data_models.ComponentMessage
+    serializer: None
+  confluent-orjson-pydantic:
+    consumer: volley.connectors.confluent.ConfluentKafkaConsumer
+    producer: volley.connectors.confluent.ConfluentKafkaProducer
+    model_handler: volley.models.PydanticModelHandler
+    schema: volley.data_models.ComponentMessage
+    serializer: volley.serializers.orjson_serializer.OrJsonSerialization
+  confluent-msgpack-pydantic:
+    consumer: volley.connectors.confluent.ConfluentKafkaConsumer
+    producer: volley.connectors.confluent.ConfluentKafkaProducer
+    model_handler: volley.models.PydanticModelHandler
+    schema: volley.data_models.ComponentMessage
+    serializer: volley.serializers.mspack_serializer.MsgPackSerialization
+  rsmq-default:
     consumer: volley.connectors.rsmq.RSMQConsumer
     producer: volley.connectors.rsmq.RSMQProducer
-model_handler:
-  default: volley.models.PydanticModelHandler
-schemas:
-  default: volley.data_models.ComponentMessage
-serializers:
-  default: volley.serializers.orjson_serializer.OrJsonSerialization
+    model_handler: volley.models.PydanticModelHandler
+    schema: volley.data_models.ComponentMessage
+    serializer: volley.serializers.orjson_serializer.OrJsonSerialization
+  rsmq-orjson-pydantic:
+    consumer: volley.connectors.rsmq.RSMQConsumer
+    producer: volley.connectors.rsmq.RSMQProducer
+    model_handler: volley.models.PydanticModelHandler
+    schema: volley.data_models.ComponentMessage
+    serializer: volley.serializers.orjson_serializer.OrJsonSerialization
+  rsmq-msgpack-pydantic:
+    consumer: volley.connectors.rsmq.RSMQConsumer
+    producer: volley.connectors.rsmq.RSMQProducer
+    model_handler: volley.models.PydanticModelHandler
+    schema: volley.data_models.ComponentMessage
+    serializer: volley.serializers.mspack_serializer.MsgPackSerialization
 dead-letter-queue:
   serializer: None
   schema: None

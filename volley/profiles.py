@@ -29,6 +29,18 @@ class Profile(BaseModel):
     data_model: Optional[str]
     serializer: Optional[str]
 
+    @validator("model_handler", "data_model", "serializer")
+    @classmethod
+    def validate_nullable(cls, value: Optional[str]) -> Optional[str]:
+        """Ensures str or None types parse as `None`
+
+        This needs to be the top (first) validator
+        """
+        if str(value).lower() not in ["none", "disabled"]:
+            return value
+        else:
+            return None
+
     @root_validator
     @classmethod
     def validate_connectors(cls, values: dict[str, Any]) -> Any:
@@ -87,6 +99,7 @@ def construct_profiles(queue_configs: dict[str, dict[str, Any]]) -> Dict[str, Pr
                 f"`{profile_requested}` is not a valid profile name. "
                 f"Available profiles: `{list(supported_profiles.keys())}`"
             )
+        logger.info("Validating %s profile", q_name)
         constructed_profiles[q_name] = Profile(**this_profile)
 
     return constructed_profiles

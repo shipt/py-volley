@@ -35,7 +35,9 @@ profiles:
     model_handler: volley.models.PydanticModelHandler
     data_model: volley.data_models.ComponentMessage
     serializer: volley.serializers.mspack_serializer.MsgPackSerialization
-  dead-letter-queue:
+  confluent-dlq:
+    consumer: volley.connectors.confluent.ConfluentKafkaConsumer
+    producer: volley.connectors.confluent.ConfluentKafkaProducer
     serializer: None
     data_model: None
     model_handler: None

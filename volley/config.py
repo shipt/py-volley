@@ -1,3 +1,7 @@
+# Copyright (c) Shipt.
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
 import importlib
 from pathlib import Path
 from typing import Any, Dict, Union
@@ -34,3 +38,7 @@ def import_module_from_string(module_str: str) -> type:
     module = importlib.import_module(pathmodule)
     t: type = getattr(module, class_obj)
     return t
+
+
+def get_configs() -> Dict[str, Dict[str, Any]]:
+    return load_yaml(GLOBALS)

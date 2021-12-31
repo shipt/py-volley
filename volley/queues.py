@@ -1,12 +1,19 @@
+# Copyright (c) Shipt.
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Any, Dict, Optional
 
-from volley.config import GLOBALS, import_module_from_string, load_yaml
+from pydantic import BaseModel, Field, root_validator, validator
+
+from volley.config import GLOBALS, get_configs, import_module_from_string, load_yaml
 from volley.connectors.base import Consumer, Producer
 from volley.logging import logger
 from volley.models import PydanticModelHandler
 from volley.models.base import BaseModelHandler
+from volley.profiles import ConnectionType, Profile
 from volley.serializers import OrJsonSerialization
 from volley.serializers.base import BaseSerialization
 
@@ -17,49 +24,48 @@ class DLQNotConfiguredError(Exception):
     pass
 
 
-class ConnectionType(Enum):
-    """types of connections to queues"""
-
-    PRODUCER: auto = auto()
-    CONSUMER: auto = auto()
-
-
 @dataclass
 class Queue:
-    """a Queue object represents everything we need to know about a queue
-    and is modeled off the configuration files for a queue
-    """
+    """a Queue object represents everything we need to know about a queue"""
 
     # alias for the queue
     name: str
     # system name for the queue. for example, some really long kafka topic name
     value: str
+    profile: Profile
 
-    schema: Optional[type]
-
-    type: str
-
-    consumer: str
-    producer: str
-
-    serializer: Optional[BaseSerialization] = field(default=OrJsonSerialization())
-    model_handler: Optional[BaseModelHandler] = field(default=PydanticModelHandler())
+    # instantiated post-init
+    data_model: Optional[Any] = field(init=False, default=None)
+    model_handler: Optional[BaseModelHandler] = field(init=False, default=None)
+    serializer: Optional[BaseSerialization] = field(init=False, default=None)
 
     # initialized queue connection
-    # these get initialized by calling connect()
-    consumer_con: Consumer = field(init=False)
-    producer_con: Producer = field(init=False)
+    # these are initialized by calling connect()
+    consumer_con: Optional[Consumer] = field(init=False, default=None)
+    producer_con: Optional[Producer] = field(init=False, default=None)
 
     # optional configurations to pass through to connectors
     pass_through_config: dict[str, str] = field(default_factory=dict)
 
+    def __post_init__(self) -> None:
+        """Load modules provided in Profile"""
+        for attr in ["data_model", "model_handler", "serializer"]:
+            profile_attr_value = getattr(self.profile, attr)
+            if profile_attr_value is not None:
+                module = import_module_from_string(profile_attr_value)
+                setattr(self, attr, module)
+
     def connect(self, con_type: ConnectionType) -> None:
         """instantiate the connector class"""
         if con_type == ConnectionType.CONSUMER:
-            _class = import_module_from_string(self.consumer)
+            if self.profile.consumer is None:
+                raise ValueError("Must provide a consumer connector")
+            _class = import_module_from_string(self.profile.consumer)
             self.consumer_con = _class(queue_name=self.value, config=self.pass_through_config.copy())
         elif con_type == ConnectionType.PRODUCER:
-            _class = import_module_from_string(self.producer)
+            if self.profile.producer is None:
+                raise ValueError("Must provide a producer connector")
+            _class = import_module_from_string(self.profile.producer)
             self.producer_con = _class(queue_name=self.value, config=self.pass_through_config.copy())
         else:
             raise TypeError(f"{con_type=} is not valid")
@@ -72,7 +78,7 @@ def dict_to_config(config: dict[str, dict[str, str]]) -> dict[str, dict[str, dic
 
 def apply_defaults(config: dict[str, dict[str, dict[str, str]]]) -> dict[str, dict[str, dict[str, str]]]:
     """when a config is not provided, apply the global default"""
-    global_configs = load_yaml(GLOBALS)
+    global_configs = get_configs()
     global_connectors = global_configs["connectors"]
     default_queue_schema = global_configs["schemas"]["default"]
     default_serializer = global_configs["serializers"]["default"]
@@ -109,6 +115,11 @@ def apply_defaults(config: dict[str, dict[str, dict[str, str]]]) -> dict[str, di
             queue["model_handler"] = model_handler
 
     return config
+
+
+def construct_queue_map(profiles: Dict[str, Profile]) -> Dict[str, Queue]:
+    """Constructs a mapping of queue_name: Queue for each requested queue"""
+    return False
 
 
 def config_to_queue_map(configs: dict[str, dict[str, str]]) -> Dict[str, Queue]:

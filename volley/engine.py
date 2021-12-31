@@ -1,3 +1,7 @@
+# Copyright (c) Shipt.
+# This source code is licensed under the MIT license found in the
+# LICENSE file in the root directory of this source tree.
+
 import asyncio
 import builtins
 import time
@@ -12,12 +16,14 @@ from volley.config import load_yaml
 from volley.data_models import QueueMessage
 from volley.logging import logger
 from volley.models.base import message_model_handler
+from volley.profiles import ConnectionType, Profile, construct_profiles
 from volley.queues import (
     ConnectionType,
     DLQNotConfiguredError,
     Queue,
     apply_defaults,
     config_to_queue_map,
+    construct_queue_map,
     dict_to_config,
 )
 from volley.transport import produce_handler
@@ -95,17 +101,28 @@ class Engine:
         # handle DLQ
         if self.dead_letter_queue is not None:
             # if provided by user, DLQ becomes a producer target
-            # flag the queue as "dlq"
+            # flag the queue using the DLQ profile
             try:
-                cfg["queues"][self.dead_letter_queue]["is_dlq"] = True
+                _dlq_cfg = cfg["queues"][self.dead_letter_queue]
+                if "profile" not in _dlq_cfg:
+                    cfg["queues"][self.dead_letter_queue]["profile"] = "dead-letter-queue"
             except KeyError:
                 logger.error("%s not present in configuration", self.dead_letter_queue)
             self.output_queues.append(self.dead_letter_queue)
         else:
             logger.warning("DLQ not provided. Application will crash on schema violations")
 
-        cfg = apply_defaults(cfg)
-        self.queue_map = config_to_queue_map(cfg["queues"])
+        # tag queues with type (its use)
+        cfg["queues"][self.input_queue]["connection_type"] = ConnectionType.CONSUMER
+        for qname in self.output_queues:
+            cfg["queues"][qname]["connection_type"] = ConnectionType.PRODUCER
+
+        # load profiles
+        # cfg = apply_defaults(cfg)
+        profiles: Dict[str, Profile] = construct_profiles(cfg)
+        # create queue_map from profiles
+        # self.queue_map = config_to_queue_map(cfg["queues"])
+        self.queue_map = construct_queue_map(profiles)
 
         # validate input_queue, output_queues, and DLQ (optional) are valid configurations
         for q in [self.input_queue] + self.output_queues:

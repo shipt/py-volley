@@ -6,17 +6,18 @@ from unittest.mock import MagicMock, patch
 
 from pytest import MonkeyPatch, fixture
 
+from volley.config import get_configs, load_yaml
 from volley.connectors import (
     ConfluentKafkaConsumer,
     ConfluentKafkaProducer,
     RSMQConsumer,
     RSMQProducer,
+    confluent,
 )
 from volley.data_models import QueueMessage
 from volley.engine import Engine
+from volley.profiles import ConnectionType, Profile
 
-os.environ["INPUT_QUEUE"] = "input"
-os.environ["OUTPUT_QUEUE"] = "output"
 os.environ["REDIS_HOST"] = "redis"
 os.environ["KAFKA_BROKERS"] = "kafka:29092"
 os.environ["KAFKA_CONSUMER_GROUP"] = "test-group"
@@ -117,25 +118,40 @@ def none_producer_decorated(monkeypatch: MonkeyPatch) -> Generator[Callable[...,
 
 
 @fixture
-def config_dict() -> dict[str, dict[str, str]]:
+def config_dict() -> dict[str, dict[str, Any]]:
     return {
         "input-topic": {
             "value": "localhost.kafka.input",
-            "type": "kafka",
+            "profile": "confluent",
             "schema": "example.data_models.InputMessage",
         },
         "comp_1": {
             "value": "comp1",
-            "type": "rsmq",
+            "profile": "rsmq",
             "schema": "volley.data_models.ComponentMessage",
         },
         "output-topic": {
             "value": "localhost.kafka.output",
-            "type": "kafka",
+            "profile": "confluent",
             "schema": "volley.data_models.ComponentMessage",
+            "config": {"compression.type": "gzip"},
         },
         "dead-letter-queue": {
             "value": "localhost.kafka.dlq",
-            "type": "kafka",
+            "profile": "confluent-dlq",
         },
     }
+
+
+@fixture
+def confluent_consumer_profile() -> Profile:
+    confluent_profile = get_configs()["profiles"]["confluent"]
+    confluent_profile["connection_type"] = ConnectionType.CONSUMER
+    return Profile(**confluent_profile)
+
+
+@fixture
+def confluent_producer_profile() -> Profile:
+    confluent_profile = get_configs()["profiles"]["confluent"]
+    confluent_profile["connection_type"] = ConnectionType.PRODUCER
+    return Profile(**confluent_profile)

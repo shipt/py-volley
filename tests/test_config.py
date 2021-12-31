@@ -5,14 +5,8 @@ from pydantic.main import BaseModel
 
 from volley.config import load_yaml
 from volley.data_models import QueueMessage
-from volley.queues import (
-    Queue,
-    apply_defaults,
-    available_queues,
-    config_to_queue_map,
-    dict_to_config,
-    import_module_from_string,
-)
+from volley.profiles import Profile, construct_profiles
+from volley.queues import Queue, import_module_from_string
 
 
 def test_load_yaml_success() -> None:
@@ -26,45 +20,6 @@ def test_load_yaml_fail() -> None:
         load_yaml("donotexist")
 
 
-def test_available_queues() -> None:
-    all_queues: Dict[str, Queue] = available_queues("./example/volley_config.yml")
-
-    for qname, q in all_queues.items():
-        assert isinstance(qname, str)
-        assert isinstance(q, Queue)
-
-
-def test_dict_to_config(config_dict: dict[str, dict[str, str]]) -> None:
-    d = dict_to_config(config_dict)
-    assert d["queues"] == config_dict
-
-
-def test_apply_defaults(config_dict: dict[str, dict[str, str]]) -> None:
-    """assert global defaults get applied when not specified"""
-    del config_dict["input-topic"]["schema"]
-    config = dict_to_config(config_dict)
-    defaulted = apply_defaults(config)
-    for _, q in defaulted["queues"].items():
-        if q["type"] == "kafka":
-            assert q["producer"] == "volley.connectors.confluent.ConfluentKafkaProducer"
-            assert q["consumer"] == "volley.connectors.confluent.ConfluentKafkaConsumer"
-            assert q["schema"] == "volley.data_models.ComponentMessage"
-
-        if q.get("is_dlq") is True:
-            assert q["schema"] is None
-            assert q["model_handler"] is None
-            assert q["serializer"] is None
-
-
-def test_config_to_queue_map(config_dict: dict[str, dict[str, str]]) -> None:
-    config = dict_to_config(config_dict)
-    defaulted = apply_defaults(config)
-    queue_map = config_to_queue_map(defaulted["queues"])
-    for queue_name, queue_obj in queue_map.items():
-        assert isinstance(queue_obj, Queue)
-        assert queue_obj.name == queue_name
-
-
 def test_import_module_from_string() -> None:
     class_module = import_module_from_string("volley.data_models.QueueMessage")
 
@@ -74,28 +29,21 @@ def test_import_module_from_string() -> None:
     assert isinstance(instance, QueueMessage)
 
 
-def test_bad_connector_config(config_dict: dict[str, dict[str, str]]) -> None:
-    """asserts TypeError raised when malformed connector config provided"""
-    # from dict
-    config_dict["input-topic"]["config"] = "bad_configuration"  # this needs to be a dict
-    config = dict_to_config(config_dict)
-    defaulted = apply_defaults(config)
+def test_bad_connector_config(confluent_consumer_profile: Profile) -> None:
+    """asserts error raised when malformed connector config provided
+    the connector config must be a dict
+    """
     with pytest.raises(TypeError):
-        config_to_queue_map(defaulted["queues"])
-
-    # from yaml
-    cfg = load_yaml(file_path="./example/volley_config.yml")
-    for _, q in cfg["queues"].items():
-        q["config"] = "bad_configuration"
-    defaulted = apply_defaults(cfg)
-    with pytest.raises(TypeError):
-        config_to_queue_map(defaulted["queues"])
+        Queue(
+            name="test",
+            value="long_value",
+            profile=confluent_consumer_profile,
+            pass_through_config="bad_value",  # type: ignore
+        )
 
 
 def test_missing_queue_attr(config_dict: dict[str, dict[str, str]]) -> None:
     del config_dict["input-topic"]["value"]
-    config = dict_to_config(config_dict)
-    defaulted = apply_defaults(config)
 
     with pytest.raises(KeyError):
-        config_to_queue_map(defaulted["queues"])
+        pass

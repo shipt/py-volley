@@ -34,8 +34,8 @@ def produce_handler(
             raise NameError(f"App not configured for output queue {e}")
 
         # prepare and validate output message
-        if out_queue.schema is not None and not isinstance(component_msg, out_queue.schema):
-            raise TypeError(f"{out_queue.name=} expected '{out_queue.schema}' - object is '{type(component_msg)}'")
+        if out_queue.data_model is not None and not isinstance(component_msg, out_queue.data_model):
+            raise TypeError(f"{out_queue.name=} expected '{out_queue.data_model}' - object is '{type(component_msg)}'")
 
         try:
             # serialize message

@@ -1,26 +1,25 @@
 queues:
   input-topic:
     value: "localhost.kafka.input"
-    type: kafka
+    profile: confluent
     schema: example.data_models.InputMessage
     config:
       group.id: localhost.input.consumer
       bootstrap.servers: kafka:29092
   redis_queue:
     value: long_name_1
-    type: rsmq
+    profile: rsmq
     serializer: volley.serializers.MsgPackSerialization
     schema: volley.data_models.ComponentMessage
   postgres_queue:
     value: my_long_table_name
-    type: postgres
     schema: volley.data_models.ComponentMessage
     serializer: None
     producer: example.plugins.my_plugin.MyPGProducer
     consumer: example.plugins.my_plugin.MyPGConsumer
   output-topic:
     value: "localhost.kafka.output"
-    type: kafka
+    profile: confluent
     serializer: None
     model_handler: volley.models.PydanticParserModelHandler
     schema: example.data_models.OutputMessage
@@ -29,4 +28,4 @@ queues:
       bootstrap.servers: kafka:29092
   dead-letter-queue:
     value: "localhost.kafka.dlq"
-    type: kafka
+    profile: confluent-dlq

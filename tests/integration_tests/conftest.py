@@ -7,7 +7,6 @@ from pytest import fixture
 
 from volley.config import load_yaml
 from volley.logging import logger
-from volley.queues import Queue
 
 queues: Dict[str, Any] = load_yaml("./example/volley_config.yml")["queues"]
 

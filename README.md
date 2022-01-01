@@ -55,17 +55,17 @@ from volley.data_models import ComponentMessage
 queue_config = {
     "input-topic": {
       "value": "stg.kafka.myapp.input",
-      "type": "kafka",
+      "profile": "confluent",
       "schema": "example.data_models.InputMessage",  # for input validation
     },
     "output-topic": {
       "value": "stg.ds-marketplace.v1.my_kafka_topic_output",
-      "type": "kafka",
+      "profile": "confluent",
       "schema": "example.data_models.OutputMessage",  # for output validation
     },
     "dead-letter-queue": {
       "value": "stg.kafka.myapp.dlq",
-      "type": "kafka"
+      "profile": "confluent"
     }
 }
 
@@ -109,7 +109,7 @@ queue_config = {
         "sasl.password": os.environ["KAFKA_SECRET"],
       },
       "value": "stg.kafka.myapp.input",
-      "type": "kafka",
+      "profile": "confluent",
       "schema": "example.data_models.InputMessage",
     },
 ```

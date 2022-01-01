@@ -95,8 +95,9 @@ Like all configuration, they can be specified in either `yaml` or a `dict` passe
 # ./my_volly_config.yml
 - name: postgres_queue
   value: pg_queue_table
-  type: postgres
-  schema: volley.data_models.ComponentMessage
+  data_model: volley.data_models.ComponentMessage
+  model_hander: volley.models.PydanticModelHandler
+  serializer: None
   producer: example.plugins.my_plugin.MyPGProducer
   consumer: example.plugins.my_plugin.MyPGConsumer
 ```
@@ -107,9 +108,10 @@ Is is equivalent to:
 config = {
     "postgres_queue": {
         "value": "pg_queue_table",
-        "type": "postgres",
-        "schema": "volley.data_models.ComponentMessage,
-        "producer": "example.plugins.my_plugin.MyPGProducer"
+        "data_model": "volley.data_models.ComponentMessage,
+        "model_hander": "volley.models.PydanticModelHandler",
+        "serializer": "disabled",
+        "producer": "example.plugins.my_plugin.MyPGProducer",
         "consumer": "example.plugins.my_plugin.MyPGConsumer"
     }
 }

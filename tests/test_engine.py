@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
+from pydantic import ValidationError
 from pytest import LogCaptureFixture, MonkeyPatch
 
 from example.data_models import InputMessage, OutputMessage
@@ -75,9 +76,7 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
 @patch("volley.connectors.confluent.KProducer")
 @patch("volley.connectors.confluent.KConsumer")
 def test_dlq_not_implemented(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:  # pylint: disable=W0613
-    """test a stubbed component that does not produce messages
-    passes so long as no exception is raised
-    """
+    """test a stubbed component that does not produce messages"""
     eng = Engine(
         input_queue="input-topic",
         output_queues=["output-topic"],
@@ -85,11 +84,11 @@ def test_dlq_not_implemented(mock_consumer: MagicMock, mock_producer: MagicMock)
         dead_letter_queue=None,
         metrics_port=None,
     )
+    # message will not adhere to input-topic message schema specified in yaml_config_path
     mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=b'{"random": "message"}')
 
-    # component returns "just none"
     @eng.stream_app
-    def func(*args: ComponentMessage) -> bool:  # pylint: disable=W0613
+    def func(args: Any) -> bool:  # pylint: disable=W0613
         return True
 
     with pytest.raises(DLQNotConfiguredError):
@@ -110,7 +109,7 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
         "comp_1": {
             "name": "comp_1",
             "value": "random_val",
-            "type": "rsmq",
+            "profile": "rsmq",
         }
     }
     eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, metrics_port=None)
@@ -138,7 +137,7 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[st
     input_queue = "input-topic"
     output_queues = list(config_dict.keys())
 
-    with pytest.raises(NameError):
+    with pytest.raises(KeyError):
         Engine(
             input_queue=input_queue,
             output_queues=output_queues.copy(),
@@ -166,7 +165,7 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[st
     # use a function that returns None
     # not to be confused with a consumer that returns None
     @eng.stream_app
-    def func(*args: Any) -> bool:  # pylint: disable=W0613
+    def func(args: Any) -> bool:  # pylint: disable=W0613
         return True
 
     func()
@@ -199,10 +198,10 @@ def test_null_serializer_fail(
     )
 
     @eng.stream_app
-    def func(*args: Any) -> bool:  # pylint: disable=W0613
+    def func(args: Any) -> bool:  # pylint: disable=W0613
         return True
 
-    # serializer disable, schema validation will fail
+    # serializer disabled, schema validation will fail
     # but messages will route to DLQ with exceptions handled
     with caplog.at_level(logging.WARNING):
         func()
@@ -237,20 +236,20 @@ def test_engine_configuration_failures(mock_rsmq: MagicMock) -> None:
     cfg = {
         "comp_1": {
             "value": "random_val",
-            "type": "rsmq",
+            "profile": "rsmq",
         }
     }
 
     # try to init on a output queue that does not exist
-    with pytest.raises(NameError):
+    with pytest.raises(KeyError):
         Engine(input_queue="comp_1", output_queues=["DOES_NOT_EXIST", "comp_1"], queue_config=cfg, metrics_port=None)
 
     # try to init on a input queue that does not exist
-    with pytest.raises(NameError):
+    with pytest.raises(KeyError):
         Engine(input_queue="DOES_NOT_EXIST", output_queues=["comp_1"], queue_config=cfg, metrics_port=None)
 
     # try to init on a DLQ that does not exist
-    with pytest.raises(NameError):
+    with pytest.raises(KeyError):
         Engine(
             input_queue="comp_1",
             output_queues=["comp_1"],
@@ -262,8 +261,8 @@ def test_engine_configuration_failures(mock_rsmq: MagicMock) -> None:
     # try to init when missing required attribute in config
     missing_cfg = cfg.copy()
     missing_cfg["comp_1"] = cfg["comp_1"].copy()
-    del missing_cfg["comp_1"]["type"]
-    with pytest.raises(KeyError):
+    del missing_cfg["comp_1"]["profile"]
+    with pytest.raises(ValidationError):
         Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=missing_cfg, metrics_port=None)
 
     eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, metrics_port=None)
@@ -274,7 +273,7 @@ def test_engine_configuration_failures(mock_rsmq: MagicMock) -> None:
         return [("DOES_NOT_EXIST", out)]
 
     # trying to return a message to a queue that does not exist
-    with pytest.raises(NameError):
+    with pytest.raises(KeyError):
         bad_return_queue()
 
     eng2 = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, metrics_port=None)
@@ -297,8 +296,8 @@ def test_serialization_fail_crash(mock_rsmq: MagicMock, caplog: LogCaptureFixtur
     mock_rsmq.return_value.sendMessage.return_value.execute = lambda: True
 
     cfg = {
-        "comp_1": {"value": "random_val", "type": "rsmq", "schema": "volley.data_models.ComponentMessage"},
-        "DLQ": {"value": "random_val", "type": "rsmq", "schema": "volley.data_models.ComponentMessage"},
+        "comp_1": {"value": "random_val", "profile": "rsmq", "schema": "volley.data_models.ComponentMessage"},
+        "DLQ": {"value": "random_val", "profile": "rsmq", "schema": "volley.data_models.ComponentMessage"},
     }
 
     # using comp_1 as a DLQ, just to make things run for the test
@@ -326,7 +325,7 @@ def test_fail_produce(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:
     }
     mock_rsmq.return_value.receiveMessage.return_value.exceptions.return_value.execute = lambda: rsmq_msg
     mock_rsmq.return_value.sendMessage.return_value.execute.side_effect = Exception()
-    cfg = {"comp_1": {"value": "random_val", "type": "rsmq", "schema": "volley.data_models.ComponentMessage"}}
+    cfg = {"comp_1": {"value": "random_val", "profile": "rsmq", "schema": "volley.data_models.ComponentMessage"}}
 
     # using comp_1 as a DLQ, just to make things run for the test
     eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, metrics_port=None)
@@ -345,13 +344,13 @@ def test_fail_produce(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:
 @patch("volley.connectors.rsmq.RSMQConsumer.on_fail")
 @patch("volley.connectors.rsmq.RedisSMQ")
 def test_init_no_output(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:  # pylint: disable=W0613
-    cfg = {"comp_1": {"value": "random_val", "type": "rsmq", "schema": "volley.data_models.ComponentMessage"}}
+    cfg = {"comp_1": {"value": "random_val", "profile": "rsmq", "schema": "volley.data_models.ComponentMessage"}}
 
     # cant produce anywhere, and thats ok
     eng = Engine(input_queue="comp_1", queue_config=cfg)
     assert eng.output_queues == []
 
-    cfg["DLQ"] = {"value": "dlq-topic", "type": "kafka"}
+    cfg["DLQ"] = {"value": "dlq-topic", "profile": "confluent"}
     # DLQ should become an output, even without any outputs defined
     eng2 = Engine(input_queue="comp_1", dead_letter_queue="DLQ", queue_config=cfg, metrics_port=None)
     assert "DLQ" in eng2.output_queues
@@ -371,7 +370,7 @@ def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture, 
     cfg = {
         "comp_1": {
             "value": "kafka.topic",
-            "type": "kafka",
+            "profile": "confluent",
             "schema": "volley.data_models.ComponentMessage",
             "config": {"group.id": consumer_group, "bootstrap.servers": kafka_brokers},
         }
@@ -407,8 +406,8 @@ def test_wild_dlq_error(mock_handler: MagicMock, mock_rsmq: MagicMock, caplog: L
     }
     mock_rsmq.return_value.receiveMessage.return_value.exceptions.return_value.execute = lambda: rsmq_msg
     cfg = {
-        "comp_1": {"value": "random_val", "type": "rsmq"},
-        "dlq": {"type": "rsmq", "value": "my_dlq"},
+        "comp_1": {"value": "random_val", "profile": "rsmq"},
+        "dlq": {"profile": "rsmq-dlq", "value": "my_dlq"},
     }
 
     eng = Engine(input_queue="comp_1", dead_letter_queue="dlq", queue_config=cfg, metrics_port=None)

@@ -17,12 +17,7 @@ from volley.data_models import QueueMessage
 from volley.logging import logger
 from volley.models.base import message_model_handler
 from volley.profiles import ConnectionType, Profile, construct_profiles
-from volley.queues import (
-    ConnectionType,
-    DLQNotConfiguredError,
-    Queue,
-    construct_queue_map,
-)
+from volley.queues import DLQNotConfiguredError, Queue, construct_queue_map
 from volley.transport import produce_handler
 from volley.util import GracefulKiller
 
@@ -41,7 +36,6 @@ POLL_INTERVAL = 1
 @dataclass
 class Engine:
     """Initializes the Volley application and prepares the main decorator
-
     Attributes:
         app_name: Name of the applicaiton. Added as a label to all logged metrics
         input_queue:
@@ -54,11 +48,9 @@ class Engine:
             Must provide one of queue_config or yaml_config_path
         yaml_config_path: path to a yaml config file.
             Must provide one of yaml_config_path or queue_config
-
     Raises:
         NameError: input_queue, dead_letter_queue or output_queues
             reference a queue that does not exist in queue configuration
-
     Returns:
         Engine: Instance of the engine with a prepared `stream_app` decorator
     """
@@ -82,7 +74,6 @@ class Engine:
 
     def __post_init__(self) -> None:
         """Validates configuration and initializes queue configs
-
         Database connections are initialized within stream_app decorator
         """
         if self.output_queues == []:
@@ -123,7 +114,7 @@ class Engine:
         # validate input_queue, output_queues, and DLQ (optional) are valid configurations
         for q in [self.input_queue] + self.output_queues:
             if q not in self.queue_map:
-                raise NameError(f"Queue '{q}' not found in configuration")
+                raise KeyError(f"Queue '{q}' not found in configuration")
 
         logger.info("Queues initialized: %s", list(self.queue_map.keys()))
 

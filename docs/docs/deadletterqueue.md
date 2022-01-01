@@ -24,11 +24,11 @@ or alternatively:
 config = {
     "input-topic": {
       "value": "long.name.of.kafka.input.topic",
-      "type": "kafka",
+      "profile": "confluent",
     }
     "my-dead-letter-queue": {
         "value": "long.name.of.kafka.DLQ.topic",
-        "type": "kafka",
+        "profile": "confluent",
     }
 }
 ```

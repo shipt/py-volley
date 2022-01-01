@@ -2,6 +2,12 @@ profiles:
   confluent:
     consumer: volley.connectors.confluent.ConfluentKafkaConsumer
     producer: volley.connectors.confluent.ConfluentKafkaProducer
+    model_handler: volley.models.PydanticModelHandler
+    data_model: volley.data_models.ComponentMessage
+    serializer: volley.serializers.orjson_serializer.OrJsonSerialization
+  confluent-pydantic:
+    consumer: volley.connectors.confluent.ConfluentKafkaConsumer
+    producer: volley.connectors.confluent.ConfluentKafkaProducer
     model_handler: volley.models.PydanticParserModelHandler
     data_model: volley.data_models.ComponentMessage
     serializer: None
@@ -23,6 +29,12 @@ profiles:
     model_handler: volley.models.PydanticModelHandler
     data_model: volley.data_models.ComponentMessage
     serializer: volley.serializers.orjson_serializer.OrJsonSerialization
+  rsmq-pydantic:
+    consumer: volley.connectors.rsmq.RSMQConsumer
+    producer: volley.connectors.rsmq.RSMQProducer
+    model_handler: volley.models.PydanticParserModelHandler
+    data_model: volley.data_models.ComponentMessage
+    serializer: None
   rsmq-orjson-pydantic:
     consumer: volley.connectors.rsmq.RSMQConsumer
     producer: volley.connectors.rsmq.RSMQProducer
@@ -38,6 +50,12 @@ profiles:
   confluent-dlq:
     consumer: volley.connectors.confluent.ConfluentKafkaConsumer
     producer: volley.connectors.confluent.ConfluentKafkaProducer
+    serializer: None
+    data_model: None
+    model_handler: None
+  rsmq-dlq:
+    consumer: volley.connectors.rsmq.RSMQConsumer
+    producer: volley.connectors.rsmq.RSMQProducer
     serializer: None
     data_model: None
     model_handler: None

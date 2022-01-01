@@ -3,18 +3,11 @@
 # LICENSE file in the root directory of this source tree.
 
 from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Any, Dict, NamedTuple, Optional, Type
+from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, Field, root_validator, validator
-
-from volley.config import GLOBALS, get_configs, import_module_from_string, load_yaml
-from volley.connectors.base import Consumer, Producer
-from volley.logging import logger
-from volley.models import PydanticModelHandler
+from volley.config import import_module_from_string
 from volley.models.base import BaseModelHandler
-from volley.profiles import ConnectionType, Profile, construct_profiles
-from volley.serializers import OrJsonSerialization
+from volley.profiles import ConnectionType, Profile
 from volley.serializers.base import BaseSerialization
 
 
@@ -85,9 +78,11 @@ def construct_queue_map(profiles: Dict[str, Profile], configs: dict[str, dict[st
     for qname, profile in profiles.items():
         q_config = configs[qname]
         cfg: Any = q_config.get("config", {})
+        if (value := q_config.get("value")) is None:
+            raise KeyError(f"Must provide `value` in configuration for `{qname}`")
         queue = Queue(
             name=qname,
-            value=q_config["value"],
+            value=value,
             profile=profile,
             pass_through_config=cfg,
         )

@@ -22,16 +22,16 @@ class OutputMessage(BaseModel):
 queue_config = {
     "input-topic": {
         "value": "incoming.kafka.topic",
-        "type": "kafka",
+        "profile": "confluent",
         "schema": "InputMessage",
     },
     "output-topic": {
         "value": "outgoing.kafka.topic",
-        "type": "kafka",
+        "profile": "confluent",
         "schema": "OutputMessage",
     },
     # optionally - configure a dead-letter-queue
-    "dead-letter-queue": {"value": "deadletter.kafka.topic", "type": "kafka"},
+    "dead-letter-queue": {"value": "deadletter.kafka.topic", "profile": "confluent"},
 }
 
 # intializae the Volley application

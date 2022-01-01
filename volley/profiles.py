@@ -4,9 +4,9 @@
 
 from copy import deepcopy
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, Field, root_validator, validator
+from pydantic import BaseModel, root_validator, validator
 
 from volley.config import get_configs
 from volley.logging import logger
@@ -33,7 +33,6 @@ class Profile(BaseModel):
     @classmethod
     def validate_nullable(cls, value: Optional[str]) -> Optional[str]:
         """Ensures str or None types parse as `None`
-
         This needs to be the top (first) validator
         """
         if str(value).lower() not in ["none", "disabled"]:
@@ -74,7 +73,6 @@ class Profile(BaseModel):
 
 def construct_profiles(queue_configs: dict[str, dict[str, Any]]) -> Dict[str, Profile]:
     """Constructs a profile from each queue configuration provided by user
-
     User behavior:
         1. Specifies a named profile with no overrides
         2. Specifies a named profile and provide overrides
@@ -99,7 +97,6 @@ def construct_profiles(queue_configs: dict[str, dict[str, Any]]) -> Dict[str, Pr
                 f"`{profile_requested}` is not a valid profile name. "
                 f"Available profiles: `{list(supported_profiles.keys())}`"
             )
-        logger.info("Validating %s profile", q_name)
         constructed_profiles[q_name] = Profile(**this_profile)
 
     return constructed_profiles

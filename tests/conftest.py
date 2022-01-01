@@ -6,13 +6,12 @@ from unittest.mock import MagicMock, patch
 
 from pytest import MonkeyPatch, fixture
 
-from volley.config import get_configs, load_yaml
+from volley.config import get_configs
 from volley.connectors import (
     ConfluentKafkaConsumer,
     ConfluentKafkaProducer,
     RSMQConsumer,
     RSMQProducer,
-    confluent,
 )
 from volley.data_models import QueueMessage
 from volley.engine import Engine
@@ -123,17 +122,17 @@ def config_dict() -> dict[str, dict[str, Any]]:
         "input-topic": {
             "value": "localhost.kafka.input",
             "profile": "confluent",
-            "schema": "example.data_models.InputMessage",
+            "data_model": "example.data_models.InputMessage",
         },
         "comp_1": {
             "value": "comp1",
             "profile": "rsmq",
-            "schema": "volley.data_models.ComponentMessage",
+            "data_model": "volley.data_models.ComponentMessage",
         },
         "output-topic": {
             "value": "localhost.kafka.output",
             "profile": "confluent",
-            "schema": "volley.data_models.ComponentMessage",
+            "data_model": "volley.data_models.ComponentMessage",
             "config": {"compression.type": "gzip"},
         },
         "dead-letter-queue": {

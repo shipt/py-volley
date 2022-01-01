@@ -41,17 +41,17 @@ Let's define configuration for three queues; one input queue, an output queue, a
 queue_config = {
     "my_alias_for_input_queue": {  # alias for the queue.
         "value": "value_for_input_queue_name",  # physical name for the queue
-        "type": "kafka",  # kafka|rsmq
+        "profile": "confluent",  # kafka|rsmq
         "schema": "my.models.InputMessage",  # path to Pydantic model for validating data to/from the queue
     },
     "output-topic": {
         "value": "outgoing.kafka.topic",
-        "type": "kafka",
+        "profile": "confluent",
         "schema": "my.models.OutputMessage"
     },
     "dead-letter-queue": {
         "value": "deadletter.kafka.topic",
-        "type": "kafka"
+        "profile": "confluent"
     },
 }
 ```

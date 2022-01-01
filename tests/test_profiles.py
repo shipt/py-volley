@@ -34,14 +34,30 @@ def test_construct_consumer_profiles() -> None:
 
 
 def test_load_named_profiles(config_dict: dict[str, dict[str, Any]]) -> None:
-    """verify loading of named profiles"""
+    """use config_dict test fixture to validate loading of named profiles
+    fixture specifies several named configurations, including DLQ
+    """
+    # get names of all supported profiles
     for _, cfg in config_dict.items():
-        # is added by Engine()
+        # connection_type is added by Engine()
         cfg["connection_type"] = ConnectionType.CONSUMER
     profile = construct_profiles(config_dict)
-    for _, p in profile.items():
-        assert p.model_handler is not None
-        assert p.data_model is not None
+    for name, p in profile.items():
+        if "dead-letter-queue" not in name:
+            assert p.model_handler is not None
+            assert p.data_model is not None
+        else:
+            assert p.model_handler is None
+            assert p.data_model is None
+            assert p.serializer is None
+
+
+def test_all_supported_profiles() -> None:
+    """all the profiles defined in Volley must be valid"""
+    profiles = get_configs()["profiles"]
+    for _, profile in profiles.items():
+        profile["connection_type"] = ConnectionType.CONSUMER
+        Profile(**profile)
 
 
 def test_invalid_producer(confluent_producer_profile: Profile) -> None:

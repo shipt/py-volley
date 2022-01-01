@@ -1,11 +1,9 @@
-from typing import Dict
-
 import pytest
 from pydantic.main import BaseModel
 
 from volley.config import load_yaml
 from volley.data_models import QueueMessage
-from volley.profiles import Profile, construct_profiles
+from volley.profiles import Profile
 from volley.queues import Queue, import_module_from_string
 
 
@@ -40,10 +38,3 @@ def test_bad_connector_config(confluent_consumer_profile: Profile) -> None:
             profile=confluent_consumer_profile,
             pass_through_config="bad_value",  # type: ignore
         )
-
-
-def test_missing_queue_attr(config_dict: dict[str, dict[str, str]]) -> None:
-    del config_dict["input-topic"]["value"]
-
-    with pytest.raises(KeyError):
-        pass

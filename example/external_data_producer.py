@@ -1,6 +1,5 @@
 # example producer
 # simulates some "external service" publishing data to a kafka topic that a Volley application consumes from
-import json
 import os
 import time
 from uuid import uuid4
@@ -21,10 +20,7 @@ def main() -> None:
     i = 0
     while True:
         uuid = str(uuid4())[:8]
-        data = InputMessage(
-            list_of_values = [1, 2, 3, 4.5],
-            request_id=f"{uuid}-{i}"
-        )
+        data = InputMessage(list_of_values=[1, 2, 3, 4.5], request_id=f"{uuid}-{i}")
         p.produce(input_topic, data.json())
         logger.info(f"{data=}")
         time.sleep(2)

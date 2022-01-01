@@ -23,13 +23,12 @@ queue_config = {
         "value": "long_name_1",
         "profile": "rsmq",
         "serializer": "volley.serializers.MsgPackSerialization",
-        # parse messages from RSMQ to a dictionary
-        "schema": "volley.data_models.ComponentMessage",
+        "data_model": "volley.data_models.ComponentMessage",
     },
     "postgres_queue": {
         "value": "my_long_table_name",
         "data_model": "example.data_models.PostgresMessage",
-        "model_hander": "volley.models.PydanticModelHandler",
+        "model_handler": "volley.models.PydanticModelHandler",
         # disable serializer - sqlachemy implementation in example/plugin/my_plugin.py handles this
         "serializer": "disabled",
         "producer": "example.plugins.my_plugin.MyPGProducer",
@@ -38,15 +37,12 @@ queue_config = {
     "input-topic": {
         "value": "localhost.kafka.input",
         "profile": "confluent",
-        "schema": "example.data_models.InputMessage",
+        "data_model": "example.data_models.InputMessage",
     },
     "output-topic": {
         "value": "localhost.kafka.output",
-        "profile": "confluent",
-        "schema": "example.data_models.OutputMessage",
-        # disable serializer - using PydanticParserModelHandler to handle parsing from bytes to model
-        "serializer": "disabled",
-        "model_handler": "volley.models.PydanticParserModelHandler",
+        "profile": "confluent-pydantic",
+        "data_model": "example.data_models.OutputMessage",
     },
 }
 

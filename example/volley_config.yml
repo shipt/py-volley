@@ -1,6 +1,6 @@
 queues:
   input-topic:
-    value: "localhost.kafka.input"
+    value: localhost.kafka.input
     profile: confluent
     data_model: example.data_models.InputMessage
     config:
@@ -14,18 +14,17 @@ queues:
   postgres_queue:
     value: my_long_table_name
     data_model: volley.data_models.ComponentMessage
+    model_handler: volley.models.PydanticModelHandler
     serializer: None
     producer: example.plugins.my_plugin.MyPGProducer
     consumer: example.plugins.my_plugin.MyPGConsumer
   output-topic:
-    value: "localhost.kafka.output"
-    profile: confluent
-    serializer: None
-    model_handler: volley.models.PydanticParserModelHandler
+    value: localhost.kafka.output
+    profile: confluent-pydantic
     schema: example.data_models.OutputMessage
     config:
       group.id: localhost.example.consumer
       bootstrap.servers: kafka:29092
   dead-letter-queue:
-    value: "localhost.kafka.dlq"
+    value: localhost.kafka.dlq
     profile: confluent-dlq

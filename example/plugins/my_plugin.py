@@ -83,7 +83,7 @@ class MyPGProducer(Producer):
         vals = {
             "message_sent_at": datetime.now(),
             "request_id": message["request_id"],
-            "max_plus_1": message["max_plus_1"],
+            "max_plus": message["max_plus"],
         }
         insert_stmt = insert(queue_table).values(**vals)
         with self.engine.begin() as c:

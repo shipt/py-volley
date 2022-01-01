@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from confluent_kafka import Producer
 
+from example.data_models import InputMessage
 from volley.config import load_yaml
 from volley.logging import logger
 
@@ -19,10 +20,12 @@ def main() -> None:
     p = Producer({"bootstrap.servers": os.environ["KAFKA_BROKERS"]})
     i = 0
     while True:
-        # data = InputMessage.schema()["examples"][0]
         uuid = str(uuid4())[:8]
-        data = {"list_of_values": [1, 2, 3, 4.5], "request_id": f"{uuid}-{i}"}
-        p.produce(input_topic, json.dumps(data))
+        data = InputMessage(
+            list_of_values = [1, 2, 3, 4.5],
+            request_id=f"{uuid}-{i}"
+        )
+        p.produce(input_topic, data.json())
         logger.info(f"{data=}")
         time.sleep(2)
         i += 1

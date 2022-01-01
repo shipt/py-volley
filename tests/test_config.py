@@ -25,16 +25,3 @@ def test_import_module_from_string() -> None:
 
     assert issubclass(class_module, BaseModel)
     assert isinstance(instance, QueueMessage)
-
-
-def test_bad_connector_config(confluent_consumer_profile: Profile) -> None:
-    """asserts error raised when malformed connector config provided
-    the connector config must be a dict
-    """
-    with pytest.raises(TypeError):
-        Queue(
-            name="test",
-            value="long_value",
-            profile=confluent_consumer_profile,
-            pass_through_config="bad_value",  # type: ignore
-        )

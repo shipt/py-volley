@@ -52,9 +52,6 @@ class Queue:
         if self.profile.serializer is not None:
             self.serializer = import_module_from_string(self.profile.serializer)()
 
-        if not isinstance(self.pass_through_config, dict):
-            raise TypeError(f"Connector config for `{self.name}` must be of type `dict`")
-
     def connect(self, con_type: ConnectionType) -> None:
         """instantiate the connector class"""
         if con_type == ConnectionType.CONSUMER:

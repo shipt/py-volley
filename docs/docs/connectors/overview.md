@@ -37,7 +37,7 @@ REDIS_HOST=host_to_run_rsmq
 
 ### Kafka
 
-Implemented on [confluent_kafka](https://docs.confluent.io/platform/current/clients/confluent-kafka-python/html/index.html) and [pyshipt-streams](https://github.com/shipt/pyshipt-streams)
+Implemented on [confluent_kafka](https://docs.confluent.io/platform/current/clients/confluent-kafka-python/html/index.html).
 
 The following configurations can be provided via environment variables:
 

@@ -1,10 +1,33 @@
 from typing import Any, Dict
+from uuid import uuid4
 
 import pytest
 from pydantic import ValidationError
 
+from volley import Engine
 from volley.config import get_configs
 from volley.profiles import ConnectionType, Profile, construct_profiles
+
+
+def test_non_exist_profile() -> None:
+    """requesting a non existent profile should fail"""
+    non_exist_profile = f"non_exist_{str(uuid4())}"
+    invalid = {"rando_queue": {"profile": non_exist_profile, "connection_type": ConnectionType.PRODUCER}}
+    with pytest.raises(ValueError) as err:
+        construct_profiles(invalid)
+
+    assert non_exist_profile in str(err.value)
+
+
+def test_non_exist_profile_init(config_dict: dict[str, dict[str, Any]]) -> None:
+    """requesting a non existent profile should fail on init too"""
+    non_exist_profile = f"non_exist_{str(uuid4())}"
+    config_dict["input-topic"]["profile"] = non_exist_profile
+
+    with pytest.raises(ValueError) as err:
+        Engine(input_queue="input-topic", metrics_port=None, queue_config=config_dict)
+
+    assert non_exist_profile in str(err.value)
 
 
 def test_construct_producer_profiles() -> None:

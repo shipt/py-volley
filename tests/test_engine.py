@@ -452,3 +452,43 @@ def test_runtime_connector_configs(mock_consumer: MagicMock, config_dict: dict[s
 
     # function must not raise
     tuple_two()
+
+
+def test_invalid_queue(config_dict: dict[str, dict[str, str]]) -> None:
+    """queue provided in the init parameters input_queue, output_queues, dead_letter_queue
+    must also exist in configuration
+    """
+
+    # non-exist input queue
+    with pytest.raises(KeyError) as err:
+        _id = str(uuid4())
+        Engine(
+            input_queue=f"not_exist_{_id}",
+            output_queues=list(config_dict.keys()),
+            queue_config=config_dict,
+            metrics_port=None,
+        )
+    assert _id in str(err.value)
+
+    # non-exist output queue
+    with pytest.raises(KeyError) as err:
+        _id = str(uuid4())
+        Engine(
+            input_queue="input-topic",
+            output_queues=[f"not_exist_{_id}"],
+            queue_config=config_dict,
+            metrics_port=None,
+        )
+    assert _id in str(err.value)
+
+    # non-exist dead letter queue
+    with pytest.raises(KeyError) as err:
+        _id = str(uuid4())
+        Engine(
+            input_queue="input-topic",
+            output_queues=["output-topic"],
+            dead_letter_queue=f"not_exist_{_id}",
+            queue_config=config_dict,
+            metrics_port=None,
+        )
+    assert _id in str(err.value)

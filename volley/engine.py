@@ -101,6 +101,11 @@ class Engine:
         # filter out queues that are not required by app
         cfg = {k: v for k, v in cfg.items() if k in [self.input_queue] + self.output_queues}
 
+        # validate input_queue, output_queues, and DLQ (optional) are valid configurations
+        for q in [self.input_queue] + self.output_queues:
+            if q not in cfg:
+                raise KeyError(f"Queue '{q}' not found in configuration")
+
         # tag queues with type (how app intends to use it)
         cfg[self.input_queue]["connection_type"] = ConnectionType.CONSUMER
         for qname in self.output_queues:
@@ -110,11 +115,6 @@ class Engine:
         profiles: Dict[str, Profile] = construct_profiles(cfg)
         # create queue_map from profiles
         self.queue_map = construct_queue_map(profiles, cfg)
-
-        # validate input_queue, output_queues, and DLQ (optional) are valid configurations
-        for q in [self.input_queue] + self.output_queues:
-            if q not in self.queue_map:
-                raise KeyError(f"Queue '{q}' not found in configuration")
 
         logger.info("Queues initialized: %s", list(self.queue_map.keys()))
 

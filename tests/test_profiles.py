@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 from uuid import uuid4
 
 import pytest
@@ -89,7 +89,7 @@ def test_invalid_producer(confluent_producer_profile: Profile) -> None:
     del prod["producer"]
     with pytest.raises(ValidationError) as info:
         Profile(**prod)
-        assert "Must provide a producer" in str(info.value)
+    assert "Must provide a producer" in str(info.value)
 
 
 def test_invalid_consumer(confluent_consumer_profile: Profile) -> None:
@@ -98,7 +98,7 @@ def test_invalid_consumer(confluent_consumer_profile: Profile) -> None:
     del prod["consumer"]
     with pytest.raises(ValidationError) as info:
         Profile(**prod)
-        assert "Must provide a consumer" in str(info.value)
+    assert "Must provide a consumer" in str(info.value)
 
 
 def test_invalid_handler_config(confluent_consumer_profile: Profile) -> None:
@@ -108,3 +108,50 @@ def test_invalid_handler_config(confluent_consumer_profile: Profile) -> None:
     with pytest.raises(ValidationError) as info:
         Profile(**prod)
     assert "Must provide both or none of model_handler|data_model" in str(info.value)
+
+
+@pytest.mark.parametrize(
+    "data_model,model_handler,serializer",
+    [
+        (None, None, None),
+        ("volley.data_models.ComponentMessage", "volley.models.PydanticParserModelHandler", None),
+        (
+            "volley.data_models.ComponentMessage",
+            "volley.models.PydanticModelHandler",
+            "volley.serializers.msgpack_serializer.MsgPackSerialization",
+        ),
+    ],
+)
+def test_profile_override(data_model: Optional[str], model_handler: Optional[str], serializer: Optional[str]) -> None:
+    """all or none of a profiles can be overriden by the user"""
+    qname = "test-topic"
+    consumer_group = str(uuid4())
+    qvalue = "test.topic"
+    data_model = None
+    model_handler = None
+
+    confluent = "confluent"
+    confluent_profile_data = get_configs()["profiles"][confluent]
+
+    cfg = {
+        qname: {
+            "value": qvalue,
+            "profile": confluent,
+            "model_handler": model_handler,
+            "data_model": data_model,
+            "serializer": serializer,
+            "config": {"group.id": consumer_group},
+        }
+    }
+    app = Engine(input_queue=qname, queue_config=cfg, metrics_port=None)
+    test_topic_queue = app.queue_map[qname]
+    assert test_topic_queue.data_model is data_model
+    assert test_topic_queue.model_handler is model_handler
+    assert test_topic_queue.name == qname
+    assert test_topic_queue.value == qvalue
+    assert test_topic_queue.profile.model_handler is model_handler
+    assert test_topic_queue.profile.data_model is data_model
+
+    # verify not overriden
+    assert test_topic_queue.profile.producer == confluent_profile_data["producer"]
+    assert test_topic_queue.profile.consumer == confluent_profile_data["consumer"]

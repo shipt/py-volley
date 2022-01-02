@@ -1,7 +1,7 @@
 import json
 import os
 from random import randint
-from typing import Any, Callable, Generator, Optional
+from typing import Any, Callable, Generator, List, Optional
 from unittest.mock import MagicMock, patch
 
 from pytest import MonkeyPatch, fixture
@@ -154,3 +154,19 @@ def confluent_producer_profile() -> Profile:
     confluent_profile = get_configs()["profiles"]["confluent"]
     confluent_profile["connection_type"] = ConnectionType.PRODUCER
     return Profile(**confluent_profile)
+
+
+@fixture
+def all_supported_producer_profiles() -> List[Profile]:
+    all_cfg: Any = get_configs()["profiles"]
+    for _, c in all_cfg.items():
+        c["connection_type"] = ConnectionType.PRODUCER
+    return [Profile(**c) for c in all_cfg.values()]
+
+
+@fixture
+def all_supported_consumer_profiles() -> List[Profile]:
+    all_cfg: Any = get_configs()["profiles"]
+    for _, c in all_cfg.items():
+        c["connection_type"] = ConnectionType.CONSUMER
+    return [Profile(**c) for c in all_cfg.values()]

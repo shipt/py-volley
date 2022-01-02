@@ -1,3 +1,5 @@
+from typing import List
+
 import pytest
 
 from volley.profiles import ConnectionType, Profile
@@ -45,3 +47,21 @@ def test_missing_consumer(confluent_producer_profile: Profile) -> None:
     )
     with pytest.raises(ValueError):
         q.connect(ConnectionType.CONSUMER)
+
+
+def test_valid_supported_queues(
+    all_supported_producer_profiles: List[Profile], all_supported_consumer_profiles: List[Profile]
+) -> None:
+    """all profiles must be able to construct a valid Queue"""
+    for profile in all_supported_producer_profiles + all_supported_consumer_profiles:
+        Queue(name="test", value="test", profile=profile)
+
+
+def test_invalid_supported_queues(
+    all_supported_producer_profiles: List[Profile], all_supported_consumer_profiles: List[Profile]
+) -> None:
+    """a supported profile with bad string value should raise"""
+    for profile in all_supported_producer_profiles + all_supported_consumer_profiles:
+        profile.data_model = "bad.path.to.object"
+        with pytest.raises(ImportError):
+            Queue(name="test", value="test", profile=profile)

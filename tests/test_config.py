@@ -3,8 +3,7 @@ from pydantic.main import BaseModel
 
 from volley.config import load_yaml
 from volley.data_models import QueueMessage
-from volley.profiles import Profile
-from volley.queues import Queue, import_module_from_string
+from volley.queues import import_module_from_string
 
 
 def test_load_yaml_success() -> None:

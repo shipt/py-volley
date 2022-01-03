@@ -27,9 +27,9 @@ def load_yaml(file_path: Union[str, Path]) -> Dict[str, Any]:
 def import_module_from_string(module_str: str) -> type:
     """returns the module given its string path
     for example:
-        'volley.data_models.ComponentMessage'
+        'volley.data_models.GenericMessage'
     is equivalent to:
-        from volley.data_models import ComponentMessage
+        from volley.data_models import GenericMessage
     """
     modules = module_str.split(".")
     class_obj = modules[-1]

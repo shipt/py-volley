@@ -17,8 +17,8 @@ It is recommended to define Volley's configuration by passing a dictionary direc
 `type`
 : (str) - *required* : Either `kafka|rsmq`. Pertains to the type of connector required to produce and consume from the queue.
 
-`schema`
-: (str) - *optional* : Defaults to `volley.data_models.ComponentMessage`. Path to the Pydantic model used for data validation. When default is used, Volley will only validate that messages can be successfully converted to a Pydantic model or dictionary.
+`data_model`
+: (str) - *optional* : Defaults to `volley.data_models.GenericMessage`. Path to the Pydantic model used for data validation. When default is used, Volley will only validate that messages can be successfully converted to a Pydantic model or dictionary.
 
 `serializer`
 : (str) - *optional* : Defaults to `volley.serializers.OrJsonSerializer`. Path to the serializer.
@@ -42,12 +42,12 @@ queue_config = {
     "my_alias_for_input_queue": {  # alias for the queue.
         "value": "value_for_input_queue_name",  # physical name for the queue
         "profile": "confluent",  # kafka|rsmq
-        "schema": "my.models.InputMessage",  # path to Pydantic model for validating data to/from the queue
+        "data_model": "my.models.InputMessage",  # path to Pydantic model for validating data to/from the queue
     },
     "output-topic": {
         "value": "outgoing.kafka.topic",
         "profile": "confluent",
-        "schema": "my.models.OutputMessage"
+        "data_model": "my.models.OutputMessage"
     },
     "dead-letter-queue": {
         "value": "deadletter.kafka.topic",
@@ -75,15 +75,15 @@ Queue configuration can also be defined via a yml file. The below is equivalent 
 queues:
     my_alias_for_input_queue:
         value: value_for_input_queue_name
-        type: kafka
-        schema: my.models.InputMessage
+        profile: confluent
+        data_model: my.models.InputMessage
     output-topic:
         value: outgoing.kafka.topic
-        type: kafka
-        schema: my.models.OutputMessage
+        profile: confluent
+        data_model: my.models.OutputMessage
     dead-letter-queue:
         value: deadletter.kafka.topic
-        type: kafka
+        profile: confluent
 ```
 
 Then reference the file when instantiating the application.

@@ -28,11 +28,11 @@ This model is registered in configuration:
 config = {
     "input-queue":{
         ...,
-        "schema": "mymodels.myIncomingData"
+        "data_model": "mymodels.myIncomingData"
     },
     "output-queue":{
         ...,
-        "schema": "mymodels.myOutgoingData"
+        "data_model": "mymodels.myOutgoingData"
     },  
 }
 ```

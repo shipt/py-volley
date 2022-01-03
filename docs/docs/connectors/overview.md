@@ -53,8 +53,8 @@ But all [librdkafka configurations](https://github.com/edenhill/librdkafka/blob/
 ```yml
 - name: output_topic
   value: output.kafka.topic.name
-  type: kafka
-  schema: volley.data_models.ComponentMessage
+  profile: confluent
+  data_model: volley.data_models.GenericMessage
   config:
     bootstrap.servers: kafka_broker_host:9092
 ```
@@ -95,7 +95,7 @@ Like all configuration, they can be specified in either `yaml` or a `dict` passe
 # ./my_volly_config.yml
 - name: postgres_queue
   value: pg_queue_table
-  data_model: volley.data_models.ComponentMessage
+  data_model: volley.data_models.GenericMessage
   model_hander: volley.models.PydanticModelHandler
   serializer: None
   producer: example.plugins.my_plugin.MyPGProducer
@@ -108,7 +108,7 @@ Is is equivalent to:
 config = {
     "postgres_queue": {
         "value": "pg_queue_table",
-        "data_model": "volley.data_models.ComponentMessage,
+        "data_model": "volley.data_models.GenericMessage,
         "model_hander": "volley.models.PydanticModelHandler",
         "serializer": "disabled",
         "producer": "example.plugins.my_plugin.MyPGProducer",
@@ -117,4 +117,4 @@ config = {
 }
 ```
 
-A complete example using this plugin is provided [here](advanced_example.md)
+A complete example using this plugin is provided [here](../advanced_example.md)

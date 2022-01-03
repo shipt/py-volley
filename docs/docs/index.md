@@ -21,16 +21,28 @@ Volley turns your Python function into a stream processor. If you can write a Py
 ```python
 from volley import Engine
 
+cfg = {
+    "input-topic": {
+        "value": "my.kafka.topic",
+        "profile": "confluent",
+    },
+    "output-topic": {
+        "value": "some.other.kafka.topic",
+        "profile": "confluent",
+    }
+}
 
 app = Engine(
-    input_queue="my_input_kafka_topic",
-    output_queues=["my_output_kakfa_topic"],
+    input_queue="input-topic",
+    output_queues=["output-topic"],
+    queue_config=cfg
 )
 
 @app.stream_app
 def my_fun(msg: Any):
     print(msg)
-    return [("my_output_kakfa_topic", msg)]
+    new_msg = {"hello": "world"}
+    return [("output-topic", new_msg)]
 
 if __name__ == "__main__":
     my_fun()
@@ -42,10 +54,15 @@ And if your application needs to support `async` + `await`, define the function 
 @app.stream_app
 async def my_fun(msg: Any):
     out_msg = await some_awaitable(msg)
-    return [("my_output_kakfa_topic", out_msg)]
+    return [("output-topic", out_msg)]
 
 if __name__ == "__main__":
     my_fun()
+```
+
+```bash
+KAFKA_BROKERS=kafka:9092
+KAFKA_CONSUMER_GROUP=my.consumer.group
 ```
 
 And start the worker:
@@ -66,10 +83,10 @@ Volley is production-ready, and provides the following to all functions that it 
 - Data validation via [Pydantic](https://pydantic-docs.helpmanual.io/)
 - Built-in support for both Kafka and [pyRSMQ](https://github.com/mlasevich/PyRSMQ)(Redis)
 - Serialization in JSON and [MessagePack](https://msgpack.org/index.html)
-- Data validation and schemas, data store connectors, and serialization are all extensible with plugins
+- Extensible data validation and schemas, data store connectors, and serialization with plugins
 - Optional [dead-letter-queues](deadletterqueue.md) for serialization and schema validation failures
 
-## Operations
+## How-it-works
 
 When run, Volley invokes a continuous loop of the following:
 

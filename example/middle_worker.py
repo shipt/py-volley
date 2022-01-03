@@ -23,7 +23,7 @@ queue_config = {
         "value": "long_name_1",
         "profile": "rsmq",
         "serializer": "volley.serializers.MsgPackSerialization",
-        "data_model": "volley.data_models.ComponentMessage",
+        "data_model": "volley.data_models.GenericMessage",
     },
     "postgres_queue": {
         "value": "my_long_table_name",

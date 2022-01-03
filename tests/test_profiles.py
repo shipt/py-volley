@@ -114,9 +114,9 @@ def test_invalid_handler_config(confluent_consumer_profile: Profile) -> None:
     "data_model,model_handler,serializer",
     [
         (None, None, None),
-        ("volley.data_models.ComponentMessage", "volley.models.PydanticParserModelHandler", None),
+        ("volley.data_models.GenericMessage", "volley.models.PydanticParserModelHandler", None),
         (
-            "volley.data_models.ComponentMessage",
+            "volley.data_models.GenericMessage",
             "volley.models.PydanticModelHandler",
             "volley.serializers.msgpack_serializer.MsgPackSerialization",
         ),

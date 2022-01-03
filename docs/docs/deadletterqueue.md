@@ -12,10 +12,10 @@ To configure a dead letter queue, provide it in queue configration (either yaml 
 queues:
   input-topic:
     value: long.name.of.kafka.input.topic
-    type: kafka
+    profile: confluent
   my-dead-letter-queue:
     value: long.name.of.kafka.DLQ.topic
-    type: kafka
+    profile: confluent
 ```
 
 or alternatively:

@@ -13,7 +13,7 @@ from example.data_models import InputMessage, OutputMessage
 from tests.conftest import KafkaMessage
 
 # from tests.test_connectors.test_kafka import KafkaMessage
-from volley.data_models import ComponentMessage
+from volley.data_models import GenericMessage
 from volley.engine import Engine
 from volley.queues import DLQNotConfiguredError
 
@@ -66,7 +66,7 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
 
     # component returns "just none"
     @eng.stream_app
-    def func(*args: ComponentMessage) -> bool:  # pylint: disable=W0613
+    def func(*args: GenericMessage) -> bool:  # pylint: disable=W0613
         return True
 
     func()
@@ -115,10 +115,10 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
     eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, metrics_port=None)
 
     @eng.stream_app
-    def hello_world(msg: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:
+    def hello_world(msg: GenericMessage) -> List[Tuple[str, GenericMessage]]:
         msg_dict = msg.dict()
         unique_val = msg_dict["uuid"]
-        out = ComponentMessage(hello="world", unique_val=unique_val)
+        out = GenericMessage(hello="world", unique_val=unique_val)
         return [("comp_1", out)]
 
     # must not raise any exceptions
@@ -268,8 +268,8 @@ def test_engine_configuration_failures(mock_rsmq: MagicMock) -> None:
     eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, metrics_port=None)
 
     @eng.stream_app
-    def bad_return_queue(msg: ComponentMessage) -> List[Tuple[str, ComponentMessage]]:  # pylint: disable=W0613
-        out = ComponentMessage(hello="world")
+    def bad_return_queue(msg: GenericMessage) -> List[Tuple[str, GenericMessage]]:  # pylint: disable=W0613
+        out = GenericMessage(hello="world")
         return [("DOES_NOT_EXIST", out)]
 
     # trying to return a message to a queue that does not exist
@@ -279,7 +279,7 @@ def test_engine_configuration_failures(mock_rsmq: MagicMock) -> None:
     eng2 = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, metrics_port=None)
 
     @eng2.stream_app
-    def bad_return_type(msg: ComponentMessage) -> Any:  # pylint: disable=W0613
+    def bad_return_type(msg: GenericMessage) -> Any:  # pylint: disable=W0613
         out = dict(hello="world")
         return [("comp_1", out)]
 
@@ -296,8 +296,8 @@ def test_serialization_fail_crash(mock_rsmq: MagicMock, caplog: LogCaptureFixtur
     mock_rsmq.return_value.sendMessage.return_value.execute = lambda: True
 
     cfg = {
-        "comp_1": {"value": "random_val", "profile": "rsmq", "schema": "volley.data_models.ComponentMessage"},
-        "DLQ": {"value": "random_val", "profile": "rsmq", "schema": "volley.data_models.ComponentMessage"},
+        "comp_1": {"value": "random_val", "profile": "rsmq", "schema": "volley.data_models.GenericMessage"},
+        "DLQ": {"value": "random_val", "profile": "rsmq", "schema": "volley.data_models.GenericMessage"},
     }
 
     # using comp_1 as a DLQ, just to make things run for the test
@@ -306,7 +306,7 @@ def test_serialization_fail_crash(mock_rsmq: MagicMock, caplog: LogCaptureFixtur
     )
 
     @eng.stream_app
-    def func(msg: ComponentMessage) -> Any:  # pylint: disable=W0613
+    def func(msg: GenericMessage) -> Any:  # pylint: disable=W0613
         return [("comp_1", {"hello": "world"})]
 
     with pytest.raises(Exception):
@@ -325,14 +325,14 @@ def test_fail_produce(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:
     }
     mock_rsmq.return_value.receiveMessage.return_value.exceptions.return_value.execute = lambda: rsmq_msg
     mock_rsmq.return_value.sendMessage.return_value.execute.side_effect = Exception()
-    cfg = {"comp_1": {"value": "random_val", "profile": "rsmq", "schema": "volley.data_models.ComponentMessage"}}
+    cfg = {"comp_1": {"value": "random_val", "profile": "rsmq", "schema": "volley.data_models.GenericMessage"}}
 
     # using comp_1 as a DLQ, just to make things run for the test
     eng = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, metrics_port=None)
 
     @eng.stream_app
-    def func(msg: ComponentMessage) -> Any:  # pylint: disable=W0613
-        out = ComponentMessage(hello="world")
+    def func(msg: GenericMessage) -> Any:  # pylint: disable=W0613
+        out = GenericMessage(hello="world")
         return [("comp_1", out)]
 
     func()
@@ -344,7 +344,7 @@ def test_fail_produce(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:
 @patch("volley.connectors.rsmq.RSMQConsumer.on_fail")
 @patch("volley.connectors.rsmq.RedisSMQ")
 def test_init_no_output(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:  # pylint: disable=W0613
-    cfg = {"comp_1": {"value": "random_val", "profile": "rsmq", "schema": "volley.data_models.ComponentMessage"}}
+    cfg = {"comp_1": {"value": "random_val", "profile": "rsmq", "schema": "volley.data_models.GenericMessage"}}
 
     # cant produce anywhere, and thats ok
     eng = Engine(input_queue="comp_1", queue_config=cfg)
@@ -371,7 +371,7 @@ def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture, 
         "comp_1": {
             "value": "kafka.topic",
             "profile": "confluent",
-            "schema": "volley.data_models.ComponentMessage",
+            "schema": "volley.data_models.GenericMessage",
             "config": {"group.id": consumer_group, "bootstrap.servers": kafka_brokers},
         }
     }
@@ -379,7 +379,7 @@ def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture, 
     eng = Engine(input_queue="comp_1", queue_config=cfg, metrics_port=None)
 
     @eng.stream_app
-    def func(msg: ComponentMessage) -> bool:  # pylint: disable=W0613
+    def func(msg: GenericMessage) -> bool:  # pylint: disable=W0613
         return True
 
     with caplog.at_level(logging.INFO):
@@ -441,11 +441,11 @@ def test_runtime_connector_configs(mock_consumer: MagicMock, config_dict: dict[s
         metrics_port=None,
     )
 
-    m = ComponentMessage(hello="world")
+    m = GenericMessage(hello="world")
 
     # define function the returns producer runtime configs
     @eng.stream_app
-    def tuple_two(msg: Any) -> List[Tuple[str, ComponentMessage, dict[str, Any]]]:  # pylint: disable=W0613
+    def tuple_two(msg: Any) -> List[Tuple[str, GenericMessage, dict[str, Any]]]:  # pylint: disable=W0613
         send_rsmq = ("comp_1", m, {"delay": 10})
         send_kafka = ("output-topic", m, {"key": "abc"})
         return [send_rsmq, send_kafka]

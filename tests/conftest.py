@@ -127,12 +127,12 @@ def config_dict() -> dict[str, dict[str, Any]]:
         "comp_1": {
             "value": "comp1",
             "profile": "rsmq",
-            "data_model": "volley.data_models.ComponentMessage",
+            "data_model": "volley.data_models.GenericMessage",
         },
         "output-topic": {
             "value": "localhost.kafka.output",
             "profile": "confluent",
-            "data_model": "volley.data_models.ComponentMessage",
+            "data_model": "volley.data_models.GenericMessage",
             "config": {"compression.type": "gzip"},
         },
         "dead-letter-queue": {

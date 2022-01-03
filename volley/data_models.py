@@ -4,8 +4,8 @@
 
 from typing import TypeVar
 
-from volley.models.pydantic_model import ComponentMessage, QueueMessage
+from volley.models.pydantic_model import GenericMessage, QueueMessage
 
-ComponentMessageType = TypeVar("ComponentMessageType", bound=ComponentMessage)
+GenericMessageType = TypeVar("GenericMessageType", bound=GenericMessage)
 
-__all__ = ["ComponentMessage", "QueueMessage", "ComponentMessageType"]
+__all__ = ["GenericMessage", "QueueMessage", "GenericMessageType"]

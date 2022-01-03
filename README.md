@@ -34,9 +34,9 @@ Check out projects already using Volley:
 
 Volley applications, "workers", are implemented as a function decorated with an instance of the `volley.engine.Engine`. A component consumes from one queue and can publish to one or many queues.
 
-A component function takes in `input_object` of type: `ComponentMessage`, which is a Pydantic model that accepts extra attributes. This model defines the schema of messages on the INPUT_QUEUE. The component function can process and modify that object to meet its needs.
+By default, component function takes in `input_object` of type: `GenericMessage`, which is a Pydantic model that accepts extra attributes. This model defines the schema of messages on the INPUT_QUEUE. The component function can process and modify that object to meet its needs.
 
-Components output a list of tuples, where the tuple is defined as `(<name_of_queue>, ComponentMessage)`.
+Components output a list of tuples, where the tuple is defined as `(<name_of_queue>, GenericMessage)`.
  The returned component message type must agree with the type accepted by the queue you are publishing to.
 
 Below is a basic example that:
@@ -50,18 +50,18 @@ Below is a basic example that:
 from typing import List, Tuple
 
 from volley.engine import Engine
-from volley.data_models import ComponentMessage
+from volley.data_models import GenericMessage
 
 queue_config = {
     "input-topic": {
       "value": "stg.kafka.myapp.input",
       "profile": "confluent",
-      "schema": "example.data_models.InputMessage",  # for input validation
+      "data_model": "example.data_models.InputMessage",  # for input validation
     },
     "output-topic": {
       "value": "stg.ds-marketplace.v1.my_kafka_topic_output",
       "profile": "confluent",
-      "schema": "example.data_models.OutputMessage",  # for output validation
+      "data_model": "example.data_models.OutputMessage",  # for output validation
     },
     "dead-letter-queue": {
       "value": "stg.kafka.myapp.dlq",
@@ -84,7 +84,7 @@ def hello_world(msg: InputMessage) -> List[Tuple[str, OutputMessage]]:
   else:
     out_value = "bar"
   
-  out = ComponentMessage(hello=out_value)
+  out = GenericMessage(hello=out_value)
 
   return [("output-topic", out)]
 ```
@@ -110,7 +110,7 @@ queue_config = {
       },
       "value": "stg.kafka.myapp.input",
       "profile": "confluent",
-      "schema": "example.data_models.InputMessage",
+      "data_model": "example.data_models.InputMessage",
     },
 ```
 

@@ -5,10 +5,9 @@
 Profiles are pre-defined sets of Volley configurations and can be partially or completely overridden. 
 
 
-For example, to use to [confluent](#confluent) profile:
+For example, define the [confluent](#confluent) profile in the queue configuration
 
-```python hl_lines="5 12"
-from volley import Engine
+```python hl_lines="4"
 
 config = {
     "my-input-queue": {
@@ -16,7 +15,22 @@ config = {
         "value": "my.kafka.topic",
     }
 }
+```
 
+or the [RSMQ](#rsmq) profile
+```python hl_lines="4"
+config = {
+    "my-input-queue": {
+        "profile": "rsmq",
+        "value": "my.redis.queue.name",
+    }
+}
+```
+
+Then initialize the application.
+
+```python  hl_lines="4"
+from volley import Engine
 app = Engine(
     input_queue="my-input-queue,
     queue_config=config
@@ -26,20 +40,15 @@ app = Engine(
 
 Profiles define the following:
 
-`consumer`
-: (str) : dot path to the concrete implementation of the base [Consumer](./connectors/base.md#consumer). Consumers define how Volley should consume a message from a queue and mark a message as successfully read and processed.
+`consumer` : (str) - dot path to the concrete implementation of the base [Consumer](./connectors/base.md#consumer). Consumers define how Volley should consume a message from a queue and mark a message as successfully read and processed.
 
-`producer`
-: (str) : dot path to the concrete implementation of the base [Producer](./connectors/base.md#consumer). Defines how Volley should produce a message to a queue.
+`producer` : (str) - dot path to the concrete implementation of the base [Producer](./connectors/base.md#consumer). Defines how Volley should produce a message to a queue.
 
-`serializer`
-: (str) : dot path to the concrete implementation of the base [BaseSerialization](./serializers/base.md#serialization). Defines how to turn raw `bytes` into a primative python object.
+`serializer` : (str) - dot path to the concrete implementation of the base [BaseSerialization](./serializers/base.md#serialization). Defines how to turn raw `bytes` into a primative python object.
 
-`data_model`
-: (str) : dot path to a user provided data model. For example, a Pydantic data model, or a NamedTuple.
+`data_model` : (str) - dot path to a user provided data model. Every model needs a model handler. 
 
-`model_handler`
-: (str) : dot path to the concrete implementation of [BaseModelHandler](./serializers/base.md#serialization). Defines how Volley should turn serialized data into a user provided data model.
+`model_handler` : (str) - dot path to the concrete implementation of [BaseModelHandler](./serializers/base.md#serialization). Defines how Volley should turn serialized data into a user provided data model. Volley has built-in support for Pydantic models via `volley.models.PydanticModelHandler` and can be extended with custom model handlers.
 
 ## Usage
 
@@ -129,6 +138,8 @@ Refer to [Extending Volley](extending.md) for instructions on writing your own [
 
 ## Supported Profiles
 
+The following is the complete list of the built-in profiles supported by Volley. Use them with: `"profile": "<name>"` in configuration.
+
 ### confluent
 
 The default conlfuent profile is most commonly used for applications working with Confluent Kafka brokers. It heavily relies on [librdkafka](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) and follows at-least-once delviery semantics by default. Consumed message offsets are auto-committed back to the Kafka broker. Messages are consumed from the Kafka broker as `bytes`, and serialized using `orjson`, and constructed into a generic Pydantic model. Many uses will provide their own value for `data_model` rather than using a generic Pydantic model.
@@ -137,7 +148,7 @@ The default conlfuent profile is most commonly used for applications working wit
 | --------------| -------------------------------------------------------- | ---- |
 | consumer      | volley.connectors.confluent.ConfluentKafkaConsumer       | [docs](connectors/kafka.md#confluentkafkaconsumer)
 | producer      | volley.connectors.confluent.ConfluentKafkaProducer       | [docs](connectors/kafka.md#confluentkafkaproducer)
-| data_model    | volley.data_models.GenericMessage                      | [docs](models/data_models.md#genericmessage)
+| data_model    | volley.data_models.GenericMessage                        | [docs](models/data_models.md#genericmessage)
 | model_handler | volley.models.PydanticModelHandler                       | [docs](models/PydanticModelHandler.md)
 | serializer    | volley.serializers.orjson_serializer.OrJsonSerialization | [docs](serializers/OrJsonSerialization.md)
 
@@ -151,7 +162,7 @@ Very similar to the `confluent` profile. This profile uses Pydantic's default se
 | --------------| -------------------------------------------------------- | ---- |
 | consumer      | volley.connectors.confluent.ConfluentKafkaConsumer       | [docs](connectors/kafka.md#confluentkafkaconsumer)
 | producer      | volley.connectors.confluent.ConfluentKafkaProducer       | [docs](connectors/kafka.md#confluentkafkaproducer)
-| data_model    | volley.data_models.GenericMessage                      | [docs](models/data_models.md#genericmessage)
+| data_model    | volley.data_models.GenericMessage                        | [docs](models/data_models.md#genericmessage)
 | model_handler | volley.models.PydanticParserModelHandler                 | [docs](models/PydanticParserModelHandler.md)
 | serializer    | None |
 
@@ -162,7 +173,7 @@ Very similar to the `confluent` profile. This profile uses Pydantic's default se
 | --------------| -------------------------------------------------------- | ---- |
 | consumer      | volley.connectors.confluent.ConfluentKafkaConsumer       | [docs](connectors/kafka.md#confluentkafkaconsumer)
 | producer      | volley.connectors.confluent.ConfluentKafkaProducer       | [docs](connectors/kafka.md#confluentkafkaproducer)
-| data_model    | volley.data_models.GenericMessage                      | [docs](models/data_models.md#genericmessage)
+| data_model    | volley.data_models.GenericMessage                        | [docs](models/data_models.md#genericmessage)
 | model_handler | volley.models.PydanticModelHandler                       | [docs](models/PydanticModelHandler.md)
 | serializer    | volley.serializers.orjson_serializer.OrJsonSerialization | [docs](serializers/OrJsonSerialization.md)
 
@@ -175,7 +186,7 @@ Parses a message as `bytes` from the Kafka broker. Serializes using MessagePack 
 | --------------| ---------------------------------------------------------- | ---- |
 | consumer      | volley.connectors.confluent.ConfluentKafkaConsumer         | [docs](connectors/kafka.md#confluentkafkaconsumer)
 | producer      | volley.connectors.confluent.ConfluentKafkaProducer         | [docs](connectors/kafka.md#confluentkafkaproducer)
-| data_model    | volley.data_models.GenericMessage                        | [docs](models/data_models.md#genericmessage)
+| data_model    | volley.data_models.GenericMessage                          | [docs](models/data_models.md#genericmessage)
 | model_handler | volley.models.PydanticModelHandler                         | [docs](models/PydanticModelHandler.md)
 | serializer    | volley.serializers.msgpack_serializer.MsgPackSerialization | [docs](serializers/MsgPackSerialization.md)
 
@@ -188,7 +199,7 @@ The default Profile for interacting with pyRSMQ. Consumes a message from a Redis
 | --------------| ---------------------------------------------------------- | ---- |
 | consumer      | volley.connectors.rsmq.RSMQConsumer                        | [docs](connectors/rsmq.md#rsmqconsumer)
 | producer      | volley.connectors.rsmq.RSMQProducer                        | [docs](connectors/rsmq.md#rsmqproducer)
-| data_model    | volley.data_models.GenericMessage                        | [docs](models/data_models.md#genericmessage)
+| data_model    | volley.data_models.GenericMessage                          | [docs](models/data_models.md#genericmessage)
 | model_handler | volley.models.PydanticModelHandler                         | [docs](models/PydanticModelHandler.md)
 | serializer    | volley.serializers.orjson_serializer.OrJsonSerialization   | [docs](serializers/OrJsonSerialization.md)
 
@@ -199,7 +210,7 @@ The default Profile for interacting with pyRSMQ. Consumes a message from a Redis
 | --------------| ---------------------------------------------------------- | ---- |
 | consumer      | volley.connectors.rsmq.RSMQConsumer                        | [docs](connectors/rsmq.md#rsmqconsumer)
 | producer      | volley.connectors.rsmq.RSMQProducer                        | [docs](connectors/rsmq.md#rsmqproducer)
-| data_model    | volley.data_models.GenericMessage                        | [docs](models/data_models.md#genericmessage)
+| data_model    | volley.data_models.GenericMessage                          | [docs](models/data_models.md#genericmessage)
 | model_handler | volley.models.PydanticParserModelHandler                   | [docs](models/PydanticParserModelHandler.md)
 | serializer    | None |
 
@@ -210,7 +221,7 @@ The default Profile for interacting with pyRSMQ. Consumes a message from a Redis
 | --------------| ---------------------------------------------------------- | ---- |
 | consumer      | volley.connectors.rsmq.RSMQConsumer                        | [docs](connectors/rsmq.md#rsmqconsumer)
 | producer      | volley.connectors.rsmq.RSMQProducer                        | [docs](connectors/rsmq.md#rsmqproducer)
-| data_model    | volley.data_models.GenericMessage                        | [docs](models/data_models.md#genericmessage)
+| data_model    | volley.data_models.GenericMessage                          | [docs](models/data_models.md#genericmessage)
 | model_handler | volley.models.PydanticModelHandler                         | [docs](models/PydanticModelHandler.md)
 | serializer    | volley.serializers.orjson_serializer.OrJsonSerialization   | [docs](serializers/OrJsonSerialization.md)
 
@@ -220,7 +231,7 @@ The default Profile for interacting with pyRSMQ. Consumes a message from a Redis
 | --------------| ---------------------------------------------------------- | ---- |
 | consumer      | volley.connectors.rsmq.RSMQConsumer                        | [docs](connectors/rsmq.md#rsmqconsumer)
 | producer      | volley.connectors.rsmq.RSMQProducer                        | [docs](connectors/rsmq.md#rsmqproducer)
-| data_model    | volley.data_models.GenericMessage                        | [docs](models/data_models.md#genericmessage)
+| data_model    | volley.data_models.GenericMessage                          | [docs](models/data_models.md#genericmessage)
 | model_handler | volley.models.PydanticModelHandler                         | [docs](models/PydanticModelHandler.md)
 | serializer    | volley.serializers.msgpack_serializer.MsgPackSerialization | [docs](serializers/MsgPackSerialization.md)
 

@@ -127,8 +127,6 @@ def test_profile_override(data_model: Optional[str], model_handler: Optional[str
     qname = "test-topic"
     consumer_group = str(uuid4())
     qvalue = "test.topic"
-    data_model = None
-    model_handler = None
 
     confluent = "confluent"
     confluent_profile_data = get_configs()["profiles"][confluent]

@@ -143,10 +143,26 @@ def test_profile_override(data_model: Optional[str], model_handler: Optional[str
     }
     app = Engine(input_queue=qname, queue_config=cfg, metrics_port=None)
     test_topic_queue = app.queue_map[qname]
-    assert test_topic_queue.data_model is data_model
-    assert test_topic_queue.model_handler is model_handler
+
+    # these
+    if data_model is None:
+        assert test_topic_queue.data_model is data_model
+    else:
+        # compare object name from string path to name of the class imported
+        # for example: GenericMessage.__name__ == "volley.data_models.GenericMessage".split(".")[-1]
+        assert test_topic_queue.data_model.__name__ == data_model.split(".")[-1]  # type: ignore
+
+    if model_handler is None:
+        assert test_topic_queue.model_handler is model_handler
+    else:
+        # model handler will be a class instance, so comapare against the class name
+        assert test_topic_queue.model_handler.__class__.__name__ == model_handler.split(".")[-1]
+
+    # these Queue attributes are str
     assert test_topic_queue.name == qname
     assert test_topic_queue.value == qvalue
+
+    # profile attributes are Optional[str]
     assert test_topic_queue.profile.model_handler is model_handler
     assert test_topic_queue.profile.data_model is data_model
 

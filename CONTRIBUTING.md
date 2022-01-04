@@ -1,7 +1,7 @@
 # Contributing to Volley
 
 ## Welcome
-We are glad you are here! We think it's awesome that you want to spend time helping us make Specter even better. We really value the community we get to be a part of, and we are grateful for your contribution.
+We are glad you are here! We think it's awesome that you want to spend time helping us make Volley even better. We really value the community we get to be a part of, and we are grateful for your contribution.
 
 Contribution requires signing a Contributor License Agreement (CLA) via HelloSign, a process automated as a part of a pull request.  Your Github email address must match the email address used to sign the CLA. Github has [documentation](https://help.github.com/articles/setting-your-commit-email-address-on-github/) on setting email addresses. Your git email must also match this email address.
 
@@ -31,9 +31,9 @@ Pull Requests:
 ## Community Guidelines
   1. Be Kind
     - Working with us should be a fun learning opportunity, and we want it to be a good experience for everyone. Please treat each other with respect.  
-    - If something looks outdated or incorrect, please let us know! We want to make Specter as useful as possible. 
+    - If something looks outdated or incorrect, please let us know! We want to make Volley as useful as possible. 
   2. Own Your Work
-     * Creating a PR for Specter is your first step to becoming a contributor, so make sure that you own your changes. 
+     * Creating a PR for Volley is your first step to becoming a contributor, so make sure that you own your changes. 
      * Our maintainers will do their best to respond to you in a timely manner, but we ask the same from you as the contributor. 
 
 ## _Thank you!_

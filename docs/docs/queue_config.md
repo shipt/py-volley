@@ -14,7 +14,7 @@ It is recommended to define Volley's configuration by passing a dictionary direc
 `value` 
 : (str) - *required* : The system name for a queue. For example, the name of a Kafka topic (prd.my.long.kafka.topic.name) or name of a RSMQ queue.
 
-`type`
+`profile`
 : (str) - *required* : Either `kafka|rsmq`. Pertains to the type of connector required to produce and consume from the queue.
 
 `data_model`

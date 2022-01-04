@@ -11,19 +11,23 @@ Volley is a lightweight and highly configurable message stream processor for Pyt
 
 **Repository**: [https://github.com/shipt/volley](https://github.com/shipt/volley)
 
-Use Volley to quickly build applications that need to poll streaming sources like Kafka, then process the data that it receives and publish results to one or many other streaming destinations.
+
+Use Volley to quickly build lightweight message processing microservices. Volley has built in connectors for [Confluent Kafka](https://github.com/confluentinc/confluent-kafka-python) and [Redis Simple Message Queue](https://github.com/mlasevich/PyRSMQ). It also provides serialization implementations in [MessagePack](https://github.com/msgpack/msgpack-python) and [orjson](https://github.com/ijl/orjson), data validation via [Pydantic](https://github.com/samuelcolvin/pydantic) and [Prometheus](https://github.com/prometheus/client_python) metrics.
 
 
-## Pseudo Example
+## Example
 
-Volley turns your Python function into a stream processor. If you can write a Python function you can build stream a stream processor with Volley.
+Volley turns your Python function into a message stream processor. If you can write a Python function you can build stream a stream processor with Volley.
+
+
+To consume from one Kafka topic and produce to another...
 
 ```python
 from volley import Engine
 
 cfg = {
-    "input-topic": {
-        "value": "my.kafka.topic",
+    "input-topic": {  # a friendly name/alias for a queue
+        "value": "my.kafka.topic",  # literal name of the queue
         "profile": "confluent",
     },
     "output-topic": {

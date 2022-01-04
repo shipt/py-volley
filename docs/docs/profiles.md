@@ -7,7 +7,7 @@ Profiles are pre-defined sets of Volley configurations and can be partially or c
 
 For example, define the [confluent](#confluent) profile in the queue configuration
 
-```python hl_lines="4"
+```python hl_lines="3"
 
 config = {
     "my-input-queue": {
@@ -18,7 +18,7 @@ config = {
 ```
 
 or the [RSMQ](#rsmq) profile
-```python hl_lines="4"
+```python hl_lines="3"
 config = {
     "my-input-queue": {
         "profile": "rsmq",
@@ -142,7 +142,7 @@ The following is the complete list of the built-in profiles supported by Volley.
 
 ### confluent
 
-The default conlfuent profile is most commonly used for applications working with Confluent Kafka brokers. It heavily relies on [librdkafka](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) and follows at-least-once delviery semantics by default. Consumed message offsets are auto-committed back to the Kafka broker. Messages are consumed from the Kafka broker as `bytes`, and serialized using `orjson`, and constructed into a generic Pydantic model. Many uses will provide their own value for `data_model` rather than using a generic Pydantic model.
+The default confluent profile is most commonly used for applications working with Confluent Kafka brokers. It heavily relies on [librdkafka](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) and follows at-least-once delviery semantics by default. Consumed message offsets are auto-committed back to the Kafka broker. Messages are consumed from the Kafka broker as `bytes`, and serialized using `orjson`, and constructed into a generic Pydantic model. Many uses will provide their own value for `data_model` rather than using a generic Pydantic model.
 
 | key           | value                                                    | link |
 | --------------| -------------------------------------------------------- | ---- |

@@ -29,7 +29,7 @@ Like all configuration, they can be specified in either `yaml` or a `dict` passe
 config = {
     "my_topic": {
         "value": "my_topic_name",
-        "type": "kafka",
+        "profile": "confluent",
         "serializer": "path.to.mySerializer"
     }
 }

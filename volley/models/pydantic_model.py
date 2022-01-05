@@ -31,8 +31,10 @@ class PydanticParserModelHandler(BaseModelHandler):
         return model.json().encode("utf-8")
 
 
-class ComponentMessage(BaseModel):
-    """default class for all workers"""
+class GenericMessage(BaseModel):
+    """The default data model for all profiles.
+    Serves as a flexible data model. Accepts extra attributes and provides no type validation.
+    """
 
     class Config:
         extra = Extra.allow

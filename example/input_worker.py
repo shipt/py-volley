@@ -4,7 +4,7 @@ import time
 from typing import List, Tuple
 
 from example.data_models import InputMessage, Queue1Message
-from volley.engine import Engine
+from volley import Engine
 from volley.logging import logger
 
 logging.basicConfig(level=logging.INFO)

@@ -1,5 +1,5 @@
-## KafkaConsumer
-::: volley.connectors.kafka.KafkaConsumer
+## ConfluentKafkaConsumer
+::: volley.connectors.confluent.ConfluentKafkaConsumer
 
-## KafkaProducer
-::: volley.connectors.kafka.KafkaProducer
+## ConfluentKafkaProducer
+::: volley.connectors.confluent.ConfluentKafkaProducer

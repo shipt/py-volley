@@ -6,10 +6,9 @@ It is recommended to define Volley's configuration by passing a dictionary direc
 
 ## Queue Configuration
 
-### Attributes
+The queue configuration can be defined either via a `dict` or a .yaml file.
 
-`name`
-: (str) - *required* : Alias for the queue and how the developer references queues to consume from or produce to. For example, "input-topic". In the dictionary config, this is the parent key; cf. [example](#example)
+### Attributes
 
 `value` 
 : (str) - *required* : The system name for a queue. For example, the name of a Kafka topic (prd.my.long.kafka.topic.name) or name of a RSMQ queue.

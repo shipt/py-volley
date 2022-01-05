@@ -6,19 +6,18 @@ It is recommended to define Volley's configuration by passing a dictionary direc
 
 ## Queue Configuration
 
-### Attributes
+The queue configuration can be defined either via a `dict` or a .yaml file.
 
-`name`
-: (str) - *required* : Alias for the queue and how the developer references queues to consume from or produce to. For example, "input-topic". In the dictionary config, this is the parent key; cf. [example](#example)
+### Attributes
 
 `value` 
 : (str) - *required* : The system name for a queue. For example, the name of a Kafka topic (prd.my.long.kafka.topic.name) or name of a RSMQ queue.
 
-`type`
+`profile`
 : (str) - *required* : Either `kafka|rsmq`. Pertains to the type of connector required to produce and consume from the queue.
 
-`schema`
-: (str) - *optional* : Defaults to `volley.data_models.ComponentMessage`. Path to the Pydantic model used for data validation. When default is used, Volley will only validate that messages can be successfully converted to a Pydantic model or dictionary.
+`data_model`
+: (str) - *optional* : Defaults to `volley.data_models.GenericMessage`. Path to the Pydantic model used for data validation. When default is used, Volley will only validate that messages can be successfully converted to a Pydantic model or dictionary.
 
 `serializer`
 : (str) - *optional* : Defaults to `volley.serializers.OrJsonSerializer`. Path to the serializer.
@@ -41,17 +40,17 @@ Let's define configuration for three queues; one input queue, an output queue, a
 queue_config = {
     "my_alias_for_input_queue": {  # alias for the queue.
         "value": "value_for_input_queue_name",  # physical name for the queue
-        "type": "kafka",  # kafka|rsmq
-        "schema": "my.models.InputMessage",  # path to Pydantic model for validating data to/from the queue
+        "profile": "confluent",  # kafka|rsmq
+        "data_model": "my.models.InputMessage",  # path to Pydantic model for validating data to/from the queue
     },
     "output-topic": {
         "value": "outgoing.kafka.topic",
-        "type": "kafka",
-        "schema": "my.models.OutputMessage"
+        "profile": "confluent",
+        "data_model": "my.models.OutputMessage"
     },
     "dead-letter-queue": {
         "value": "deadletter.kafka.topic",
-        "type": "kafka"
+        "profile": "confluent"
     },
 }
 ```
@@ -75,15 +74,15 @@ Queue configuration can also be defined via a yml file. The below is equivalent 
 queues:
     my_alias_for_input_queue:
         value: value_for_input_queue_name
-        type: kafka
-        schema: my.models.InputMessage
+        profile: confluent
+        data_model: my.models.InputMessage
     output-topic:
         value: outgoing.kafka.topic
-        type: kafka
-        schema: my.models.OutputMessage
+        profile: confluent
+        data_model: my.models.OutputMessage
     dead-letter-queue:
         value: deadletter.kafka.topic
-        type: kafka
+        profile: confluent
 ```
 
 Then reference the file when instantiating the application.

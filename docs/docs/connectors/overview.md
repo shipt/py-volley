@@ -37,7 +37,7 @@ REDIS_HOST=host_to_run_rsmq
 
 ### Kafka
 
-Implemented on [confluent_kafka](https://docs.confluent.io/platform/current/clients/confluent-kafka-python/html/index.html) and [pyshipt-streams](https://github.com/shipt/pyshipt-streams)
+Implemented on [confluent_kafka](https://docs.confluent.io/platform/current/clients/confluent-kafka-python/html/index.html).
 
 The following configurations can be provided via environment variables:
 
@@ -53,8 +53,8 @@ But all [librdkafka configurations](https://github.com/edenhill/librdkafka/blob/
 ```yml
 - name: output_topic
   value: output.kafka.topic.name
-  type: kafka
-  schema: volley.data_models.ComponentMessage
+  profile: confluent
+  data_model: volley.data_models.GenericMessage
   config:
     bootstrap.servers: kafka_broker_host:9092
 ```
@@ -95,8 +95,9 @@ Like all configuration, they can be specified in either `yaml` or a `dict` passe
 # ./my_volly_config.yml
 - name: postgres_queue
   value: pg_queue_table
-  type: postgres
-  schema: volley.data_models.ComponentMessage
+  data_model: volley.data_models.GenericMessage
+  model_hander: volley.models.PydanticModelHandler
+  serializer: None
   producer: example.plugins.my_plugin.MyPGProducer
   consumer: example.plugins.my_plugin.MyPGConsumer
 ```
@@ -107,12 +108,13 @@ Is is equivalent to:
 config = {
     "postgres_queue": {
         "value": "pg_queue_table",
-        "type": "postgres",
-        "schema": "volley.data_models.ComponentMessage,
-        "producer": "example.plugins.my_plugin.MyPGProducer"
+        "data_model": "volley.data_models.GenericMessage,
+        "model_hander": "volley.models.PydanticModelHandler",
+        "serializer": "disabled",
+        "producer": "example.plugins.my_plugin.MyPGProducer",
         "consumer": "example.plugins.my_plugin.MyPGConsumer"
     }
 }
 ```
 
-A complete example using this plugin is provided [here](advanced_example.md)
+A complete example using this plugin is provided [here](../advanced_example.md)

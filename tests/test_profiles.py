@@ -5,7 +5,7 @@ import pytest
 from pydantic import ValidationError
 
 from volley import Engine
-from volley.config import get_configs
+from volley.config import get_configs, import_module_from_string
 from volley.profiles import ConnectionType, Profile, construct_profiles
 
 
@@ -127,8 +127,6 @@ def test_profile_override(data_model: Optional[str], model_handler: Optional[str
     qname = "test-topic"
     consumer_group = str(uuid4())
     qvalue = "test.topic"
-    data_model = None
-    model_handler = None
 
     confluent = "confluent"
     confluent_profile_data = get_configs()["profiles"][confluent]
@@ -145,10 +143,29 @@ def test_profile_override(data_model: Optional[str], model_handler: Optional[str
     }
     app = Engine(input_queue=qname, queue_config=cfg, metrics_port=None)
     test_topic_queue = app.queue_map[qname]
-    assert test_topic_queue.data_model is data_model
-    assert test_topic_queue.model_handler is model_handler
+
+    if data_model is None:
+        assert test_topic_queue.data_model is data_model
+    else:
+        # data_model is not the class object, not the instance
+        # model_handler creates the instance of data_model
+        assert test_topic_queue.data_model == import_module_from_string(data_model)
+
+    if model_handler is None:
+        assert test_topic_queue.model_handler is model_handler
+    else:
+        assert isinstance(test_topic_queue.model_handler, import_module_from_string(model_handler))
+
+    if serializer is None:
+        assert test_topic_queue.serializer is serializer
+    else:
+        assert isinstance(test_topic_queue.serializer, import_module_from_string(serializer))
+
+    # these Queue attributes are str
     assert test_topic_queue.name == qname
     assert test_topic_queue.value == qvalue
+
+    # profile attributes are Optional[str]
     assert test_topic_queue.profile.model_handler is model_handler
     assert test_topic_queue.profile.data_model is data_model
 

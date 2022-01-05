@@ -21,28 +21,28 @@ queue_config = {
     # overrwrites any existing yaml configs
     "redis_queue": {
         "value": "long_name_1",
-        "type": "rsmq",
+        "profile": "rsmq",
         "serializer": "volley.serializers.MsgPackSerialization",
-        # parse messages from RSMQ to a dictionary
-        "schema": "volley.data_models.ComponentMessage",
+        "data_model": "volley.data_models.GenericMessage",
     },
     "postgres_queue": {
         "value": "my_long_table_name",
-        "type": "postgres",
-        "schema": "example.data_models.PostgresMessage",
+        "data_model": "example.data_models.PostgresMessage",
+        "model_handler": "volley.models.PydanticModelHandler",
         # disable serializer - sqlachemy implementation in example/plugin/my_plugin.py handles this
         "serializer": "disabled",
         "producer": "example.plugins.my_plugin.MyPGProducer",
         "consumer": "example.plugins.my_plugin.MyPGConsumer",
     },
-    "input-topic": {"value": "localhost.kafka.input", "type": "kafka", "schema": "example.data_models.InputMessage"},
+    "input-topic": {
+        "value": "localhost.kafka.input",
+        "profile": "confluent",
+        "data_model": "example.data_models.InputMessage",
+    },
     "output-topic": {
         "value": "localhost.kafka.output",
-        "type": "kafka",
-        "schema": "example.data_models.OutputMessage",
-        # disable serializer - using PydanticParserModelHandler to handle parsing from bytes to model
-        "serializer": "disabled",
-        "model_handler": "volley.models.PydanticParserModelHandler",
+        "profile": "confluent-pydantic",
+        "data_model": "example.data_models.OutputMessage",
     },
 }
 

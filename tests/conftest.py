@@ -1,11 +1,12 @@
 import json
 import os
 from random import randint
-from typing import Any, Callable, Generator, Optional
+from typing import Any, Callable, Generator, List, Optional
 from unittest.mock import MagicMock, patch
 
 from pytest import MonkeyPatch, fixture
 
+from volley.config import get_configs
 from volley.connectors import (
     ConfluentKafkaConsumer,
     ConfluentKafkaProducer,
@@ -14,9 +15,8 @@ from volley.connectors import (
 )
 from volley.data_models import QueueMessage
 from volley.engine import Engine
+from volley.profiles import ConnectionType, Profile
 
-os.environ["INPUT_QUEUE"] = "input"
-os.environ["OUTPUT_QUEUE"] = "output"
 os.environ["REDIS_HOST"] = "redis"
 os.environ["KAFKA_BROKERS"] = "kafka:29092"
 os.environ["KAFKA_CONSUMER_GROUP"] = "test-group"
@@ -117,25 +117,56 @@ def none_producer_decorated(monkeypatch: MonkeyPatch) -> Generator[Callable[...,
 
 
 @fixture
-def config_dict() -> dict[str, dict[str, str]]:
+def config_dict() -> dict[str, dict[str, Any]]:
     return {
         "input-topic": {
             "value": "localhost.kafka.input",
-            "type": "kafka",
-            "schema": "example.data_models.InputMessage",
+            "profile": "confluent",
+            "data_model": "example.data_models.InputMessage",
         },
         "comp_1": {
             "value": "comp1",
-            "type": "rsmq",
-            "schema": "volley.data_models.ComponentMessage",
+            "profile": "rsmq",
+            "data_model": "volley.data_models.GenericMessage",
         },
         "output-topic": {
             "value": "localhost.kafka.output",
-            "type": "kafka",
-            "schema": "volley.data_models.ComponentMessage",
+            "profile": "confluent",
+            "data_model": "volley.data_models.GenericMessage",
+            "config": {"compression.type": "gzip"},
         },
         "dead-letter-queue": {
             "value": "localhost.kafka.dlq",
-            "type": "kafka",
+            "profile": "confluent-dlq",
         },
     }
+
+
+@fixture
+def confluent_consumer_profile() -> Profile:
+    confluent_profile = get_configs()["profiles"]["confluent"]
+    confluent_profile["connection_type"] = ConnectionType.CONSUMER
+    return Profile(**confluent_profile)
+
+
+@fixture
+def confluent_producer_profile() -> Profile:
+    confluent_profile = get_configs()["profiles"]["confluent"]
+    confluent_profile["connection_type"] = ConnectionType.PRODUCER
+    return Profile(**confluent_profile)
+
+
+@fixture
+def all_supported_producer_profiles() -> List[Profile]:
+    all_cfg: Any = get_configs()["profiles"]
+    for _, c in all_cfg.items():
+        c["connection_type"] = ConnectionType.PRODUCER
+    return [Profile(**c) for c in all_cfg.values()]
+
+
+@fixture
+def all_supported_consumer_profiles() -> List[Profile]:
+    all_cfg: Any = get_configs()["profiles"]
+    for _, c in all_cfg.items():
+        c["connection_type"] = ConnectionType.CONSUMER
+    return [Profile(**c) for c in all_cfg.values()]

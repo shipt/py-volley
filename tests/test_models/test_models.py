@@ -3,14 +3,14 @@ from unittest.mock import patch
 from pytest import LogCaptureFixture, raises
 
 from volley.models.base import message_model_handler, model_message_handler
-from volley.models.pydantic_model import ComponentMessage, PydanticModelHandler
+from volley.models.pydantic_model import GenericMessage, PydanticModelHandler
 from volley.serializers import JsonSerialization
 
 
 def test_message_to_model_handler_fail() -> None:
     msg = b""""bad":"json"}"""
     ser = JsonSerialization()
-    schema = ComponentMessage
+    schema = GenericMessage
     model_handler = PydanticModelHandler()
 
     _msg, status = message_model_handler(message=msg, schema=schema, model_handler=model_handler, serializer=ser)
@@ -38,14 +38,14 @@ def test_model_to_message_handler_fail(caplog: LogCaptureFixture) -> None:
 def test_message_to_model_handler_success() -> None:
     msg = b"""{"good":"json"}"""
     ser = JsonSerialization()
-    schema = ComponentMessage
+    schema = GenericMessage
     model_handler = PydanticModelHandler()
 
     handled_model, status = message_model_handler(
         message=msg, schema=schema, model_handler=model_handler, serializer=ser
     )
     assert status is True
-    assert handled_model == ComponentMessage.parse_raw(msg)
+    assert handled_model == GenericMessage.parse_raw(msg)
 
     # model, schema, serializer disabled should also succeed
     handled_model, status = message_model_handler(message=msg, schema=None, model_handler=None, serializer=None)
@@ -55,7 +55,7 @@ def test_message_to_model_handler_success() -> None:
 
 def test_model_to_message_handler_success() -> None:
     msg = b"""{"good": "json"}"""
-    data_model = ComponentMessage.parse_raw(msg)
+    data_model = GenericMessage.parse_raw(msg)
     ser = JsonSerialization()
     model_handler = PydanticModelHandler()
 

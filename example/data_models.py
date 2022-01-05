@@ -1,9 +1,9 @@
 from typing import List, Optional
 
-from volley.data_models import ComponentMessage
+from volley.data_models import GenericMessage
 
 
-class InputMessage(ComponentMessage):
+class InputMessage(GenericMessage):
     request_id: str
     list_of_values: List[float]
     msg_counter: int = 0
@@ -19,7 +19,7 @@ class InputMessage(ComponentMessage):
         }
 
 
-class Queue1Message(ComponentMessage):
+class Queue1Message(GenericMessage):
     request_id: str
     max_value: float
     msg_counter: int = 0
@@ -35,7 +35,7 @@ class Queue1Message(ComponentMessage):
         }
 
 
-class OutputMessage(ComponentMessage):
+class OutputMessage(GenericMessage):
     request_id: str
     max_plus: float
     msg_counter: int = 0
@@ -51,7 +51,7 @@ class OutputMessage(ComponentMessage):
         }
 
 
-class PostgresMessage(ComponentMessage):
+class PostgresMessage(GenericMessage):
     request_id: str
     max_plus: float
     msg_counter: Optional[int] = 0

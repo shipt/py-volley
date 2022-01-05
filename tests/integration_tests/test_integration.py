@@ -3,10 +3,7 @@ import time
 from typing import Any, List
 from uuid import uuid4
 
-from confluent_kafka import OFFSET_END
-from confluent_kafka import Consumer as KafkaConsumer
-from confluent_kafka import Producer as KafkaProducer
-from confluent_kafka import TopicPartition
+from confluent_kafka import OFFSET_END, Consumer, Producer, TopicPartition
 
 from example.data_models import InputMessage
 from tests.integration_tests.conftest import Environment
@@ -15,7 +12,7 @@ from volley.logging import logger
 POLL_TIMEOUT = 30
 
 
-def consume_messages(consumer: KafkaConsumer, num_expected: int, serialize: bool = True) -> List[dict[str, Any]]:
+def consume_messages(consumer: Consumer, num_expected: int, serialize: bool = True) -> List[dict[str, Any]]:
     """helper function for polling 'everything' off a topic"""
     start = time.time()
     consumed_messages = []
@@ -43,7 +40,7 @@ def test_end_to_end(environment: Environment) -> None:  # noqa
     # get name of the input topic
     logger.info(f"{environment.input_topic=}")
     conf = {"bootstrap.servers": environment.brokers}
-    p = KafkaProducer(conf)
+    p = Producer(conf)
 
     # get some sample data
     data = InputMessage.schema()["examples"][0]
@@ -51,8 +48,8 @@ def test_end_to_end(environment: Environment) -> None:  # noqa
     # consumer the messages off the output topic
     consume_topic = environment.output_topic
     logger.info(f"{consume_topic=}")
-    conf.update({"group.id": "int-test-group"})
-    c = KafkaConsumer(conf)
+    conf.update({"group.id": "int-test-group", "auto.offset.reset": "earliest"})
+    c = Consumer(conf)
     c.assign([TopicPartition(topic=consume_topic, partition=0, offset=OFFSET_END)])
     c.subscribe([consume_topic])
 
@@ -86,12 +83,12 @@ def test_dlq_schema_violation(environment: Environment) -> None:
     """
     logger.info(f"{environment.input_topic=}")
     conf = {"bootstrap.servers": environment.brokers}
-    p = KafkaProducer(conf)
+    p = Producer(conf)
     data = {"bad": "data"}
 
     logger.info(f"{environment.dlq=}")
-    conf.update({"group.id": "int-test-group"})
-    c = KafkaConsumer(conf)
+    conf.update({"group.id": "int-test-group", "auto.offset.reset": "earliest"})
+    c = Consumer(conf)
     c.assign([TopicPartition(topic=environment.dlq, partition=0, offset=OFFSET_END)])
     c.subscribe([environment.dlq])
 
@@ -114,8 +111,10 @@ def test_dlq_schema_violation(environment: Environment) -> None:
         assert _id in request_ids
         conusumed_ids.append(_id)
 
+    logger.info(f"{conusumed_ids=}")
     for _id in request_ids:
         # assert all ids we produced were in the list we consumed
+        logger.info(f"id={_id}")
         assert _id in conusumed_ids
 
     assert len(request_ids) == len(conusumed_ids)
@@ -127,14 +126,14 @@ def test_dlq_serialization_failure(environment: Environment) -> None:
     """
     logger.info(f"{environment.input_topic=}")
     conf = {"bootstrap.servers": environment.brokers}
-    p = KafkaProducer(conf)
+    p = Producer(conf)
 
     # message missing closing quote on the key
     data = """{"malformed:"json"}"""
 
     logger.info(f"{environment.dlq=}")
-    conf.update({"group.id": "int-test-group"})
-    c = KafkaConsumer(conf)
+    conf.update({"group.id": "int-test-group", "auto.offset.reset": "earliest"})
+    c = Consumer(conf)
     c.assign([TopicPartition(topic=environment.dlq, partition=0, offset=OFFSET_END)])
     c.subscribe([environment.dlq])
 

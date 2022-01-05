@@ -1,6 +1,6 @@
 import logging
 
-from volley.data_models import ComponentMessage
+from volley.data_models import GenericMessage
 from volley.engine import Engine
 from volley.logging import logger
 
@@ -10,7 +10,7 @@ eng = Engine(input_queue="output-topic", output_queues=[], yaml_config_path="./e
 
 
 @eng.stream_app
-def main(input_message: ComponentMessage) -> bool:
+def main(input_message: GenericMessage) -> bool:
     """mimics an data consumer external to Volley"""
 
     logger.info(input_message.dict())

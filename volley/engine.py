@@ -16,14 +16,8 @@ from volley.config import load_yaml
 from volley.data_models import QueueMessage
 from volley.logging import logger
 from volley.models.base import message_model_handler
-from volley.queues import (
-    ConnectionType,
-    DLQNotConfiguredError,
-    Queue,
-    apply_defaults,
-    config_to_queue_map,
-    dict_to_config,
-)
+from volley.profiles import ConnectionType, Profile, construct_profiles
+from volley.queues import DLQNotConfiguredError, Queue, construct_queue_map
 from volley.transport import produce_handler
 from volley.util import GracefulKiller
 
@@ -42,7 +36,6 @@ POLL_INTERVAL = 1
 @dataclass
 class Engine:
     """Initializes the Volley application and prepares the main decorator
-
     Attributes:
         app_name: Name of the applicaiton. Added as a label to all logged metrics
         input_queue:
@@ -55,11 +48,9 @@ class Engine:
             Must provide one of queue_config or yaml_config_path
         yaml_config_path: path to a yaml config file.
             Must provide one of yaml_config_path or queue_config
-
     Raises:
         NameError: input_queue, dead_letter_queue or output_queues
             reference a queue that does not exist in queue configuration
-
     Returns:
         Engine: Instance of the engine with a prepared `stream_app` decorator
     """
@@ -83,7 +74,6 @@ class Engine:
 
     def __post_init__(self) -> None:
         """Validates configuration and initializes queue configs
-
         Database connections are initialized within stream_app decorator
         """
         if self.output_queues == []:
@@ -91,30 +81,40 @@ class Engine:
 
         # if user provided config, use it
         if self.queue_config:
-            cfg: dict[str, dict[str, dict[str, Any]]] = dict_to_config(self.queue_config)
+            cfg = self.queue_config
         else:
             logger.info("loading configuration from %s", self.yaml_config_path)
-            cfg = load_yaml(file_path=self.yaml_config_path)
+            cfg = load_yaml(file_path=self.yaml_config_path)["queues"]
 
         # handle DLQ
         if self.dead_letter_queue is not None:
             # if provided by user, DLQ becomes a producer target
-            # flag the queue as "dlq"
-            try:
-                cfg["queues"][self.dead_letter_queue]["is_dlq"] = True
-            except KeyError:
-                logger.error("%s not present in configuration", self.dead_letter_queue)
-            self.output_queues.append(self.dead_letter_queue)
+            # flag the queue using the DLQ profile
+            if self.dead_letter_queue not in cfg:
+                raise KeyError("%s not present in configuration", self.dead_letter_queue)
+            else:
+                self.output_queues.append(self.dead_letter_queue)
         else:
             logger.warning("DLQ not provided. Application will crash on schema violations")
 
-        cfg = apply_defaults(cfg)
-        self.queue_map = config_to_queue_map(cfg["queues"])
+        # cfg can contain more queues that the app needs
+        # filter out queues that are not required by app
+        cfg = {k: v for k, v in cfg.items() if k in [self.input_queue] + self.output_queues}
 
         # validate input_queue, output_queues, and DLQ (optional) are valid configurations
         for q in [self.input_queue] + self.output_queues:
-            if q not in self.queue_map:
-                raise NameError(f"Queue '{q}' not found in configuration")
+            if q not in cfg:
+                raise KeyError(f"Queue '{q}' not found in configuration")
+
+        # tag queues with type (how app intends to use it)
+        cfg[self.input_queue]["connection_type"] = ConnectionType.CONSUMER
+        for qname in self.output_queues:
+            cfg[qname]["connection_type"] = ConnectionType.PRODUCER
+
+        # load profiles
+        profiles: Dict[str, Profile] = construct_profiles(cfg)
+        # create queue_map from profiles
+        self.queue_map = construct_queue_map(profiles, cfg)
 
         logger.info("Queues initialized: %s", list(self.queue_map.keys()))
 
@@ -146,7 +146,7 @@ class Engine:
 
             # queue connections were setup above. now we can start to interact with the queues
             # alias for input connection readability
-            input_con = self.queue_map[self.input_queue]
+            input_con: Queue = self.queue_map[self.input_queue]
             while not self.killer.kill_now:
                 _start_time = time.time()
 
@@ -164,7 +164,7 @@ class Engine:
 
                 data_model, consume_status = message_model_handler(
                     message=in_message.message,
-                    schema=input_con.schema,
+                    schema=input_con.data_model,
                     model_handler=input_con.model_handler,
                     serializer=input_con.serializer,
                 )

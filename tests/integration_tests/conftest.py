@@ -1,14 +1,14 @@
 import os
 import time
-from typing import Dict, NamedTuple
+from typing import Any, Dict, NamedTuple
 
 import confluent_kafka.admin
 from pytest import fixture
 
+from volley.config import load_yaml
 from volley.logging import logger
-from volley.queues import Queue, available_queues
 
-queues: Dict[str, Queue] = available_queues("./example/volley_config.yml")
+queues: Dict[str, Any] = load_yaml("./example/volley_config.yml")["queues"]
 
 
 class Environment(NamedTuple):
@@ -20,9 +20,9 @@ class Environment(NamedTuple):
 
 env = Environment(
     brokers=os.environ["KAFKA_BROKERS"],
-    input_topic=queues["input-topic"].value,
-    output_topic=queues["output-topic"].value,
-    dlq=queues["dead-letter-queue"].value,
+    input_topic=queues["input-topic"]["value"],
+    output_topic=queues["output-topic"]["value"],
+    dlq=queues["dead-letter-queue"]["value"],
 )
 
 

@@ -7,7 +7,7 @@ Configurations passed into `Engine()` init will be used in both Producer and Con
 ```python hl_lines="5"
 cfg = {
     "output-topic": {
-        "type": "kafka",
+        "profile": "confluent",
         "producer": "volley.connectors.kafka.KafkaProducer",
         "config": {"bootstrap.servers": "kafka:9092"},
     }
@@ -26,7 +26,7 @@ Likewise, consumer configurations are passed to consumer initializers.
 ```python hl_lines="5"
 cfg = {
     "output-topic": {
-        "type": "kafka",
+        "profile": "confluent",
         "consumer": "volley.connectors.kafka.KafkaConsumer",
         "config": {"bootstrap.servers": "kafka:9092", "group.id": "myConsumerGroup"},
     }

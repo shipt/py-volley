@@ -1,27 +1,27 @@
 # example producer
 # simulates some "external service" publishing data to a kafka topic that a Volley application consumes from
+import os
 import time
-from typing import Dict
 from uuid import uuid4
 
-from pyshipt_streams import KafkaProducer
+from confluent_kafka import Producer
 
+from example.data_models import InputMessage
+from volley.config import load_yaml
 from volley.logging import logger
-from volley.queues import Queue, available_queues
 
 
 def main() -> None:
     """produces example data to a topic. mimics a data producer external to Volley"""
-    queues: Dict[str, Queue] = available_queues("./example/volley_config.yml")
-    input_topic = queues["input-topic"].value
+    queues = load_yaml("./example/volley_config.yml")["queues"]
+    input_topic = queues["input-topic"]["value"]
     logger.info(f"{input_topic=}")
-    p = KafkaProducer()
+    p = Producer({"bootstrap.servers": os.environ["KAFKA_BROKERS"]})
     i = 0
     while True:
-        # data = InputMessage.schema()["examples"][0]
         uuid = str(uuid4())[:8]
-        data = {"list_of_values": [1, 2, 3, 4.5], "request_id": f"{uuid}-{i}"}
-        p.publish(input_topic, data, serialize=True)
+        data = InputMessage(list_of_values=[1, 2, 3, 4.5], request_id=f"{uuid}-{i}")
+        p.produce(input_topic, data.json())
         logger.info(f"{data=}")
         time.sleep(2)
         i += 1

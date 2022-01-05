@@ -22,7 +22,7 @@ lints.flake8.strict:
 lints.mypy:
 	poetry run mypy ${SOURCE_OBJECTS}
 lints.pylint:
-	poetry run pylint --rcfile pyproject.toml  ${SOURCE_OBJECTS}
+	poetry run pylint --rcfile pyproject.toml ${SOURCE_OBJECTS}
 lints: lints.flake8 lints.format.check lints.mypy lints.pylint
 lints.strict: lints.pylint lints.flake8.strict lints.mypy lints.format.check
 

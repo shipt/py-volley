@@ -1,41 +1,61 @@
 profiles:
-  confluent-default:
+  confluent:
+    consumer: volley.connectors.confluent.ConfluentKafkaConsumer
+    producer: volley.connectors.confluent.ConfluentKafkaProducer
+    model_handler: volley.models.PydanticModelHandler
+    data_model: volley.data_models.GenericMessage
+    serializer: volley.serializers.orjson_serializer.OrJsonSerialization
+  confluent-pydantic:
     consumer: volley.connectors.confluent.ConfluentKafkaConsumer
     producer: volley.connectors.confluent.ConfluentKafkaProducer
     model_handler: volley.models.PydanticParserModelHandler
-    schema: volley.data_models.ComponentMessage
+    data_model: volley.data_models.GenericMessage
     serializer: None
   confluent-orjson-pydantic:
     consumer: volley.connectors.confluent.ConfluentKafkaConsumer
     producer: volley.connectors.confluent.ConfluentKafkaProducer
     model_handler: volley.models.PydanticModelHandler
-    schema: volley.data_models.ComponentMessage
+    data_model: volley.data_models.GenericMessage
     serializer: volley.serializers.orjson_serializer.OrJsonSerialization
   confluent-msgpack-pydantic:
     consumer: volley.connectors.confluent.ConfluentKafkaConsumer
     producer: volley.connectors.confluent.ConfluentKafkaProducer
     model_handler: volley.models.PydanticModelHandler
-    schema: volley.data_models.ComponentMessage
-    serializer: volley.serializers.mspack_serializer.MsgPackSerialization
-  rsmq-default:
+    data_model: volley.data_models.GenericMessage
+    serializer: volley.serializers.msgpack_serializer.MsgPackSerialization
+  rsmq:
     consumer: volley.connectors.rsmq.RSMQConsumer
     producer: volley.connectors.rsmq.RSMQProducer
     model_handler: volley.models.PydanticModelHandler
-    schema: volley.data_models.ComponentMessage
+    data_model: volley.data_models.GenericMessage
     serializer: volley.serializers.orjson_serializer.OrJsonSerialization
+  rsmq-pydantic:
+    consumer: volley.connectors.rsmq.RSMQConsumer
+    producer: volley.connectors.rsmq.RSMQProducer
+    model_handler: volley.models.PydanticParserModelHandler
+    data_model: volley.data_models.GenericMessage
+    serializer: None
   rsmq-orjson-pydantic:
     consumer: volley.connectors.rsmq.RSMQConsumer
     producer: volley.connectors.rsmq.RSMQProducer
     model_handler: volley.models.PydanticModelHandler
-    schema: volley.data_models.ComponentMessage
+    data_model: volley.data_models.GenericMessage
     serializer: volley.serializers.orjson_serializer.OrJsonSerialization
   rsmq-msgpack-pydantic:
     consumer: volley.connectors.rsmq.RSMQConsumer
     producer: volley.connectors.rsmq.RSMQProducer
     model_handler: volley.models.PydanticModelHandler
-    schema: volley.data_models.ComponentMessage
-    serializer: volley.serializers.mspack_serializer.MsgPackSerialization
-dead-letter-queue:
-  serializer: None
-  schema: None
-  model_handler: None
+    data_model: volley.data_models.GenericMessage
+    serializer: volley.serializers.msgpack_serializer.MsgPackSerialization
+  confluent-dlq:
+    consumer: volley.connectors.confluent.ConfluentKafkaConsumer
+    producer: volley.connectors.confluent.ConfluentKafkaProducer
+    serializer: None
+    data_model: None
+    model_handler: None
+  rsmq-dlq:
+    consumer: volley.connectors.rsmq.RSMQConsumer
+    producer: volley.connectors.rsmq.RSMQProducer
+    serializer: None
+    data_model: None
+    model_handler: None

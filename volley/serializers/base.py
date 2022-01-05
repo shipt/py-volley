@@ -16,20 +16,3 @@ class BaseSerialization(ABC):
     @abstractmethod
     def deserialize(self, message: bytes) -> Any:
         """deserialize from queue"""
-
-
-class NullSerializer(BaseSerialization):
-    """used if a consumer/producer needs to bypass serialization
-
-    for example - if a component outputs an object of type MyComponentClass and
-        its custom plugin must accept an object the same type. Serialization is effectively handled
-        directly in the connector.
-    """
-
-    def serialize(self, message: Any) -> Any:
-        """returns the message"""
-        return message
-
-    def deserialize(self, message: Any) -> Any:
-        """returns the message"""
-        return message

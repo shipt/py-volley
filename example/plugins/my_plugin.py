@@ -8,7 +8,7 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.sqltypes import DateTime
 
-from volley.connectors.base import Consumer, Producer
+from volley.connectors.base import BaseConsumer, BaseProducer
 from volley.data_models import QueueMessage
 from volley.logging import logger
 
@@ -31,7 +31,7 @@ queue_table = Table(
 
 
 @dataclass
-class MyPGConsumer(Consumer):
+class MyPGConsumer(BaseConsumer):
     def __post_init__(self) -> None:
         self.engine: Engine = get_eng()
         metadata_obj.create_all(self.engine)
@@ -44,23 +44,25 @@ class MyPGConsumer(Consumer):
         poll_interval: float = 2,
     ) -> QueueMessage:
         """returns a random value"""
-        sql = """
+        sql = f"""
             BEGIN;
-            DELETE FROM my_long_table_name
-            USING (
-                SELECT *
-                FROM my_long_table_name
-                LIMIT 1
-                FOR UPDATE SKIP LOCKED
-            ) q
-            WHERE q.request_id = my_long_table_name.request_id
-            RETURNING my_long_table_name.*;
+            WITH cte AS
+                (
+                    SELECT *
+                    FROM '{queue_name}'
+                    LIMIT 1
+                    FOR UPDATE SKIP LOCKED
+                )
+            DELETE from '{queue_name}'
+            WHERE request_id = (select request_id from cte)
+            RETURNING *;
         """
+
         records = [r._mapping for r in self.session.execute(text(sql))]
 
-        return QueueMessage(message_id="None", message={"results": records})
+        return QueueMessage(message_context="None", message={"results": records})
 
-    def delete_message(self, queue_name: str, message_id: str) -> bool:  # type: ignore
+    def delete_message(self, queue_name: str, message_context: str) -> bool:  # type: ignore
         self.session.execute(text("COMMIT;"))
         return True
 
@@ -72,7 +74,7 @@ class MyPGConsumer(Consumer):
 
 
 @dataclass
-class MyPGProducer(Producer):
+class MyPGProducer(BaseProducer):
     def __post_init__(self) -> None:
         self.engine: Engine = get_eng()
         metadata_obj.create_all(self.engine)

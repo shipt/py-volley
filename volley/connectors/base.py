@@ -10,7 +10,7 @@ from volley.data_models import QueueMessage
 
 
 @dataclass  # type: ignore
-class Consumer(ABC):
+class BaseConsumer(ABC):
     """Base for a consumer (kafka, rsmq)"""
 
     queue_name: str
@@ -34,7 +34,7 @@ class Consumer(ABC):
 
 
 @dataclass  # type: ignore
-class Producer(ABC):
+class BaseProducer(ABC):
     """Basic protocol for a producer (kafka or rsmq)"""
 
     queue_name: str

@@ -23,15 +23,13 @@ queue_config = {
     "input-topic": {
         "value": "incoming.kafka.topic",
         "profile": "confluent",
-        "schema": "InputMessage",
+        "data_moodel": "InputMessage",
     },
     "output-topic": {
         "value": "outgoing.kafka.topic",
         "profile": "confluent",
-        "schema": "OutputMessage",
+        "data_moodel": "OutputMessage",
     },
-    # optionally - configure a dead-letter-queue
-    "dead-letter-queue": {"value": "deadletter.kafka.topic", "profile": "confluent"},
 }
 
 # intializae the Volley application

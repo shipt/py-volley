@@ -2,10 +2,13 @@ import os
 from dataclasses import dataclass
 from typing import Any, Dict, Optional, Union
 
-from confluent_kafka import Consumer as KConsumer
-from confluent_kafka import Producer as KProducer
+from confluent_kafka import (
+    Consumer,
+    Producer,
+    Message
+)
 
-from volley.connectors.base import Consumer, Producer
+from volley.connectors.base import BaseConsumer, BaseProducer
 from volley.data_models import QueueMessage
 from volley.logging import logger
 
@@ -13,7 +16,7 @@ RUN_ONCE = False
 
 
 @dataclass
-class ConfluentKafkaConsumer(Consumer):
+class ConfluentKafkaConsumer(BaseConsumer):
     """
     Class to easily interact consuming message(s) from Kafka brokers.
     At a minimum bootstrap.servers and group.id must be set in the config dict
@@ -95,7 +98,7 @@ class ConfluentKafkaProducer(Producer):
             logger.info("Assigning compression.type default: %s", self.compression_type)
             self.config["compression.type"] = self.compression_type
 
-        self.p = KProducer(self.config, logger=logger)
+        self.p = Producer(self.config, logger=logger)
         # self.config comes from super class
         logger.info("Kafka Producer Configuration: %s", self.config)
 
@@ -147,3 +150,72 @@ def acked(err: Optional[str], msg: Any) -> None:
         logger.error("Failed to deliver message: %s: %s", msg, err)
     else:
         logger.info("Acknowledged success from topic: %s", msg.topic())
+
+
+@dataclass
+class NewConfluentKafkaConsumer(Consumer):
+    """
+    Class to easily interact consuming message(s) from Kafka brokers.
+    At a minimum bootstrap.servers and group.id must be set in the config dict
+    """
+
+    poll_interval: float = 10
+    auto_offset_reset: str = "earliest"
+
+    def __post_init__(self) -> None:  # noqa: C901
+        self.config = handle_creds(self.config)
+
+        if "auto.offset.reset" not in self.config:
+            logger.info("Assigning auto.offset.reset default: %s", self.auto_offset_reset)
+            self.config["auto.offset.reset"] = self.auto_offset_reset
+
+        # self.config provided from base Consumer class
+        # consumer group assignment
+        # try config, then env var, then command line argument w/ env
+        if "group.id" in self.config:
+            # we'll pass the config directly into Kafka constructor
+            pass
+        else:
+            try:
+                self.config["group.id"] = os.environ["KAFKA_CONSUMER_GROUP"]
+            except KeyError:
+                logger.exception("KAFKA_CONSUMER_GROUP not specified in env variable or group.id in config dict")
+                raise
+
+        if "poll_interval" in self.config:
+            # poll_interval can be overridden by a user provided Engine init config
+            # but it should not be passed to base Confluent Consumer init
+            # confluent will ignore it with a warning, however
+            self.poll_interval = self.config.pop("poll_interval")
+
+        self.config["enable.auto.offset.store"] = False
+        self.c = Consumer(self.config, logger=logger)
+        logger.info("Kafka Consumer Configuration: %s", self.config)
+        self.c.subscribe([self.queue_name])
+        logger.info("Subscribed to %s", self.queue_name)
+
+    def consume(  # type: ignore
+        self,
+        queue_name: str = None,
+    ) -> Optional[QueueMessage]:
+        if queue_name is None:
+            queue_name = self.queue_name
+
+        message = self.c.poll(self.poll_interval)
+        if message is None:
+            pass
+        elif message.error():
+            logger.warning(message.error())
+            message = None
+        else:
+            return QueueMessage(message_id=message, message=message.value())
+
+    def delete_message(self, queue_name: str, message_context: Message) -> bool:
+        self.c.consumer.store_offsets(message=message_context)
+        return True
+
+    def on_fail(self) -> None:
+        pass
+
+    def shutdown(self) -> None:
+        self.c.close()

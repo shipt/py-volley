@@ -23,6 +23,12 @@ def produce_handler(
 ) -> List[bool]:
     """Handles producing messages to output queues
 
+        outputs: List of tuples returned by the Volley app function.
+            (queue_name, message_object, optional_runtime_kwargs_for_producer)
+        queue_map: mapping of queue_name:Queue object
+        app_name: name provided by the application
+        input_queue: becomes label in metric counter
+
     Returns:
         List[bool]: A bool for success/fail of producing to each output target
     """

@@ -5,11 +5,11 @@ Volley ships with two JSON serializers and one [MessagePack](https://msgpack.org
 
 ## Supported Serializers
 ### JSON
-- [`orjson`](https://github.com/ijl/orjson): the *default* serializer
-- Python's standard [`json`](https://docs.python.org/3/library/json.html) library
+- [`volley.serializers.OrJsonSerialization`](https://github.com/ijl/orjson): the *default* serializer
+- [`volley.serializers.JsonSerialization`](https://docs.python.org/3/library/json.html) library
 
 ### MessagePack
-- [`msgpack`](https://github.com/msgpack/msgpack-python)
+- [`volley.serializers.MsgPackSerialization`](https://github.com/msgpack/msgpack-python)
 
 
 ## Extending Serialization with Plugins

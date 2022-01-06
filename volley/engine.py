@@ -202,7 +202,7 @@ class Engine:
                     # if multiple outputs - how to determine if its a success if one fails
                     input_con.consumer_con.delete_message(
                         queue_name=input_con.value,
-                        message_id=in_message.message_id,
+                        message_context=in_message.message_context,
                     )
                     MESSAGE_CONSUMED.labels(volley_app=self.app_name, status="success").inc()
                 else:

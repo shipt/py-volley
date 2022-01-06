@@ -2,9 +2,10 @@
 
 Documentation: https://animated-guacamole-53e254cf.pages.github.io/
 
-Provides an extensible Python interface to queue-like technologies with built in support for Kafka and [RSMQ](https://github.com/mlasevich/PyRSMQ) (Redis Simple Message Queue). Easily extended to any queue technology through plugins.
+Volley's goal is to make building event stream applications easier and more accessible to the Python community. Use Volley if you need to quickly develop streaming application to consumes messages, processes them (and do other things), then publish results to one or many places. Dead letters queues are also easily configured.
 
-Use Volley if you need to quickly develop a Python streaming application to consumes messages, processes them (and do other things), then publish results to some place. Dead letters queues are easily configured.
+Volley provides an extensible Python interface to queue-like technologies with built in support for [Apache Kafka](https://kafka.apache.org/) and [RSMQ](https://github.com/mlasevich/PyRSMQ) (Redis Simple Message Queue). Volley is easily extended to any queue technology through plugins, and we provide an example for building a plugin for a Postgres queue in our [examples](./example/plugins/my_plugin.py)
+
 
 [![Build Status](https://drone.shipt.com/api/badges/shipt/volley/status.svg)](https://drone.shipt.com/shipt/volley)
 [![codecov](https://codecov.io/gh/shipt/volley/branch/main/graph/badge.svg?token=axP0uxJwPX)](https://codecov.io/gh/shipt/volley)

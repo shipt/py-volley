@@ -7,7 +7,7 @@ from example.input_worker import eng
 
 
 @patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
-@patch("volley.connectors.confluent.KConsumer", MagicMock())
+@patch("volley.connectors.confluent.Consumer", MagicMock())
 def test_graceful_kill() -> None:
     @eng.stream_app
     def func(*args: Any) -> bool:  # pylint: disable=W0613

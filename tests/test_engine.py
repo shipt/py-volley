@@ -19,8 +19,8 @@ from volley.queues import DLQNotConfiguredError
 
 
 @patch("volley.engine.RUN_ONCE", True)
-@patch("volley.connectors.confluent.KProducer")
-@patch("volley.connectors.confluent.KConsumer")
+@patch("volley.connectors.confluent.Producer")
+@patch("volley.connectors.confluent.Consumer")
 def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:  # pylint: disable=W0613
     """test a stubbed component that does not produce messages
     passes so long as no exception is raised
@@ -47,8 +47,8 @@ def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -
 
 
 @patch("volley.engine.RUN_ONCE", True)
-@patch("volley.connectors.confluent.KProducer")
-@patch("volley.connectors.confluent.KConsumer")
+@patch("volley.connectors.confluent.Producer")
+@patch("volley.connectors.confluent.Consumer")
 def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:  # pylint: disable=W0613
     """test a stubbed component that does not produce messages
     passes so long as no exception is raised
@@ -73,8 +73,8 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
 
 
 @patch("volley.engine.RUN_ONCE", True)
-@patch("volley.connectors.confluent.KProducer")
-@patch("volley.connectors.confluent.KConsumer")
+@patch("volley.connectors.confluent.Producer")
+@patch("volley.connectors.confluent.Consumer")
 def test_dlq_not_implemented(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:  # pylint: disable=W0613
     """test a stubbed component that does not produce messages"""
     eng = Engine(
@@ -127,8 +127,8 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
 
 @patch("volley.engine.RUN_ONCE", True)
 @patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
-@patch("volley.connectors.confluent.KProducer", MagicMock())
-@patch("volley.connectors.confluent.KConsumer")
+@patch("volley.connectors.confluent.Producer", MagicMock())
+@patch("volley.connectors.confluent.Consumer")
 def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]]) -> None:
 
     data = InputMessage.schema()["examples"][0]
@@ -174,8 +174,8 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[st
 @patch("volley.logging.logger.propagate", True)
 @patch("volley.engine.RUN_ONCE", True)
 @patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
-@patch("volley.connectors.confluent.KProducer", MagicMock())
-@patch("volley.connectors.confluent.KConsumer")
+@patch("volley.connectors.confluent.Producer", MagicMock())
+@patch("volley.connectors.confluent.Consumer")
 def test_null_serializer_fail(
     mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]], caplog: LogCaptureFixture
 ) -> None:
@@ -358,7 +358,7 @@ def test_init_no_output(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:  
 
 @patch("volley.engine.RUN_ONCE", True)
 @patch("volley.logging.logger.propagate", True)
-@patch("volley.connectors.confluent.KConsumer")
+@patch("volley.connectors.confluent.Consumer")
 def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture, monkeypatch: MonkeyPatch) -> None:
     """init volley with a kafka queue with user provided kafka config"""
     monkeypatch.delenv("KAFKA_BROKERS", raising=True)
@@ -423,8 +423,8 @@ def test_wild_dlq_error(mock_handler: MagicMock, mock_rsmq: MagicMock, caplog: L
 
 @patch("volley.engine.RUN_ONCE", True)
 @patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
-@patch("volley.connectors.confluent.KProducer", MagicMock())
-@patch("volley.connectors.confluent.KConsumer")
+@patch("volley.connectors.confluent.Producer", MagicMock())
+@patch("volley.connectors.confluent.Consumer")
 def test_runtime_connector_configs(mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]]) -> None:
     """test wrapped func can return variable length tuples"""
     data = InputMessage.schema()["examples"][0]

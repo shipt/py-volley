@@ -42,9 +42,9 @@ class GenericMessage(BaseModel):
 
 class QueueMessage(BaseModel):
     """message in its raw state off a queue
-    message_id: any identifier for a message on a queue.
+    message_context: any identifier for a message on a queue.
         used for deleting or markng a message as success after post-processing
     """
 
-    message_id: Any
+    message_context: Any
     message: Any

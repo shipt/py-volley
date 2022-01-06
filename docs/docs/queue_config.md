@@ -6,6 +6,8 @@ It is recommended to define Volley's configuration by passing a dictionary direc
 
 ## Queue Configuration
 
+The queue configuration object is a dictionary passed into the Volley engine at initialization.
+
 The queue configuration can be defined either via a `dict` or a .yaml file.
 
 ### Attributes

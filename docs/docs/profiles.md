@@ -44,11 +44,11 @@ Profiles define the following:
 
 `producer` : (str) - dot path to the concrete implementation of the base [Producer](./connectors/base.md#consumer). Defines how Volley should produce a message to a queue.
 
-`serializer` : (str) - dot path to the concrete implementation of the base [BaseSerialization](./serializers/base.md#serialization). Defines how to turn raw `bytes` into a primative python object.
+`serializer` : (str) - dot path to the concrete implementation of the base [BaseSerialization](./serializers/BaseSerialization.md#serialization). Defines how to turn raw `bytes` into a primative python object.
 
 `data_model` : (str) - dot path to a user provided data model. Every model needs a model handler. 
 
-`model_handler` : (str) - dot path to the concrete implementation of [BaseModelHandler](./serializers/base.md#serialization). Defines how Volley should turn serialized data into a user provided data model. Volley has built-in support for Pydantic models via `volley.models.PydanticModelHandler` and can be extended with custom model handlers.
+`model_handler` : (str) - dot path to the concrete implementation of [BaseModelHandler](./serializers/BaseSerialization.md#serialization). Defines how Volley should turn serialized data into a user provided data model. Volley has built-in support for Pydantic models via `volley.models.PydanticModelHandler` and can be extended with custom model handlers.
 
 ## Usage
 

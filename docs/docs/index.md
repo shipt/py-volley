@@ -11,37 +11,59 @@ Volley is a lightweight and highly configurable message stream processor for Pyt
 
 **Repository**: [https://github.com/shipt/volley](https://github.com/shipt/volley)
 
-Use Volley to quickly build applications that need to poll streaming sources like Kafka, then process the data that it receives and publish results to one or many other streaming destinations.
+
+Use Volley to quickly build lightweight message processing microservices. Volley has built in connectors for [Confluent Kafka](https://github.com/confluentinc/confluent-kafka-python) and [Redis Simple Message Queue](https://github.com/mlasevich/PyRSMQ). It also provides serialization implementations in [MessagePack](https://github.com/msgpack/msgpack-python) and [orjson](https://github.com/ijl/orjson), data validation via [Pydantic](https://github.com/samuelcolvin/pydantic) and [Prometheus](https://github.com/prometheus/client_python) metrics.
 
 
-## Pseudo Example
+## Example
 
-Volley turns your Python function into a stream processor. If you can write a Python function you can build stream a stream processor with Volley.
+Volley turns your Python function into a message stream processor. If you can write a Python function you can build a stream processor with Volley.
+
+
+To consume from one Kafka topic and produce to another...
+
+Define configuration for two topics; "input-topic" and "output-topic".
+
+For most simple cases, you can use a [profile](./profiles.md) to define how your application should consume from or produce to a topic, as well as define handlers for serialization and data validation.
 
 ```python
-from volley import Engine
-
 cfg = {
-    "input-topic": {
-        "value": "my.kafka.topic",
+    "input-topic": {  # a friendly name/alias for a queue
+        "value": "my.kafka.topic",  # literal name of the queue
         "profile": "confluent",
     },
     "output-topic": {
         "value": "some.other.kafka.topic",
         "profile": "confluent",
+        "data_model": "volley.data_models.GenericMessage"
     }
 }
+```
+
+Initalize the Volley engine. Specify which queues from the above configuration are for inputs (consuming), and which are outputs (producing). You can consume and produce to the same queue.
+
+```python
+from volley import Engine
 
 app = Engine(
     input_queue="input-topic",
     output_queues=["output-topic"],
     queue_config=cfg
 )
+```
+
+Apply the `stream_app` decorator to your function. The message received by your function is a single message consumed from the Kafka topic.
+
+You return a list of tuples from your function. Each tuple contains `Tuple[<name_of_queue>, message_object]`
+
+```python
+from volley.data_models import GenericMessage
 
 @app.stream_app
 def my_fun(msg: Any):
-    print(msg)
-    new_msg = {"hello": "world"}
+    new_msg = GenericMessage(
+        hello="world"
+    )
     return [("output-topic", new_msg)]
 
 if __name__ == "__main__":
@@ -53,8 +75,11 @@ And if your application needs to support `async` + `await`, define the function 
 ```python
 @app.stream_app
 async def my_fun(msg: Any):
-    out_msg = await some_awaitable(msg)
-    return [("output-topic", out_msg)]
+    new_msg = GenericMessage(
+        hello="world"
+    )
+    return [("output-topic", new_msg)]
+
 
 if __name__ == "__main__":
     my_fun()
@@ -70,7 +95,6 @@ And start the worker:
 ```bash
 python -m my_module.my_fun
 ```
-
 
 
 See our [example](./example.md) for setting up a basic application.

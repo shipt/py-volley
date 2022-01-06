@@ -2,7 +2,7 @@
 
 Volley exports selected [Prometheus metrics](https://prometheus.io/docs/concepts/metric_types/) on all workers.
 
-All metrics contain the label `volley_app` which is directly tied to the `app_name` parameter passed in when initializing `volley.engine.Engine()`. Below are descriptions of each of the metrics produced by Volley.
+All metrics contain the label `volley_app` which is directly tied to the `app_name` parameter passed in when initializing `volley.Engine()`. Below are descriptions of each of the metrics produced by Volley.
 
 ## `messages_consumed_count` 
 - Type: [Counter](https://prometheus.io/docs/concepts/metric_types/#counter) 

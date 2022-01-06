@@ -13,14 +13,13 @@ theme:
 
 nav:
   - Introduction: 'index.md'
-  - Basic Example: 'example.md'
+  - Getting Started: 'example.md'
   - Configuration:
-    - Profiles: 'profiles.md'
-    - Serialization: 'serializers/overview.md'
     - Queues: 'queue_config.md'
+    - Profiles: 'profiles.md'
     - Application: 'engine.md'
-    - Consumer & Producer: 'connectors.md'
-  - Dead Letter Queues: 'deadletterqueue.md'
+    - Consumer & Producer: './connectors/connectors.md'
+    - Dead Letter Queues: 'deadletterqueue.md'
   - Metrics: 'metrics.md'
   - Advanced Example: 'advanced_example.md'
   - Extending Volley:
@@ -31,6 +30,7 @@ nav:
       - RSMQ: 'connectors/rsmq.md' 
     - Serializers:
       - Overview: 'serializers/overview.md'
+      - BaseSerialization: 'serializers/BaseSerialization.md'
       - JsonSerialization: 'serializers/JsonSerialization.md'
       - MsgPackSerialization: 'serializers/MsgPackSerialization.md'
       - OrJsonSerialization: 'serializers/OrJsonSerialization.md'

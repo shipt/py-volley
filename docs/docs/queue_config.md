@@ -1,6 +1,6 @@
 # Configuration
 
-Volley's configuration center's around queues. Queues have names, types, schemas, serializers, and connectors. These all have default values, but can also be configured.
+Volley's configuration centers around queues. The configurations define how you application will interact with and how Volley parses data being received/sent to each queue. Queues have names, data models, model handlers, serializers, and connectors.
 
 It is recommended to define Volley's configuration by passing a dictionary directly the Engine initializer.
 

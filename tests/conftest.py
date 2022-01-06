@@ -25,7 +25,7 @@ os.environ["KAFKA_CONSUMER_GROUP"] = "test-group"
 @fixture
 def bundle_message() -> QueueMessage:
     return QueueMessage(
-        message_id="123",
+        message_context="123",
         message={
             "request_id": "123",
             "orders": ["1", "2", "3"],
@@ -85,22 +85,22 @@ class KafkaMessage:
 
 @fixture
 def mock_confluent_producer() -> ConfluentKafkaProducer:
-    with patch("volley.connectors.confluent.KProducer"):
+    with patch("volley.connectors.confluent.Producer"):
         producer = ConfluentKafkaProducer(queue_name="test")
         return producer
 
 
 @fixture
 def mock_confluent_consumer() -> ConfluentKafkaConsumer:
-    with patch("volley.connectors.confluent.KConsumer"):
+    with patch("volley.connectors.confluent.Consumer"):
         consumer = ConfluentKafkaConsumer(queue_name="test")
         return consumer
 
 
 @fixture
 def none_producer_decorated(monkeypatch: MonkeyPatch) -> Generator[Callable[..., None], None, None]:
-    monkeypatch.setattr("volley.connectors.confluent", "KProducer", MagicMock())
-    monkeypatch.setattr("volley.connectors.confluent", "KConsumer", MagicMock())
+    monkeypatch.setattr("volley.connectors.confluent", "Producer", MagicMock())
+    monkeypatch.setattr("volley.connectors.confluent", "Consumer", MagicMock())
 
     eng = Engine(
         input_queue="input-topic",

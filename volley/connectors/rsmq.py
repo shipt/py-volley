@@ -64,13 +64,13 @@ class RSMQConsumer(BaseConsumer):
         _duration = time.time() - _start
         PROCESS_TIME.labels("read").observe(_duration)
         if isinstance(msg, dict):
-            return QueueMessage(message_id=msg["id"], message=msg["message"])
+            return QueueMessage(message_context=msg["id"], message=msg["message"])
         else:
             return None
 
-    def delete_message(self, queue_name: str, message_id: str = None) -> bool:
+    def delete_message(self, queue_name: str, message_context: str = None) -> bool:
         _start = time.time()
-        result: bool = self.queue.deleteMessage(qname=queue_name, id=message_id).execute()
+        result: bool = self.queue.deleteMessage(qname=queue_name, id=message_context).execute()
         _duration = time.time() - _start
         PROCESS_TIME.labels("delete").observe(_duration)
         return result

@@ -22,7 +22,7 @@ class BaseConsumer(ABC):
         """consumes a message to any queue. return None when there are no messages to consume"""
 
     @abstractmethod
-    def delete_message(self, queue_name: str, message_id: Any = None) -> bool:
+    def delete_message(self, queue_name: str, message_context: Any = None) -> bool:
         """deletes a message from a queue"""
 
     @abstractmethod

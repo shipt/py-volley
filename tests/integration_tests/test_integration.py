@@ -113,7 +113,6 @@ def test_dlq_schema_violation(
     logger.info(f"{conusumed_ids=}")
     for _id in request_ids:
         # assert all ids we produced were in the list we consumed
-        logger.info(f"id={_id}")
         assert _id in conusumed_ids
 
     assert len(request_ids) == len(conusumed_ids)

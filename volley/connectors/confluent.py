@@ -71,7 +71,8 @@ class ConfluentKafkaConsumer(BaseConsumer):
             return QueueMessage(message_context=message, message=message.value())
 
     def delete_message(self, queue_name: str, message_context: Message) -> bool:
-        self.c.consumer.store_offsets(message=message_context)
+        # self.c.store_offsets(message=message_context)  # committed according to auto.commit.interval.ms
+        self.c.commit(message_context)
         return True
 
     def on_fail(self) -> None:

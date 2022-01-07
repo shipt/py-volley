@@ -3,6 +3,8 @@ import time
 from typing import Any, Dict, NamedTuple
 
 import confluent_kafka.admin
+import pytest
+from confluent_kafka import Consumer, Producer
 from pytest import fixture
 
 from volley.config import load_yaml
@@ -16,6 +18,8 @@ class Environment(NamedTuple):
     input_topic: str
     output_topic: str
     dlq: str
+    test_topic: str
+    consumer_group: str
 
 
 env = Environment(
@@ -23,7 +27,14 @@ env = Environment(
     input_topic=queues["input-topic"]["value"],
     output_topic=queues["output-topic"]["value"],
     dlq=queues["dead-letter-queue"]["value"],
+    test_topic="some-test-topic",
+    consumer_group="int-test-group",
 )
+
+
+@fixture
+def broker_config() -> dict[str, str]:
+    return {"bootstrap.servers": env.brokers, "group.id": env.consumer_group, "auto.offset.reset": "earliest"}
 
 
 @fixture
@@ -31,11 +42,24 @@ def environment() -> Environment:
     return env
 
 
+@fixture
+def int_test_producer() -> Producer:
+    conf = {"bootstrap.servers": env.brokers}
+    return Producer(conf)
+
+
+@fixture
+def int_test_consumer() -> Consumer:
+    conf = {"bootstrap.servers": env.brokers, "group.id": env.consumer_group, "auto.offset.reset": "earliest"}
+    return Consumer(conf)
+
+
+@pytest.mark.integration
 def pytest_configure() -> None:
     """creates topics and validates topic creation
     https://docs.pytest.org/en/latest/reference/reference.html#_pytest.hookspec.pytest_configure
     """
-    all_topics = [env.input_topic, env.output_topic, env.dlq]
+    all_topics = [env.input_topic, env.output_topic, env.dlq, env.test_topic]
     conf = {"bootstrap.servers": env.brokers}
     topics = [confluent_kafka.admin.NewTopic(x, 1, 1) for x in all_topics]
     for _ in range(30):

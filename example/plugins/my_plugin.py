@@ -62,7 +62,7 @@ class MyPGConsumer(BaseConsumer):
 
         return QueueMessage(message_context="None", message={"results": records})
 
-    def delete_message(self, queue_name: str, message_context: str) -> bool:  # type: ignore
+    def delete_message(self, queue_name: str, message_context: str) -> bool:
         self.session.execute(text("COMMIT;"))
         return True
 

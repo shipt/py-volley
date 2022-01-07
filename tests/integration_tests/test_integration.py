@@ -9,6 +9,7 @@ from confluent_kafka import OFFSET_END, Consumer, Producer, TopicPartition
 from example.data_models import InputMessage
 from tests.integration_tests.conftest import Environment
 from volley.connectors import ConfluentKafkaConsumer, ConfluentKafkaProducer
+from volley.data_models import QueueMessage
 from volley.logging import logger
 
 POLL_TIMEOUT = 30
@@ -180,14 +181,14 @@ def test_confluent_consume(
     producer.shutdown()
 
     # consume one message, record offset but do not commit it, leave consumer group
-    message_0 = consumer.consume(queue_name=environment.test_topic)
+    message_0: QueueMessage = consumer.consume(queue_name=environment.test_topic)  # type: ignore
     offset_0 = message_0.message_context.offset()
     consumer.shutdown()
 
     # recreate the consumer and subscribe
     consumer = ConfluentKafkaConsumer(queue_name=environment.test_topic, config=broker_config, poll_interval=30)
     # consume message again, must be same offset that we previously consumed
-    message_0a = consumer.consume(queue_name=environment.test_topic)
+    message_0a: QueueMessage = consumer.consume(queue_name=environment.test_topic)  # type: ignore
     assert message_0a.message_context.offset() == offset_0
     # commit the offset, leave the consumer group
     consumer.delete_message(message_context=message_0a.message_context, queue_name=environment.test_topic)
@@ -196,7 +197,7 @@ def test_confluent_consume(
     # recreate the consumer
     consumer = ConfluentKafkaConsumer(queue_name=environment.test_topic, config=broker_config, poll_interval=30)
     # consume message again, must be the next offset
-    message_1 = consumer.consume(queue_name=environment.test_topic)
+    message_1: QueueMessage = consumer.consume(queue_name=environment.test_topic)  # type: ignore
     offset_1 = message_1.message_context.offset()
     assert offset_1 == offset_0 + 1
     # commit the offset, leave the consumer group

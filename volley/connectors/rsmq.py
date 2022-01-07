@@ -68,7 +68,7 @@ class RSMQConsumer(BaseConsumer):
         else:
             return None
 
-    def delete_message(self, queue_name: str, message_context: str = None) -> bool:
+    def delete_message(self, queue_name: str, message_context: str) -> bool:
         _start = time.time()
         result: bool = self.queue.deleteMessage(qname=queue_name, id=message_context).execute()
         _duration = time.time() - _start

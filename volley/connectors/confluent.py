@@ -31,7 +31,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
 
         if "auto.commit.interval.ms" not in self.config:
             logger.info("Assigning auto.commit.interval.ms default: %s", self.auto_commit_interval_ms)
-            self.config["auto.offset.reset"] = self.auto_commit_interval_ms
+            self.config["auto.commit.interval.ms"] = self.auto_commit_interval_ms
 
         # self.config provided from base Consumer class
         # consumer group assignment

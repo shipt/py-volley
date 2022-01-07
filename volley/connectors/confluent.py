@@ -20,6 +20,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
 
     poll_interval: float = 10
     auto_offset_reset: str = "earliest"
+    auto_commit_interval_ms: int = 3000
 
     def __post_init__(self) -> None:  # noqa: C901
         self.config = handle_creds(self.config)
@@ -27,6 +28,10 @@ class ConfluentKafkaConsumer(BaseConsumer):
         if "auto.offset.reset" not in self.config:
             logger.info("Assigning auto.offset.reset default: %s", self.auto_offset_reset)
             self.config["auto.offset.reset"] = self.auto_offset_reset
+
+        if "auto.commit.interval.ms" not in self.config:
+            logger.info("Assigning auto.commit.interval.ms default: %s", self.auto_commit_interval_ms)
+            self.config["auto.offset.reset"] = self.auto_commit_interval_ms
 
         # self.config provided from base Consumer class
         # consumer group assignment
@@ -71,8 +76,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
             return QueueMessage(message_context=message, message=message.value())
 
     def delete_message(self, queue_name: str, message_context: Message) -> bool:
-        # self.c.store_offsets(message=message_context)  # committed according to auto.commit.interval.ms
-        self.c.commit(message_context)
+        self.c.store_offsets(message=message_context)  # committed according to auto.commit.interval.ms
         return True
 
     def on_fail(self) -> None:

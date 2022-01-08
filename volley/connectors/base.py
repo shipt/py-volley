@@ -10,7 +10,7 @@ from volley.data_models import QueueMessage
 
 
 @dataclass  # type: ignore
-class Consumer(ABC):
+class BaseConsumer(ABC):
     """Base for a consumer (kafka, rsmq)"""
 
     queue_name: str
@@ -22,7 +22,7 @@ class Consumer(ABC):
         """consumes a message to any queue. return None when there are no messages to consume"""
 
     @abstractmethod
-    def delete_message(self, queue_name: str, message_id: Any = None) -> bool:
+    def delete_message(self, queue_name: str, message_context: Any) -> bool:
         """deletes a message from a queue"""
 
     @abstractmethod
@@ -34,7 +34,7 @@ class Consumer(ABC):
 
 
 @dataclass  # type: ignore
-class Producer(ABC):
+class BaseProducer(ABC):
     """Basic protocol for a producer (kafka or rsmq)"""
 
     queue_name: str

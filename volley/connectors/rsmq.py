@@ -6,7 +6,7 @@ from typing import Optional, Union
 from prometheus_client import Summary
 from rsmq import RedisSMQ
 
-from volley.connectors.base import Consumer, Producer
+from volley.connectors.base import BaseConsumer, BaseProducer
 from volley.data_models import QueueMessage
 from volley.logging import logger
 
@@ -20,7 +20,7 @@ class RSMQConfigError(Exception):
 
 
 @dataclass
-class RSMQConsumer(Consumer):
+class RSMQConsumer(BaseConsumer):
     # https://github.com/mlasevich/PyRSMQ#quick-intro-to-rsmq
     def __post_init__(self) -> None:
         if "host" in self.config:
@@ -64,13 +64,13 @@ class RSMQConsumer(Consumer):
         _duration = time.time() - _start
         PROCESS_TIME.labels("read").observe(_duration)
         if isinstance(msg, dict):
-            return QueueMessage(message_id=msg["id"], message=msg["message"])
+            return QueueMessage(message_context=msg["id"], message=msg["message"])
         else:
             return None
 
-    def delete_message(self, queue_name: str, message_id: str = None) -> bool:
+    def delete_message(self, queue_name: str, message_context: str) -> bool:
         _start = time.time()
-        result: bool = self.queue.deleteMessage(qname=queue_name, id=message_id).execute()
+        result: bool = self.queue.deleteMessage(qname=queue_name, id=message_context).execute()
         _duration = time.time() - _start
         PROCESS_TIME.labels("delete").observe(_duration)
         return result
@@ -86,7 +86,7 @@ class RSMQConsumer(Consumer):
 
 
 @dataclass
-class RSMQProducer(Producer):
+class RSMQProducer(BaseProducer):
     def __post_init__(self) -> None:
         if "host" in self.config:
             # pass the value directly to the constructor

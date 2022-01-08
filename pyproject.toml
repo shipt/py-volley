@@ -71,6 +71,10 @@ target-version = ['py39']
 [tool.pytest.ini_options]
 log_cli = true
 log_cli_level = "INFO"
+markers = [
+    "integration: mark a test as an integration test"
+]
+
 
 [tool.pylint.master]
 ignore="example"

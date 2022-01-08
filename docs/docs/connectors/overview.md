@@ -70,7 +70,7 @@ The base class for consumers and producers are clearly defined:
 {!../../volley/connectors/base.py!}
 ```
 
-Consumers receive a `QueueMessage` object, which has two attributes; `message_id` and the `message` itself. `message_id` is used for actions such as `delete` (delete the message with `message_id` from the queue), or `on_fail` (place the message back on the queue).
+Consumers receive a `QueueMessage` object, which has two attributes; `message_context` and the `message` itself. `message_context` is used for actions such as `delete` (delete the message with `message_context` from the queue), or `on_fail` (place the message back on the queue).
 
 Producers are simple. They publish `bytes` to a queue.
 

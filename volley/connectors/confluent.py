@@ -2,10 +2,9 @@ import os
 from dataclasses import dataclass
 from typing import Any, Dict, Optional, Union
 
-from confluent_kafka import Consumer as KConsumer
-from confluent_kafka import Producer as KProducer
+from confluent_kafka import Consumer, Message, Producer
 
-from volley.connectors.base import Consumer, Producer
+from volley.connectors.base import BaseConsumer, BaseProducer
 from volley.data_models import QueueMessage
 from volley.logging import logger
 
@@ -13,7 +12,7 @@ RUN_ONCE = False
 
 
 @dataclass
-class ConfluentKafkaConsumer(Consumer):
+class ConfluentKafkaConsumer(BaseConsumer):
     """
     Class to easily interact consuming message(s) from Kafka brokers.
     At a minimum bootstrap.servers and group.id must be set in the config dict
@@ -21,6 +20,7 @@ class ConfluentKafkaConsumer(Consumer):
 
     poll_interval: float = 10
     auto_offset_reset: str = "earliest"
+    auto_commit_interval_ms: int = 3000
 
     def __post_init__(self) -> None:  # noqa: C901
         self.config = handle_creds(self.config)
@@ -28,6 +28,10 @@ class ConfluentKafkaConsumer(Consumer):
         if "auto.offset.reset" not in self.config:
             logger.info("Assigning auto.offset.reset default: %s", self.auto_offset_reset)
             self.config["auto.offset.reset"] = self.auto_offset_reset
+
+        if "auto.commit.interval.ms" not in self.config:
+            logger.info("Assigning auto.commit.interval.ms default: %s", self.auto_commit_interval_ms)
+            self.config["auto.commit.interval.ms"] = self.auto_commit_interval_ms
 
         # self.config provided from base Consumer class
         # consumer group assignment
@@ -48,7 +52,9 @@ class ConfluentKafkaConsumer(Consumer):
             # confluent will ignore it with a warning, however
             self.poll_interval = self.config.pop("poll_interval")
 
-        self.c = KConsumer(self.config, logger=logger)
+        # this is not overridable, due to the behavior in self.delete_message()
+        self.config["enable.auto.offset.store"] = False
+        self.c = Consumer(self.config, logger=logger)
         logger.info("Kafka Consumer Configuration: %s", self.config)
         self.c.subscribe([self.queue_name])
         logger.info("Subscribed to %s", self.queue_name)
@@ -67,10 +73,10 @@ class ConfluentKafkaConsumer(Consumer):
             logger.warning(message.error())
             message = None
         else:
-            return QueueMessage(message_id=message, message=message.value())
+            return QueueMessage(message_context=message, message=message.value())
 
-    def delete_message(self, queue_name: str, message_id: str = None) -> bool:
-        # self.c.consumer.store_offsets(message=message_id)
+    def delete_message(self, queue_name: str, message_context: Message) -> bool:
+        self.c.store_offsets(message=message_context)  # committed according to auto.commit.interval.ms
         return True
 
     def on_fail(self) -> None:
@@ -81,7 +87,7 @@ class ConfluentKafkaConsumer(Consumer):
 
 
 @dataclass
-class ConfluentKafkaProducer(Producer):
+class ConfluentKafkaProducer(BaseProducer):
     """
     Class to easily interact producing message(s) to Kafka brokers.
     At a minimum bootstrap.servers must be set in the config dict
@@ -95,7 +101,7 @@ class ConfluentKafkaProducer(Producer):
             logger.info("Assigning compression.type default: %s", self.compression_type)
             self.config["compression.type"] = self.compression_type
 
-        self.p = KProducer(self.config, logger=logger)
+        self.p = Producer(self.config, logger=logger)
         # self.config comes from super class
         logger.info("Kafka Producer Configuration: %s", self.config)
 

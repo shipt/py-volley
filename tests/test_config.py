@@ -20,7 +20,7 @@ def test_load_yaml_fail() -> None:
 def test_import_module_from_string() -> None:
     class_module = import_module_from_string("volley.data_models.QueueMessage")
 
-    instance = class_module(message_id="abc", message={"data": "message"})
+    instance = class_module(message_context="abc", message={"data": "message"})
 
     assert issubclass(class_module, BaseModel)
     assert isinstance(instance, QueueMessage)

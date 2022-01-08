@@ -53,7 +53,7 @@ def test_kafka_producer_creds() -> None:
     assert "sasl.password" in p.config
 
 
-@patch("volley.connectors.confluent.KConsumer")
+@patch("volley.connectors.confluent.Consumer")
 def test_consumer(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setenv("KAFKA_CONSUMER_GROUP", "test-group")
     mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=b'{"random": "message"}')
@@ -64,7 +64,7 @@ def test_consumer(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> None:
 
 
 @patch("volley.connectors.confluent.RUN_ONCE", True)
-@patch("volley.connectors.confluent.KConsumer")
+@patch("volley.connectors.confluent.Consumer")
 def test_consume_none(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setenv("KAFKA_CONSUMER_GROUP", "test-group")
     mock_consumer.return_value.poll = lambda x: None
@@ -74,7 +74,7 @@ def test_consume_none(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> Non
 
 
 @patch("volley.connectors.confluent.RUN_ONCE", True)
-@patch("volley.connectors.confluent.KConsumer")
+@patch("volley.connectors.confluent.Consumer")
 def test_consume_error(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setenv("KAFKA_CONSUMER_GROUP", "test-group")
     mock_consumer.return_value.poll = lambda x: KafkaMessage(error=True)
@@ -83,7 +83,7 @@ def test_consume_error(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> No
     assert q_message is None
 
 
-@patch("volley.connectors.confluent.KConsumer")
+@patch("volley.connectors.confluent.Consumer")
 def test_consumer_group_init(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> None:  # pylint: disable=W0613
     with monkeypatch.context() as m:
         random_consumer_group = str(uuid4())

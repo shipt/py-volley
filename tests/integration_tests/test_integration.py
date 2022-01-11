@@ -190,7 +190,7 @@ def test_confluent_consume(
     message_0a: QueueMessage = consumer.consume(queue_name=environment.test_topic)  # type: ignore
     assert message_0a.message_context.offset() == offset_0
     # commit the offset, leave the consumer group
-    consumer.delete_message(message_context=message_0a.message_context, queue_name=environment.test_topic)
+    consumer.on_success(message_context=message_0a.message_context, queue_name=environment.test_topic)
     consumer.shutdown()
 
     # recreate the consumer
@@ -200,7 +200,7 @@ def test_confluent_consume(
     offset_1 = message_1.message_context.offset()
     assert offset_1 == offset_0 + 1
     # commit the offset, leave the consumer group
-    consumer.delete_message(message_context=message_1.message_context, queue_name=environment.test_topic)
+    consumer.on_success(message_context=message_1.message_context, queue_name=environment.test_topic)
     consumer.shutdown()
 
     # use Confluent consumer directly, validate offset is also the next offset

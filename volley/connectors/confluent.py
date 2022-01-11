@@ -52,7 +52,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
             # confluent will ignore it with a warning, however
             self.poll_interval = self.config.pop("poll_interval")
 
-        # this is not overridable, due to the behavior in self.delete_message()
+        # this is not overridable, due to the behavior in self.on_success()
         self.config["enable.auto.offset.store"] = False
         self.c = Consumer(self.config, logger=logger)
         logger.info("Kafka Consumer Configuration: %s", self.config)
@@ -75,7 +75,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
         else:
             return QueueMessage(message_context=message, message=message.value())
 
-    def delete_message(self, queue_name: str, message_context: Message) -> bool:
+    def on_success(self, queue_name: str, message_context: Message) -> bool:
         self.c.store_offsets(message=message_context)  # committed according to auto.commit.interval.ms
         return True
 

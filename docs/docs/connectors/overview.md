@@ -84,7 +84,7 @@ First, let's build a Consumer and Producer for Postgres.
 {!../../example/plugins/my_plugin.py!}
 ```
 
-The consumer has the specific implementations for `consume`, `delete_message`, `on_fail`, and `shutdown`. The producer implements `produce` and `shutdown`.
+The consumer has the specific implementations for `consume`, `on_success`, `on_fail`, and `shutdown`. The producer implements `produce` and `shutdown`.
 
 
 ### Register the plugin

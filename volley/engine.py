@@ -200,7 +200,7 @@ class Engine:
                 if all(all_produce_status):
                     # TODO - better handling of success criteria
                     # if multiple outputs - how to determine if its a success if one fails
-                    input_con.consumer_con.delete_message(
+                    input_con.consumer_con.on_success(
                         queue_name=input_con.value,
                         message_context=in_message.message_context,
                     )

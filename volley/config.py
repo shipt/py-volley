@@ -6,7 +6,7 @@ import importlib
 from pathlib import Path
 from typing import Any, Dict, Union
 
-from yaml import Loader, load  # type: ignore
+from yaml import Loader, load
 
 GLOBALS = Path(__file__).parent.resolve().joinpath("global.yml")
 

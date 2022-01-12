@@ -1,6 +1,6 @@
 # Connectors
 
-Connectors are specific implementations of producers and consumers. They handle the direct read, write, delete, or even update with a data store. Volley currently supports connectors for Kafka and RSMQ. Consumers and consumers are all concrete implementations of a base class, `volley.connectors.base.BaseConsumer` and `volley.connectors.base.BaseProducer`
+Connectors are specific implementations of producers and consumers. They handle the direct read, write, delete, or even update with a data store. Volley currently supports connectors for Kafka and RSMQ. Consumers and producers are each concrete implementations of a base class, `volley.connectors.base.BaseConsumer` and `volley.connectors.base.BaseProducer`. Inherit these two classes to get started building your own connectors.
 
 ## Consumers 
 

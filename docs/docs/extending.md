@@ -1,6 +1,6 @@
 # Extending Volley
 
-Volley can be extending by developing additional connectors, serializers, and model handlers.
+Volley can be extended by developing additional connectors, serializers, and model handlers. Each of these have base classes that can be inherited into your own implementations, then registered in the Engine() configuration to be used with your application.
 
 Briefly:
 

@@ -47,6 +47,7 @@ psycopg2-binary = "^2.9.2"
 SQLAlchemy = "^1.4.27"
 pylint = "^2.12.1"
 pytest-asyncio = "^0.16.0"
+types-PyYAML = "^6.0.3"
 
 [tool.isort]
 profile = "black"

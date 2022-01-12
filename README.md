@@ -2,7 +2,7 @@
 
 Documentation: https://animated-guacamole-53e254cf.pages.github.io/
 
-Volley makes building event stream applications easier and more accessible. Use Volley if you need to quickly develop an application to consume messages, processes them (and do other things), then publish results to one or many places. Dead letters queues are also easily configured. Volley was very much inspired by the [Flask](https://github.com/pallets/flask) and [FastAPI](https://github.com/tiangolo/fastapi) projects, and aims to make working with queue based and event driven system as accessible as REST APIs.
+Volley makes building event stream applications easier and more accessible. Use Volley if you need to quickly develop an application to consume messages, processes them (and do other things), then publish results to one or many places. Dead letters queues are also easily configured. Volley was inspired ease of use and developer experience provided by the [Flask](https://github.com/pallets/flask) and [FastAPI](https://github.com/tiangolo/fastapi) projects, and aims to make working with queue based and event driven system as accessible as REST APIs.
 
 Volley provides an extensible Python interface to queue-like technologies with built in support for [Apache Kafka](https://kafka.apache.org/) and [RSMQ](https://github.com/mlasevich/PyRSMQ) (Redis Simple Message Queue). Volley is easily extended to any queue technology through plugins. We provide an example for building a plugin for a Postgres queue in our [examples](./example/plugins/my_plugin.py)
 

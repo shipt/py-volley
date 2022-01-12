@@ -11,7 +11,7 @@ from volley.data_models import QueueMessage
 
 @dataclass  # type: ignore
 class BaseConsumer(ABC):
-    """Base for a consumer (kafka, rsmq)"""
+    """Base class for implementing a consumer"""
 
     queue_name: str
     host: Optional[str] = None
@@ -19,23 +19,23 @@ class BaseConsumer(ABC):
 
     @abstractmethod
     def consume(self, queue_name: str) -> Optional[QueueMessage]:
-        """consumes a message to any queue. return None when there are no messages to consume"""
+        """consumes a message from any queue. Returns a QueueMessage object on success, or None when there are no messages"""
 
     @abstractmethod
     def on_success(self, queue_name: str, message_context: Any) -> bool:
-        """deletes a message from a queue"""
+        """action to take when a message has been successfully consumed. For example, delete the message that was consumed"""
 
     @abstractmethod
     def on_fail(self) -> None:
-        """perform some action when downstream operation fails"""
+        """action to perform when serializaion, or data validation has failed"""
 
     def shutdown(self) -> None:
-        """perform some action when shutting down the application"""
+        """perform some action when shutting down the application. For example, close a connection or leave a consumer group"""
 
 
 @dataclass  # type: ignore
 class BaseProducer(ABC):
-    """Basic protocol for a producer (kafka or rsmq)"""
+    """Base class for implementing a producer"""
 
     queue_name: str
     host: Optional[str] = None
@@ -43,7 +43,7 @@ class BaseProducer(ABC):
 
     @abstractmethod
     def produce(self, queue_name: str, message: Any, **kwargs: Any) -> bool:
-        """publishes a message to any queue"""
+        """publish a message to a queue"""
 
     def shutdown(self) -> None:
         """perform some action when shutting down the application"""

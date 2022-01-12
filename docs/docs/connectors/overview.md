@@ -1,26 +1,19 @@
 # Connectors
 
+Connectors are specific implementations of producers and consumers. They handle the direct read, write, delete, or even update with a data store. Volley currently supports connectors for Kafka and RSMQ. Consumers and consumers are all concrete implementations of a base class, `volley.connectors.base.BaseConsumer` and `volley.connectors.base.BaseProducer`
 
-## Overview
+## Consumers 
 
-Connectors are specific implementations of producers and consumers for a data store. There are currently connectors implemented for [pyRSMQ](https://github.com/mlasevich/PyRSMQ) (Redis) and Kafka.
+Consumers handle reading a message from a queue.
+
+### ::: volley.connectors.base.BaseConsumer
 
 
-Producers have two functions:
+## Producers
 
-- `produce` - place a message on the queue.
+Producers handle the publishing of messages to a queue.
 
-- `shutdown` - gracefully disconnect the producer.
-
-Consumers have four functions:
-
-- `consume` - pull a message off the queue.
-
-- `delete` - delete a message on the queue.
-
-- `on_fail` - operation to conduct if a component worker fails processing a message. For example, place the message back on the queue, rollback a transaction, etc.
-
-- `shutdown` - gracefully disconnect the consumer. For example. close a database connection or leave a Kafka consumer group.
+### ::: volley.connectors.base.BaseProducer
 
 ## Supported Connectors
 
@@ -48,15 +41,19 @@ KAFKA_SECRET=<kafka password>
 KAFKA_BROKERS=<host:port of the brokers>
 ```
 
-But all [librdkafka configurations](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) can be passed through to the connector.
+But all [librdkafka configurations](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) can be passed through to the connector as `config`. The `bootstrap.servers` configuration is passed through in the example below.
 
-```yml
-- name: output_topic
-  value: output.kafka.topic.name
-  profile: confluent
-  data_model: volley.data_models.GenericMessage
-  config:
-    bootstrap.servers: kafka_broker_host:9092
+```python
+cfg = {
+  "output_topic": {
+    "value": "output.kafka.topic.name",
+    "profile": "confluent",
+    "data_model": "volley.data_models.GenericMessage",
+    "config": {
+      "bootstrap.servers": "kafka_broker_host:9092"
+    }
+  }
+} 
 ```
 
 ## Extending Connectors with Plugins
@@ -89,7 +86,7 @@ The consumer has the specific implementations for `consume`, `on_success`, `on_f
 
 ### Register the plugin
 
-Like all configuration, they can be specified in either `yaml` or a `dict` passed directly to `volley.engine.Engine` (but not both).
+Like all configuration, they can be specified in either `yaml` or a `dict` passed directly to `volley.Engine` (but not both).
 
 ```yml
 # ./my_volly_config.yml

@@ -2,9 +2,9 @@
 
 Documentation: https://animated-guacamole-53e254cf.pages.github.io/
 
-Volley makes building event stream applications easier and more accessible. Use Volley if you need to quickly develop an application to consume messages, processes them (and do other things), then publish results to one or many places. Dead letters queues are also easily configured.
+Volley makes building event stream applications easier and more accessible. Use Volley if you need to quickly develop an application to consume messages, processes them (and do other things), then publish results to one or many places. Dead letters queues are also easily configured. Volley was inspired ease of use and developer experience provided by the [Flask](https://github.com/pallets/flask) and [FastAPI](https://github.com/tiangolo/fastapi) projects, and aims to make working with queue based and event driven system as accessible as REST APIs.
 
-Volley provides an extensible Python interface to queue-like technologies with built in support for [Apache Kafka](https://kafka.apache.org/) and [RSMQ](https://github.com/mlasevich/PyRSMQ) (Redis Simple Message Queue). Volley is easily extended to any queue technology through plugins, and we provide an example for building a plugin for a Postgres queue in our [examples](./example/plugins/my_plugin.py)
+Volley provides an extensible Python interface to queue-like technologies with built in support for [Apache Kafka](https://kafka.apache.org/) and [RSMQ](https://github.com/mlasevich/PyRSMQ) (Redis Simple Message Queue). Volley is easily extended to any queue technology through plugins. We provide an example for building a plugin for a Postgres queue in our [examples](./example/plugins/my_plugin.py)
 
 
 
@@ -26,28 +26,40 @@ export POETRY_HTTP_BASIC_SHIPT_PASSWORD=your_password
 pip install py-volley \
   --extra-index-url=https://${POETRY_HTTP_BASIC_SHIPT_USERNAME}:${POETRY_HTTP_BASIC_SHIPT_PASSWORD}@pypi.shipt.com/simple
 ```
+## Feautres
+- Built in support for [Apache Kafka](https://kafka.apache.org/) and [RSMQ](https://github.com/mlasevich/PyRSMQ)
+- Optionally configured integration with dead-letter-queues
+- [Prometheus](https://prometheus.io/) metrics for all operations such as function processing time, and consumption and production count.
+- Serialization in JSON and [MessagePack](https://msgpack.org/index.html)
+- Data validation via [Pydantic](https://pydantic-docs.helpmanual.io/)
+- Extendible connectors (consumer/producers), serializers, model handlers, and model handlers via plugins.
 
 ## Getting started
 
-Check out projects already using Volley:
-  - [TLMD Future Route Actualizer](https://github.com/shipt/tlmd-future-route-actualizer) - Single worker that consumes from Kafka, does processing and invokes ML models, then publishes results to Kafka.
-  - [Bundle Optimization Engine](https://github.com/shipt/ml-bundle-engine) - Collection of workers that consume/produce to Kafka, Redis, and Postgres. 
+Volley handles the process of consuming/producing by providing developers with extendible interaces and handlers:
+- connectors - consumer and producer interfaces which define how the application should read messages, write messages, and what actions to take when a message is succesfully or fails processing.
+- serializers - handlers and interface which describe the behavior for reading an byte objects from connectors. For example, Json or MessagePack serializers.
+- model_handler - handler and interface which works very closely with serializers. Typically used to turn serialized data into a structured Python data model. Pydantic is Volley's most supported data_model and can handler serialization itself.
+- data_model - When your application receives data from a queue, what schema and object do you expect it in? The data_model is provided by the user. And the `model_handler` describes how to construct your `data_model`.
 
-Volley applications, "workers", are implemented as a function decorated with an instance of the `volley.engine.Engine`. A component consumes from one queue and can publish to one or many queues.
-
-By default, component function takes in `input_object` of type: `GenericMessage`, which is a Pydantic model that accepts extra attributes. This model defines the schema of messages on the INPUT_QUEUE. The component function can process and modify that object to meet its needs.
-
-Components output a list of tuples, where the tuple is defined as `(<name_of_queue>, GenericMessage)`.
- The returned component message type must agree with the type accepted by the queue you are publishing to.
-
-Below is a basic example that:
+Below is a basic example:
 1) consumes from `input-topic` (a kafka topic).
 2) evaluates the message from the queue
-3) publishes a message to `output-topic` (also kafka topic)
-4) Provides a path to a pydantic model that provides schema validation to both inputs and outputs.
+3) publishes a message to `output-queue`
+4) Provides a path to a Pydantic model that provides schema validation to both inputs and outputs.
 5) Configures a dead-letter queue for any incoming messages that violate the specified schema.
 
+
 ```python
+# my_models.py
+from pydantic import BaseModel
+
+class InputMessage(BaseModel):
+  my_values: list[int]
+```
+
+```python
+# app.py
 from typing import List, Tuple
 
 from volley.engine import Engine
@@ -57,37 +69,33 @@ queue_config = {
     "input-topic": {
       "value": "stg.kafka.myapp.input",
       "profile": "confluent",
-      "data_model": "example.data_models.InputMessage",  # for input validation
+      "data_model": "my_models.InputMessage"
     },
-    "output-topic": {
+    "output-queue": {
       "value": "stg.ds-marketplace.v1.my_kafka_topic_output",
-      "profile": "confluent",
-      "data_model": "example.data_models.OutputMessage",  # for output validation
+      "profile": "rsmq",
     },
-    "dead-letter-queue": {
-      "value": "stg.kafka.myapp.dlq",
-      "profile": "confluent"
-    }
 }
 
-engine = Engine(
+app = Engine(
   app_name="my_volley_app",
   input_queue="input-topic",
-  output_queues=["output-topic"],
+  output_queues=["output-queue"],
   dead_letter_queue="dead-letter-queue",
   queue_config=queue_config
 )
 
-@eng.stream_app
-def hello_world(msg: InputMessage) -> List[Tuple[str, OutputMessage]]:
-  if msg.value > 0:
+@app.stream_app
+def hello_world(msg: InputMessage) -> List[Tuple[str, GenericMessage]]:
+  max_val = max(msg.my_values)
+  if max_val > 0:
     out_value = "foo"
   else:
     out_value = "bar"
   
   out = GenericMessage(hello=out_value)
 
-  return [("output-topic", out)]
+  return [("output-topic", out)]  # a list of one or many output targets and messages
 ```
 
 Set environment variables for the Kafka connector:
@@ -111,9 +119,17 @@ queue_config = {
       },
       "value": "stg.kafka.myapp.input",
       "profile": "confluent",
-      "data_model": "example.data_models.InputMessage",
+      "data_model": "my_models.InputMessage",
     },
+    ...
 ```
+
+## Complete example
+
+Clone this repo and run `make run.example` to see a complete example of:
+- consuming a message from a Kafka topic
+- producing to RSMQ
+- consuming from RSMQ and publishing to Kafka. Using a custom plugin to publish a Postgres based queue.
 
 # CI / CD
 

@@ -12,7 +12,7 @@ theme:
         name: light mode
 
 nav:
-  - Introduction: 'index.md'
+  - Volley: 'index.md'
   - Getting Started: 'example.md'
   - Configuration:
     - Queues: 'queue_config.md'

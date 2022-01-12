@@ -1,6 +1,6 @@
 # Getting Started
 
-This is the most basic example; an application that receives a list of floats in a message from a Kafka topic and publishes the maximum value from that list to the output Kafka Topic. Volley treats Kafka topics like queues, so the term "queue" and "topic" will be used interchangeably.
+This is a basic example but a common pattern - an application to consume from a kafka topic and publish to another kafka topic. The example application receives a list of floats in a message from a Kafka topic and publishes the maximum value from that list to the output Kafka Topic. Volley treats Kafka topics like queues, so the term "queue" and "topic" will be used interchangeably.
 
 
 ### 1. Define data models
@@ -131,9 +131,11 @@ You produce messages by returning a list of tuples from your function.
 List[Tuple[str, Any, Optional[dict[str Any]]]]
 ```
 
-Each element in the list is a message destined for the queue specified by the first element in the tuple. The second element is the message itself. The third element is optional, runtime configurations for your producer. For the Confluent producer, these might be a partition key or a callback. They are passed to the producer's `produce()` function as expanded key word arguments.
+Each element in the list is a message destined for the queue specified by the first element in the tuple. The second tuple element is the message itself. The third tuple element is optional runtime configurations for your producer. For the Confluent producer, these might be a partition key or a callback. They are passed to the producer's `produce()` function as expanded key word arguments.
 
         [(output_queue_name, message_object, optional_runtime_configurations)]
+
+Your application does not need to produce anything! Simply return `True` if you want Volley to mark the incoming message as a success with the consuming input queue, and `False` if you want to mark it as failed. With RSMQ, True means the incoming message will be deleted from the input queue and False results in the incoming message being returned to the input queue. See the consumer's `on_success` and `on_fail` implementations for specifics.
 
 ### 5. Run application
 

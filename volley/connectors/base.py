@@ -19,18 +19,24 @@ class BaseConsumer(ABC):
 
     @abstractmethod
     def consume(self, queue_name: str) -> Optional[QueueMessage]:
-        """consumes a message from any queue. Returns a QueueMessage object on success, or None when there are no messages"""
+        """consumes a message from any queue.
+        Returns a QueueMessage object on success, or None when there are no messages
+        """
 
     @abstractmethod
     def on_success(self, queue_name: str, message_context: Any) -> bool:
-        """action to take when a message has been successfully consumed. For example, delete the message that was consumed"""
+        """action to take when a message has been successfully consumed.
+        For example, delete the message that was consumed
+        """
 
     @abstractmethod
     def on_fail(self) -> None:
         """action to perform when serializaion, or data validation has failed"""
 
     def shutdown(self) -> None:
-        """perform some action when shutting down the application. For example, close a connection or leave a consumer group"""
+        """perform some action when shutting down the application.
+        For example, close a connection or leave a consumer group
+        """
 
 
 @dataclass  # type: ignore

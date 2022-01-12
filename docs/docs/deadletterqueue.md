@@ -4,21 +4,8 @@ Dead letter queues (DLQ) are special types of queues that are typically reserved
 
 If enabled, Volley will publish messages, which fail either serialization or schema validation, to a specified dead letter queue. Application can also electively send a message to a dead letter queue.
 
-To configure a dead letter queue, provide it in queue configration (either yaml or dict):
+To configure a dead letter queue, provide it in queue configration:
 
-
-```yml
-# ./my_volly_config.yml
-queues:
-  input-topic:
-    value: long.name.of.kafka.input.topic
-    profile: confluent
-  my-dead-letter-queue:
-    value: long.name.of.kafka.DLQ.topic
-    profile: confluent
-```
-
-or alternatively:
 
 ```python
 config = {
@@ -28,10 +15,12 @@ config = {
     }
     "my-dead-letter-queue": {
         "value": "long.name.of.kafka.DLQ.topic",
-        "profile": "confluent",
+        "profile": "confluent-dlq",
     }
 }
 ```
+
+The [confluent-dlq](./profiles.md#confluent-dlq) profile disables serialization and model handling. This routes the raw message from the input topic to the dead-letter-queue.
 
 Then specify the DLQ on Engine init:
 

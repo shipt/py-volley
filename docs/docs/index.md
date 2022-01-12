@@ -1,4 +1,5 @@
-# **Volley**
+![VolleyFull-Horizontal](https://user-images.githubusercontent.com/81711984/149005139-f0441dcf-c76e-4112-baf1-998d0a6abdbb.png)
+
 
 Volley is a lightweight and highly configurable message stream processor for Python.
 
@@ -12,13 +13,10 @@ Volley is a lightweight and highly configurable message stream processor for Pyt
 **Repository**: [https://github.com/shipt/volley](https://github.com/shipt/volley)
 
 
-Use Volley to quickly build lightweight message processing microservices. Volley has built in connectors for [Confluent Kafka](https://github.com/confluentinc/confluent-kafka-python) and [Redis Simple Message Queue](https://github.com/mlasevich/PyRSMQ). It also provides serialization implementations in [MessagePack](https://github.com/msgpack/msgpack-python) and [orjson](https://github.com/ijl/orjson), data validation via [Pydantic](https://github.com/samuelcolvin/pydantic) and [Prometheus](https://github.com/prometheus/client_python) metrics.
+Use Volley to quickly build lightweight message processing microservices. Define your applications Add a few lines of code to your application to integrate with technologies like Kafka Volley has built in connectors for [Confluent Kafka](https://github.com/confluentinc/confluent-kafka-python) and [Redis Simple Message Queue](https://github.com/mlasevich/PyRSMQ). It also provides serialization implementations in [MessagePack](https://github.com/msgpack/msgpack-python) and [orjson](https://github.com/ijl/orjson), data validation via [Pydantic](https://github.com/samuelcolvin/pydantic) and [Prometheus](https://github.com/prometheus/client_python) metrics.
 
 
 ## Example
-
-Volley turns your Python function into a message stream processor. If you can write a Python function you can build a stream processor with Volley.
-
 
 To consume from one Kafka topic and produce to another...
 
@@ -54,7 +52,7 @@ app = Engine(
 
 Apply the `stream_app` decorator to your function. The message received by your function is a single message consumed from the Kafka topic.
 
-You return a list of tuples from your function. Each tuple contains `Tuple[<name_of_queue>, message_object]`
+You return a list of tuples from your function. Each list element contains `Tuple[<name_of_queue>, message_object]` these are the messages and their destionation (queue) that Volley will produce for you. 
 
 ```python
 from volley.data_models import GenericMessage
@@ -85,6 +83,8 @@ if __name__ == "__main__":
     my_fun()
 ```
 
+Ensure some variables are set in your environment.
+
 ```bash
 KAFKA_BROKERS=kafka:9092
 KAFKA_CONSUMER_GROUP=my.consumer.group
@@ -96,8 +96,7 @@ And start the worker:
 python -m my_module.my_fun
 ```
 
-
-See our [example](./example.md) for setting up a basic application.
+See our [example](./example.md) for a more in-depth example.
 
 ## Features
 
@@ -112,13 +111,13 @@ Volley is production-ready, and provides the following to all functions that it 
 
 ## How-it-works
 
-When run, Volley invokes a continuous loop of the following:
+Volley handles operations that need to happen before and after the processing in your function:
 
   - poll the specified `input_queue` for new messages via a `connector`
 
   - the `connector` passes message through `serialization`
 
-  - `serialization` passes the message through a `schema` for validation
+  - `serialization` passes the message through a user provided `data_model` for schema validation
 
   - message is passed to your function, and your function messages returns zero to many messages back to Volley
 

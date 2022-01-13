@@ -6,12 +6,12 @@ from typing import Optional, Union
 from prometheus_client import Summary
 from rsmq import RedisSMQ
 from rsmq.cmd.exceptions import QueueAlreadyExists
-from tenacity import retry
-from tenacity.stop import wait_exponential
+from tenacity import retry, wait_exponential
 
 from volley.connectors.base import BaseConsumer, BaseProducer
 from volley.data_models import QueueMessage
 from volley.logging import logger
+
 
 PROCESS_TIME = Summary("redis_process_time_seconds", "Time spent interacting with rsmq", ["operation"])
 
@@ -89,7 +89,7 @@ class RSMQConsumer(BaseConsumer):
     @retry(wait=wait_exponential(multiplier=1, min=4, max=10))
     def delete_message(self, queue_name: str, message_context: str) -> bool:
         """wrapper function to handle retries
-        exception
+        retrying forever with exponential backoff
         """
         _start = time.time()
         result: bool = self.queue.deleteMessage(qname=queue_name, id=message_context).execute()
@@ -99,7 +99,6 @@ class RSMQConsumer(BaseConsumer):
             return result
         else:
             raise Exception(f"Failed deleting message: '{message_context}' from queue: '{queue_name}'")
-
 
 @dataclass
 class RSMQProducer(BaseProducer):

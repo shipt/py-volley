@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py_volley"
-version = "0.14.0"
+version = "0.14.1-alpha.0"
 description = "send messages everywhere"
 authors = ["ask-machine-learning <shipt@shipt.com>"]
 
@@ -24,6 +24,7 @@ hiredis = "^2.0.0"
 orjson = "^3.6.4"
 msgpack = "^1.0.3"
 confluent-kafka = "^1.7.0"
+tenacity = "^8.0.1"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.2"

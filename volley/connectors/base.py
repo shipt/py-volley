@@ -30,7 +30,7 @@ class BaseConsumer(ABC):
         """
 
     @abstractmethod
-    def on_fail(self) -> None:
+    def on_fail(self, queue_name: str, message_context: Any) -> None:
         """action to perform when serializaion, or data validation has failed"""
 
     def shutdown(self) -> None:

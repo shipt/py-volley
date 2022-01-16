@@ -66,7 +66,7 @@ class MyPGConsumer(BaseConsumer):
         self.session.execute(text("COMMIT;"))
         return True
 
-    def on_fail(self) -> None:
+    def on_fail(self, queue_name: str, message_context: Any) -> None:
         self.session.execute(text("ROLLBACK;"))
 
     def shutdown(self) -> None:

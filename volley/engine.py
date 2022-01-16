@@ -30,8 +30,6 @@ MESSAGE_CONSUMED = Counter(
     "messages_consumed_count", "Messages consumed from input", ["volley_app", "status"]
 )  # success or fail
 
-POLL_INTERVAL = 1
-
 
 @dataclass
 class Engine:
@@ -44,6 +42,7 @@ class Engine:
         output_queues: List of queues the application needs to be able to publish to.
             Not required if the application does not produce anywhere!
         dead_letter_queue: Points to the queue in configuration used as the dead letter queue.
+        poll_interval_seconds: globally set time to to halt between polls on the consumer
         queue_config: dictionary provided all queue configurations.
             Must provide one of queue_config or yaml_config_path
         yaml_config_path: path to a yaml config file.
@@ -67,7 +66,7 @@ class Engine:
 
     # set in post_init
     queue_map: Dict[str, Queue] = field(default_factory=dict)
-
+    poll_interval_seconds: float = 1.0
     queue_config: Optional[Dict[str, Any]] = None
     yaml_config_path: str = "./volley_config.yml"
     metrics_port: Optional[int] = 3000
@@ -155,8 +154,8 @@ class Engine:
                 if in_message is None:
                     # if no messages, handle poll interval
                     # TODO: this should be dynamic with some sort of backoff
-                    logger.info("No messages - sleeping POLL_INTERVAL=%s", POLL_INTERVAL)
-                    time.sleep(POLL_INTERVAL)
+                    logger.info("No messages - sleeping POLL_INTERVAL=%s", self.poll_interval_seconds)
+                    time.sleep(self.poll_interval_seconds)
                     continue
 
                 # typing for producing

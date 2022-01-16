@@ -5,7 +5,6 @@ from typing import Any, Optional, Union
 
 from prometheus_client import Summary
 from rsmq import RedisSMQ
-from rsmq.cmd.exceptions import QueueAlreadyExists
 from tenacity import retry, stop_after_attempt, wait_exponential, wait_fixed
 
 from volley.connectors.base import BaseConsumer, BaseProducer
@@ -48,7 +47,7 @@ class RSMQConsumer(BaseConsumer):
         self.config = defaults
         logger.info("RSMQ Consumer configs %s", self.config)
         self.queue = RedisSMQ(**self.config)
-        logger.info(f"Creatng queue: {self.queue_name}")
+        logger.info("Creatng queue: %s", self.queue_name)
         self.queue.createQueue().exceptions(False).execute()
 
     def consume(self, queue_name: str) -> Optional[QueueMessage]:
@@ -117,7 +116,7 @@ class RSMQProducer(BaseProducer):
         self.config = defaults
         logger.info("RSMQ Producer configs: %s", self.config)
         self.queue = RedisSMQ(**self.config)
-        logger.info(f"Creatng queue: {self.queue_name}")
+        logger.info("Creatng queue: %s", self.queue_name)
         self.queue.createQueue().exceptions(False).execute()
 
     def produce(self, queue_name: str, message: bytes, **kwargs: Union[str, int]) -> bool:

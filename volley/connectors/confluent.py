@@ -79,11 +79,13 @@ class ConfluentKafkaConsumer(BaseConsumer):
         self.c.store_offsets(message=message_context)  # committed according to auto.commit.interval.ms
         return True
 
-    def on_fail(self) -> None:
+    def on_fail(self, queue_name: str, message_context: Message) -> None:
+        logger.error("Failed producing message topoc: %s -- message: %s", queue_name, message_context.value())
         pass
 
     def shutdown(self) -> None:
         self.c.close()
+        logger.info("Successfully commit offsets and left consumer group %s", self.config.get("group.id"))
 
 
 @dataclass

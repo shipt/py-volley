@@ -82,7 +82,7 @@ class KafkaMessage:
 
     def topic(self) -> Optional[str]:
         return self._topic
-    
+
     def partition(self) -> int:
         return self._partition
 

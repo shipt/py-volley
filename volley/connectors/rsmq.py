@@ -70,9 +70,9 @@ class RSMQConsumer(BaseConsumer):
 
     def on_success(self, queue_name: str, message_context: str) -> bool:
         _start = time.time()
-        result: bool = self.delete_message(queue_name=queue_name, message_context=message_context)
+        result: bool = self.delete_message(queue_name=queue_name, message_id=message_context)
         _duration = time.time() - _start
-        PROCESS_TIME.labels("read").observe(_duration)
+        PROCESS_TIME.labels("delete").observe(_duration)
         return result
 
     def on_fail(self, queue_name: str, message_context: str) -> None:
@@ -88,15 +88,15 @@ class RSMQConsumer(BaseConsumer):
         self.queue.quit()
 
     @retry(reraise=True, wait=wait_exponential(multiplier=1, min=4, max=10))
-    def delete_message(self, queue_name: str, message_context: str) -> bool:
+    def delete_message(self, queue_name: str, message_id: str) -> bool:
         """wrapper function to handle retries
         retrying forever with exponential backoff
         """
-        result: bool = self.queue.deleteMessage(qname=queue_name, id=message_context).execute()
+        result: bool = self.queue.deleteMessage(qname=queue_name, id=message_id).execute()
         if result:
             return result
         else:
-            raise TimeoutError(f"Failed deleting message: '{message_context}' from queue: '{queue_name}'")
+            raise TimeoutError(f"Failed deleting message: '{message_id}' from queue: '{queue_name}'")
 
 
 @dataclass

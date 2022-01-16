@@ -1,17 +1,16 @@
 import os
 import time
 from dataclasses import dataclass
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 from prometheus_client import Summary
 from rsmq import RedisSMQ
 from rsmq.cmd.exceptions import QueueAlreadyExists
-from tenacity import retry, wait_exponential
+from tenacity import retry, stop_after_attempt, wait_exponential, wait_fixed
 
 from volley.connectors.base import BaseConsumer, BaseProducer
 from volley.data_models import QueueMessage
 from volley.logging import logger
-
 
 PROCESS_TIME = Summary("redis_process_time_seconds", "Time spent interacting with rsmq", ["operation"])
 
@@ -49,11 +48,8 @@ class RSMQConsumer(BaseConsumer):
         self.config = defaults
         logger.info("RSMQ Consumer configs %s", self.config)
         self.queue = RedisSMQ(**self.config)
-        try:
-            logger.info(f"Creatng queue: {self.queue_name}")
-            self.queue.createQueue().execute()
-        except QueueAlreadyExists:
-            logger.warning(f"Queue '%s' already exists", self.queue_name)
+        logger.info(f"Creatng queue: {self.queue_name}")
+        self.queue.createQueue().exceptions(False).execute()
 
     def consume(self, queue_name: str) -> Optional[QueueMessage]:
         """Polls RSMQ for a single message.
@@ -74,31 +70,35 @@ class RSMQConsumer(BaseConsumer):
             return None
 
     def on_success(self, queue_name: str, message_context: str) -> bool:
+        _start = time.time()
         result: bool = self.delete_message(queue_name=queue_name, message_context=message_context)
+        _duration = time.time() - _start
+        PROCESS_TIME.labels("read").observe(_duration)
         return result
 
-    def on_fail(self) -> None:
-        """no action on fail
-        consumed message becomes available again once visibility timeout (vt) expires
-        """
-        pass
+    def on_fail(self, queue_name: str, message_context: str) -> None:
+        """message will become visible once visbility timeout expires"""
+        # self.queue.changeMessageVisibility(qname=queue_name, id=message_context, vt=0)
+        logger.error(
+            "Failed producing message id %s." "Message will reappear in queue `%s` when timeout expires",
+            message_context,
+            queue_name,
+        )
 
     def shutdown(self) -> None:
         self.queue.quit()
 
-    @retry(wait=wait_exponential(multiplier=1, min=4, max=10))
+    @retry(reraise=True, wait=wait_exponential(multiplier=1, min=4, max=10))
     def delete_message(self, queue_name: str, message_context: str) -> bool:
         """wrapper function to handle retries
         retrying forever with exponential backoff
         """
-        _start = time.time()
         result: bool = self.queue.deleteMessage(qname=queue_name, id=message_context).execute()
-        _duration = time.time() - _start
-        PROCESS_TIME.labels("read").observe(_duration)
         if result:
             return result
         else:
-            raise Exception(f"Failed deleting message: '{message_context}' from queue: '{queue_name}'")
+            raise TimeoutError(f"Failed deleting message: '{message_context}' from queue: '{queue_name}'")
+
 
 @dataclass
 class RSMQProducer(BaseProducer):
@@ -117,24 +117,26 @@ class RSMQProducer(BaseProducer):
         self.config = defaults
         logger.info("RSMQ Producer configs: %s", self.config)
         self.queue = RedisSMQ(**self.config)
-        try:
-            logger.info(f"Creatng queue: {self.queue_name}")
-            self.queue.createQueue().execute()
-        except QueueAlreadyExists:
-            logger.warning(f"Queue '%s' already exists", self.queue_name)
+        logger.info(f"Creatng queue: {self.queue_name}")
+        self.queue.createQueue().exceptions(False).execute()
 
     def produce(self, queue_name: str, message: bytes, **kwargs: Union[str, int]) -> bool:
-        m = message
         _start = time.time()
-        msg_id: str = self.queue.sendMessage(
-            qname=queue_name,
-            message=m,
-            encode=kwargs.get("encode", False),
-            delay=kwargs.get("delay", None),
-            quiet=kwargs.get("quiet", False),
-        ).execute()
+        status: bool = self.send_message(queue_name=queue_name, message=message, produce_cfg=kwargs)
         _duration = time.time() - _start
         PROCESS_TIME.labels("write").observe(_duration)
+        return status
+
+    @retry(reraise=True, stop=stop_after_attempt(5), wait=wait_fixed(2))
+    def send_message(self, queue_name: str, message: bytes, produce_cfg: dict[str, Any]) -> bool:
+        """wrapper function to handle retries retrying"""
+        msg_id: str = self.queue.sendMessage(
+            qname=queue_name,
+            message=message,
+            encode=produce_cfg.get("encode", False),
+            delay=produce_cfg.get("delay", None),
+            quiet=produce_cfg.get("quiet", False),
+        ).execute()
         return bool(msg_id)
 
     def shutdown(self) -> None:

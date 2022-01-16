@@ -154,4 +154,4 @@ def acked(err: Optional[str], msg: Any) -> None:
     if err is not None:
         logger.error("Failed to deliver message: %s: %s", msg, err)
     else:
-        logger.info("Acknowledged success from topic: %s", msg.topic())
+        logger.info("Successful delivery to %s, partion: %d, offset: %d", msg.topic(), msg.partition(), msg.offset())

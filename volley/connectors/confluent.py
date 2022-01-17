@@ -80,7 +80,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
         return True
 
     def on_fail(self, queue_name: str, message_context: Message) -> None:
-        logger.error("Failed producing message topoc: %s -- message: %s", queue_name, message_context.value())
+        logger.error("Failed producing message: %s", message_context.value())
         pass
 
     def shutdown(self) -> None:

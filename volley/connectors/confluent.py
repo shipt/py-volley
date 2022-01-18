@@ -3,12 +3,15 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional, Union
 
 from confluent_kafka import Consumer, Message, Producer
+from prometheus_client import Counter
 
 from volley.connectors.base import BaseConsumer, BaseProducer
 from volley.data_models import QueueMessage
 from volley.logging import logger
 
 RUN_ONCE = False
+
+DELIVERY_STATUS = Counter("delivery_report_status", "Kafka delivered message", ["status"])
 
 
 @dataclass
@@ -79,11 +82,18 @@ class ConfluentKafkaConsumer(BaseConsumer):
         self.c.store_offsets(message=message_context)  # committed according to auto.commit.interval.ms
         return True
 
-    def on_fail(self) -> None:
+    def on_fail(self, queue_name: str, message_context: Message) -> None:
+        logger.info(
+            "Downstream failure. Did not commit offset: %d, partition: %d, message: %s",
+            message_context.offset(),
+            message_context.partition(),
+            message_context.value(),
+        )
         pass
 
     def shutdown(self) -> None:
         self.c.close()
+        logger.info("Successfully commit offsets and left consumer group %s", self.config.get("group.id"))
 
 
 @dataclass
@@ -105,13 +115,23 @@ class ConfluentKafkaProducer(BaseProducer):
         # self.config comes from super class
         logger.info("Kafka Producer Configuration: %s", self.config)
 
+    def acked(self, err: Optional[str], msg: Message) -> None:
+        if err is not None:
+            logger.error("Failed to deliver message: %s, error: %s", msg.value(), err)
+            DELIVERY_STATUS.labels("fail").inc()
+        else:
+            logger.info(
+                "Successful delivery to %s, partion: %d, offset: %d", msg.topic(), msg.partition(), msg.offset()
+            )
+            DELIVERY_STATUS.labels("success").inc()
+
     def produce(self, queue_name: str, message: bytes, **kwargs: Union[str, int]) -> bool:
         self.p.produce(
             key=kwargs.get("key"),
             topic=queue_name,
             value=message,
             headers=kwargs.get("headers"),
-            callback=acked,
+            callback=self.acked,
         )
         self.p.poll(0)
         logger.info("Sent to topic: %s", queue_name)
@@ -146,10 +166,3 @@ def handle_creds(config_dict: Dict[str, Any]) -> Dict[str, Any]:
             config_dict["security.protocol"] = "SASL_SSL"
             config_dict["sasl.mechanism"] = "PLAIN"
     return config_dict
-
-
-def acked(err: Optional[str], msg: Any) -> None:
-    if err is not None:
-        logger.error("Failed to deliver message: %s: %s", msg, err)
-    else:
-        logger.info("Acknowledged success from topic: %s", msg.topic())

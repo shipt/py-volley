@@ -7,7 +7,7 @@ from pytest import LogCaptureFixture, MonkeyPatch
 
 from tests.conftest import KafkaMessage
 from volley.connectors import ConfluentKafkaConsumer, ConfluentKafkaProducer
-from volley.connectors.confluent import acked, handle_creds
+from volley.connectors.confluent import handle_creds
 from volley.data_models import QueueMessage
 
 
@@ -56,11 +56,12 @@ def test_kafka_producer_creds() -> None:
 @patch("volley.connectors.confluent.Consumer")
 def test_consumer(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setenv("KAFKA_CONSUMER_GROUP", "test-group")
-    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=b'{"random": "message"}')
+    kmsg = KafkaMessage(msg=b'{"random": "message"}')
+    mock_consumer.return_value.poll = lambda x: kmsg
     b = ConfluentKafkaConsumer(host="localhost", queue_name="input-topic")
     q_message = b.consume()
     assert isinstance(q_message, QueueMessage)
-    b.on_fail()
+    b.on_fail("test_q", kmsg)
 
 
 @patch("volley.connectors.confluent.RUN_ONCE", True)
@@ -94,12 +95,12 @@ def test_consumer_group_init(mock_consumer: MagicMock, monkeypatch: MonkeyPatch)
         assert consumer.config["group.id"] == random_consumer_group
 
 
-def test_callback(caplog: LogCaptureFixture) -> None:
+def test_callback(mock_confluent_producer: ConfluentKafkaProducer, caplog: LogCaptureFixture) -> None:
     m = KafkaMessage()
-    acked(err="error", msg=m)
+    mock_confluent_producer.acked(err="error", msg=m)
     assert "Failed to deliver" in caplog.messages[0]
     m = KafkaMessage(topic="test-topic")
-    acked(err=None, msg=m)
+    mock_confluent_producer.acked(err=None, msg=m)
     assert "test-topic" in caplog.messages[1]
 
 

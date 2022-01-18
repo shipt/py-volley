@@ -7,8 +7,8 @@ Volley makes building event stream applications easier and more accessible. Use 
 Volley provides an extensible Python interface to queue-like technologies with built in support for [Apache Kafka](https://kafka.apache.org/) and [RSMQ](https://github.com/mlasevich/PyRSMQ) (Redis Simple Message Queue). Volley is easily extended to any queue technology through plugins. We provide an example for building a plugin for a Postgres queue in our [examples](./example/plugins/my_plugin.py)
 
 
-[![Build Status](https://drone.shipt.com/api/badges/shipt/volley/status.svg)](https://drone.shipt.com/shipt/volley)
-[![codecov](https://codecov.io/gh/shipt/volley/branch/main/graph/badge.svg?token=axP0uxJwPX)](https://codecov.io/gh/shipt/volley)
+[![Build Status](https://drone.shipt.com/api/badges/shipt/py-volley/status.svg?ref=refs/heads/main)](https://drone.shipt.com/shipt/py-volley)
+[![codecov](https://codecov.io/gh/shipt/py-volley/branch/main/graph/badge.svg?token=axP0uxJwPX)](https://codecov.io/gh/shipt/py-volley)
 
 # Installation
 

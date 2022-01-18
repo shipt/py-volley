@@ -112,13 +112,21 @@ class ConfluentKafkaProducer(BaseProducer):
         # self.config comes from super class
         logger.info("Kafka Producer Configuration: %s", self.config)
 
+    def acked(self, err: Optional[str], msg: Message) -> None:
+        if err is not None:
+            logger.error("Failed to deliver message: %s, error: %s", msg.value(), err)
+        else:
+            logger.info(
+                "Successful delivery to %s, partion: %d, offset: %d", msg.topic(), msg.partition(), msg.offset()
+            )
+
     def produce(self, queue_name: str, message: bytes, **kwargs: Union[str, int]) -> bool:
         self.p.produce(
             key=kwargs.get("key"),
             topic=queue_name,
             value=message,
             headers=kwargs.get("headers"),
-            callback=acked,
+            callback=self.acked,
         )
         self.p.poll(0)
         logger.info("Sent to topic: %s", queue_name)
@@ -153,10 +161,3 @@ def handle_creds(config_dict: Dict[str, Any]) -> Dict[str, Any]:
             config_dict["security.protocol"] = "SASL_SSL"
             config_dict["sasl.mechanism"] = "PLAIN"
     return config_dict
-
-
-def acked(err: Optional[str], msg: Any) -> None:
-    if err is not None:
-        logger.error("Failed to deliver message: %s: %s", msg, err)
-    else:
-        logger.info("Successful delivery to %s, partion: %d, offset: %d", msg.topic(), msg.partition(), msg.offset())

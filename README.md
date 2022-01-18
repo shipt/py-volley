@@ -26,7 +26,7 @@ export POETRY_HTTP_BASIC_SHIPT_PASSWORD=your_password
 pip install py-volley \
   --extra-index-url=https://${POETRY_HTTP_BASIC_SHIPT_USERNAME}:${POETRY_HTTP_BASIC_SHIPT_PASSWORD}@pypi.shipt.com/simple
 ```
-## Feautres
+## Features
 - Built in support for [Apache Kafka](https://kafka.apache.org/) and [RSMQ](https://github.com/mlasevich/PyRSMQ)
 - Optionally configured integration with dead-letter-queues
 - [Prometheus](https://prometheus.io/) metrics for all operations such as function processing time, and consumption and production count.
@@ -36,8 +36,8 @@ pip install py-volley \
 
 ## Getting started
 
-Volley handles the process of consuming/producing by providing developers with extendible interaces and handlers:
-- connectors - consumer and producer interfaces which define how the application should read messages, write messages, and what actions to take when a message is succesfully or fails processing.
+Volley handles the process of consuming/producing by providing developers with extendible interfaces and handlers:
+- connectors - consumer and producer interfaces which define how the application should read messages, write messages, and what actions to take when a message is successfully or fails processing.
 - serializers - handlers and interface which describe the behavior for reading an byte objects from connectors. For example, Json or MessagePack serializers.
 - model_handler - handler and interface which works very closely with serializers. Typically used to turn serialized data into a structured Python data model. Pydantic is Volley's most supported data_model and can handler serialization itself.
 - data_model - When your application receives data from a queue, what schema and object do you expect it in? The data_model is provided by the user. And the `model_handler` describes how to construct your `data_model`.

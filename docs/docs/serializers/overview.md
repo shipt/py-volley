@@ -37,7 +37,7 @@ config = {
 Or via yaml:
 
 ```yml
-# ./my_volly_config.yml
+# ./my_volley_config.yml
 queues:
   my_topic:
     value: my_topic_name

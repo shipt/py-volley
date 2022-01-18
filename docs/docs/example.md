@@ -36,7 +36,7 @@ input_topic_cfg = {
     "consumer": "volley.connectors.ConfluentKafkaConsumer",
     "serializer": "volley.serializers.OrJsonSerialization",
     "model_handler": "volley.models.PydanticModelHandler",
-    "data_moodel": "my_models.InputMessage",
+    "data_model": "my_models.InputMessage",
     "config": {
         "group.id": "my-consumer-group",
         "bootstrap.servers": "kafka:9092",
@@ -73,7 +73,7 @@ Profiles (currently) do not include `config` attributes, so we still need to set
 output_topic_cfg = {
     "value": "outgoing.kafka.topic",
     "profile": "confluent",
-    "data_moodel": "my_models.OutputMessage",
+    "data_model": "my_models.OutputMessage",
     "config": {
         "bootstrap.servers": "kafka:9092"
     }

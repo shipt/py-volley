@@ -17,7 +17,7 @@ Producers handle the publishing of messages to a queue.
 
 ## Supported Connectors
 
-Queues are the broker and backend that handle messages. Volley has built in support for two types of queue technoloigies; RSMQ and Kafka.
+Queues are the broker and backend that handle messages. Volley has built in support for two types of queue technologies; RSMQ and Kafka.
 
 ### pyRSMQ
 
@@ -89,11 +89,11 @@ The consumer has the specific implementations for `consume`, `on_success`, `on_f
 Like all configuration, they can be specified in either `yaml` or a `dict` passed directly to `volley.Engine` (but not both).
 
 ```yml
-# ./my_volly_config.yml
+# ./my_volley_config.yml
 - name: postgres_queue
   value: pg_queue_table
   data_model: volley.data_models.GenericMessage
-  model_hander: volley.models.PydanticModelHandler
+  model_handler: volley.models.PydanticModelHandler
   serializer: None
   producer: example.plugins.my_plugin.MyPGProducer
   consumer: example.plugins.my_plugin.MyPGConsumer
@@ -106,7 +106,7 @@ config = {
     "postgres_queue": {
         "value": "pg_queue_table",
         "data_model": "volley.data_models.GenericMessage,
-        "model_hander": "volley.models.PydanticModelHandler",
+        "model_handler": "volley.models.PydanticModelHandler",
         "serializer": "disabled",
         "producer": "example.plugins.my_plugin.MyPGProducer",
         "consumer": "example.plugins.my_plugin.MyPGConsumer"

@@ -32,7 +32,7 @@ queue_config = {
     },
 }
 
-# intializae the Volley application
+# initialize the Volley application
 app = Engine(
     app_name="my_volley_app",
     input_queue="input-topic",

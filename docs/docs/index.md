@@ -3,11 +3,11 @@
 
 Volley is a lightweight and highly configurable message stream processor for Python.
 
-<a href="https://drone.shipt.com/shipt/volley" target="_blank">
-    <img src="https://drone.shipt.com/api/badges/shipt/volley/status.svg?ref=refs/heads/main" alt="Test">
+<a href="https://drone.shipt.com/shipt/py-volley" target="_blank">
+    <img src="https://drone.shipt.com/api/badges/shipt/py-volley/status.svg?ref=refs/heads/main" alt="Test">
 </a>
-<a href="https://codecov.io/gh/shipt/volley" target="_blank">
-    <img src="https://codecov.io/gh/shipt/volley/branch/main/graph/badge.svg?token=axP0uxJwPX" alt="Test">
+<a href="https://codecov.io/gh/shipt/py-volley" target="_blank">
+    <img src="https://codecov.io/gh/shipt/py-volley/branch/main/graph/badge.svg?token=axP0uxJwPX" alt="Test">
 </a>
 
 **Repository**: [https://github.com/shipt/volley](https://github.com/shipt/volley)

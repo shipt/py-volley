@@ -30,3 +30,7 @@
 ### [redis/hiredis-py](https://github.com/redis/hiredis-py)
 - [License-BSD 3](https://github.com/redis/hiredis-py/blob/master/COPYING)
 - [Contributors](https://github.com/redis/hiredis-py/graphs/contributors)
+
+### [jd/tenacity](https://github.com/jd/tenacity)
+- [License-Apache](https://github.com/jd/tenacity/blob/master/LICENSE)
+- [Contributors](https://github.com/jd/tenacity/graphs/contributors)

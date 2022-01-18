@@ -13,7 +13,7 @@ Volley is a lightweight and highly configurable message stream processor for Pyt
 **Repository**: [https://github.com/shipt/volley](https://github.com/shipt/volley)
 
 
-Use Volley to quickly build lightweight message processing microservices. Define your applications Add a few lines of code to your application to integrate with technologies like Kafka Volley has built in connectors for [Confluent Kafka](https://github.com/confluentinc/confluent-kafka-python) and [Redis Simple Message Queue](https://github.com/mlasevich/PyRSMQ). It also provides serialization implementations in [MessagePack](https://github.com/msgpack/msgpack-python) and [orjson](https://github.com/ijl/orjson), data validation via [Pydantic](https://github.com/samuelcolvin/pydantic) and [Prometheus](https://github.com/prometheus/client_python) metrics.
+Use Volley to quickly build lightweight message processing microservices. Write your applications and add a few lines of code to integrate with technologies like Kafka. Volley has built in connectors for [Confluent Kafka](https://github.com/confluentinc/confluent-kafka-python) and [Redis Simple Message Queue](https://github.com/mlasevich/PyRSMQ). It also provides serialization implementations in [MessagePack](https://github.com/msgpack/msgpack-python) and [orjson](https://github.com/ijl/orjson), as well as data validation via [Pydantic](https://github.com/samuelcolvin/pydantic) and [Prometheus](https://github.com/prometheus/client_python) metrics.
 
 
 ## Example
@@ -38,7 +38,7 @@ cfg = {
 }
 ```
 
-Initalize the Volley engine. Specify which queues from the above configuration are for inputs (consuming), and which are outputs (producing). You can consume and produce to the same queue.
+Initialize the Volley engine. Specify which queues from the above configuration are for inputs (consuming), and which are outputs (producing). You can consume and produce to the same queue.
 
 ```python
 from volley import Engine
@@ -52,7 +52,7 @@ app = Engine(
 
 Apply the `stream_app` decorator to your function. The message received by your function is a single message consumed from the Kafka topic.
 
-You return a list of tuples from your function. Each list element contains `Tuple[<name_of_queue>, message_object]` these are the messages and their destionation (queue) that Volley will produce for you. 
+You return a list of tuples from your function. Each list element contains `Tuple[<name_of_queue>, message_object]` these are the messages and their destination (queue) that Volley will produce for you. 
 
 ```python
 from volley.data_models import GenericMessage

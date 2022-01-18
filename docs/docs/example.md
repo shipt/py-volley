@@ -56,7 +56,7 @@ input_topic_cfg = {
 
 [`model_handler`](./models/PydanticModelHandler.md) tells Volley how to create an instance of your `data_model` with the data returned from the `serializer`.
 
-`config` are value to pass directly to the connector constructors. In this case, we are using Confluent's consumer, so these values directly to the config values supported by [librtdkafka](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md)
+`config` are value to pass directly to the connector constructors. In this case, we are using Confluent's consumer, so these values directly to the config values supported by [librdkafka](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md)
 
 
 Volley has built in support for [`consumer`](./connectors/overview.md) (and [`producer`](./connectors/overview.md)) [`serializer`](./serializers/overview.md), `data_model` and [`model_handler`](./models/overview.md). These values are all dot paths to classes. You can [extend](./extending.md) Volley with your own classes for all of this functionality.
@@ -99,7 +99,7 @@ app = Engine(
 )
 ```
 
-When we instaniate `Engine()`, we specify which of the queues we want to treat as inputs and which are outputs. Notice we can have any number of outputs, but only one input. However, the input queue can be a target in the output_queues. If we do that, we just need to make sure the configuration provides a producer either explicitly or through a Profile.  `app_name` translates to labels used in logging and [metrics](./metrics.md).
+When we instantiate `Engine()`, we specify which of the queues we want to treat as inputs and which are outputs. Notice we can have any number of outputs, but only one input. However, the input queue can be a target in the output_queues. If we do that, we just need to make sure the configuration provides a producer either explicitly or through a Profile.  `app_name` translates to labels used in logging and [metrics](./metrics.md).
 
 
 ### 4. Decorate the function

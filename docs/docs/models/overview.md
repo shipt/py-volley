@@ -11,7 +11,7 @@ All model handlers inherit from `BaseModelHandler`. They need to construct a dat
 
 - JSONSerializer converts the bytes to dict: {"hello":"world"}
 
-- PydanticModelHandler is the default handler. User creates pydantic models for input and output data with the following definiton:
+- PydanticModelHandler is the default handler. User creates pydantic models for input and output data with the following definition:
 
 
 ```python
@@ -37,7 +37,7 @@ config = {
 }
 ```
 
-Volley uses the `PydanticModelHandler` to construct an instance of `myIncomingData` using `message` data. When the message is incoming to the application, the `construct()` method is called with `myIncomingData` and the incoming `message` (serialized to dict from orjson). This effectively beceomes the following operation:
+Volley uses the `PydanticModelHandler` to construct an instance of `myIncomingData` using `message` data. When the message is incoming to the application, the `construct()` method is called with `myIncomingData` and the incoming `message` (serialized to dict from orjson). This effectively becomes the following operation:
 
 ```python
 incoming_model = myModel.parse_obj(message)
@@ -50,12 +50,12 @@ out_message = myOutgoingData(foo="bar")
 return [("output-queue", out_message)]
 ```
 
-Volley then uses `PydanticModelHandler` to `deconstruct` `myOutgoingData` to a `dict` which is then passed to `orjson` for serializaton, finally to Kafka via the connector.
+Volley then uses `PydanticModelHandler` to `deconstruct` `myOutgoingData` to a `dict` which is then passed to `orjson` for serialization, finally to Kafka via the connector.
 
 
 ## Extending Models
 
-A model handler can be defined to construct any data model so long as it is compliant with the signature of `BaseModelHandler` and the configured serialzer is selected in configuration. To further illustrate, if one were to disable serialization and use `PydanticParserModelHandler`, constructing a data model would effectively become:
+A model handler can be defined to construct any data model so long as it is compliant with the signature of `BaseModelHandler` and the configured serializer is selected in configuration. To further illustrate, if one were to disable serialization and use `PydanticParserModelHandler`, constructing a data model would effectively become:
 
 ```python
 incoming_model = myModel.parse_raw(message)

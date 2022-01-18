@@ -38,7 +38,7 @@ cfg = {
 }
 ```
 
-Initalize the Volley engine. Specify which queues from the above configuration are for inputs (consuming), and which are outputs (producing). You can consume and produce to the same queue.
+Initialize the Volley engine. Specify which queues from the above configuration are for inputs (consuming), and which are outputs (producing). You can consume and produce to the same queue.
 
 ```python
 from volley import Engine
@@ -52,7 +52,7 @@ app = Engine(
 
 Apply the `stream_app` decorator to your function. The message received by your function is a single message consumed from the Kafka topic.
 
-You return a list of tuples from your function. Each list element contains `Tuple[<name_of_queue>, message_object]` these are the messages and their destionation (queue) that Volley will produce for you. 
+You return a list of tuples from your function. Each list element contains `Tuple[<name_of_queue>, message_object]` these are the messages and their destination (queue) that Volley will produce for you. 
 
 ```python
 from volley.data_models import GenericMessage

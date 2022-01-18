@@ -23,12 +23,12 @@ queue_config = {
     "input-topic": {
         "value": "incoming.kafka.topic",
         "profile": "confluent",
-        "data_moodel": "InputMessage",
+        "data_model": "InputMessage",
     },
     "output-topic": {
         "value": "outgoing.kafka.topic",
         "profile": "confluent",
-        "data_moodel": "OutputMessage",
+        "data_model": "OutputMessage",
     },
 }
 

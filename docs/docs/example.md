@@ -1,6 +1,6 @@
 # Getting Started
 
-This is a basic example of a common pattern. An application that consumes from a kafka topic and publishes to another kafka topic. The example application receives a list of floats in a message from the input Kafka topic and publishes the maximum value from that list to the output Kafka Topic. Volley treats Kafka topics like queues, so the term "queue" and "topic" will be used interchangeably.
+This is a basic example of a common pattern, an application that consumes from a kafka topic and publishes to another kafka topic. The example application receives a list of floats in a message from the input Kafka topic and publishes the maximum value from that list to the output Kafka Topic. Volley treats Kafka topics like queues, so the term "queue" and "topic" will be used interchangeably.
 
 
 ### 1. Define data models

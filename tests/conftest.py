@@ -64,6 +64,7 @@ def mock_rsmq_consumer() -> RSMQConsumer:
 class KafkaMessage:
     _offset: int = randint(1, 200)
     _error_msg = "MOCK ERROR"
+    _partition = 0
 
     def __init__(self, error: bool = False, msg: Optional[bytes] = None, topic: Optional[str] = None) -> None:
         self._error = error
@@ -81,6 +82,9 @@ class KafkaMessage:
 
     def topic(self) -> Optional[str]:
         return self._topic
+
+    def partition(self) -> int:
+        return self._partition
 
 
 @fixture

@@ -23,16 +23,16 @@ queue_config = {
     "input-topic": {
         "value": "incoming.kafka.topic",
         "profile": "confluent",
-        "data_moodel": "InputMessage",
+        "data_model": "InputMessage",
     },
     "output-topic": {
         "value": "outgoing.kafka.topic",
         "profile": "confluent",
-        "data_moodel": "OutputMessage",
+        "data_model": "OutputMessage",
     },
 }
 
-# intializae the Volley application
+# initialize the Volley application
 app = Engine(
     app_name="my_volley_app",
     input_queue="input-topic",

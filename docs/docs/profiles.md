@@ -44,7 +44,7 @@ Profiles define the following:
 
 `producer` : (str) - dot path to the concrete implementation of the base [Producer](./connectors/base.md#consumer). Defines how Volley should produce a message to a queue.
 
-`serializer` : (str) - dot path to the concrete implementation of the base [BaseSerialization](./serializers/BaseSerialization.md#serialization). Defines how to turn raw `bytes` into a primative python object.
+`serializer` : (str) - dot path to the concrete implementation of the base [BaseSerialization](./serializers/BaseSerialization.md#serialization). Defines how to turn raw `bytes` into a primitive python object.
 
 `data_model` : (str) - dot path to a user provided data model. Every model needs a model handler. 
 
@@ -98,7 +98,7 @@ config = {
 
 ## User Defined Configuration
 
-Profiles can be partially or completely overriden and are not explicitly required. If you do not provide a value for `profile`, you will need to provide valid configuration values for each of `consumer`, `producer`, `serializer`, `model_handler`, and `data_model`. These could be dot paths to your own custom implementations, or configurations that already exist in Volley.
+Profiles can be partially or completely overridden and are not explicitly required. If you do not provide a value for `profile`, you will need to provide valid configuration values for each of `consumer`, `producer`, `serializer`, `model_handler`, and `data_model`. These could be dot paths to your own custom implementations, or configurations that already exist in Volley.
 
 For example:
 
@@ -142,7 +142,7 @@ The following is the complete list of the built-in profiles supported by Volley.
 
 ### confluent
 
-The default confluent profile is most commonly used for applications working with Confluent Kafka brokers. It heavily relies on [librdkafka](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) and follows at-least-once delviery semantics by default. Consumed message offsets are auto-committed back to the Kafka broker. Messages are consumed from the Kafka broker as `bytes`, and serialized using `orjson`, and constructed into a generic Pydantic model. Many uses will provide their own value for `data_model` rather than using a generic Pydantic model.
+The default confluent profile is most commonly used for applications working with Confluent Kafka brokers. It heavily relies on [librdkafka](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) and follows at-least-once delivery semantics by default. Consumed message offsets are auto-committed back to the Kafka broker. Messages are consumed from the Kafka broker as `bytes`, and serialized using `orjson`, and constructed into a generic Pydantic model. Many uses will provide their own value for `data_model` rather than using a generic Pydantic model.
 
 | key           | value                                                    | link |
 | --------------| -------------------------------------------------------- | ---- |
@@ -238,7 +238,7 @@ The default Profile for interacting with pyRSMQ. Consumes a message from a Redis
 
 ### confluent-dlq
 
-Dead-letter-queue configuration to Confluent Lafka. Does not serialize or construct a data model for data consumed or produced. Generally only uses as a producer.
+Dead-letter-queue configuration to Confluent Kafka. Does not serialize or construct a data model for data consumed or produced. Generally only uses as a producer.
 
 
 | key           | value                                                      | link |

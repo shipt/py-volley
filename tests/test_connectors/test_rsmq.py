@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 from pytest import MonkeyPatch, raises
+from tenacity import stop_after_attempt
 
 from volley.connectors import RSMQConsumer, RSMQProducer
 from volley.connectors.rsmq import RSMQConfigError
@@ -21,6 +22,16 @@ def test_rsmq_delete(mock_rsmq_consumer: RSMQConsumer) -> None:
     assert mock_rsmq_consumer.on_success(queue_name="test", message_context="abc123")
 
 
+# @patch("volley.connectors.rsmq.RedisSMQ")
+def test_rsmq_delete_fail(mock_rsmq_consumer: RSMQConsumer) -> None:
+    """force a failure to delete message and assert its failure handled"""
+    mock_rsmq_consumer.queue.deleteMessage.return_value.execute.return_value = False
+    mock_rsmq_consumer.delete_message.retry.stop = stop_after_attempt(1)  # type: ignore
+    # mock_rsmq_consumer.delete_message.retry.stop = wait_none()
+    with raises(TimeoutError):
+        mock_rsmq_consumer.on_success("test", "message_id_test")
+
+
 @patch("volley.connectors.rsmq.RedisSMQ")
 def test_return_none(mocked_rsmq: MagicMock) -> None:
     mocked_rsmq.queue.receiveMessage.return_value.exceptions.return_value.execute = None
@@ -28,7 +39,7 @@ def test_return_none(mocked_rsmq: MagicMock) -> None:
     msg = consumer.consume(queue_name="test")
     assert msg is None
 
-    consumer.on_fail()
+    consumer.on_fail("test", "test-message-context")
 
 
 @patch("volley.connectors.rsmq.RedisSMQ")

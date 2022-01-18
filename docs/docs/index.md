@@ -13,7 +13,7 @@ Volley is a lightweight and highly configurable message stream processor for Pyt
 **Repository**: [https://github.com/shipt/volley](https://github.com/shipt/volley)
 
 
-Use Volley to quickly build lightweight message processing microservices. Define your applications Add a few lines of code to your application to integrate with technologies like Kafka Volley has built in connectors for [Confluent Kafka](https://github.com/confluentinc/confluent-kafka-python) and [Redis Simple Message Queue](https://github.com/mlasevich/PyRSMQ). It also provides serialization implementations in [MessagePack](https://github.com/msgpack/msgpack-python) and [orjson](https://github.com/ijl/orjson), data validation via [Pydantic](https://github.com/samuelcolvin/pydantic) and [Prometheus](https://github.com/prometheus/client_python) metrics.
+Use Volley to quickly build lightweight message processing microservices. Write your applications and add a few lines of code to integrate with technologies like Kafka. Volley has built in connectors for [Confluent Kafka](https://github.com/confluentinc/confluent-kafka-python) and [Redis Simple Message Queue](https://github.com/mlasevich/PyRSMQ). It also provides serialization implementations in [MessagePack](https://github.com/msgpack/msgpack-python) and [orjson](https://github.com/ijl/orjson), as well as data validation via [Pydantic](https://github.com/samuelcolvin/pydantic) and [Prometheus](https://github.com/prometheus/client_python) metrics.
 
 
 ## Example

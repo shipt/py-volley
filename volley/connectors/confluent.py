@@ -3,12 +3,15 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional, Union
 
 from confluent_kafka import Consumer, Message, Producer
+from prometheus_client import Counter
 
 from volley.connectors.base import BaseConsumer, BaseProducer
 from volley.data_models import QueueMessage
 from volley.logging import logger
 
 RUN_ONCE = False
+
+DELIVERY_STATUS = Counter("delivery_report_status", "Kafka delivered message", ["status"])
 
 
 @dataclass
@@ -115,10 +118,12 @@ class ConfluentKafkaProducer(BaseProducer):
     def acked(self, err: Optional[str], msg: Message) -> None:
         if err is not None:
             logger.error("Failed to deliver message: %s, error: %s", msg.value(), err)
+            DELIVERY_STATUS.labels("fail").inc()
         else:
             logger.info(
                 "Successful delivery to %s, partion: %d, offset: %d", msg.topic(), msg.partition(), msg.offset()
             )
+            DELIVERY_STATUS.labels("success").inc()
 
     def produce(self, queue_name: str, message: bytes, **kwargs: Union[str, int]) -> bool:
         self.p.produce(

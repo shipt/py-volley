@@ -4,7 +4,7 @@ The engine prepares a Python decorator that wraps a worker function to be run as
 
 ## App Configuration
 
-All configuration is passed in and initalized via the `Engine` class
+All configuration is passed in and initialized via the `Engine` class
 
 ```python hl_lines="3"
 from volley.engine import Engine

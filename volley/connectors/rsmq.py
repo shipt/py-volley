@@ -96,7 +96,9 @@ class RSMQConsumer(BaseConsumer):
         if result:
             return result
         else:
-            raise TimeoutError(f"Failed deleting message: '{message_id}' from queue: '{queue_name}'")
+            err = f"Failed deleting message: '{message_id}' from queue: '{queue_name}'"
+            logger.critical(err)
+            raise TimeoutError(err)
 
 
 @dataclass

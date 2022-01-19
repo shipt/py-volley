@@ -1,6 +1,7 @@
 import os
-from dataclasses import dataclass
-from typing import Any, Dict, Optional, Union
+from dataclasses import dataclass, field
+from threading import Thread
+from typing import Any, Dict, Optional, Tuple, Union
 
 from confluent_kafka import Consumer, Message, Producer
 from prometheus_client import Counter
@@ -24,6 +25,10 @@ class ConfluentKafkaConsumer(BaseConsumer):
     poll_interval: float = 10
     auto_offset_reset: str = "earliest"
     auto_commit_interval_ms: int = 3000
+
+    # mapping of partition/offset of the last stored commit
+    last_offset: dict[int:int] = field(default_factory=dict)
+    to_commit = None
 
     def __post_init__(self) -> None:  # noqa: C901
         self.config = handle_creds(self.config)
@@ -78,8 +83,32 @@ class ConfluentKafkaConsumer(BaseConsumer):
         else:
             return QueueMessage(message_context=message, message=message.value())
 
-    def on_success(self, queue_name: str, message_context: Message) -> bool:
-        self.c.store_offsets(message=message_context)  # committed according to auto.commit.interval.ms
+    def on_success(self, queue_name: str, message_context: Message, producer_report: list[Message]) -> bool:
+        if self.to_commit is None:
+            self.to_commit = producer_report
+        self.drain_offsets()
+        return True
+
+    def drain_offsets(self) -> None:
+        """stores any offsets that are able to be stored"""
+        while self.to_commit:
+            # get a report
+            report = self.to_commit.pop()
+            partition = report.partition()
+            this_offset = report.offset()
+
+            # see if we've already committed this or a higher offset
+            # delivery report from kafka producer are not guaranteed to be in order
+            # that they were produced
+            try:
+                last_commit = self.last_offset[partition]
+            except KeyError:
+                # first message from this partition
+                self.last_offset[partition] = this_offset
+                last_commit = this_offset
+            if this_offset > last_commit:
+                self.c.store_offsets(report)  # committed according to auto.commit.interval.ms
+                self.last_offset[partition] = this_offset
         return True
 
     def on_fail(self, queue_name: str, message_context: Message) -> None:
@@ -105,6 +134,9 @@ class ConfluentKafkaProducer(BaseProducer):
 
     compression_type: str = "gzip"
 
+    success_messages: list[Any] = field(default_factory=list)
+    failed_messages: list[Any] = field(default_factory=list)
+
     def __post_init__(self) -> None:  # noqa: C901
         self.config = handle_creds(self.config)
         if "compression.type" not in self.config:
@@ -115,30 +147,50 @@ class ConfluentKafkaProducer(BaseProducer):
         # self.config comes from super class
         logger.info("Kafka Producer Configuration: %s", self.config)
 
-    def acked(self, err: Optional[str], msg: Message) -> None:
+        # producer poll thread
+        self.kill = False
+        self.poll_thread = Thread(target=self.handle_poll)
+        self.poll_thread.start()
+
+    def handle_poll(self):
+        while not self.kill:
+            self.p.poll(0.1)
+
+    def acked(self, err: Optional[str], msg: Message, consumer_context: Any) -> None:
         if err is not None:
-            logger.critical("Failed to deliver message: %s, error: %s", msg.value(), err)
+            logger.critical(
+                "Consumed message: %s but failed it's transform and deliver: %s, error: %s",
+                consumer_context,
+                msg.value(),
+                err,
+            )
             DELIVERY_STATUS.labels("fail").inc()
+            self.failed_messages.append(consumer_context)
         else:
             logger.info(
                 "Successful delivery to %s, partion: %d, offset: %d", msg.topic(), msg.partition(), msg.offset()
             )
             DELIVERY_STATUS.labels("success").inc()
+            self.success_messages.append(consumer_context)
 
-    def produce(self, queue_name: str, message: bytes, **kwargs: Union[str, int]) -> bool:
+    def produce(
+        self, queue_name: str, message: bytes, message_context: Any, **kwargs: Union[str, int]
+    ) -> Tuple[bool, list[Message]]:
         self.p.produce(
             key=kwargs.get("key"),
             topic=queue_name,
             value=message,
             headers=kwargs.get("headers"),
-            callback=self.acked,
-        )
-        self.p.poll(0)
+            callback=lambda err, msg, obj=message_context: self.acked(err, msg, obj),
+        ),
+
         logger.info("Sent to topic: %s", queue_name)
-        return True
+        return (True, self.success_messages)
 
     def shutdown(self) -> None:
         self.p.flush()
+        self.cancelled = True
+        self.poll_thread.join()
 
 
 def handle_creds(config_dict: Dict[str, Any]) -> Dict[str, Any]:

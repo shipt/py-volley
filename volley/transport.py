@@ -2,7 +2,7 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 from prometheus_client import Counter
 
@@ -20,7 +20,8 @@ def produce_handler(
     queue_map: dict[str, Queue],
     app_name: str,
     input_name: str,
-) -> List[bool]:
+    message_context: Any,
+) -> List[Tuple[bool, Optional[Any]]]:
     """Handles producing messages to output queues
 
         outputs: List of tuples returned by the Volley app function.
@@ -32,7 +33,7 @@ def produce_handler(
     Returns:
         List[bool]: A bool for success/fail of producing to each output target
     """
-    all_produce_status: List[bool] = []
+    all_produce_status: List[Tuple[bool, Optional[Any]]] = []
     for qname, component_msg, *args in outputs:
         try:
             out_queue = queue_map[qname]
@@ -54,12 +55,15 @@ def produce_handler(
                 kwargs: dict[str, Any] = args[0]
             else:
                 kwargs = {}
-            status = out_queue.producer_con.produce(queue_name=out_queue.value, message=serialized, **kwargs)
+            status, delivery_context = out_queue.producer_con.produce(
+                queue_name=out_queue.value, message=serialized, message_context=message_context, **kwargs
+            )
             MESSAGES_PRODUCED.labels(volley_app=app_name, source=input_name, destination=qname).inc()
             if not status:
                 logger.error("failed producing message to %s" % out_queue.name)
         except Exception:
             logger.exception("failed producing message to %s" % out_queue.name)
             status = False
-        all_produce_status.append(status)
+            delivery_context = None
+        all_produce_status.append((status, delivery_context))
     return all_produce_status

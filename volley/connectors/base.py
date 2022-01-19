@@ -48,7 +48,7 @@ class BaseProducer(ABC):
     config: dict[str, Any] = field(default_factory=dict)
 
     @abstractmethod
-    def produce(self, queue_name: str, message: Any, **kwargs: Any) -> bool:
+    def produce(self, queue_name: str, message: Any, message_context: Any, **kwargs: Any) -> bool:
         """publish a message to a queue"""
 
     def shutdown(self) -> None:

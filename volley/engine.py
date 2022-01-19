@@ -186,23 +186,30 @@ class Engine:
                     _fun_duration = time.time() - _start_main
                     PROCESS_TIME.labels(volley_app=self.app_name, process_name="component").observe(_fun_duration)
 
-                all_produce_status: List[bool] = []
+                all_produce_status: List[Tuple[bool, Optional[Any]]] = []
                 if isinstance(outputs, builtins.bool):
                     # if func returns a bool, its just a bool and nothing more
-                    all_produce_status.append(outputs)
+                    all_produce_status.append((outputs, None))
 
                 else:
                     all_produce_status = produce_handler(
-                        outputs=outputs, queue_map=self.queue_map, app_name=self.app_name, input_name=input_con.name
-                    )
-
-                if all(all_produce_status):
-                    # TODO - better handling of success criteria
-                    # if multiple outputs - how to determine if its a success if one fails
-                    input_con.consumer_con.on_success(
-                        queue_name=input_con.value,
+                        outputs=outputs,
+                        queue_map=self.queue_map,
+                        app_name=self.app_name,
+                        input_name=input_con.name,
                         message_context=in_message.message_context,
                     )
+
+                all_success = all([x[0] for x in all_produce_status])
+                if all_success:
+                    # TODO - better handling of success criteria
+                    # if multiple outputs - how to determine if its a success if one fails
+                    for status, report in all_produce_status:
+                        input_con.consumer_con.on_success(
+                            queue_name=input_con.value,
+                            message_context=in_message.message_context,
+                            producer_report=report,
+                        )
                     MESSAGE_CONSUMED.labels(volley_app=self.app_name, status="success").inc()
                 else:
                     input_con.consumer_con.on_fail(

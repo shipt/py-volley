@@ -194,6 +194,7 @@ class Engine:
                     _fun_duration = time.time() - _start_main
                     PROCESS_TIME.labels(volley_app=self.app_name, process_name="component").observe(_fun_duration)
 
+                delivery_report: DeliveryReport
                 if isinstance(outputs, builtins.bool):
                     # if func returns a bool, its just a bool and nothing more
                     # there is no "producer" in this model.
@@ -208,7 +209,7 @@ class Engine:
                         input_name=input_con.name,
                         message_context=in_message.message_context,
                     )
-                    delivery_report: DeliveryReport = delivery_success(delivery_reports)
+                    delivery_report = delivery_success(delivery_reports)
                 if delivery_report.status is True and not delivery_report.asynchronous:
                     # asynchronous delivery reports are handled within the Producer's callback
                     # synchrnous delivery reports are handled here

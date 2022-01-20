@@ -18,7 +18,7 @@ from volley.logging import logger
 from volley.models.base import message_model_handler
 from volley.profiles import ConnectionType, Profile, construct_profiles
 from volley.queues import DLQNotConfiguredError, Queue, construct_queue_map
-from volley.transport import produce_handler
+from volley.transport import DeliveryReport, delivery_success, produce_handler
 from volley.util import GracefulKiller
 
 # enables mocking the infinite loop to finite
@@ -35,7 +35,7 @@ MESSAGE_CONSUMED = Counter(
 class Engine:
     """Initializes the Volley application and prepares the main decorator
     Attributes:
-        app_name: Name of the applicaiton. Added as a label to all logged metrics
+        app_name: Name of the application. Added as a label to all logged metrics
         input_queue:
             Name of the input queue.
             Corresponds to the name of one queue defined in queue_config or yaml_config_path
@@ -136,7 +136,7 @@ class Engine:
             # first setup the connections to the input and outputs queues that the component will need
             # we only want to set these up once, before the component is invoked
 
-            # intialize connections to each queue, and schemas
+            # initialize connections to each queue, and schemas
             self.queue_map[self.input_queue].connect(con_type=ConnectionType.CONSUMER)
             # we only want to connect to queues passed in to Engine()
             # there can be more queues than we need defined in the configuration yaml
@@ -146,11 +146,19 @@ class Engine:
             # queue connections were setup above. now we can start to interact with the queues
             # alias for input connection readability
             input_con: Queue = self.queue_map[self.input_queue]
+
+            # if asynchronous producer, give the consumer's "on_success" method to the producer
+            for qname in self.output_queues:
+                producer_con = self.queue_map[qname].producer_con
+                if producer_con.asynchronous:
+                    producer_con.on_success = self.queue_map[self.input_queue].consumer_con.on_success
+                    producer_con.on_fail = self.queue_map[self.input_queue].consumer_con.on_fail
+
             while not self.killer.kill_now:
                 _start_time = time.time()
 
                 # read message off the specified queue
-                in_message: Optional[QueueMessage] = input_con.consumer_con.consume(queue_name=input_con.value)
+                in_message: Optional[QueueMessage] = input_con.consumer_con.consume()
                 if in_message is None:
                     # if no messages, handle poll interval
                     # TODO: this should be dynamic with some sort of backoff
@@ -186,34 +194,33 @@ class Engine:
                     _fun_duration = time.time() - _start_main
                     PROCESS_TIME.labels(volley_app=self.app_name, process_name="component").observe(_fun_duration)
 
-                all_produce_status: List[Tuple[bool, Optional[Any]]] = []
                 if isinstance(outputs, builtins.bool):
                     # if func returns a bool, its just a bool and nothing more
-                    all_produce_status.append((outputs, None))
+                    # there is no "producer" in this model.
+                    # Just mark the consumed message as either success or fail
+                    delivery_report = DeliveryReport(status=outputs, asynchronous=False)
 
                 else:
-                    all_produce_status = produce_handler(
+                    delivery_reports: list[DeliveryReport] = produce_handler(
                         outputs=outputs,
                         queue_map=self.queue_map,
                         app_name=self.app_name,
                         input_name=input_con.name,
                         message_context=in_message.message_context,
                     )
-
-                all_success = all([x[0] for x in all_produce_status])
-                if all_success:
-                    # TODO - better handling of success criteria
-                    # if multiple outputs - how to determine if its a success if one fails
-                    for status, report in all_produce_status:
-                        input_con.consumer_con.on_success(
-                            queue_name=input_con.value,
-                            message_context=in_message.message_context,
-                            producer_report=report,
-                        )
+                    delivery_report: DeliveryReport = delivery_success(delivery_reports)
+                if delivery_report.status is True and not delivery_report.asynchronous:
+                    # asynchronous delivery reports are handled within the Producer's callback
+                    # synchrnous delivery reports are handled here
+                    input_con.consumer_con.on_success(
+                        message_context=in_message.message_context,
+                        asynchronous=False,
+                    )
                     MESSAGE_CONSUMED.labels(volley_app=self.app_name, status="success").inc()
-                else:
+                elif not delivery_report.asynchronous:
                     input_con.consumer_con.on_fail(
-                        queue_name=input_con.value, message_context=in_message.message_context
+                        message_context=in_message.message_context,
+                        asynchronous=False,
                     )
                     MESSAGE_CONSUMED.labels(volley_app=self.app_name, status="fail").inc()
                 _duration = time.time() - _start_time
@@ -225,12 +232,12 @@ class Engine:
 
             # graceful shutdown of ALL queues
             logger.info("Shutting down %s", input_con.value)
-            input_con.consumer_con.shutdown()
             for q_name in self.output_queues:
                 out_queue = self.queue_map[q_name]
                 logger.info("Shutting down %s", out_queue.value)
                 out_queue.producer_con.shutdown()
                 logger.info("%s shutdown complete", q_name)
+            input_con.consumer_con.shutdown()
 
         # used for unit testing as a means to access the wrapped component without the decorator
         run_component.__wrapped__ = func  # type: ignore

@@ -1,7 +1,8 @@
 import os
+from ast import Del
 from dataclasses import dataclass, field
 from threading import Thread
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 from confluent_kafka import Consumer, Message, Producer
 from prometheus_client import Counter
@@ -9,6 +10,7 @@ from prometheus_client import Counter
 from volley.connectors.base import BaseConsumer, BaseProducer
 from volley.data_models import QueueMessage
 from volley.logging import logger
+from volley.transport import DeliveryReport
 
 RUN_ONCE = False
 
@@ -28,7 +30,6 @@ class ConfluentKafkaConsumer(BaseConsumer):
 
     # mapping of partition/offset of the last stored commit
     last_offset: dict[int:int] = field(default_factory=dict)
-    to_commit = None
 
     def __post_init__(self) -> None:  # noqa: C901
         self.config = handle_creds(self.config)
@@ -69,11 +70,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
 
     def consume(  # type: ignore
         self,
-        queue_name: str = None,
     ) -> Optional[QueueMessage]:
-        if queue_name is None:
-            queue_name = self.queue_name
-
         message = self.c.poll(self.poll_interval)
         if message is None:
             pass
@@ -83,35 +80,29 @@ class ConfluentKafkaConsumer(BaseConsumer):
         else:
             return QueueMessage(message_context=message, message=message.value())
 
-    def on_success(self, queue_name: str, message_context: Message, producer_report: list[Message]) -> bool:
-        if self.to_commit is None:
-            self.to_commit = producer_report
-        self.drain_offsets()
-        return True
+    def on_success(self, message_context: Message, asynchronous: bool) -> bool:
+        return self.store_offsets(message_context)
 
-    def drain_offsets(self) -> None:
+    def store_offsets(self, message: Message) -> bool:
         """stores any offsets that are able to be stored"""
-        while self.to_commit:
-            # get a report
-            report = self.to_commit.pop()
-            partition = report.partition()
-            this_offset = report.offset()
+        partition = message.partition()
+        this_offset = message.offset()
 
-            # see if we've already committed this or a higher offset
-            # delivery report from kafka producer are not guaranteed to be in order
-            # that they were produced
-            try:
-                last_commit = self.last_offset[partition]
-            except KeyError:
-                # first message from this partition
-                self.last_offset[partition] = this_offset
-                last_commit = this_offset
-            if this_offset > last_commit:
-                self.c.store_offsets(report)  # committed according to auto.commit.interval.ms
-                self.last_offset[partition] = this_offset
+        # see if we've already committed this or a higher offset
+        # delivery report from kafka producer are not guaranteed to be in order
+        # that they were produced
+        try:
+            last_commit = self.last_offset[partition]
+        except KeyError:
+            # first message from this partition
+            self.last_offset[partition] = this_offset
+            last_commit = this_offset
+        if this_offset > last_commit:
+            self.c.store_offsets(message)  # committed according to auto.commit.interval.ms
+            self.last_offset[partition] = this_offset
         return True
 
-    def on_fail(self, queue_name: str, message_context: Message) -> None:
+    def on_fail(self, message_context: Message, asynchronous: bool) -> None:
         logger.info(
             "Downstream failure. Did not commit offset: %d, partition: %d, message: %s",
             message_context.offset(),
@@ -134,10 +125,11 @@ class ConfluentKafkaProducer(BaseProducer):
 
     compression_type: str = "gzip"
 
-    success_messages: list[Any] = field(default_factory=list)
-    failed_messages: list[Any] = field(default_factory=list)
+    on_success: Optional[Callable] = None
+    on_fail: Optional[Callable] = None
 
     def __post_init__(self) -> None:  # noqa: C901
+        self.asynchronous = True
         self.config = handle_creds(self.config)
         if "compression.type" not in self.config:
             logger.info("Assigning compression.type default: %s", self.compression_type)
@@ -159,23 +151,24 @@ class ConfluentKafkaProducer(BaseProducer):
     def acked(self, err: Optional[str], msg: Message, consumer_context: Any) -> None:
         if err is not None:
             logger.critical(
-                "Consumed message: %s but failed it's transform and deliver: %s, error: %s",
+                "Consumed message: %s but failed it's transform/delivery: %s, error: %s",
                 consumer_context,
                 msg.value(),
                 err,
             )
             DELIVERY_STATUS.labels("fail").inc()
-            self.failed_messages.append(consumer_context)
+            self.on_fail(consumer_context, asynchronous=True)
+
         else:
             logger.info(
                 "Successful delivery to %s, partion: %d, offset: %d", msg.topic(), msg.partition(), msg.offset()
             )
             DELIVERY_STATUS.labels("success").inc()
-            self.success_messages.append(consumer_context)
+            self.on_success(consumer_context, asynchronous=True)
 
     def produce(
         self, queue_name: str, message: bytes, message_context: Any, **kwargs: Union[str, int]
-    ) -> Tuple[bool, list[Message]]:
+    ) -> Tuple[bool, list[Optional[Message]]]:
         self.p.produce(
             key=kwargs.get("key"),
             topic=queue_name,
@@ -185,7 +178,7 @@ class ConfluentKafkaProducer(BaseProducer):
         ),
 
         logger.info("Sent to topic: %s", queue_name)
-        return (True, self.success_messages)
+        return True
 
     def shutdown(self) -> None:
         self.p.flush()

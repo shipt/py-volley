@@ -20,7 +20,7 @@ MESSAGES_PRODUCED = Counter(
 class DeliveryReport:
     destination: Optional[str] = None
     asynchronous: bool = False
-    status: Optional[bool] = None
+    status: bool = False
 
 
 def produce_handler(
@@ -115,7 +115,7 @@ def delivery_success(delivery_reports: List[DeliveryReport]) -> DeliveryReport:
     elif waiting_async and not sync_failures:
         # produced asynchronously without sync fails, return the async delivery report
         # we'll let the Producer call on_success or on_fail
-        return DeliveryReport(status=None, asynchronous=True)
+        return DeliveryReport(status=True, asynchronous=True)
     else:
         # had async or synchronous producer(s) failures.
         # call on_fail synchronously

@@ -38,11 +38,11 @@ services:
             - redis
         volumes:
             - ./:/app/
-        ports:
-            - 3000:3000
-            - 5678:5678
-        command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m example.input_worker
-        # command: python -m example.input_worker
+        # ports:
+        #     - 3000:3000
+        #     - 5678:5678
+        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m example.input_worker
+        command: python -m example.input_worker
 
     middle_worker:
         environment:

@@ -24,7 +24,7 @@ class BaseConsumer(ABC):
         """
 
     @abstractmethod
-    def on_success(self, message_context: Any, asynchronous: bool = False) -> bool:
+    def on_success(self, message_context: Any, asynchronous: bool) -> bool:
         """action to take when a message has been successfully consumed.
         For example, delete the message that was consumed.
 
@@ -60,11 +60,23 @@ class BaseProducer(ABC):
     config: dict[str, Any] = field(default_factory=dict)
 
     asynchronous: bool = False
-    on_success: Optional[Callable] = None
+    on_success: Optional[Callable[[Any, bool], None]] = None
+    on_fail: Optional[Callable[[Any, bool], None]] = None
 
     @abstractmethod
     def produce(self, queue_name: str, message: Any, message_context: Any, **kwargs: Any) -> bool:
-        """publish a message to a queue"""
+        """Publish a message to a queue
+
+        Args:
+            queue_name (str): Destination queue name.
+            message (Any): The message to publish.
+            message_context (Any): Context for the consumed message.
+                Often a message id, or a Kafka Message object.
+                Used for Producer callbacks to consumer.
+
+        Returns:
+            bool: status of the produce operation
+        """
 
     @abstractmethod
     def shutdown(self) -> None:

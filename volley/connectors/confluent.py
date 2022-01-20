@@ -1,8 +1,7 @@
 import os
-from ast import Del
 from dataclasses import dataclass, field
 from threading import Thread
-from typing import Any, Callable, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Union
 
 from confluent_kafka import Consumer, Message, Producer
 from prometheus_client import Counter
@@ -10,7 +9,6 @@ from prometheus_client import Counter
 from volley.connectors.base import BaseConsumer, BaseProducer
 from volley.data_models import QueueMessage
 from volley.logging import logger
-from volley.transport import DeliveryReport
 
 RUN_ONCE = False
 
@@ -29,7 +27,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
     auto_commit_interval_ms: int = 3000
 
     # mapping of partition/offset of the last stored commit
-    last_offset: dict[int:int] = field(default_factory=dict)
+    last_offset: dict[int, int] = field(default_factory=dict)
 
     def __post_init__(self) -> None:  # noqa: C901
         self.config = handle_creds(self.config)
@@ -81,12 +79,9 @@ class ConfluentKafkaConsumer(BaseConsumer):
             return QueueMessage(message_context=message, message=message.value())
 
     def on_success(self, message_context: Message, asynchronous: bool) -> bool:
-        return self.store_offsets(message_context)
-
-    def store_offsets(self, message: Message) -> bool:
         """stores any offsets that are able to be stored"""
-        partition = message.partition()
-        this_offset = message.offset()
+        partition = message_context.partition()
+        this_offset = message_context.offset()
 
         # see if we've already committed this or a higher offset
         # delivery report from kafka producer are not guaranteed to be in order
@@ -98,7 +93,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
             self.last_offset[partition] = this_offset
             last_commit = this_offset
         if this_offset > last_commit:
-            self.c.store_offsets(message)  # committed according to auto.commit.interval.ms
+            self.c.store_offsets(message_context)  # committed according to auto.commit.interval.ms
             self.last_offset[partition] = this_offset
         return True
 
@@ -125,8 +120,9 @@ class ConfluentKafkaProducer(BaseProducer):
 
     compression_type: str = "gzip"
 
-    on_success: Optional[Callable] = None
-    on_fail: Optional[Callable] = None
+    # doc only - inherited from BaseConsumer
+    # on_success: Optional[Callable[[Any, bool], None]] = None
+    # on_fail: Optional[Callable[[Any, bool], None]] = None
 
     def __post_init__(self) -> None:  # noqa: C901
         self.asynchronous = True
@@ -144,7 +140,7 @@ class ConfluentKafkaProducer(BaseProducer):
         self.poll_thread = Thread(target=self.handle_poll)
         self.poll_thread.start()
 
-    def handle_poll(self):
+    def handle_poll(self) -> None:
         while not self.kill:
             self.p.poll(0.1)
 
@@ -157,18 +153,16 @@ class ConfluentKafkaProducer(BaseProducer):
                 err,
             )
             DELIVERY_STATUS.labels("fail").inc()
-            self.on_fail(consumer_context, asynchronous=True)
+            self.on_fail(consumer_context, asynchronous=True)  # type: ignore
 
         else:
             logger.info(
                 "Successful delivery to %s, partion: %d, offset: %d", msg.topic(), msg.partition(), msg.offset()
             )
             DELIVERY_STATUS.labels("success").inc()
-            self.on_success(consumer_context, asynchronous=True)
+            self.on_success(consumer_context, asynchronous=True)  # type: ignore
 
-    def produce(
-        self, queue_name: str, message: bytes, message_context: Any, **kwargs: Union[str, int]
-    ) -> Tuple[bool, list[Optional[Message]]]:
+    def produce(self, queue_name: str, message: bytes, message_context: Any, **kwargs: Union[str, int]) -> bool:
         self.p.produce(
             key=kwargs.get("key"),
             topic=queue_name,

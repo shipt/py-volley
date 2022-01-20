@@ -70,7 +70,7 @@ class RSMQConsumer(BaseConsumer):
 
     def on_success(self, message_context: str, asynchronous: bool) -> bool:
         _start = time.time()
-        result: bool = self.delete_message(queue_name=self.queue_name, message_id=message_context)
+        result: bool = self.delete_message(message_id=message_context)
         _duration = time.time() - _start
         PROCESS_TIME.labels("delete").observe(_duration)
         return result
@@ -124,7 +124,7 @@ class RSMQProducer(BaseProducer):
         logger.info("Creatng queue: %s", self.queue_name)
         self.queue.createQueue().exceptions(False).execute()
 
-    def produce(self, queue_name: str, message: bytes, **kwargs: Union[str, int]) -> bool:
+    def produce(self, queue_name: str, message: bytes, message_context: Any, **kwargs: Union[str, int]) -> bool:
         _start = time.time()
         status: bool = self.send_message(queue_name=queue_name, message=message, produce_cfg=kwargs)
         _duration = time.time() - _start

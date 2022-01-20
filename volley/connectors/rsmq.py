@@ -47,10 +47,10 @@ class RSMQConsumer(BaseConsumer):
         self.config = defaults
         logger.info("RSMQ Consumer configs %s", self.config)
         self.queue = RedisSMQ(**self.config)
-        logger.info("Creatng queue: %s", self.queue_name)
+        logger.info("Creating queue: %s", self.queue_name)
         self.queue.createQueue().exceptions(False).execute()
 
-    def consume(self, queue_name: str) -> Optional[QueueMessage]:
+    def consume(self) -> Optional[QueueMessage]:
         """Polls RSMQ for a single message.
 
         Args:
@@ -60,7 +60,7 @@ class RSMQConsumer(BaseConsumer):
             Optional[QueueMessage]: The message and it's RSMQ.
         """
         _start = time.time()
-        msg = self.queue.receiveMessage(qname=queue_name, quiet=True).exceptions(False).execute()
+        msg = self.queue.receiveMessage(qname=self.queue_name, quiet=True).exceptions(False).execute()
         _duration = time.time() - _start
         PROCESS_TIME.labels("read").observe(_duration)
         if isinstance(msg, dict):
@@ -68,35 +68,35 @@ class RSMQConsumer(BaseConsumer):
         else:
             return None
 
-    def on_success(self, queue_name: str, message_context: str) -> bool:
+    def on_success(self, message_context: str, asynchronous: bool) -> bool:
         _start = time.time()
-        result: bool = self.delete_message(queue_name=queue_name, message_id=message_context)
+        result: bool = self.delete_message(queue_name=self.queue_name, message_id=message_context)
         _duration = time.time() - _start
         PROCESS_TIME.labels("delete").observe(_duration)
         return result
 
-    def on_fail(self, queue_name: str, message_context: str) -> None:
-        """message will become visible once visbility timeout expires"""
+    def on_fail(self, message_context: str, asynchronous: bool) -> None:
+        """message will become visible once visibility timeout expires"""
         # self.queue.changeMessageVisibility(qname=queue_name, id=message_context, vt=0)
         logger.error(
             "Failed producing message id %s." "Message will reappear in queue `%s` when timeout expires",
             message_context,
-            queue_name,
+            self.queue_name,
         )
 
     def shutdown(self) -> None:
         self.queue.quit()
 
     @retry(reraise=True, wait=wait_exponential(multiplier=1, min=4, max=10))
-    def delete_message(self, queue_name: str, message_id: str) -> bool:
+    def delete_message(self, message_id: str) -> bool:
         """wrapper function to handle retries
         retrying forever with exponential backoff
         """
-        result: bool = self.queue.deleteMessage(qname=queue_name, id=message_id).execute()
+        result: bool = self.queue.deleteMessage(qname=self.queue_name, id=message_id).execute()
         if result:
             return result
         else:
-            err = f"Failed deleting message: '{message_id}' from queue: '{queue_name}'"
+            err = f"Failed deleting message: '{message_id}' from queue: '{self.queue_name}'"
             logger.critical(err)
             raise TimeoutError(err)
 
@@ -104,6 +104,9 @@ class RSMQConsumer(BaseConsumer):
 @dataclass
 class RSMQProducer(BaseProducer):
     def __post_init__(self) -> None:
+        # delivery reports are synchronous
+        self.asynchronous = False
+
         if "host" in self.config:
             # pass the value directly to the constructor
             pass

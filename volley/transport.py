@@ -2,6 +2,7 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
+from dataclasses import dataclass
 from typing import Any, List, Optional, Tuple, Union
 
 from prometheus_client import Counter
@@ -15,13 +16,20 @@ MESSAGES_PRODUCED = Counter(
 )
 
 
+@dataclass
+class DeliveryReport:
+    destination: Optional[str] = None
+    asynchronous: bool = False
+    status: Optional[bool] = None
+
+
 def produce_handler(
     outputs: Union[List[Tuple[str, Any]], List[Tuple[str, Any, dict[str, Any]]]],
     queue_map: dict[str, Queue],
     app_name: str,
     input_name: str,
     message_context: Any,
-) -> List[Tuple[bool, Optional[Any]]]:
+) -> List[DeliveryReport]:
     """Handles producing messages to output queues
 
         outputs: List of tuples returned by the Volley app function.
@@ -31,9 +39,10 @@ def produce_handler(
         input_queue: becomes label in metric counter
 
     Returns:
-        List[bool]: A bool for success/fail of producing to each output target
+        List[DeliveryReport]: DeliveryReport for each destination
     """
-    all_produce_status: List[Tuple[bool, Optional[Any]]] = []
+    all_delivery_reports: List[DeliveryReport] = []
+
     for qname, component_msg, *args in outputs:
         try:
             out_queue = queue_map[qname]
@@ -55,7 +64,7 @@ def produce_handler(
                 kwargs: dict[str, Any] = args[0]
             else:
                 kwargs = {}
-            status, delivery_context = out_queue.producer_con.produce(
+            status = out_queue.producer_con.produce(
                 queue_name=out_queue.value, message=serialized, message_context=message_context, **kwargs
             )
             MESSAGES_PRODUCED.labels(volley_app=app_name, source=input_name, destination=qname).inc()
@@ -64,6 +73,50 @@ def produce_handler(
         except Exception:
             logger.exception("failed producing message to %s" % out_queue.name)
             status = False
-            delivery_context = None
-        all_produce_status.append((status, delivery_context))
-    return all_produce_status
+        all_delivery_reports.append(
+            DeliveryReport(
+                destination=out_queue.name,
+                asynchronous=out_queue.producer_con.asynchronous,
+                status=status,
+            )
+        )
+    return all_delivery_reports
+
+
+def delivery_success(delivery_reports: List[DeliveryReport]) -> DeliveryReport:
+    """determines whether we're going on_success or on_fail
+    If there is delivery to an async producer, we'll want to let it handle the callback
+
+    Producer Cases:
+        - single synchronous producer: if success
+        - multi synchronous producers
+        - single asynchronous producer
+        - multi asynchronous producers
+        - mixture of synchronous and asynchronous producers
+
+    Order of processing:
+        - if a synchronous producer failed - mark it failed
+        - if async producer - wait for it
+        - else mark it a success
+    """
+
+    waiting_async: int = 0
+    sync_failures: int = 0
+    for report in delivery_reports:
+        if report.asynchronous:
+            waiting_async += 1
+        else:
+            sync_failures = sync_failures + int(report.status)
+
+    if not sync_failures and not waiting_async:
+        # happy path. no sync failures and no async producers
+        # call on_success synchronously
+        return DeliveryReport(status=True, asynchronous=False)
+    elif waiting_async and not sync_failures:
+        # produced asynchronously without sync fails, return the async delivery report
+        # we'll let the Producer call on_success or on_fail
+        return DeliveryReport(status=None, asynchronous=True)
+    else:
+        # had async or synchronous producer(s) failures.
+        # call on_fail synchronously
+        return DeliveryReport(status=False, asynchronous=False)

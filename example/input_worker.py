@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 
 eng = Engine(
     input_queue="input-topic",
-    output_queues=["output-topic"],
+    output_queues=["redis_queue"],
     yaml_config_path="./example/volley_config.yml",
     dead_letter_queue="dead-letter-queue",
 )
@@ -46,7 +46,7 @@ async def main(msg: InputMessage) -> List[Tuple[str, Queue1Message, dict[str, fl
     # send the message to "redis_queue".
     # give it a delay of 0.25 seconds before becoming visible for consumption
     # "delay" is an RSMQ configuration https://github.com/mlasevich/PyRSMQ#quick-intro-to-rsmq
-    out_message = [("output-topic", q1_msg, {"delay": 0.25})]
+    out_message = [("redis_queue", q1_msg, {"delay": 0.25})]
     return out_message
 
 

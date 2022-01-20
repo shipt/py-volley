@@ -2,7 +2,16 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import Column, Float, MetaData, String, Table, create_engine, text
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Float,
+    MetaData,
+    String,
+    Table,
+    create_engine,
+    text,
+)
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm import Session
@@ -27,6 +36,7 @@ queue_table = Table(
     Column("request_id", String(40), nullable=False),
     Column("max_plus", Float),
     Column("message_sent_at", DateTime),
+    Column("visible", Boolean),
 )
 
 
@@ -37,37 +47,54 @@ class MyPGConsumer(BaseConsumer):
         metadata_obj.create_all(self.engine)
         self.session = Session(self.engine)
 
-    def consume(
-        self,
-        queue_name: str = None,
-        timeout: float = 60,
-        poll_interval: float = 2,
-    ) -> QueueMessage:
+    def consume(self) -> QueueMessage:
         """returns a random value"""
         sql = f"""
             BEGIN;
             WITH cte AS
                 (
                     SELECT *
-                    FROM '{queue_name}'
+                    FROM '{self.queue_name}'
                     LIMIT 1
                     FOR UPDATE SKIP LOCKED
                 )
-            DELETE from '{queue_name}'
+            UPDATE '{self.queue_name}'
+            SET visible = false
             WHERE request_id = (select request_id from cte)
             RETURNING *;
         """
 
         records = [r._mapping for r in self.session.execute(text(sql))]
-
-        return QueueMessage(message_context="None", message={"results": records})
-
-    def on_success(self, queue_name: str, message_context: str) -> bool:
         self.session.execute(text("COMMIT;"))
+        return QueueMessage(message_context=dict(records[0])["request_id"], message={"results": records})
+
+    def on_success(self, message_context: str, asynchronous: bool) -> bool:
+        self.session.execute(
+            text(
+                f"""
+            BEGIN;
+            DELETE FROM '{self.queue_name}'
+            WHERE request_id = '{message_context}'
+                AND visible = false;
+            COMMIT;
+        """
+            )
+        )
         return True
 
-    def on_fail(self, queue_name: str, message_context: Any) -> None:
-        self.session.execute(text("ROLLBACK;"))
+    def on_fail(self, message_context: str, asynchronous: bool) -> None:
+        self.session.execute(
+            text(
+                f"""
+            BEGIN;
+            UPDATE '{self.queue_name}'
+            SET visible = true
+            WHERE request_id = '{message_context}'
+                AND visible = false;
+            COMMIT;
+        """
+            )
+        )
 
     def shutdown(self) -> None:
         self.session.close()
@@ -80,7 +107,7 @@ class MyPGProducer(BaseProducer):
         metadata_obj.create_all(self.engine)
         self.session = Session(self.engine)
 
-    def produce(self, queue_name: str, message: dict[str, Any], **kwargs: Any) -> bool:
+    def produce(self, queue_name: str, message: Any, message_context: Any, **kwargs: Any) -> bool:
         logger.info(f"produced message to: {queue_name=} - message={message}")
         vals = {
             "message_sent_at": datetime.now(),

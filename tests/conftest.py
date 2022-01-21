@@ -90,7 +90,7 @@ class KafkaMessage:
 @fixture
 def mock_confluent_producer() -> ConfluentKafkaProducer:
     with patch("volley.connectors.confluent.Producer"):
-        producer = ConfluentKafkaProducer(queue_name="test")
+        producer = ConfluentKafkaProducer(queue_name="test", daemon=False)
         return producer
 
 

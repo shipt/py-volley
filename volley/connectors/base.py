@@ -24,7 +24,7 @@ class BaseConsumer(ABC):
         """
 
     @abstractmethod
-    def on_success(self, message_context: Any, asynchronous: bool) -> bool:
+    def on_success(self, message_context: Any) -> bool:
         """action to take when a message has been successfully consumed.
         For example, delete the message that was consumed.
 
@@ -35,7 +35,7 @@ class BaseConsumer(ABC):
         """
 
     @abstractmethod
-    def on_fail(self, message_context: Any, asynchronous: bool) -> None:
+    def on_fail(self, message_context: Any) -> None:
         """action to perform when serialization, or data validation has failed
 
         The asynchronous flag is intended for flexibility,

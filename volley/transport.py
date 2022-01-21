@@ -106,7 +106,7 @@ def delivery_success(delivery_reports: List[DeliveryReport]) -> DeliveryReport:
         if report.asynchronous:
             waiting_async += 1
         else:
-            sync_failures = sync_failures + int(report.status)
+            sync_failures = sync_failures + int(not report.status)
 
     if not sync_failures and not waiting_async:
         # happy path. no sync failures and no async producers

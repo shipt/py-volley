@@ -19,6 +19,7 @@ from volley.queues import DLQNotConfiguredError
 
 
 @patch("volley.engine.RUN_ONCE", True)
+@patch("volley.connectors.confluent.Producer.poll", MagicMock())
 @patch("volley.connectors.confluent.Producer")
 @patch("volley.connectors.confluent.Consumer")
 def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -> None:  # pylint: disable=W0613

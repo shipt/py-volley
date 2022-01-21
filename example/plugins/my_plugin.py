@@ -68,7 +68,7 @@ class MyPGConsumer(BaseConsumer):
         self.session.execute(text("COMMIT;"))
         return QueueMessage(message_context=dict(records[0])["request_id"], message={"results": records})
 
-    def on_success(self, message_context: str, asynchronous: bool) -> bool:
+    def on_success(self, message_context: str) -> bool:
         self.session.execute(
             text(
                 f"""
@@ -82,7 +82,7 @@ class MyPGConsumer(BaseConsumer):
         )
         return True
 
-    def on_fail(self, message_context: str, asynchronous: bool) -> None:
+    def on_fail(self, message_context: str) -> None:
         self.session.execute(
             text(
                 f"""

@@ -68,14 +68,14 @@ class RSMQConsumer(BaseConsumer):
         else:
             return None
 
-    def on_success(self, message_context: str, asynchronous: bool) -> bool:
+    def on_success(self, message_context: str) -> bool:
         _start = time.time()
         result: bool = self.delete_message(message_id=message_context)
         _duration = time.time() - _start
         PROCESS_TIME.labels("delete").observe(_duration)
         return result
 
-    def on_fail(self, message_context: str, asynchronous: bool) -> None:
+    def on_fail(self, message_context: str) -> None:
         """message will become visible once visibility timeout expires"""
         # self.queue.changeMessageVisibility(qname=queue_name, id=message_context, vt=0)
         logger.error(

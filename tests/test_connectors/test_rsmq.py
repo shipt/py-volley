@@ -9,17 +9,19 @@ from volley.data_models import QueueMessage
 
 
 def test_rsmq_producer(mock_rsmq_producer: RSMQProducer, bundle_message: QueueMessage) -> None:
-    assert mock_rsmq_producer.produce(queue_name="test", message=bundle_message.json().encode("utf-8"))
+    assert mock_rsmq_producer.produce(
+        queue_name="test", message=bundle_message.json().encode("utf-8"), message_context="message-id-from-consumed"
+    )
 
 
 def test_rsmq_consumer(mock_rsmq_consumer: RSMQConsumer) -> None:
 
-    assert mock_rsmq_consumer.consume(queue_name="test")
+    assert mock_rsmq_consumer.consume()
 
 
 def test_rsmq_delete(mock_rsmq_consumer: RSMQConsumer) -> None:
 
-    assert mock_rsmq_consumer.on_success(queue_name="test", message_context="abc123")
+    assert mock_rsmq_consumer.on_success(message_context="abc123")
 
 
 # @patch("volley.connectors.rsmq.RedisSMQ")
@@ -29,17 +31,17 @@ def test_rsmq_delete_fail(mock_rsmq_consumer: RSMQConsumer) -> None:
     mock_rsmq_consumer.delete_message.retry.stop = stop_after_attempt(1)  # type: ignore
     # mock_rsmq_consumer.delete_message.retry.stop = wait_none()
     with raises(TimeoutError):
-        mock_rsmq_consumer.on_success("test", "message_id_test")
+        mock_rsmq_consumer.on_success("message_id_test")
 
 
 @patch("volley.connectors.rsmq.RedisSMQ")
 def test_return_none(mocked_rsmq: MagicMock) -> None:
     mocked_rsmq.queue.receiveMessage.return_value.exceptions.return_value.execute = None
     consumer = RSMQConsumer(host="redis", queue_name="test")
-    msg = consumer.consume(queue_name="test")
+    msg = consumer.consume()
     assert msg is None
 
-    consumer.on_fail("test", "test-message-context")
+    consumer.on_fail("test-message-context")
 
 
 @patch("volley.connectors.rsmq.RedisSMQ")

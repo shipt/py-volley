@@ -172,7 +172,7 @@ def test_confluent_consume(
 
     # send messages to test topic
     producer = ConfluentKafkaProducer(
-        queue_name=environment.test_topic, config={"bootstrap.servers": environment.brokers}
+        queue_name=environment.test_topic, config={"bootstrap.servers": environment.brokers}, daemon=False
     )
     num_test_message = 3
     for i in range(num_test_message):
@@ -192,7 +192,7 @@ def test_confluent_consume(
     message_0a: QueueMessage = consumer.consume(queue_name=environment.test_topic)  # type: ignore
     assert message_0a.message_context.offset() == offset_0
     # commit the offset, leave the consumer group
-    consumer.on_success(message_context=message_0a.message_context, asynchronous=False)
+    consumer.on_success(message_context=message_0a.message_context)
     consumer.shutdown()
 
     # recreate the consumer
@@ -202,7 +202,7 @@ def test_confluent_consume(
     offset_1 = message_1.message_context.offset()
     assert offset_1 == offset_0 + 1
     # commit the offset, leave the consumer group
-    consumer.on_success(message_context=message_1.message_context, asynchronous=False)
+    consumer.on_success(message_context=message_1.message_context)
     consumer.shutdown()
 
     # use Confluent consumer directly, validate offset is also the next offset

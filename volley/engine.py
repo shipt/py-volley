@@ -215,13 +215,11 @@ class Engine:
                     # synchrnous delivery reports are handled here
                     input_con.consumer_con.on_success(
                         message_context=in_message.message_context,
-                        asynchronous=False,
                     )
                     MESSAGE_CONSUMED.labels(volley_app=self.app_name, status="success").inc()
                 elif not delivery_report.asynchronous:
                     input_con.consumer_con.on_fail(
                         message_context=in_message.message_context,
-                        asynchronous=False,
                     )
                     MESSAGE_CONSUMED.labels(volley_app=self.app_name, status="fail").inc()
                 _duration = time.time() - _start_time

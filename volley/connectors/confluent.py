@@ -78,7 +78,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
         else:
             return QueueMessage(message_context=message, message=message.value())
 
-    def on_success(self, message_context: Message, asynchronous: bool) -> bool:
+    def on_success(self, message_context: Message) -> bool:
         """stores any offsets that are able to be stored"""
         partition = message_context.partition()
         this_offset = message_context.offset()
@@ -97,7 +97,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
             self.last_offset[partition] = this_offset
         return True
 
-    def on_fail(self, message_context: Message, asynchronous: bool) -> None:
+    def on_fail(self, message_context: Message) -> None:
         logger.info(
             "Downstream failure. Did not commit offset: %d, partition: %d, message: %s",
             message_context.offset(),
@@ -123,6 +123,7 @@ class ConfluentKafkaProducer(BaseProducer):
     # doc only - inherited from BaseConsumer
     # on_success: Optional[Callable[[Any, bool], None]] = None
     # on_fail: Optional[Callable[[Any, bool], None]] = None
+    daemon: bool = True
 
     def __post_init__(self) -> None:  # noqa: C901
         self.asynchronous = True
@@ -136,13 +137,17 @@ class ConfluentKafkaProducer(BaseProducer):
         logger.info("Kafka Producer Configuration: %s", self.config)
 
         # producer poll thread
-        self.kill = False
-        self.poll_thread = Thread(target=self.handle_poll)
-        self.poll_thread.start()
+        self.kill_poll_thread = False
+        # daemon thread - this can be aggressively killed on shutdown
+        # Volley will call shutdown() which will trigger confluent.Producer.flush()
+        # flush() will trigger acked() and call consumers on_success/on_fail
+        if self.daemon:
+            self.poll_thread = Thread(target=self.handle_poll, daemon=True)
+            self.poll_thread.start()
 
     def handle_poll(self) -> None:
-        while not self.kill:
-            self.p.poll(0.1)
+        while not self.kill_poll_thread:
+            self.p.poll(0)
 
     def acked(self, err: Optional[str], msg: Message, consumer_context: Any) -> None:
         if err is not None:
@@ -153,14 +158,14 @@ class ConfluentKafkaProducer(BaseProducer):
                 err,
             )
             DELIVERY_STATUS.labels("fail").inc()
-            self.on_fail(consumer_context, asynchronous=True)  # type: ignore
+            self.on_fail(consumer_context)  # type: ignore
 
         else:
             logger.info(
                 "Successful delivery to %s, partion: %d, offset: %d", msg.topic(), msg.partition(), msg.offset()
             )
             DELIVERY_STATUS.labels("success").inc()
-            self.on_success(consumer_context, asynchronous=True)  # type: ignore
+            self.on_success(consumer_context)  # type: ignore
 
     def produce(self, queue_name: str, message: bytes, message_context: Any, **kwargs: Union[str, int]) -> bool:
         self.p.produce(
@@ -176,8 +181,9 @@ class ConfluentKafkaProducer(BaseProducer):
 
     def shutdown(self) -> None:
         self.p.flush()
-        self.cancelled = True
-        self.poll_thread.join()
+        if self.daemon:
+            self.kill_poll_thread = True
+            self.poll_thread.join()
 
 
 def handle_creds(config_dict: Dict[str, Any]) -> Dict[str, Any]:

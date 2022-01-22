@@ -65,3 +65,12 @@ class PostgresMessage(GenericMessage):
                 }
             ]
         }
+
+
+class KafkaKafkaInput(GenericMessage):
+    request_id: str
+
+
+class KafkaKafkaOutput(GenericMessage):
+    request_id: str
+    counter: int

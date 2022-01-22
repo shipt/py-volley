@@ -151,8 +151,10 @@ class Engine:
             for qname in self.output_queues:
                 producer_con = self.queue_map[qname].producer_con
                 if producer_con.asynchronous:
-                    producer_con.on_success = self.queue_map[self.input_queue].consumer_con.on_success
-                    producer_con.on_fail = self.queue_map[self.input_queue].consumer_con.on_fail
+                    producer_con.init_callbacks(
+                        on_success=self.queue_map[self.input_queue].consumer_con.on_success,
+                        on_fail=self.queue_map[self.input_queue].consumer_con.on_fail,
+                    )
 
             while not self.killer.kill_now:
                 _start_time = time.time()

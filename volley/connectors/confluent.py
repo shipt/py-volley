@@ -1,7 +1,8 @@
 import os
 from dataclasses import dataclass, field
-from threading import Thread
-from typing import Any, Dict, Optional, Union
+from threading import Lock, Thread
+from time import sleep
+from typing import Any, Callable, Dict, Optional, Union
 
 from confluent_kafka import Consumer, Message, Producer
 from prometheus_client import Counter
@@ -25,9 +26,6 @@ class ConfluentKafkaConsumer(BaseConsumer):
     poll_interval: float = 10
     auto_offset_reset: str = "earliest"
     auto_commit_interval_ms: int = 3000
-
-    # mapping of partition/offset of the last stored commit
-    last_offset: dict[int, int] = field(default_factory=dict)
 
     def __post_init__(self) -> None:  # noqa: C901
         self.config = handle_creds(self.config)
@@ -60,6 +58,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
             self.poll_interval = self.config.pop("poll_interval")
 
         # this is not overridable, due to the behavior in self.on_success()
+        # on_success calls store_offsets()
         self.config["enable.auto.offset.store"] = False
         self.c = Consumer(self.config, logger=logger)
         logger.info("Kafka Consumer Configuration: %s", self.config)
@@ -78,24 +77,8 @@ class ConfluentKafkaConsumer(BaseConsumer):
         else:
             return QueueMessage(message_context=message, message=message.value())
 
-    def on_success(self, message_context: Message) -> bool:
-        """stores any offsets that are able to be stored"""
-        partition = message_context.partition()
-        this_offset = message_context.offset()
-
-        # see if we've already committed this or a higher offset
-        # delivery report from kafka producer are not guaranteed to be in order
-        # that they were produced
-        try:
-            last_commit = self.last_offset[partition]
-        except KeyError:
-            # first message from this partition
-            self.last_offset[partition] = this_offset
-            last_commit = this_offset
-        if this_offset > last_commit:
-            self.c.store_offsets(message_context)  # committed according to auto.commit.interval.ms
-            self.last_offset[partition] = this_offset
-        return True
+    def on_success(self, message_context: Message) -> None:
+        self.c.store_offsets(message=message_context)  # committed according to auto.commit.interval.ms
 
     def on_fail(self, message_context: Message) -> None:
         logger.info(
@@ -104,11 +87,49 @@ class ConfluentKafkaConsumer(BaseConsumer):
             message_context.partition(),
             message_context.value(),
         )
-        pass
 
     def shutdown(self) -> None:
         self.c.close()
         logger.info("Successfully commit offsets and left consumer group %s", self.config.get("group.id"))
+
+
+@dataclass
+class AsyncConfluentKafkaConsumer(ConfluentKafkaConsumer):
+    """identical to ConfluentKafkaConsumer, except allows for asynchronous store_offsets()
+
+    intended for use with ConfluentKafkaProducer
+    """
+
+    lock = Lock()
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        # mapping of partition/offset of the last stored commit
+        self.last_offset: dict[int, int] = {}
+
+    def on_success(self, message_context: Message) -> None:
+        """stores any offsets that are able to be stored
+
+        on_success is called  by two threads
+        """
+        partition = message_context.partition()
+        this_offset = message_context.offset()
+
+        # see if we've already committed this or a higher offset
+        # delivery report from kafka producer are not guaranteed to be in order
+        # that they were produced
+        # https://github.com/confluentinc/confluent-kafka-python/issues/300#issuecomment-358416432
+        with self.lock:
+            try:
+                last_commit = self.last_offset[partition]
+            except KeyError:
+                # first message from this partition
+                self.last_offset[partition] = this_offset
+                self.c.store_offsets(message_context)
+                return
+            if this_offset > last_commit:
+                self.c.store_offsets(message_context)  # committed according to auto.commit.interval.ms
+                self.last_offset[partition] = this_offset
 
 
 @dataclass
@@ -121,9 +142,10 @@ class ConfluentKafkaProducer(BaseProducer):
     compression_type: str = "gzip"
 
     # doc only - inherited from BaseConsumer
-    # on_success: Optional[Callable[[Any, bool], None]] = None
-    # on_fail: Optional[Callable[[Any, bool], None]] = None
-    daemon: bool = True
+    # on_success: Optional[Callable[[Any], None]] = None
+    # on_fail: Optional[Callable[[Any], None]] = None
+
+    thread: bool = False
 
     def __post_init__(self) -> None:  # noqa: C901
         self.asynchronous = True
@@ -138,16 +160,30 @@ class ConfluentKafkaProducer(BaseProducer):
 
         # producer poll thread
         self.kill_poll_thread = False
+
+    def init_callbacks(
+        self, on_success: Callable[[Any], None], on_fail: Callable[[Any], None], thread: bool = True
+    ) -> None:
         # daemon thread - this can be aggressively killed on shutdown
         # Volley will call shutdown() which will trigger confluent.Producer.flush()
         # flush() will trigger acked() and call consumers on_success/on_fail
-        if self.daemon:
+        self.on_success = on_success
+        self.on_fail = on_fail
+        if thread:
+            self.thread = True
             self.poll_thread = Thread(target=self.handle_poll, daemon=True)
             self.poll_thread.start()
 
     def handle_poll(self) -> None:
         while not self.kill_poll_thread:
             self.p.poll(0)
+            sleep(4)
+
+    def set_on_success(self, on_success: Callable[[Any], None]) -> None:
+        self.on_success = on_success
+
+    def set_on_fail(self, on_fail: Callable[[Any], None]) -> None:
+        self.on_fail = on_fail
 
     def acked(self, err: Optional[str], msg: Message, consumer_context: Any) -> None:
         if err is not None:
@@ -168,6 +204,7 @@ class ConfluentKafkaProducer(BaseProducer):
             self.on_success(consumer_context)  # type: ignore
 
     def produce(self, queue_name: str, message: bytes, message_context: Any, **kwargs: Union[str, int]) -> bool:
+        self.p.poll(0)
         self.p.produce(
             key=kwargs.get("key"),
             topic=queue_name,
@@ -181,7 +218,7 @@ class ConfluentKafkaProducer(BaseProducer):
 
     def shutdown(self) -> None:
         self.p.flush()
-        if self.daemon:
+        if self.thread:
             self.kill_poll_thread = True
             self.poll_thread.join()
 

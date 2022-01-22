@@ -24,7 +24,7 @@ class BaseConsumer(ABC):
         """
 
     @abstractmethod
-    def on_success(self, message_context: Any) -> bool:
+    def on_success(self, message_context: Any) -> None:
         """action to take when a message has been successfully consumed.
         For example, delete the message that was consumed.
 
@@ -60,8 +60,8 @@ class BaseProducer(ABC):
     config: dict[str, Any] = field(default_factory=dict)
 
     asynchronous: bool = False
-    on_success: Optional[Callable[[Any, bool], None]] = None
-    on_fail: Optional[Callable[[Any, bool], None]] = None
+    on_success: Optional[Callable[[Any], None]] = None
+    on_fail: Optional[Callable[[Any], None]] = None
 
     @abstractmethod
     def produce(self, queue_name: str, message: Any, message_context: Any, **kwargs: Any) -> bool:

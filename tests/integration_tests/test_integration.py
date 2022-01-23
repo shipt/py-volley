@@ -257,16 +257,15 @@ def test_confluent_async_consume(
     )
     # poll before produce, will not produce a deliver report or change local state
     assert consumer1.last_offset == {}
-    # produce another, will trigger callback from first message
-    # do not enable the background thread, we will test that later
-    # just testing the in-line poll()
-    producer1.init_callbacks(consumer=consumer1, thread=False)
+    # init the callback poll
+    producer1.init_callbacks(consumer=consumer1, thread=True)
     time.sleep(1)
+    assert consumer1.last_offset[0] == offset_0
     producer1.produce(
         queue_name=environment.test_topic, message="message".encode("utf-8"), message_context=message_0.message_context
     )
-    # this will store offset in local state. it should also store_offsets() and commit to broker()
     assert consumer1.last_offset[0] == offset_0
+    # this will store offset in local state. it should also store_offsets() and commit to broker()
     # leave consumer group, shutdown producer
     consumer1.shutdown()
     producer1.shutdown()
@@ -274,7 +273,7 @@ def test_confluent_async_consume(
     # recreate consumer. validate our offsets committed properly
     consumer2 = AsyncConfluentKafkaConsumer(queue_name=environment.test_topic, config=broker_config, poll_interval=30)
     assert consumer2.last_offset == {}
-    # consumer another message. our offsets should have been committed
+    # consumer another message. our previous offsets should have been committed
     message_1: QueueMessage = consumer2.consume()  # type: ignore
     offset_1 = message_1.message_context.offset()
     assert offset_0 == offset_1 - 1
@@ -294,7 +293,7 @@ def test_confluent_async_consume(
     # init the callbacks
     producer2.init_callbacks(consumer=consumer2)
     # there is a delay, so wait. this will call poll and change local state
-    time.sleep(5)
+    time.sleep(1)
     assert consumer2.last_offset[0] == offset_1
 
     # close connections

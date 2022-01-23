@@ -1,7 +1,6 @@
 import os
-from dataclasses import dataclass, field
-from threading import Lock, Thread
-from time import sleep
+from dataclasses import dataclass
+from threading import Thread
 from typing import Any, Dict, Optional, Union
 
 from confluent_kafka import Consumer, Message, Producer
@@ -101,8 +100,6 @@ class AsyncConfluentKafkaConsumer(ConfluentKafkaConsumer):
     intended for use with ConfluentKafkaProducer
     """
 
-    # lock = Lock()
-
     def __post_init__(self) -> None:
         super().__post_init__()
         # mapping of partition/offset of the last stored commit
@@ -117,7 +114,6 @@ class AsyncConfluentKafkaConsumer(ConfluentKafkaConsumer):
         # delivery report from kafka producer are not guaranteed to be in order
         # that they were produced
         # https://github.com/confluentinc/confluent-kafka-python/issues/300#issuecomment-358416432
-        # with self.lock:
         try:
             last_commit = self.last_offset[partition]
         except KeyError:
@@ -164,7 +160,6 @@ class ConfluentKafkaProducer(BaseProducer):
     def handle_poll(self) -> None:
         while not self.kill_poll_thread:
             self.p.poll(0.2)
-            sleep(1)
 
     def acked(self, err: Optional[str], msg: Message, consumer_context: Any) -> None:
         if err is not None:
@@ -185,7 +180,6 @@ class ConfluentKafkaProducer(BaseProducer):
             self.on_success(consumer_context)  # type: ignore
 
     def produce(self, queue_name: str, message: bytes, message_context: Any, **kwargs: Union[str, int]) -> bool:
-        # self.p.poll(0)
         self.p.produce(
             key=kwargs.get("key"),
             topic=queue_name,

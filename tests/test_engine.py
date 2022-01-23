@@ -45,6 +45,7 @@ def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -
         return [("output-topic", output_msg)]
 
     func()
+    eng.shutdown()
 
 
 @patch("volley.engine.RUN_ONCE", True)
@@ -71,6 +72,7 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
         return True
 
     func()
+    eng.shutdown()
 
 
 @patch("volley.engine.RUN_ONCE", True)
@@ -94,6 +96,8 @@ def test_dlq_not_implemented(mock_consumer: MagicMock, mock_producer: MagicMock)
 
     with pytest.raises(DLQNotConfiguredError):
         func()
+
+    eng.shutdown()
 
 
 @patch("volley.engine.RUN_ONCE", True)
@@ -124,6 +128,7 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
 
     # must not raise any exceptions
     hello_world()
+    eng.shutdown()
 
 
 @patch("volley.engine.RUN_ONCE", True)
@@ -170,6 +175,7 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[st
         return True
 
     func()
+    eng.shutdown()
 
 
 @patch("volley.logging.logger.propagate", True)
@@ -210,6 +216,7 @@ def test_null_serializer_fail(
     assert "Failed model construction" in caplog.text
     assert "pydantic.error_wrappers.ValidationError" in caplog.text
     assert "failed producing message to" not in caplog.text
+    eng.shutdown()
 
     # do not specifiy the DLQ
     eng = Engine(input_queue=input_queue, output_queues=output_queues, queue_config=config_dict, metrics_port=None)
@@ -222,6 +229,7 @@ def test_null_serializer_fail(
     # unhandled exception in serialization or model construction
     with pytest.raises(DLQNotConfiguredError):
         func2()
+    eng.shutdown()
 
 
 @patch("volley.engine.RUN_ONCE", True)
@@ -276,6 +284,7 @@ def test_engine_configuration_failures(mock_rsmq: MagicMock) -> None:
     # trying to return a message to a queue that does not exist
     with pytest.raises(KeyError):
         bad_return_queue()
+    eng.shutdown()
 
     eng2 = Engine(input_queue="comp_1", output_queues=["comp_1"], queue_config=cfg, metrics_port=None)
 
@@ -287,6 +296,7 @@ def test_engine_configuration_failures(mock_rsmq: MagicMock) -> None:
     # trying to return a message to a queue of the wrong type
     with pytest.raises(TypeError):
         bad_return_type()
+    eng2.shutdown()
 
 
 @patch("volley.engine.RUN_ONCE", True)
@@ -313,6 +323,7 @@ def test_serialization_fail_crash(mock_rsmq: MagicMock, caplog: LogCaptureFixtur
     with pytest.raises(Exception):
         func()
         assert "Deserialization failed" in caplog.text
+    eng.shutdown()
 
 
 @patch("volley.engine.RUN_ONCE", True)
@@ -340,6 +351,7 @@ def test_fail_produce(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:
 
     # assert that the on_fail was called
     assert mocked_fail.called
+    eng.shutdown()
 
 
 @patch("volley.connectors.rsmq.RSMQConsumer.on_fail")
@@ -350,13 +362,13 @@ def test_init_no_output(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:  
     # cant produce anywhere, and thats ok
     eng = Engine(input_queue="comp_1", queue_config=cfg)
     assert eng.output_queues == []
-
     cfg["DLQ"] = {"value": "dlq-topic", "profile": "confluent"}
     # DLQ should become an output, even without any outputs defined
     eng2 = Engine(input_queue="comp_1", dead_letter_queue="DLQ", queue_config=cfg, metrics_port=None)
     assert "DLQ" in eng2.output_queues
 
 
+@patch("volley.connectors.confluent.Producer", MagicMock())
 @patch("volley.engine.RUN_ONCE", True)
 @patch("volley.logging.logger.propagate", True)
 @patch("volley.connectors.confluent.Consumer")
@@ -389,6 +401,7 @@ def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture, 
         # consumer group should be in that text
         assert consumer_group in caplog.text
         assert kafka_brokers in caplog.text
+    eng.shutdown()
 
 
 @patch("volley.engine.RUN_ONCE", True)
@@ -420,6 +433,7 @@ def test_wild_dlq_error(mock_handler: MagicMock, mock_rsmq: MagicMock, caplog: L
     with caplog.at_level(logging.ERROR):
         fun()
     assert "failed producing message to dlq" in caplog.text
+    eng.shutdown()
 
 
 @patch("volley.engine.RUN_ONCE", True)
@@ -453,8 +467,10 @@ def test_runtime_connector_configs(mock_consumer: MagicMock, config_dict: dict[s
 
     # function must not raise
     tuple_two()
+    eng.shutdown()
 
 
+@patch("volley.connectors.confluent.Producer", MagicMock())
 def test_invalid_queue(config_dict: dict[str, dict[str, str]]) -> None:
     """queue provided in the init parameters input_queue, output_queues, dead_letter_queue
     must also exist in configuration

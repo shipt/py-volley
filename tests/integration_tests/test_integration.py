@@ -1,12 +1,11 @@
 import json
 import os
-import queue
 import time
 from typing import Any, List
 from uuid import uuid4
 
 import pytest
-import redis
+import redis  # type: ignore
 from confluent_kafka import OFFSET_END, Consumer, Producer, TopicPartition
 
 from example.data_models import InputMessage
@@ -312,34 +311,34 @@ def test_confluent_async_consume(
 @pytest.mark.integration
 def test_redis_to_kafka(environment: Environment) -> None:
     """consumes from redis, produce async to kafka, delete w/ callback"""
-    REDIS_HOST = os.environ["REDIS_HOST"]
-    INPUT = "test-input-redis"
-    r = redis.Redis(host=REDIS_HOST)
+    redis_host = os.environ["REDIS_HOST"]
+    input = "test-input-redis"
+    r = redis.Redis(host=redis_host)
     from rsmq import RedisSMQ
 
-    queue = RedisSMQ(host=REDIS_HOST, qname=INPUT)
+    queue = RedisSMQ(host=redis_host, qname=input)
     queue.deleteQueue().exceptions(False).execute()
 
-    _producer = RSMQProducer(host=REDIS_HOST, queue_name=INPUT)
-    consumer = RSMQConsumer(host=REDIS_HOST, queue_name=INPUT)
+    _producer = RSMQProducer(host=redis_host, queue_name=input)
+    consumer = RSMQConsumer(host=redis_host, queue_name=input)
     producer = ConfluentKafkaProducer(
         queue_name=environment.redis_to_kafka_topic,
         config={"bootstrap.servers": environment.brokers},
     )
-    NUM_TEST = 5
+    num_test = 5
     # put some test data in Redis queue
-    for m in range(NUM_TEST):
+    for m in range(num_test):
         message = f"{m}_test_msg".encode("utf-8")
-        _producer.produce(queue_name=INPUT, message=message)
+        _producer.produce(queue_name=input, message=message)
 
     # assert size of the queue
-    assert r.zcard(f"rsmq:{INPUT}") == NUM_TEST
+    assert r.zcard(f"rsmq:{input}") == num_test
 
     # init the callbacks
     producer.init_callbacks(consumer=consumer)
     # consume and produce the messages
     consumed_ids = []
-    for _ in range(NUM_TEST):
+    for _ in range(num_test):
         consumed_msg = consumer.consume()
         if consumed_msg is None:
             raise AssertionError("No messages")
@@ -351,4 +350,4 @@ def test_redis_to_kafka(environment: Environment) -> None:
         )
     time.sleep(4)
     # all messages should have been deleted
-    assert r.zcard(f"rsmq:{INPUT}") == 0
+    assert r.zcard(f"rsmq:{input}") == 0

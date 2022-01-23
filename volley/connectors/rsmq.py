@@ -68,12 +68,11 @@ class RSMQConsumer(BaseConsumer):
         else:
             return None
 
-    def on_success(self, message_context: str) -> bool:
+    def on_success(self, message_context: str) -> None:
         _start = time.time()
-        result: bool = self.delete_message(message_id=message_context)
+        self.delete_message(message_id=message_context)
         _duration = time.time() - _start
         PROCESS_TIME.labels("delete").observe(_duration)
-        return result
 
     def on_fail(self, message_context: str) -> None:
         """message will become visible once visibility timeout expires"""
@@ -121,7 +120,7 @@ class RSMQProducer(BaseProducer):
         self.config = defaults
         logger.info("RSMQ Producer configs: %s", self.config)
         self.queue = RedisSMQ(**self.config)
-        logger.info("Creatng queue: %s", self.queue_name)
+        logger.info("Creating queue: %s", self.queue_name)
         self.queue.createQueue().exceptions(False).execute()
 
     def produce(

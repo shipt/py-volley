@@ -64,7 +64,7 @@ class BaseProducer(ABC):
     on_fail: Optional[Callable[[Any], None]] = None
 
     @abstractmethod
-    def produce(self, queue_name: str, message: Any, message_context: Any, **kwargs: Any) -> bool:
+    def produce(self, queue_name: str, message: Any, message_context: Optional[Any], **kwargs: Any) -> bool:
         """Publish a message to a queue
 
         Args:

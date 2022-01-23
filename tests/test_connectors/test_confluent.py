@@ -53,7 +53,7 @@ def test_kafka_consumer_creds(monkeypatch: MonkeyPatch) -> None:
 @patch("volley.connectors.confluent.Producer", MagicMock())
 def test_kafka_producer_creds() -> None:
     config = {"sasl.username": "test-user", "sasl.password": "test-password"}
-    p = ConfluentKafkaProducer(config=config, queue_name="input-topic", daemon=False)
+    p = ConfluentKafkaProducer(config=config, queue_name="input-topic")
     assert "sasl.username" in p.config
     assert "sasl.password" in p.config
 
@@ -127,6 +127,6 @@ def test_consumer_init_configs() -> None:
 @patch("volley.connectors.confluent.Producer", MagicMock())
 def test_producer_init_configs() -> None:
     config = {"compression.type": "snappy"}
-    p = ConfluentKafkaProducer(queue_name="test", config=config, daemon=False)
+    p = ConfluentKafkaProducer(queue_name="test", config=config)
     assert p.config["compression.type"] == "snappy"
     p.shutdown()

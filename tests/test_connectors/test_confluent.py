@@ -1,3 +1,4 @@
+from concurrent.futures import thread
 from random import randint
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
@@ -6,7 +7,11 @@ import pytest
 from pytest import LogCaptureFixture, MonkeyPatch
 
 from tests.conftest import KafkaMessage
-from volley.connectors import ConfluentKafkaConsumer, ConfluentKafkaProducer
+from volley.connectors import (
+    AsyncConfluentKafkaConsumer,
+    ConfluentKafkaConsumer,
+    ConfluentKafkaProducer,
+)
 from volley.connectors.confluent import handle_creds
 from volley.data_models import QueueMessage
 
@@ -113,6 +118,7 @@ def test_callback(mock_confluent_producer: ConfluentKafkaProducer, caplog: LogCa
     mock_confluent_producer.acked(err=None, msg=m, consumer_context="consumed_message_id")
     assert "test-topic" in caplog.messages[1]
     assert "successful" in caplog.messages[1].lower()
+    mock_confluent_producer.shutdown()
 
 
 @patch("volley.connectors.confluent.Consumer", MagicMock())
@@ -130,3 +136,23 @@ def test_producer_init_configs() -> None:
     p = ConfluentKafkaProducer(queue_name="test", config=config)
     assert p.config["compression.type"] == "snappy"
     p.shutdown()
+
+
+@patch("volley.connectors.confluent.Consumer")
+def test_callback_consumer(consumer: MagicMock) -> None:
+    m = KafkaMessage(partition=24, offset=42)
+    ackc = AsyncConfluentKafkaConsumer(queue_name="test")
+    # first commit
+    ackc.on_success(m)
+    assert ackc.last_offset[24] == 42
+
+    # commit a higher offset, same partition
+    m = KafkaMessage(partition=24, offset=43)
+    ackc.on_success(m)
+    assert ackc.last_offset[24] == 43
+
+    # commit a lower offset, same partition
+    # should not change the last commit
+    m = KafkaMessage(partition=24, offset=1)
+    ackc.on_success(m)
+    assert ackc.last_offset[24] == 43

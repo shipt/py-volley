@@ -2,7 +2,7 @@ import os
 from dataclasses import dataclass, field
 from threading import Lock, Thread
 from time import sleep
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 from confluent_kafka import Consumer, Message, Producer
 from prometheus_client import Counter
@@ -98,13 +98,10 @@ class AsyncConfluentKafkaConsumer(ConfluentKafkaConsumer):
     """identical to ConfluentKafkaConsumer, except provides thread safety and
     handling for ensuring offsets are not committed out of order.
 
-    Scenario: call store_offsets() via callback and producer.poll() before producer.produce()
-    by calling producer.poll() from both background and a main thread.
-
     intended for use with ConfluentKafkaProducer
     """
 
-    lock = Lock()
+    # lock = Lock()
 
     def __post_init__(self) -> None:
         super().__post_init__()
@@ -112,10 +109,7 @@ class AsyncConfluentKafkaConsumer(ConfluentKafkaConsumer):
         self.last_offset: dict[int, int] = {}
 
     def on_success(self, message_context: Message) -> None:
-        """stores any offsets that are able to be stored
-
-        on_success is called  by two threads
-        """
+        """stores any offsets that are able to be stored"""
         partition = message_context.partition()
         this_offset = message_context.offset()
 
@@ -123,17 +117,17 @@ class AsyncConfluentKafkaConsumer(ConfluentKafkaConsumer):
         # delivery report from kafka producer are not guaranteed to be in order
         # that they were produced
         # https://github.com/confluentinc/confluent-kafka-python/issues/300#issuecomment-358416432
-        with self.lock:
-            try:
-                last_commit = self.last_offset[partition]
-            except KeyError:
-                # first message from this partition
-                self.last_offset[partition] = this_offset
-                self.c.store_offsets(message_context)
-                return
-            if this_offset > last_commit:
-                self.c.store_offsets(message_context)  # committed according to auto.commit.interval.ms
-                self.last_offset[partition] = this_offset
+        # with self.lock:
+        try:
+            last_commit = self.last_offset[partition]
+        except KeyError:
+            # first message from this partition
+            self.last_offset[partition] = this_offset
+            self.c.store_offsets(message_context)
+            return
+        if this_offset > last_commit:
+            self.c.store_offsets(message_context)  # committed according to auto.commit.interval.ms
+            self.last_offset[partition] = this_offset
 
 
 @dataclass
@@ -170,6 +164,7 @@ class ConfluentKafkaProducer(BaseProducer):
     def handle_poll(self) -> None:
         while not self.kill_poll_thread:
             self.p.poll(0.2)
+            sleep(1)
 
     def acked(self, err: Optional[str], msg: Message, consumer_context: Any) -> None:
         if err is not None:
@@ -190,7 +185,7 @@ class ConfluentKafkaProducer(BaseProducer):
             self.on_success(consumer_context)  # type: ignore
 
     def produce(self, queue_name: str, message: bytes, message_context: Any, **kwargs: Union[str, int]) -> bool:
-        self.p.poll(0)
+        # self.p.poll(0)
         self.p.produce(
             key=kwargs.get("key"),
             topic=queue_name,

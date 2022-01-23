@@ -1,6 +1,5 @@
 import json
 import os
-from dataclasses import dataclass
 from random import randint
 from typing import Any, Callable, Generator, List, Optional
 from unittest.mock import MagicMock, patch

@@ -228,16 +228,19 @@ class Engine:
                     # for testing purposes only - mock RUN_ONCE
                     break
 
-            # graceful shutdown of ALL queues
-            logger.info("Shutting down %s", input_con.value)
-            for q_name in self.output_queues:
-                out_queue = self.queue_map[q_name]
-                logger.info("Shutting down %s", out_queue.value)
-                out_queue.producer_con.shutdown()
-                logger.info("%s shutdown complete", q_name)
-            input_con.consumer_con.shutdown()
+            self.shutdown()
 
         # used for unit testing as a means to access the wrapped component without the decorator
         run_component.__wrapped__ = func  # type: ignore
 
         return run_component
+
+    def shutdown(self) -> None:
+        """graceful shutdown of all queue connections"""
+        logger.info("Shutting down %s", self.queue_map[self.input_queue].value)
+        for q_name in self.output_queues:
+            out_queue = self.queue_map[q_name]
+            logger.info("Shutting down %s", out_queue.value)
+            out_queue.producer_con.shutdown()
+            logger.info("%s shutdown complete", q_name)
+        self.queue_map[self.input_queue].consumer_con.shutdown()

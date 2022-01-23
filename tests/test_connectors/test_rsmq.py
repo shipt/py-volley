@@ -21,7 +21,7 @@ def test_rsmq_consumer(mock_rsmq_consumer: RSMQConsumer) -> None:
 
 def test_rsmq_delete(mock_rsmq_consumer: RSMQConsumer) -> None:
 
-    assert mock_rsmq_consumer.on_success(message_context="abc123")
+    mock_rsmq_consumer.on_success(message_context="abc123")
 
 
 # @patch("volley.connectors.rsmq.RedisSMQ")

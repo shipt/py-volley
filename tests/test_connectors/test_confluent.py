@@ -1,4 +1,3 @@
-from concurrent.futures import thread
 from random import randint
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
@@ -138,8 +137,8 @@ def test_producer_init_configs() -> None:
     p.shutdown()
 
 
-@patch("volley.connectors.confluent.Consumer")
-def test_callback_consumer(consumer: MagicMock) -> None:
+@patch("volley.connectors.confluent.Consumer", MagicMock())
+def test_callback_consumer() -> None:
     m = KafkaMessage(partition=24, offset=42)
     ackc = AsyncConfluentKafkaConsumer(queue_name="test")
     # first commit
@@ -155,4 +154,17 @@ def test_callback_consumer(consumer: MagicMock) -> None:
     # should not change the last commit
     m = KafkaMessage(partition=24, offset=1)
     ackc.on_success(m)
+    assert ackc.last_offset[24] == 43
+
+    # commit to different partition
+    m = KafkaMessage(partition=1, offset=100)
+    ackc.on_success(m)
+    assert ackc.last_offset[1] == 100
+    assert ackc.last_offset[24] == 43
+
+    # repeatedly commit same data
+    m = KafkaMessage(partition=1, offset=100)
+    for _ in range(10):
+        ackc.on_success(m)
+    assert ackc.last_offset[1] == 100
     assert ackc.last_offset[24] == 43

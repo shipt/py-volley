@@ -124,7 +124,9 @@ class RSMQProducer(BaseProducer):
         logger.info("Creatng queue: %s", self.queue_name)
         self.queue.createQueue().exceptions(False).execute()
 
-    def produce(self, queue_name: str, message: bytes, message_context: Any, **kwargs: Union[str, int]) -> bool:
+    def produce(
+        self, queue_name: str, message: bytes, message_context: Optional[Any] = None, **kwargs: Union[str, int]
+    ) -> bool:
         _start = time.time()
         status: bool = self.send_message(queue_name=queue_name, message=message, produce_cfg=kwargs)
         _duration = time.time() - _start

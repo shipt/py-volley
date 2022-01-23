@@ -20,6 +20,7 @@ class Environment(NamedTuple):
     dlq: str
     test_topic: str
     consumer_group: str
+    redis_to_kafka_topic: str
 
 
 env = Environment(
@@ -29,6 +30,7 @@ env = Environment(
     dlq=queues["dead-letter-queue"]["value"],
     test_topic="some-test-topic",
     consumer_group="int-test-group",
+    redis_to_kafka_topic="redis.kafka.topic",
 )
 
 

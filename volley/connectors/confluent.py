@@ -19,8 +19,8 @@ DELIVERY_STATUS = Counter("delivery_report_status", "Kafka delivered message", [
 @dataclass
 class ConfluentKafkaConsumer(BaseConsumer):
     """
-    Class to easily interact consuming message(s) from Kafka brokers.
-    At a minimum bootstrap.servers and group.id must be set in the config dict
+    Use when consuming from Kafka topic and delivery to downstream destination
+        can be verified immediately (as opposed to via a delivery report or callback)
     """
 
     poll_interval: float = 10
@@ -95,7 +95,11 @@ class ConfluentKafkaConsumer(BaseConsumer):
 
 @dataclass
 class AsyncConfluentKafkaConsumer(ConfluentKafkaConsumer):
-    """identical to ConfluentKafkaConsumer, except allows for asynchronous store_offsets()
+    """identical to ConfluentKafkaConsumer, except provides thread safety and
+    handling for ensuring offsets are not committed out of order.
+
+    Scenario: call store_offsets() via callback and producer.poll() before producer.produce()
+    by calling producer.poll() from both background and a main thread.
 
     intended for use with ConfluentKafkaProducer
     """
@@ -134,16 +138,7 @@ class AsyncConfluentKafkaConsumer(ConfluentKafkaConsumer):
 
 @dataclass
 class ConfluentKafkaProducer(BaseProducer):
-    """
-    Class to easily interact producing message(s) to Kafka brokers.
-    At a minimum bootstrap.servers must be set in the config dict
-    """
-
     compression_type: str = "gzip"
-
-    # doc only - inherited from BaseConsumer
-    # on_success: Optional[Callable[[Any], None]] = None
-    # on_fail: Optional[Callable[[Any], None]] = None
 
     thread: bool = False
 
@@ -161,14 +156,12 @@ class ConfluentKafkaProducer(BaseProducer):
         # producer poll thread
         self.kill_poll_thread = False
 
-    def init_callbacks(
-        self, on_success: Callable[[Any], None], on_fail: Callable[[Any], None], thread: bool = True
-    ) -> None:
+    def init_callbacks(self, consumer: BaseConsumer, thread: bool = True) -> None:
         # daemon thread - this can be aggressively killed on shutdown
         # Volley will call shutdown() which will trigger confluent.Producer.flush()
         # flush() will trigger acked() and call consumers on_success/on_fail
-        self.on_success = on_success
-        self.on_fail = on_fail
+        self.on_success = consumer.on_success
+        self.on_fail = consumer.on_fail
         if thread:
             self.thread = True
             self.poll_thread = Thread(target=self.handle_poll, daemon=True)
@@ -176,14 +169,7 @@ class ConfluentKafkaProducer(BaseProducer):
 
     def handle_poll(self) -> None:
         while not self.kill_poll_thread:
-            self.p.poll(0)
-            sleep(4)
-
-    def set_on_success(self, on_success: Callable[[Any], None]) -> None:
-        self.on_success = on_success
-
-    def set_on_fail(self, on_fail: Callable[[Any], None]) -> None:
-        self.on_fail = on_fail
+            self.p.poll(0.2)
 
     def acked(self, err: Optional[str], msg: Message, consumer_context: Any) -> None:
         if err is not None:

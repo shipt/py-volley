@@ -89,8 +89,14 @@ class KafkaMessage:
 
 @fixture
 def mock_confluent_producer() -> ConfluentKafkaProducer:
+    class MockConsumer:
+        def callback(*args, **kwargs) -> None:
+            pass
+    mc = MockConsumer()
+
     with patch("volley.connectors.confluent.Producer"):
         producer = ConfluentKafkaProducer(queue_name="test")
+        producer.init_callbacks(mc, thread=False) # type: ignore
         return producer
 
 

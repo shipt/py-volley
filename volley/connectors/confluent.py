@@ -119,7 +119,7 @@ class ConfluentKafkaProducer(BaseProducer):
     thread: bool = False
 
     def __post_init__(self) -> None:  # noqa: C901
-        self.asynchronous = True
+        self.callback_delivery = True
         self.config = handle_creds(self.config)
         if "compression.type" not in self.config:
             logger.info("Assigning compression.type default: %s", self.compression_type)

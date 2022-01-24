@@ -59,7 +59,7 @@ class BaseProducer(ABC):
     host: Optional[str] = None
     config: dict[str, Any] = field(default_factory=dict)
 
-    asynchronous: bool = False
+    callback_delivery: bool = False
     on_success: Optional[Callable[[Any], None]] = None
     on_fail: Optional[Callable[[Any], None]] = None
 

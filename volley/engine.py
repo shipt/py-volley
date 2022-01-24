@@ -150,7 +150,7 @@ class Engine:
             # if asynchronous producer, give the consumer's "on_success" method to the producer
             for qname in self.output_queues:
                 producer_con = self.queue_map[qname].producer_con
-                if producer_con.asynchronous:
+                if producer_con.callback_delivery:
                     producer_con.init_callbacks(consumer=self.queue_map[self.input_queue].consumer_con)
 
             logger.info("Starting Volley application: %s -- %s", self.app_name, not self.killer.kill_now)

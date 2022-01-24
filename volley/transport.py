@@ -76,7 +76,7 @@ def produce_handler(
         all_delivery_reports.append(
             DeliveryReport(
                 destination=out_queue.name,
-                asynchronous=out_queue.producer_con.asynchronous,
+                asynchronous=out_queue.producer_con.callback_delivery,
                 status=status,
             )
         )
@@ -84,11 +84,12 @@ def produce_handler(
 
 
 def delivery_success(delivery_reports: List[DeliveryReport]) -> DeliveryReport:
-    """determines whether we're going on_success or on_fail
-    If there is delivery to an async producer, we'll want to let it handle the callback
+    """determines whether we're going to call on_success or on_fail, or let the producer call it w/ callback
+    If there is delivery to an async producer, we'll want to let it handle the callback, but there could
+    be synchronous producers that failed as well.
 
     Producer Cases:
-        - single synchronous producer: if success
+        - single synchronous producer
         - multi synchronous producers
         - single asynchronous producer
         - multi asynchronous producers

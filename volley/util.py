@@ -3,9 +3,8 @@ from typing import Any
 
 
 class GracefulKiller:
-    kill_now = False
-
     def __init__(self) -> None:
+        self.kill_now = False
         signal.signal(signal.SIGINT, self.exit_gracefully)
         signal.signal(signal.SIGTERM, self.exit_gracefully)
 

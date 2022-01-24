@@ -28,6 +28,7 @@ queue_config = {
     },
 }
 eng = Engine(
+    app_name="kafka_to_kafka_example",
     input_queue="input-topic",
     output_queues=["output-topic"],
     queue_config=queue_config,

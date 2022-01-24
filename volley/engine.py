@@ -153,6 +153,7 @@ class Engine:
                 if producer_con.asynchronous:
                     producer_con.init_callbacks(consumer=self.queue_map[self.input_queue].consumer_con)
 
+            logger.info("Starting Volley application: %s -- %s", self.app_name, self.killer.kill_now)
             while not self.killer.kill_now:
                 _start_time = time.time()
 
@@ -229,6 +230,7 @@ class Engine:
                     break
 
             self.shutdown()
+            logger.info("Shutdown %s complete", self.app_name)
 
         # used for unit testing as a means to access the wrapped component without the decorator
         run_component.__wrapped__ = func  # type: ignore
@@ -237,10 +239,10 @@ class Engine:
 
     def shutdown(self) -> None:
         """graceful shutdown of all queue connections"""
-        logger.info("Shutting down %s", self.queue_map[self.input_queue].value)
+        logger.info("Shutting down %s, %s", self.app_name, self.queue_map[self.input_queue].value)
         for q_name in self.output_queues:
             out_queue = self.queue_map[q_name]
-            logger.info("Shutting down %s", out_queue.value)
+            logger.info("Shutting down %s, %s", self.app_name, out_queue.value)
             out_queue.producer_con.shutdown()
-            logger.info("%s shutdown complete", q_name)
+            logger.info("%s, %s shutdown complete", self.app_name, q_name)
         self.queue_map[self.input_queue].consumer_con.shutdown()

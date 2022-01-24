@@ -14,7 +14,6 @@ queue_config = {
     "input-topic": {
         "value": INPUT_TOPIC,
         "profile": "confluent",
-        "consumer": "volley.connectors.confluent.AsyncConfluentKafkaConsumer",
         "data_model": "example.data_models.InputMessage",
         "config": {"group.id": CONSUMER_GROUP},
     },
@@ -33,6 +32,7 @@ eng = Engine(
     output_queues=["output-topic"],
     queue_config=queue_config,
     dead_letter_queue="dead-letter-queue",
+    metrics_port=None,
 )
 
 cnt = 0

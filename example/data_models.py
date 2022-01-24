@@ -74,3 +74,8 @@ class KafkaKafkaInput(GenericMessage):
 class KafkaKafkaOutput(GenericMessage):
     request_id: str
     counter: int
+
+
+class RedisOutput(GenericMessage):
+    request_id: str
+    counter: int

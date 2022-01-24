@@ -104,7 +104,7 @@ class RSMQConsumer(BaseConsumer):
 class RSMQProducer(BaseProducer):
     def __post_init__(self) -> None:
         # delivery reports are synchronous
-        self.asynchronous = False
+        self.callback_delivery = False
 
         if "host" in self.config:
             # pass the value directly to the constructor

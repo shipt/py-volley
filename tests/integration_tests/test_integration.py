@@ -13,8 +13,8 @@ from example.data_models import InputMessage
 from example.kafka_kafka_worker import CONSUMER_GROUP
 from example.kafka_kafka_worker import eng as kafka_kafka_eng
 from example.kafka_kafka_worker import main as kafka_test_app
-from example.redis_kafka_worker import eng as redis_eng
 from example.redis_kafka_worker import main as redis_test_app
+from example.redis_kafka_worker import redis_app as redis_kafka_eng
 from tests.integration_tests.conftest import Environment
 from volley.connectors import (
     ConfluentKafkaConsumer,
@@ -330,7 +330,7 @@ def test_kafka_kafka_worker(int_test_producer: Producer, int_test_consumer: Cons
     int_test_consumer.subscribe([output_topic])
 
     # start the example.kafka_kafka_worker.py service in a thread
-    app_thread = Thread(target=kafka_test_app)
+    app_thread = Thread(target=kafka_test_app, daemon=True)
     app_thread.start()
     time.sleep(3)
 
@@ -361,7 +361,8 @@ def test_kafka_kafka_worker(int_test_producer: Producer, int_test_consumer: Cons
     consumed_messages = consume_messages(int_test_consumer, num_expected=test_messages, serialize=True)
 
     kafka_kafka_eng.killer.kill_now = True
-    app_thread.join(1)
+    app_thread.join()
+
     conusumed_ids = []
     for m in consumed_messages:
         # assert all consumed IDs were from the list we produced
@@ -384,8 +385,10 @@ def test_kafka_kafka_worker(int_test_producer: Producer, int_test_consumer: Cons
 def test_redis_to_kafka(int_test_consumer: Consumer, environment: Environment) -> None:
     """consumes from redis, produce async to kafka, deletes w/ callback"""
 
-    input = redis_eng.queue_map[redis_eng.input_queue].value
-    output = redis_eng.queue_map[redis_eng.output_queues[0]].value
+    input = redis_kafka_eng.queue_map[redis_kafka_eng.input_queue].value
+    output = redis_kafka_eng.queue_map[redis_kafka_eng.output_queues[0]].value
+
+    assert redis_kafka_eng.dead_letter_queue is None
 
     # subscribe the topic the app will publish to
     int_test_consumer.assign([TopicPartition(topic=output, partition=0, offset=OFFSET_END)])
@@ -400,7 +403,7 @@ def test_redis_to_kafka(int_test_consumer: Consumer, environment: Environment) -
     _producer = RSMQProducer(host=environment.redis_host, queue_name=input)
 
     # start redis_kafka_worker in thread
-    app_thread = Thread(target=redis_test_app)
+    app_thread = Thread(target=redis_test_app, daemon=True)
     app_thread.start()
     time.sleep(3)
 
@@ -415,7 +418,7 @@ def test_redis_to_kafka(int_test_consumer: Consumer, environment: Environment) -
     consumed_messages = consume_messages(int_test_consumer, num_expected=test_messages, serialize=True)
 
     # shut down the app in thread
-    redis_eng.killer.kill_now = True
+    redis_kafka_eng.killer.kill_now = True
     app_thread.join()
 
     conusumed_ids = []

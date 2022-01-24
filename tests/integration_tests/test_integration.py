@@ -1,22 +1,26 @@
 import json
-import os
 import time
+from threading import Thread
 from typing import Any, List
 from uuid import uuid4
 
 import pytest
-import redis  # type: ignore
+import redis
 from confluent_kafka import OFFSET_END, Consumer, Producer, TopicPartition
+from rsmq import RedisSMQ
 
 from example.data_models import InputMessage
+from example.kafka_kafka_worker import CONSUMER_GROUP
+from example.kafka_kafka_worker import eng as kafka_kafka_eng
+from example.kafka_kafka_worker import main as kafka_test_app
+from example.redis_kafka_worker import eng as redis_eng
+from example.redis_kafka_worker import main as redis_test_app
 from tests.integration_tests.conftest import Environment
 from volley.connectors import (
-    AsyncConfluentKafkaConsumer,
     ConfluentKafkaConsumer,
     ConfluentKafkaProducer,
     RSMQProducer,
 )
-from volley.connectors.rsmq import RSMQConsumer
 from volley.data_models import QueueMessage
 from volley.logging import logger
 
@@ -226,7 +230,7 @@ def test_confluent_async_consume(
     """
     # ensure the consumer group starts at the high offset
     int_test_consumer.assign([TopicPartition(topic=environment.test_topic, partition=0, offset=OFFSET_END)])
-    consumer1 = AsyncConfluentKafkaConsumer(queue_name=environment.test_topic, config=broker_config, poll_interval=30)
+    consumer1 = ConfluentKafkaConsumer(queue_name=environment.test_topic, config=broker_config, poll_interval=30)
 
     # send dummy messages to test topic
     producer0 = ConfluentKafkaProducer(
@@ -271,7 +275,7 @@ def test_confluent_async_consume(
     producer1.shutdown()
 
     # recreate consumer. validate our offsets committed properly
-    consumer2 = AsyncConfluentKafkaConsumer(queue_name=environment.test_topic, config=broker_config, poll_interval=30)
+    consumer2 = ConfluentKafkaConsumer(queue_name=environment.test_topic, config=broker_config, poll_interval=30)
     assert consumer2.last_offset == {}
     # consumer another message. our previous offsets should have been committed
     message_1: QueueMessage = consumer2.consume()  # type: ignore
@@ -300,7 +304,7 @@ def test_confluent_async_consume(
     consumer2.shutdown()
     producer2.shutdown()
     # one final assertion on offset commits via callbacks
-    consumer3 = AsyncConfluentKafkaConsumer(queue_name=environment.test_topic, config=broker_config, poll_interval=30)
+    consumer3 = ConfluentKafkaConsumer(queue_name=environment.test_topic, config=broker_config, poll_interval=30)
     message_2: QueueMessage = consumer3.consume()  # type: ignore
     offset_2 = message_2.message_context.offset()
     assert offset_1 == offset_2 - 1
@@ -308,45 +312,124 @@ def test_confluent_async_consume(
 
 
 @pytest.mark.integration
-def test_redis_to_kafka(environment: Environment) -> None:
-    """consumes from redis, produce async to kafka, delete w/ callback"""
-    redis_host = os.environ["REDIS_HOST"]
-    input = "test-input-redis"
-    r = redis.Redis(host=redis_host)
-    from rsmq import RedisSMQ
+def test_kafka_kafka_worker(int_test_producer: Producer, int_test_consumer: Consumer, environment: Environment) -> None:
+    """validate kafka w/ async commits are handled in a running app
 
-    queue = RedisSMQ(host=redis_host, qname=input)
+    'kafka_kafka_worker' runs in its own thread, is listening to input_topic and publishing to output_topic
+
+    This test will publish to input_topic, then listen to output_topic.
+    - validates data in output topic is as expected
+    - validates consumer group offsets committed to input partition as expected
+
+    """
+    input_topic = kafka_kafka_eng.queue_map[kafka_kafka_eng.input_queue].value
+    output_topic = kafka_kafka_eng.queue_map[kafka_kafka_eng.output_queues[0]].value
+
+    # subscribe to the topic kafka_kafka_worker will publish to
+    int_test_consumer.assign([TopicPartition(topic=output_topic, partition=0, offset=OFFSET_END)])
+    int_test_consumer.subscribe([output_topic])
+
+    # start the example.kafka_kafka_worker.py service in a thread
+    app_thread = Thread(target=kafka_test_app)
+    app_thread.start()
+    time.sleep(3)
+
+    # get starting offset
+    # this is the offset for kafka_kafka_worker on the input_topic partition 0
+    # (single partition in the test topic)
+    consumer = Consumer({"group.id": CONSUMER_GROUP, "bootstrap.servers": environment.brokers})
+    _offset = consumer.committed([TopicPartition(input_topic, 0)])[0].offset
+    if _offset < 0:
+        starting_offset = 0
+    else:
+        starting_offset = _offset
+
+    # create some unique request id for tracking
+    test_messages = 3
+    request_ids: List[str] = [f"test_{x}_{str(uuid4())[:5]}" for x in range(test_messages)]
+    data = InputMessage.schema()["examples"][0]
+    for req_id in request_ids:
+        # publish the messages
+        data["request_id"] = req_id
+        int_test_producer.produce(input_topic, value=json.dumps(data))
+    int_test_producer.flush()
+
+    time.sleep(2)
+
+    logger.info("Closed thread")
+
+    consumed_messages = consume_messages(int_test_consumer, num_expected=test_messages, serialize=True)
+
+    kafka_kafka_eng.killer.kill_now = True
+    app_thread.join(1)
+    conusumed_ids = []
+    for m in consumed_messages:
+        # assert all consumed IDs were from the list we produced
+        _id = m["request_id"]
+        assert _id in request_ids
+        conusumed_ids.append(_id)
+
+    for _id in request_ids:
+        # assert all ids we produced were in the list we consumed
+        assert _id in conusumed_ids
+
+    assert len(request_ids) == len(conusumed_ids)
+
+    # validate the worker committed the offsets
+    current_offset = consumer.committed([TopicPartition(input_topic, 0)])[0].offset
+    assert current_offset == (starting_offset + test_messages)
+
+
+@pytest.mark.integration
+def test_redis_to_kafka(int_test_consumer: Consumer, environment: Environment) -> None:
+    """consumes from redis, produce async to kafka, deletes w/ callback"""
+
+    input = redis_eng.queue_map[redis_eng.input_queue].value
+    output = redis_eng.queue_map[redis_eng.output_queues[0]].value
+
+    # subscribe the topic the app will publish to
+    int_test_consumer.assign([TopicPartition(topic=output, partition=0, offset=OFFSET_END)])
+    int_test_consumer.subscribe([output])
+
+    r = redis.Redis(host=environment.redis_host)
+
+    # make sure the queue is empty
+    queue = RedisSMQ(host=environment.redis_host, qname=input)
     queue.deleteQueue().exceptions(False).execute()
 
-    _producer = RSMQProducer(host=redis_host, queue_name=input)
-    consumer = RSMQConsumer(host=redis_host, queue_name=input)
-    producer = ConfluentKafkaProducer(
-        queue_name=environment.redis_to_kafka_topic,
-        config={"bootstrap.servers": environment.brokers},
-    )
-    num_test = 5
-    # put some test data in Redis queue
-    for m in range(num_test):
-        message = f"{m}_test_msg".encode("utf-8")
-        _producer.produce(queue_name=input, message=message)
+    _producer = RSMQProducer(host=environment.redis_host, queue_name=input)
 
-    # assert size of the queue
-    assert r.zcard(f"rsmq:{input}") == num_test
+    # start redis_kafka_worker in thread
+    app_thread = Thread(target=redis_test_app)
+    app_thread.start()
+    time.sleep(3)
 
-    # init the callbacks
-    producer.init_callbacks(consumer=consumer)
-    # consume and produce the messages
-    consumed_ids = []
-    for _ in range(num_test):
-        consumed_msg = consumer.consume()
-        if consumed_msg is None:
-            raise AssertionError("No messages")
-        consumed_ids.append(consumed_msg.message_context)
-        producer.produce(
-            queue_name=environment.redis_to_kafka_topic,
-            message=consumed_msg.message,
-            message_context=consumed_msg.message_context,
-        )
-    time.sleep(4)
+    # add some data to the input rsmq
+    test_messages = 5
+    request_ids: List[str] = [f"test_{x}_{str(uuid4())[:5]}" for x in range(test_messages)]
+    data = InputMessage.schema()["examples"][0]
+    for req_id in request_ids:
+        data["request_id"] = req_id
+        _producer.produce(queue_name=input, message=json.dumps(data).encode("utf-8"))
+
+    consumed_messages = consume_messages(int_test_consumer, num_expected=test_messages, serialize=True)
+
+    # shut down the app in thread
+    redis_eng.killer.kill_now = True
+    app_thread.join()
+
+    conusumed_ids = []
+    for m in consumed_messages:
+        # assert all consumed IDs were from the list we produced
+        _id = m["request_id"]
+        assert _id in request_ids
+        conusumed_ids.append(_id)
+
+    for _id in request_ids:
+        # assert all ids we produced were in the list we consumed
+        assert _id in conusumed_ids
+
+    assert len(request_ids) == len(conusumed_ids)
+
     # all messages should have been deleted
     assert r.zcard(f"rsmq:{input}") == 0

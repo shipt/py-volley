@@ -27,6 +27,9 @@ class ConfluentKafkaConsumer(BaseConsumer):
     auto_commit_interval_ms: int = 3000
 
     def __post_init__(self) -> None:  # noqa: C901
+        # mapping of partition/offset of the last stored commit
+        self.last_offset: dict[int, int] = {}
+
         self.config = handle_creds(self.config)
 
         if "auto.offset.reset" not in self.config:
@@ -77,35 +80,6 @@ class ConfluentKafkaConsumer(BaseConsumer):
             return QueueMessage(message_context=message, message=message.value())
 
     def on_success(self, message_context: Message) -> None:
-        self.c.store_offsets(message=message_context)  # committed according to auto.commit.interval.ms
-
-    def on_fail(self, message_context: Message) -> None:
-        logger.info(
-            "Downstream failure. Did not commit offset: %d, partition: %d, message: %s",
-            message_context.offset(),
-            message_context.partition(),
-            message_context.value(),
-        )
-
-    def shutdown(self) -> None:
-        self.c.close()
-        logger.info("Successfully commit offsets and left consumer group %s", self.config.get("group.id"))
-
-
-@dataclass
-class AsyncConfluentKafkaConsumer(ConfluentKafkaConsumer):
-    """identical to ConfluentKafkaConsumer, except provides thread safety and
-    handling for ensuring offsets are not committed out of order.
-
-    intended for use with ConfluentKafkaProducer
-    """
-
-    def __post_init__(self) -> None:
-        super().__post_init__()
-        # mapping of partition/offset of the last stored commit
-        self.last_offset: dict[int, int] = {}
-
-    def on_success(self, message_context: Message) -> None:
         """stores any offsets that are able to be stored"""
         partition = message_context.partition()
         this_offset = message_context.offset()
@@ -124,6 +98,18 @@ class AsyncConfluentKafkaConsumer(ConfluentKafkaConsumer):
         if this_offset > last_commit:
             self.c.store_offsets(message_context)  # committed according to auto.commit.interval.ms
             self.last_offset[partition] = this_offset
+
+    def on_fail(self, message_context: Message) -> None:
+        logger.info(
+            "Downstream failure. Did not commit offset: %d, partition: %d, message: %s",
+            message_context.offset(),
+            message_context.partition(),
+            message_context.value(),
+        )
+
+    def shutdown(self) -> None:
+        self.c.close()
+        logger.info("Successfully commit offsets and left consumer group %s", self.config.get("group.id"))
 
 
 @dataclass

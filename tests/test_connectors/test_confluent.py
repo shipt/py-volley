@@ -6,11 +6,7 @@ import pytest
 from pytest import LogCaptureFixture, MonkeyPatch
 
 from tests.conftest import KafkaMessage
-from volley.connectors import (
-    AsyncConfluentKafkaConsumer,
-    ConfluentKafkaConsumer,
-    ConfluentKafkaProducer,
-)
+from volley.connectors import ConfluentKafkaConsumer, ConfluentKafkaProducer
 from volley.connectors.confluent import handle_creds
 from volley.data_models import QueueMessage
 
@@ -140,7 +136,7 @@ def test_producer_init_configs() -> None:
 @patch("volley.connectors.confluent.Consumer", MagicMock())
 def test_callback_consumer() -> None:
     m = KafkaMessage(partition=24, offset=42)
-    ackc = AsyncConfluentKafkaConsumer(queue_name="test")
+    ackc = ConfluentKafkaConsumer(queue_name="test")
     # first commit
     ackc.on_success(m)
     assert ackc.last_offset[24] == 42

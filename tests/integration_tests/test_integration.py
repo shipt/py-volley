@@ -388,7 +388,7 @@ def test_redis_to_kafka(int_test_consumer: Consumer, environment: Environment) -
     input = redis_kafka_eng.queue_map[redis_kafka_eng.input_queue].value
     output = redis_kafka_eng.queue_map[redis_kafka_eng.output_queues[0]].value
 
-    assert redis_kafka_eng.dead_letter_queue is None
+    assert redis_kafka_eng.killer.kill_now is False
 
     # subscribe the topic the app will publish to
     int_test_consumer.assign([TopicPartition(topic=output, partition=0, offset=OFFSET_END)])

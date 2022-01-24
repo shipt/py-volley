@@ -62,8 +62,6 @@ class Engine:
     app_name: str = "volley"
     dead_letter_queue: Optional[str] = None
 
-    killer: GracefulKiller = GracefulKiller()
-
     # set in post_init
     queue_map: Dict[str, Queue] = field(default_factory=dict)
     poll_interval_seconds: float = 1.0
@@ -75,6 +73,8 @@ class Engine:
         """Validates configuration and initializes queue configs
         Database connections are initialized within stream_app decorator
         """
+        self.killer: GracefulKiller = GracefulKiller()
+
         if self.output_queues == []:
             logger.warning("No output queues provided")
 
@@ -153,7 +153,7 @@ class Engine:
                 if producer_con.asynchronous:
                     producer_con.init_callbacks(consumer=self.queue_map[self.input_queue].consumer_con)
 
-            logger.info("Starting Volley application: %s -- %s", self.app_name, self.killer.kill_now)
+            logger.info("Starting Volley application: %s -- %s", self.app_name, not self.killer.kill_now)
             while not self.killer.kill_now:
                 _start_time = time.time()
 

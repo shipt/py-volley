@@ -10,16 +10,17 @@ from volley.connectors.base import BaseConsumer, BaseProducer
 from volley.data_models import QueueMessage
 from volley.logging import logger
 
-RUN_ONCE = False
-
 DELIVERY_STATUS = Counter("delivery_report_status", "Kafka delivered message", ["status"])
 
 
 @dataclass
 class ConfluentKafkaConsumer(BaseConsumer):
     """
-    Use when consuming from Kafka topic and delivery to downstream destination
-        can be verified immediately (as opposed to via a delivery report or callback)
+    Use for consuming a single message from a single Kafka topic.
+    
+    Built on confluent-kafka-python/librdkafka. Offsets are stored in librdkafka 
+        and commited according to auto.commit.interval.ms
+        https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
     """
 
     poll_interval: float = 10

@@ -27,21 +27,11 @@ class BaseConsumer(ABC):
     def on_success(self, message_context: Any) -> None:
         """action to take when a message has been successfully consumed.
         For example, delete the message that was consumed.
-
-        The asynchronous flag is intended for flexibility,
-        to let the consumer know the source of the `on_success` call.
-        Intended behavior is to use `True` when calling this method from
-        and asynchronous callback in a producer.
         """
 
     @abstractmethod
     def on_fail(self, message_context: Any) -> None:
         """action to perform when serialization, or data validation has failed
-
-        The asynchronous flag is intended for flexibility,
-        to let the consumer know the source of the `on_success` call.
-        Intended behavior is to use `True` when calling this method from
-        and asynchronous callback in a producer.
         """
 
     @abstractmethod

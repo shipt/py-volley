@@ -69,7 +69,6 @@ def test_consumer(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> None:
     b.on_fail(kmsg)
 
 
-@patch("volley.connectors.confluent.RUN_ONCE", True)
 @patch("volley.connectors.confluent.Consumer")
 def test_consume_none(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setenv("KAFKA_CONSUMER_GROUP", "test-group")
@@ -79,7 +78,6 @@ def test_consume_none(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> Non
     assert q_message is None
 
 
-@patch("volley.connectors.confluent.RUN_ONCE", True)
 @patch("volley.connectors.confluent.Consumer")
 def test_consume_error(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setenv("KAFKA_CONSUMER_GROUP", "test-group")

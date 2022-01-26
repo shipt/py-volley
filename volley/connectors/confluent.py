@@ -116,8 +116,8 @@ class ConfluentKafkaConsumer(BaseConsumer):
 @dataclass
 class ConfluentKafkaProducer(BaseProducer):
     compression_type: str = "gzip"
-
     thread: bool = False
+    poll_thread_timeout: float = 1.0
 
     def __post_init__(self) -> None:  # noqa: C901
         self.callback_delivery = True
@@ -132,6 +132,8 @@ class ConfluentKafkaProducer(BaseProducer):
 
         # producer poll thread
         self.kill_poll_thread = False
+        if "poll_thread_timeout" in self.config:
+            self.poll_thread_timeout = self.config.pop("poll_thread_timeout")
 
     def init_callbacks(self, consumer: BaseConsumer, thread: bool = True) -> None:
         # daemon thread - this can be aggressively killed on shutdown
@@ -182,7 +184,7 @@ class ConfluentKafkaProducer(BaseProducer):
         self.p.flush()
         if self.thread:
             self.kill_poll_thread = True
-            self.poll_thread.join()
+            self.poll_thread.join(self.poll_thread_timeout)
 
 
 def handle_creds(config_dict: Dict[str, Any]) -> Dict[str, Any]:

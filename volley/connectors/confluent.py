@@ -17,8 +17,8 @@ DELIVERY_STATUS = Counter("delivery_report_status", "Kafka delivered message", [
 class ConfluentKafkaConsumer(BaseConsumer):
     """
     Use for consuming a single message from a single Kafka topic.
-    
-    Built on confluent-kafka-python/librdkafka. Offsets are stored in librdkafka 
+
+    Built on confluent-kafka-python/librdkafka. Offsets are stored in librdkafka
         and commited according to auto.commit.interval.ms
         https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
     """

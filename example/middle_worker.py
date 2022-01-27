@@ -77,7 +77,7 @@ def main(msg: Queue1Message) -> Union[List[Tuple[str, BaseModel, dict[str, str]]
     logger.info(output_msg.dict())
     logger.info(pg_msg.dict())
     return [
-        # ("postgres_queue", pg_msg),
+        ("postgres_queue", pg_msg),
         ("output-topic", output_msg, {"key": "partitionKeyOne"})
     ]  # type: ignore
 

@@ -1,5 +1,6 @@
 import os
 from dataclasses import dataclass
+from threading import Thread
 from typing import Any, Dict, Optional, Union
 
 from confluent_kafka import Consumer, Message, Producer
@@ -9,16 +10,17 @@ from volley.connectors.base import BaseConsumer, BaseProducer
 from volley.data_models import QueueMessage
 from volley.logging import logger
 
-RUN_ONCE = False
-
 DELIVERY_STATUS = Counter("delivery_report_status", "Kafka delivered message", ["status"])
 
 
 @dataclass
 class ConfluentKafkaConsumer(BaseConsumer):
     """
-    Class to easily interact consuming message(s) from Kafka brokers.
-    At a minimum bootstrap.servers and group.id must be set in the config dict
+    Use for consuming a single message from a single Kafka topic.
+
+    Built on confluent-kafka-python/librdkafka. Offsets are stored in librdkafka
+        and commited according to auto.commit.interval.ms
+        https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
     """
 
     poll_interval: float = 10
@@ -26,6 +28,9 @@ class ConfluentKafkaConsumer(BaseConsumer):
     auto_commit_interval_ms: int = 3000
 
     def __post_init__(self) -> None:  # noqa: C901
+        # mapping of partition/offset of the last stored commit
+        self.last_offset: dict[int, int] = {}
+
         self.config = handle_creds(self.config)
 
         if "auto.offset.reset" not in self.config:
@@ -56,6 +61,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
             self.poll_interval = self.config.pop("poll_interval")
 
         # this is not overridable, due to the behavior in self.on_success()
+        # on_success calls store_offsets()
         self.config["enable.auto.offset.store"] = False
         self.c = Consumer(self.config, logger=logger)
         logger.info("Kafka Consumer Configuration: %s", self.config)
@@ -64,11 +70,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
 
     def consume(  # type: ignore
         self,
-        queue_name: str = None,
     ) -> Optional[QueueMessage]:
-        if queue_name is None:
-            queue_name = self.queue_name
-
         message = self.c.poll(self.poll_interval)
         if message is None:
             pass
@@ -78,18 +80,33 @@ class ConfluentKafkaConsumer(BaseConsumer):
         else:
             return QueueMessage(message_context=message, message=message.value())
 
-    def on_success(self, queue_name: str, message_context: Message) -> bool:
-        self.c.store_offsets(message=message_context)  # committed according to auto.commit.interval.ms
-        return True
+    def on_success(self, message_context: Message) -> None:
+        """stores any offsets that are able to be stored"""
+        partition = message_context.partition()
+        this_offset = message_context.offset()
 
-    def on_fail(self, queue_name: str, message_context: Message) -> None:
+        # see if we've already committed this or a higher offset
+        # delivery report from kafka producer are not guaranteed to be in order
+        # that they were produced
+        # https://github.com/confluentinc/confluent-kafka-python/issues/300#issuecomment-358416432
+        try:
+            last_commit = self.last_offset[partition]
+        except KeyError:
+            # first message from this partition
+            self.last_offset[partition] = this_offset
+            self.c.store_offsets(message_context)
+            return
+        if this_offset > last_commit:
+            self.c.store_offsets(message_context)  # committed according to auto.commit.interval.ms
+            self.last_offset[partition] = this_offset
+
+    def on_fail(self, message_context: Message) -> None:
         logger.info(
             "Downstream failure. Did not commit offset: %d, partition: %d, message: %s",
             message_context.offset(),
             message_context.partition(),
             message_context.value(),
         )
-        pass
 
     def shutdown(self) -> None:
         self.c.close()
@@ -98,14 +115,12 @@ class ConfluentKafkaConsumer(BaseConsumer):
 
 @dataclass
 class ConfluentKafkaProducer(BaseProducer):
-    """
-    Class to easily interact producing message(s) to Kafka brokers.
-    At a minimum bootstrap.servers must be set in the config dict
-    """
-
     compression_type: str = "gzip"
+    thread: bool = False
+    poll_thread_timeout: float = 1.0
 
     def __post_init__(self) -> None:  # noqa: C901
+        self.callback_delivery = True
         self.config = handle_creds(self.config)
         if "compression.type" not in self.config:
             logger.info("Assigning compression.type default: %s", self.compression_type)
@@ -115,30 +130,61 @@ class ConfluentKafkaProducer(BaseProducer):
         # self.config comes from super class
         logger.info("Kafka Producer Configuration: %s", self.config)
 
-    def acked(self, err: Optional[str], msg: Message) -> None:
+        # producer poll thread
+        self.kill_poll_thread = False
+        if "poll_thread_timeout" in self.config:
+            self.poll_thread_timeout = self.config.pop("poll_thread_timeout")
+
+    def init_callbacks(self, consumer: BaseConsumer, thread: bool = True) -> None:
+        # daemon thread - this can be aggressively killed on shutdown
+        # Volley will call shutdown() which will trigger confluent.Producer.flush()
+        # flush() will trigger acked() and call consumers on_success/on_fail
+        self.on_success = consumer.on_success
+        self.on_fail = consumer.on_fail
+        if thread:
+            self.thread = True
+            self.poll_thread = Thread(target=self.handle_poll, daemon=True)
+            self.poll_thread.start()
+
+    def handle_poll(self) -> None:
+        while not self.kill_poll_thread:
+            self.p.poll(0.2)
+
+    def acked(self, err: Optional[str], msg: Message, consumer_context: Any) -> None:
         if err is not None:
-            logger.critical("Failed to deliver message: %s, error: %s", msg.value(), err)
+            logger.critical(
+                "Consumed message: %s but failed it's transform/delivery: %s, error: %s",
+                consumer_context,
+                msg.value(),
+                err,
+            )
             DELIVERY_STATUS.labels("fail").inc()
+            self.on_fail(consumer_context)  # type: ignore
+
         else:
             logger.info(
                 "Successful delivery to %s, partion: %d, offset: %d", msg.topic(), msg.partition(), msg.offset()
             )
             DELIVERY_STATUS.labels("success").inc()
+            self.on_success(consumer_context)  # type: ignore
 
-    def produce(self, queue_name: str, message: bytes, **kwargs: Union[str, int]) -> bool:
+    def produce(self, queue_name: str, message: bytes, message_context: Any, **kwargs: Union[str, int]) -> bool:
         self.p.produce(
             key=kwargs.get("key"),
             topic=queue_name,
             value=message,
             headers=kwargs.get("headers"),
-            callback=self.acked,
-        )
-        self.p.poll(0)
+            callback=lambda err, msg, obj=message_context: self.acked(err, msg, obj),
+        ),
+
         logger.info("Sent to topic: %s", queue_name)
         return True
 
     def shutdown(self) -> None:
         self.p.flush()
+        if self.thread:
+            self.kill_poll_thread = True
+            self.poll_thread.join(self.poll_thread_timeout)
 
 
 def handle_creds(config_dict: Dict[str, Any]) -> Dict[str, Any]:

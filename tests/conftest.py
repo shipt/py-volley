@@ -66,10 +66,21 @@ class KafkaMessage:
     _error_msg = "MOCK ERROR"
     _partition = 0
 
-    def __init__(self, error: bool = False, msg: Optional[bytes] = None, topic: Optional[str] = None) -> None:
+    def __init__(
+        self,
+        error: bool = False,
+        msg: Optional[bytes] = None,
+        topic: Optional[str] = None,
+        partition: Optional[int] = None,
+        offset: Optional[int] = None,
+    ) -> None:
         self._error = error
         self._value = msg
         self._topic = topic
+        if partition:
+            self._partition = partition
+        if offset:
+            self._offset = offset
 
     def error(self) -> bool:
         return self._error
@@ -89,8 +100,18 @@ class KafkaMessage:
 
 @fixture
 def mock_confluent_producer() -> ConfluentKafkaProducer:
+    class MockConsumer:
+        def on_success(*args: Any, **kwargs: Any) -> None:
+            pass
+
+        def on_fail(*args: Any, **kwargs: Any) -> None:
+            pass
+
+    mc = MockConsumer()
+
     with patch("volley.connectors.confluent.Producer"):
         producer = ConfluentKafkaProducer(queue_name="test")
+        producer.init_callbacks(mc, thread=False)  # type: ignore
         return producer
 
 

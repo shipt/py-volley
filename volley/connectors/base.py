@@ -4,7 +4,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 
 from volley.data_models import QueueMessage
 
@@ -18,21 +18,22 @@ class BaseConsumer(ABC):
     config: dict[str, Any] = field(default_factory=dict)
 
     @abstractmethod
-    def consume(self, queue_name: str) -> Optional[QueueMessage]:
+    def consume(self) -> Optional[QueueMessage]:
         """consumes a message from any queue.
         Returns a QueueMessage object on success, or None when there are no messages
         """
 
     @abstractmethod
-    def on_success(self, queue_name: str, message_context: Any) -> bool:
+    def on_success(self, message_context: Any) -> None:
         """action to take when a message has been successfully consumed.
-        For example, delete the message that was consumed
+        For example, delete the message that was consumed.
         """
 
     @abstractmethod
-    def on_fail(self, queue_name: str, message_context: Any) -> None:
-        """action to perform when serializaion, or data validation has failed"""
+    def on_fail(self, message_context: Any) -> None:
+        """action to perform when serialization, or data validation has failed"""
 
+    @abstractmethod
     def shutdown(self) -> None:
         """perform some action when shutting down the application.
         For example, close a connection or leave a consumer group
@@ -47,9 +48,25 @@ class BaseProducer(ABC):
     host: Optional[str] = None
     config: dict[str, Any] = field(default_factory=dict)
 
-    @abstractmethod
-    def produce(self, queue_name: str, message: Any, **kwargs: Any) -> bool:
-        """publish a message to a queue"""
+    callback_delivery: bool = False
+    on_success: Optional[Callable[[Any], None]] = None
+    on_fail: Optional[Callable[[Any], None]] = None
 
+    @abstractmethod
+    def produce(self, queue_name: str, message: Any, message_context: Optional[Any], **kwargs: Any) -> bool:
+        """Publish a message to a queue
+
+        Args:
+            queue_name (str): Destination queue name.
+            message (Any): The message to publish.
+            message_context (Any): Context for the consumed message.
+                Often a message id, or a Kafka Message object.
+                Used for Producer callbacks to consumer.
+
+        Returns:
+            bool: status of the produce operation
+        """
+
+    @abstractmethod
     def shutdown(self) -> None:
         """perform some action when shutting down the application"""

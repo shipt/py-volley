@@ -104,13 +104,13 @@ def test_callback(mock_confluent_producer: ConfluentKafkaProducer, caplog: LogCa
     mock_confluent_producer.on_success = MagicMock()
 
     m = KafkaMessage()
-    mock_confluent_producer.acked(err="error", msg=m, consumer_context="consumed_message_id")
-    assert "consumed_message_id" in caplog.messages[0]
-    assert "failed" in caplog.messages[0].lower()
+    expected_log_error = "my-logged-error"
+    mock_confluent_producer.acked(err=expected_log_error, msg=m, consumer_context="consumed_message_id")
+    assert "failed delivery" in caplog.messages[0].lower()
     m = KafkaMessage(topic="test-topic")
     mock_confluent_producer.acked(err=None, msg=m, consumer_context="consumed_message_id")
     assert "test-topic" in caplog.messages[1]
-    assert "successful" in caplog.messages[1].lower()
+    assert "successful delivery" in caplog.messages[1].lower()
     mock_confluent_producer.shutdown()
 
 

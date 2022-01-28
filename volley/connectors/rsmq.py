@@ -53,14 +53,24 @@ class RSMQConsumer(BaseConsumer):
     def consume(self) -> Optional[QueueMessage]:
         """Polls RSMQ for a single message.
 
-        Args:
-            queue_name (str): name of queue to poll.
+            RSMQ consume returns a dictionary from the queue:
+            # https://github.com/mlasevich/PyRSMQ/blob/master/README.md
+            {
+                message: Any - the message content
+                rc: int - receive count - how many times this message was received
+                ts: int - unix timestamp of when the message was originally sent
+                id: str - message id
+            }
 
         Returns:
-            Optional[QueueMessage]: The message and it's RSMQ.
+            Optional[QueueMessage]: The message body and it's RSMQ object.
         """
         _start = time.time()
-        msg = self.queue.receiveMessage(qname=self.queue_name, quiet=True).exceptions(False).execute()
+        msg = (
+            self.queue.receiveMessage(qname=self.queue_name, quiet=True, vt=self.config["vt"])
+            .exceptions(False)
+            .execute()
+        )
         _duration = time.time() - _start
         PROCESS_TIME.labels("read").observe(_duration)
         if isinstance(msg, dict):

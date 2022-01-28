@@ -20,6 +20,10 @@ class Environment(NamedTuple):
     dlq: str
     test_topic: str
     consumer_group: str
+    kafka_to_kafka_input: str
+    kafka_to_kafka_output: str
+    redis_to_kafka_output: str
+    redis_host: str
 
 
 env = Environment(
@@ -29,6 +33,10 @@ env = Environment(
     dlq=queues["dead-letter-queue"]["value"],
     test_topic="some-test-topic",
     consumer_group="int-test-group",
+    kafka_to_kafka_input="localhost.kafka.kafka.input",
+    kafka_to_kafka_output="localhost.kafka.kafka.output",
+    redis_to_kafka_output="localhost.redis.kafka.output",
+    redis_host=os.environ["REDIS_HOST"],
 )
 
 
@@ -59,7 +67,15 @@ def pytest_configure() -> None:
     """creates topics and validates topic creation
     https://docs.pytest.org/en/latest/reference/reference.html#_pytest.hookspec.pytest_configure
     """
-    all_topics = [env.input_topic, env.output_topic, env.dlq, env.test_topic]
+    all_topics = [
+        env.input_topic,
+        env.output_topic,
+        env.dlq,
+        env.test_topic,
+        env.kafka_to_kafka_input,
+        env.kafka_to_kafka_output,
+        env.redis_to_kafka_output,
+    ]
     conf = {"bootstrap.servers": env.brokers}
     topics = [confluent_kafka.admin.NewTopic(x, 1, 1) for x in all_topics]
     for _ in range(30):

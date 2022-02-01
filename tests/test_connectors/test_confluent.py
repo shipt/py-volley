@@ -125,7 +125,7 @@ def test_consumer_init_configs() -> None:
 
 @patch("volley.connectors.confluent.Producer", MagicMock())
 def test_producer_init_configs() -> None:
-    config = {"compression.type": "snappy"}
+    config = {"compression.type": "snappy", "poll_thread_timeout": 1}
     p = ConfluentKafkaProducer(queue_name="test", config=config)
     assert p.config["compression.type"] == "snappy"
     p.shutdown()

@@ -20,7 +20,33 @@ class RSMQConfigError(Exception):
 
 @dataclass
 class RSMQConsumer(BaseConsumer):
-    # https://github.com/mlasevich/PyRSMQ#quick-intro-to-rsmq
+    """Handles consuming messages from Redis Simple Message Queue
+    [https://github.com/mlasevich/PyRSMQ#quick-intro-to-rsmq](https://github.com/mlasevich/PyRSMQ#quick-intro-to-rsmq)
+    - pseudo example usage and configurations available on volley.Engine init:
+    ```python hl_lines="4 6-12"
+    from volley import Engine
+    config = {
+        "my_rsmq_queue": {
+            "consumer": "volley.connectors.RSMQConsumer",
+            "serializer": "volley.serializers.OrJsonSerialization",
+            "config": {
+                "host": "<hostname for the redis instance>",
+                "port": "port for the redis instance, defaults to 6379",
+                "vt": 120,
+                "options": {
+                    "decode_responses": False,
+                }
+            }
+        }
+    }
+    app = Engine(
+        input_queue="my_rsmq_queue",
+        queue_config=config,
+        ...
+    )
+    ```
+    """
+
     def __post_init__(self) -> None:
         if "host" in self.config:
             # pass the value directly to the constructor

@@ -153,8 +153,8 @@ class ConfluentKafkaProducer(BaseProducer):
     def acked(self, err: Optional[str], msg: Message, consumer_context: Any) -> None:
         if err is not None:
             logger.critical(
-                "Consumed message: %s but failed it's transform/delivery: %s, error: %s",
-                consumer_context,
+                "Failed delivery to %s, message: %s, error: %s",
+                msg.topic(),
                 msg.value(),
                 err,
             )

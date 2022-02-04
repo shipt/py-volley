@@ -156,9 +156,7 @@ class RSMQProducer(BaseProducer):
         defaults = {
             "qname": self.queue_name,
             "delay": 0,
-            "vt": 60,
             "exceptions": True,
-            "options": {"decode_responses": False},
         }
 
         defaults.update(self.config)

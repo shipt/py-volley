@@ -5,7 +5,7 @@ queues:
     data_model: example.data_models.InputMessage
     config:
       group.id: localhost.input.consumer
-      bootstrap.servers: kafka:29092
+      bootstrap.servers: kafka:9092
   redis_queue:
     value: long_name_1
     profile: rsmq
@@ -24,7 +24,7 @@ queues:
     schema: example.data_models.OutputMessage
     config:
       group.id: localhost.example.consumer
-      bootstrap.servers: kafka:29092
+      bootstrap.servers: kafka:9092
   dead-letter-queue:
     value: localhost.kafka.dlq
     profile: confluent-dlq

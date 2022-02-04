@@ -18,7 +18,7 @@ from volley.engine import Engine
 from volley.profiles import ConnectionType, Profile
 
 os.environ["REDIS_HOST"] = "redis"
-os.environ["KAFKA_BROKERS"] = "kafka:29092"
+os.environ["KAFKA_BROKERS"] = "kafka:9092"
 os.environ["KAFKA_CONSUMER_GROUP"] = "test-group"
 
 

@@ -379,7 +379,7 @@ def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture, 
     msg = b"""{"x":"y"}"""
     mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
     consumer_group = str(uuid4())
-    kafka_brokers = f"my_broker_{str(uuid4())}:29092"
+    kafka_brokers = f"my_broker_{str(uuid4())}:9092"
     cfg = {
         "comp_1": {
             "value": "kafka.topic",

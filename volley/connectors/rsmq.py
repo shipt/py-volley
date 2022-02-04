@@ -67,7 +67,7 @@ class RSMQConsumer(BaseConsumer):
             if isinstance(msg["id"], bytes):
                 # message id is bytes when decode_response = False
                 msg["id"] = msg["id"].decode("utf-8")
-            return QueueMessage(message_context=msg, message=msg["message"])
+            return QueueMessage(message_context=msg["id"], message=msg["message"])
         else:
             return None
 

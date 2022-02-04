@@ -153,7 +153,13 @@ class RSMQProducer(BaseProducer):
         else:
             raise RSMQConfigError("RSMQ host not found in environment nor config")
 
-        defaults = {"qname": self.queue_name, "delay": 0, "vt": 60, "exceptions": True, "options": {"decode_responses": False}}
+        defaults = {
+            "qname": self.queue_name,
+            "delay": 0,
+            "vt": 60,
+            "exceptions": True,
+            "options": {"decode_responses": False},
+        }
 
         defaults.update(self.config)
         self.config = defaults

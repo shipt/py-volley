@@ -100,6 +100,9 @@ class RSMQConsumer(BaseConsumer):
         _duration = time.time() - _start
         PROCESS_TIME.labels("read").observe(_duration)
         if isinstance(msg, dict):
+            if isinstance(msg["id"], bytes):
+                # message id is bytes when decode_response = False
+                msg["id"] = msg["id"].decode("utf-8")
             return QueueMessage(message_context=msg["id"], message=msg["message"])
         else:
             return None
@@ -150,7 +153,11 @@ class RSMQProducer(BaseProducer):
         else:
             raise RSMQConfigError("RSMQ host not found in environment nor config")
 
-        defaults = {"qname": self.queue_name, "delay": 0, "exceptions": True}
+        defaults = {
+            "qname": self.queue_name,
+            "delay": 0,
+            "exceptions": True,
+        }
 
         defaults.update(self.config)
         self.config = defaults

@@ -19,10 +19,6 @@ steps:
     - make test.unit
     - poetry run codecov
     environment:
-      POETRY_HTTP_BASIC_SHIPT_USERNAME:
-        from_secret: SHIPT_PYPI_USERNAME
-      POETRY_HTTP_BASIC_SHIPT_PASSWORD:
-        from_secret: SHIPT_PYPI_PASSWORD
       CODECOV_TOKEN:
         from_secret: CODECOV_TOKEN
 
@@ -33,11 +29,6 @@ steps:
       - pip install poetry==1.1.10
       - poetry install
       - make lints
-    environment:
-      POETRY_HTTP_BASIC_SHIPT_USERNAME:
-        from_secret: SHIPT_PYPI_USERNAME
-      POETRY_HTTP_BASIC_SHIPT_PASSWORD:
-        from_secret: SHIPT_PYPI_PASSWORD
 
   - name: test-integration
     image: docker/compose
@@ -48,11 +39,6 @@ steps:
     - apk add make
     - sed -i -e '/volumes:/,+1d' docker-compose.yml
     - make test.integration
-    environment:
-      POETRY_HTTP_BASIC_SHIPT_USERNAME:
-        from_secret: SHIPT_PYPI_USERNAME
-      POETRY_HTTP_BASIC_SHIPT_PASSWORD:
-        from_secret: SHIPT_PYPI_PASSWORD
 
   - name: cleanup-test-integration
     image: docker/compose
@@ -73,13 +59,13 @@ steps:
     image: python:3.9.4
     environment:
       POETRY_HTTP_BASIC_SHIPT_USERNAME:
-        from_secret: SHIPT_PYPI_USERNAME
+        from_secret: PYPI_ORG_USERNAME
       POETRY_HTTP_BASIC_SHIPT_PASSWORD:
-        from_secret: SHIPT_PYPI_PASSWORD
+        from_secret: PYPI_ORG_PASSWORD
     commands:
       - pip install poetry==1.1.10
       - test "v$(poetry version --short)" "=" "$DRONE_TAG"
-      - poetry publish --repository=shipt --build
+      - poetry publish --build
     when:
       branch:
         - main

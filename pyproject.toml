@@ -1,17 +1,12 @@
 [tool.poetry]
 name = "py_volley"
 version = "0.15.1"
-description = "send messages everywhere"
+description = "pluggable message queue processing"
 authors = ["ask-machine-learning <shipt@shipt.com>"]
 
 packages = [
     { include = "volley" },
 ]
-
-[[tool.poetry.source]]
-name = "shipt"
-url = "https://pypi.shipt.com/simple/"
-secondary = true
 
 [tool.poetry.dependencies]
 python = "^3.8,<3.11"

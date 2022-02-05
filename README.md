@@ -12,20 +12,10 @@ Volley provides an extensible Python interface to queue-like technologies with b
 
 # Installation
 
-1. Acquire creds to pypi.shipt.com #ask-machine-learning or #ask-info-sec
-
-2. Export these to your shell 
-
 ```bash
-export POETRY_HTTP_BASIC_SHIPT_USERNAME=your_username
-export POETRY_HTTP_BASIC_SHIPT_PASSWORD=your_password
+pip install py-volley
 ```
 
-3. Install from pypi.shipt.com
-```bash
-pip install py-volley \
-  --extra-index-url=https://${POETRY_HTTP_BASIC_SHIPT_USERNAME}:${POETRY_HTTP_BASIC_SHIPT_PASSWORD}@pypi.shipt.com/simple
-```
 ## Features
 - Built in support for [Apache Kafka](https://kafka.apache.org/) and [RSMQ](https://github.com/mlasevich/PyRSMQ)
 - Optionally configured integration with dead-letter-queues

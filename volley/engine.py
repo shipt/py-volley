@@ -25,10 +25,11 @@ from volley.util import GracefulKiller
 RUN_ONCE = False
 
 
-PROCESS_TIME = Summary("process_time_seconds", "Time spent running a process", ["volley_app", "process_name"])
+HEARTBEAT = Counter("heartbeats", "Application liveliness")
 MESSAGE_CONSUMED = Counter(
     "messages_consumed_count", "Messages consumed from input", ["volley_app", "status"]
 )  # success or fail
+PROCESS_TIME = Summary("process_time_seconds", "Time spent running a process", ["volley_app", "process_name"])
 
 
 @dataclass
@@ -155,8 +156,8 @@ class Engine:
 
             logger.info("Starting Volley application: %s -- %s", self.app_name, not self.killer.kill_now)
             while not self.killer.kill_now:
+                HEARTBEAT.inc()
                 _start_time = time.time()
-
                 # read message off the specified queue
                 in_message: Optional[QueueMessage] = input_con.consumer_con.consume()
                 if in_message is None:

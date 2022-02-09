@@ -42,10 +42,11 @@ Below is a basic example:
 
 ```python
 # my_models.py
+from typing import List
 from pydantic import BaseModel
 
 class InputMessage(BaseModel):
-  my_values: list[int]
+  my_values: List[int]
 ```
 
 ```python

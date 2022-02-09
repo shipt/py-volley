@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "py_volley"
-version = "0.15.1"
-description = "pluggable message queue processing"
+version = "0.15.2"
+description = "send messages everywhere"
 authors = ["ask-machine-learning <shipt@shipt.com>"]
 
 packages = [

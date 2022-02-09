@@ -178,11 +178,13 @@ class Engine:
 
                 if consume_status:
                     # happy path
-                    pass
+                    MESSAGE_CONSUMED.labels(volley_app=self.app_name, status="success").inc()
                 elif self.dead_letter_queue is not None and self.dead_letter_queue in self.queue_map:
                     outputs = [(self.dead_letter_queue, data_model)]
+                    MESSAGE_CONSUMED.labels(volley_app=self.app_name, status="fail").inc()
                 else:
                     # things have gone wrong w/ the message and no DLQ configured
+                    MESSAGE_CONSUMED.labels(volley_app=self.app_name, status="fail").inc()
                     raise DLQNotConfiguredError(f"Deserializing {in_message.message} failed")
 
                 # component processing
@@ -216,12 +218,10 @@ class Engine:
                     input_con.consumer_con.on_success(
                         message_context=in_message.message_context,
                     )
-                    MESSAGE_CONSUMED.labels(volley_app=self.app_name, status="success").inc()
                 elif not delivery_report.asynchronous:
                     input_con.consumer_con.on_fail(
                         message_context=in_message.message_context,
                     )
-                    MESSAGE_CONSUMED.labels(volley_app=self.app_name, status="fail").inc()
                 _duration = time.time() - _start_time
                 PROCESS_TIME.labels(volley_app=self.app_name, process_name="cycle").observe(_duration)
 

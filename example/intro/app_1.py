@@ -1,9 +1,13 @@
 # app_1.py
+import logging
 from typing import List, Tuple, Union
 
 from my_config import InputMessage, OutputMessage, queue_config
 
 from volley import Engine
+
+logging.basicConfig(level=logging.INFO)
+
 
 # the second node
 app_1 = Engine(
@@ -17,9 +21,9 @@ app_1 = Engine(
 
 @app_1.stream_app
 def redis_to_kafka(msg: OutputMessage) -> Union[bool, List[Tuple[str, InputMessage]]]:
-    print(f"The maximum: {msg.the_max}")
+    logging.info(f"The maximum: {msg.the_max}")
     if msg.the_max > 10:
-        print("That's it, we are done!")
+        logging.info("That's it, we are done!")
         return True
     else:
         out = InputMessage(my_values=[msg.the_max, msg.the_max + 1, msg.the_max + 2])
@@ -27,5 +31,4 @@ def redis_to_kafka(msg: OutputMessage) -> Union[bool, List[Tuple[str, InputMessa
 
 
 if __name__ == "__main__":
-    print(queue_config)
     redis_to_kafka()

@@ -67,14 +67,14 @@ steps:
         from_secret: SHIPT_PYPI_PASSWORD
     commands:
       - pip install poetry==1.1.10
-      - test "v$(poetry version --short)" "=" "$DRONE_TAG"
+      # - test "v$(poetry version --short)" "=" "$DRONE_TAG"
       - poetry publish --repository=shipt --build
       - poetry publish --build
-    when:
-      branch:
-        - main
-      event:
-        - tag
+    # when:
+    #   branch:
+    #     - main
+      # event:
+      #   - tag
     depends_on:
       - lints
       - unit-test

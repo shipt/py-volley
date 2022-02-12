@@ -75,7 +75,7 @@ steps:
     #     - main
       # event:
       #   - tag
-    depends_on:
-      - lints
-      - unit-test
-      - test-integration
+    # depends_on:
+    #   - lints
+    #   - unit-test
+    #   - test-integration

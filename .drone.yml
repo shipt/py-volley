@@ -11,48 +11,48 @@ trigger:
     - main
 
 steps:
-  # - name: unit-test
-  #   image: python:3.9.4
-  #   commands:
-  #   - pip install poetry==1.1.10
-  #   - poetry install
-  #   - make test.unit
-  #   - poetry run codecov
-  #   environment:
-  #     CODECOV_TOKEN:
-  #       from_secret: CODECOV_TOKEN
+  - name: unit-test
+    image: python:3.9.4
+    commands:
+    - pip install poetry==1.1.10
+    - poetry install
+    - make test.unit
+    - poetry run codecov
+    environment:
+      CODECOV_TOKEN:
+        from_secret: CODECOV_TOKEN
 
-  # - name: lints
-  #   image: python:3.9.4
-  #   commands:
-  #     - pip install poetry==1.1.10
-  #     - poetry install
-  #     - make lints
+  - name: lints
+    image: python:3.9.4
+    commands:
+      - pip install poetry==1.1.10
+      - poetry install
+      - make lints
 
-  # - name: test-integration
-  #   image: docker/compose
-  #   volumes:
-  #     - name: docker_socket
-  #       path: /var/run/docker.sock
-  #   commands:
-  #   - apk add make
-  #   - sed -i -e '/volumes:/,+1d' docker-compose.yml
-  #   - make test.integration
+  - name: test-integration
+    image: docker/compose
+    volumes:
+      - name: docker_socket
+        path: /var/run/docker.sock
+    commands:
+    - apk add make
+    - sed -i -e '/volumes:/,+1d' docker-compose.yml
+    - make test.integration
 
-  # - name: cleanup-test-integration
-  #   image: docker/compose
-  #   volumes:
-  #     - name: docker_socket
-  #       path: /var/run/docker.sock
-  #   commands:
-  #     - docker-compose logs
-  #     - docker-compose down --remove-orphans
-  #   depends_on:
-  #     - test-integration
-  #   when:
-  #     status:
-  #     - failure
-  #     - success
+  - name: cleanup-test-integration
+    image: docker/compose
+    volumes:
+      - name: docker_socket
+        path: /var/run/docker.sock
+    commands:
+      - docker-compose logs
+      - docker-compose down --remove-orphans
+    depends_on:
+      - test-integration
+    when:
+      status:
+      - failure
+      - success
   
   - name: publish-release
     image: python:3.9.4
@@ -67,15 +67,15 @@ steps:
         from_secret: SHIPT_PYPI_PASSWORD
     commands:
       - pip install poetry==1.1.10
-      # - test "v$(poetry version --short)" "=" "$DRONE_TAG"
+      - test "v$(poetry version --short)" "=" "$DRONE_TAG"
       - poetry publish --repository=shipt --build
       - poetry publish
-    # when:
-    #   branch:
-    #     - main
-      # event:
-      #   - tag
-    # depends_on:
-    #   - lints
-    #   - unit-test
-    #   - test-integration
+    when:
+      branch:
+        - main
+      event:
+        - tag
+    depends_on:
+      - lints
+      - unit-test
+      - test-integration

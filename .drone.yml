@@ -98,5 +98,8 @@ steps:
         - tag
     depends_on:
       - lints
-      - unit-test
+      - unit-test-3.10.2
+      - unit-test-3.9.8
+      - unit-test-3.9
+      - unit-test-3.8
       - test-integration

@@ -1,6 +1,6 @@
 import logging
 from random import randint
-from typing import List, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
 from pydantic.main import BaseModel
 
@@ -54,7 +54,7 @@ eng = Engine(
 
 
 @eng.stream_app
-def main(msg: Queue1Message) -> Union[List[Tuple[str, BaseModel, dict[str, str]]], List[Tuple[str, InputMessage]]]:
+def main(msg: Queue1Message) -> Union[List[Tuple[str, BaseModel, Dict[str, str]]], List[Tuple[str, InputMessage]]]:
     """adds one to a value"""
     req_id = msg.request_id
     max_val = msg.max_value

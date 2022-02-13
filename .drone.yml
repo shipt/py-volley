@@ -14,9 +14,9 @@ steps:
   - name: unit-test-3.10.2
     image: python:3.10.2
     commands:
+    - apt-get update && apt-get install -y librdkafka-dev
     - pip install poetry==1.1.13
     - poetry install
-    - apt-get update && apt-get install -y librdkafka-dev
     - poetry run pytest --ignore=tests/integration_tests
 
   - name: unit-test-3.9.8

@@ -16,7 +16,7 @@ steps:
     commands:
     - pip install poetry==1.1.13
     - poetry install
-    - make test.unit
+    - poetry run pytest --ignore=tests/integration_tests
 
   - name: unit-test-3.9.8
     image: python:3.9.8
@@ -34,14 +34,14 @@ steps:
     commands:
     - pip install poetry==1.1.13
     - poetry install
-    - make test.unit
+    - poetry run pytest --ignore=tests/integration_tests
 
   - name: unit-test-3.8
     image: python:3.8
     commands:
     - pip install poetry==1.1.13
     - poetry install
-    - make test.unit
+    - poetry run pytest --ignore=tests/integration_tests
 
   - name: lints
     image: python:3.9.8

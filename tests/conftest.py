@@ -1,7 +1,7 @@
 import json
 import os
 from random import randint
-from typing import Any, Callable, Generator, List, Optional
+from typing import Any, Callable, Dict, Generator, List, Optional
 from unittest.mock import MagicMock, patch
 
 from pytest import MonkeyPatch, fixture
@@ -142,7 +142,7 @@ def none_producer_decorated(monkeypatch: MonkeyPatch) -> Generator[Callable[...,
 
 
 @fixture
-def config_dict() -> dict[str, dict[str, Any]]:
+def config_dict() -> Dict[str, Dict[str, Any]]:
     return {
         "input-topic": {
             "value": "localhost.kafka.input",

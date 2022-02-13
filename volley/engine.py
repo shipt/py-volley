@@ -121,7 +121,7 @@ class Engine:
     def stream_app(  # noqa: C901
         self,
         func: Callable[
-            [Any], Union[Awaitable[Any], List[Tuple[str, Any]], List[Tuple[str, Any, dict[str, Any]]], bool]
+            [Any], Union[Awaitable[Any], List[Tuple[str, Any]], List[Tuple[str, Any, Dict[str, Any]]], bool]
         ],
     ) -> Callable[..., None]:
         """Main decorator for applications"""
@@ -168,7 +168,7 @@ class Engine:
                     continue
 
                 # typing for producing
-                outputs: Union[List[Tuple[str, Any]], List[Tuple[str, Any, dict[str, Any]]], bool] = False
+                outputs: Union[List[Tuple[str, Any]], List[Tuple[str, Any, Dict[str, Any]]], bool] = False
 
                 data_model, consume_status = message_model_handler(
                     message=in_message.message,

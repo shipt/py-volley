@@ -10,11 +10,18 @@ trigger:
   branch:
     - main
 
+matrix:
+  PY_VERSION:
+    - 3.10.2
+    - 3.9.8
+    - 3.9
+    - 3.8
+
 steps:
   - name: unit-test
-    image: python:3.9.4
+    image: python:${PY_VERSION}
     commands:
-    - pip install poetry==1.1.10
+    - pip install poetry==1.1.13
     - poetry install
     - make test.unit
     - poetry run codecov
@@ -23,9 +30,9 @@ steps:
         from_secret: CODECOV_TOKEN
 
   - name: lints
-    image: python:3.9.4
+    image: python:${PY_VERSION}
     commands:
-      - pip install poetry==1.1.10
+      - pip install poetry==1.1.13
       - poetry install
       - make lints
 
@@ -66,7 +73,7 @@ steps:
       POETRY_HTTP_BASIC_SHIPT_PASSWORD:
         from_secret: SHIPT_PYPI_PASSWORD
     commands:
-      - pip install poetry==1.1.10
+      - pip install poetry==1.1.13
       - test "v$(poetry version --short)" "=" "$DRONE_TAG"
       - poetry publish --repository=shipt --build
       - poetry publish

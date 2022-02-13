@@ -38,7 +38,7 @@ class Queue:
     # producer_con: Producer
 
     # optional configurations to pass through to connectors
-    pass_through_config: dict[str, str] = field(default_factory=dict)
+    pass_through_config: Dict[str, str] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         """Load modules provided in Profile"""
@@ -68,7 +68,7 @@ class Queue:
             raise TypeError(f"{con_type=} is not valid")
 
 
-def construct_queue_map(profiles: Dict[str, Profile], configs: dict[str, dict[str, str]]) -> Dict[str, Queue]:
+def construct_queue_map(profiles: Dict[str, Profile], configs: Dict[str, Dict[str, str]]) -> Dict[str, Queue]:
     """Constructs a mapping of queue_name: Queue for each requested queue"""
 
     queue_map: Dict[str, Queue] = {}

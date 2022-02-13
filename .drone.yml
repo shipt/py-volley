@@ -10,16 +10,16 @@ trigger:
   branch:
     - main
 
-matrix:
-  PY_VERSION:
-    - 3.10.2
-    - 3.9.8
-    - 3.9
-    - 3.8
-
 steps:
+  - name: unit-test-3.10.2
+    image: python:3.10.2
+    commands:
+    - pip install poetry==1.1.13
+    - poetry install
+    - make test.unit
+
   - name: unit-test
-    image: python:${PY_VERSION}
+    image: python:3.9.8
     commands:
     - pip install poetry==1.1.13
     - poetry install
@@ -29,8 +29,22 @@ steps:
       CODECOV_TOKEN:
         from_secret: CODECOV_TOKEN
 
+  - name: unit-test-3.9
+    image: python:3.9
+    commands:
+    - pip install poetry==1.1.13
+    - poetry install
+    - make test.unit
+
+  - name: unit-test-3.8
+    image: python:3.8
+    commands:
+    - pip install poetry==1.1.13
+    - poetry install
+    - make test.unit
+
   - name: lints
-    image: python:${PY_VERSION}
+    image: python:3.9.8
     commands:
       - pip install poetry==1.1.13
       - poetry install

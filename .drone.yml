@@ -18,7 +18,7 @@ steps:
     - poetry install
     - make test.unit
 
-  - name: unit-test
+  - name: unit-test-3.9.8
     image: python:3.9.8
     commands:
     - pip install poetry==1.1.13

@@ -29,7 +29,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
 
     def __post_init__(self) -> None:  # noqa: C901
         # mapping of partition/offset of the last stored commit
-        self.last_offset: dict[int, int] = {}
+        self.last_offset: Dict[int, int] = {}
 
         self.config = handle_creds(self.config)
 

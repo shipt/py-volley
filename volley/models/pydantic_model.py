@@ -10,7 +10,7 @@ BaseModelType = TypeVar("BaseModelType", bound=BaseModel)
 class PydanticModelHandler(BaseModelHandler):
     """for pydantic model that offloads serialization to serializer"""
 
-    def construct(self, message: dict[str, Any], schema: Type[BaseModelType]) -> BaseModelType:
+    def construct(self, message: Dict[str, Any], schema: Type[BaseModelType]) -> BaseModelType:
         """coverts a dict to a Pydantic model"""
         return schema.parse_obj(message)
 

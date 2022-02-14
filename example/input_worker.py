@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import time
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 from example.data_models import InputMessage, Queue1Message
 from volley import Engine
@@ -28,7 +28,7 @@ async def fun2() -> None:
 
 
 @eng.stream_app
-async def main(msg: InputMessage) -> List[Tuple[str, Queue1Message, dict[str, float]]]:
+async def main(msg: InputMessage) -> List[Tuple[str, Queue1Message, Dict[str, float]]]:
 
     req_id = msg.request_id
     values = msg.list_of_values

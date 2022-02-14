@@ -12,6 +12,8 @@ Volley provides an extensible Python interface to queue-like technologies with b
 
 # Installation
 
+Requires Python >= 3.8
+
 ```bash
 pip install py-volley
 ```

@@ -1,5 +1,5 @@
 PROJECT=volley
-PYTHON_VERSION=3.9.4
+PYTHON_VERSION=3.9.8
 
 SOURCE_OBJECTS=example volley tests
 

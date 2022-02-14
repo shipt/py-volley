@@ -1,7 +1,7 @@
 import json
 import logging
 from datetime import datetime
-from typing import Any, List, Tuple
+from typing import Any, Dict, List, Tuple
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
@@ -135,7 +135,7 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
 @patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
 @patch("volley.connectors.confluent.Producer", MagicMock())
 @patch("volley.connectors.confluent.Consumer")
-def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]]) -> None:
+def test_init_from_dict(mock_consumer: MagicMock, config_dict: Dict[str, Dict[str, str]]) -> None:
 
     data = InputMessage.schema()["examples"][0]
     msg = json.dumps(data).encode("utf-8")
@@ -184,7 +184,7 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: dict[str, dict[st
 @patch("volley.connectors.confluent.Producer", MagicMock())
 @patch("volley.connectors.confluent.Consumer")
 def test_null_serializer_fail(
-    mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]], caplog: LogCaptureFixture
+    mock_consumer: MagicMock, config_dict: Dict[str, Dict[str, str]], caplog: LogCaptureFixture
 ) -> None:
     """disable serialization for a message off input-topic
     this should cause schema validation to fail
@@ -440,7 +440,7 @@ def test_wild_dlq_error(mock_handler: MagicMock, mock_rsmq: MagicMock, caplog: L
 @patch("volley.connectors.rsmq.RSMQProducer", MagicMock())
 @patch("volley.connectors.confluent.Producer", MagicMock())
 @patch("volley.connectors.confluent.Consumer")
-def test_runtime_connector_configs(mock_consumer: MagicMock, config_dict: dict[str, dict[str, str]]) -> None:
+def test_runtime_connector_configs(mock_consumer: MagicMock, config_dict: Dict[str, Dict[str, str]]) -> None:
     """test wrapped func can return variable length tuples"""
     data = InputMessage.schema()["examples"][0]
     msg = json.dumps(data).encode("utf-8")
@@ -460,7 +460,7 @@ def test_runtime_connector_configs(mock_consumer: MagicMock, config_dict: dict[s
 
     # define function the returns producer runtime configs
     @eng.stream_app
-    def tuple_two(msg: Any) -> List[Tuple[str, GenericMessage, dict[str, Any]]]:  # pylint: disable=W0613
+    def tuple_two(msg: Any) -> List[Tuple[str, GenericMessage, Dict[str, Any]]]:  # pylint: disable=W0613
         send_rsmq = ("comp_1", m, {"delay": 10})
         send_kafka = ("output-topic", m, {"key": "abc"})
         return [send_rsmq, send_kafka]
@@ -471,7 +471,7 @@ def test_runtime_connector_configs(mock_consumer: MagicMock, config_dict: dict[s
 
 
 @patch("volley.connectors.confluent.Producer", MagicMock())
-def test_invalid_queue(config_dict: dict[str, dict[str, str]]) -> None:
+def test_invalid_queue(config_dict: Dict[str, Dict[str, str]]) -> None:
     """queue provided in the init parameters input_queue, output_queues, dead_letter_queue
     must also exist in configuration
     """

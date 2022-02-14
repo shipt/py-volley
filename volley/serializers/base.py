@@ -3,14 +3,14 @@
 # LICENSE file in the root directory of this source tree.
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Dict
 
 
 class BaseSerialization(ABC):
     """Base class for serializing and deserializing queue data"""
 
     @abstractmethod
-    def serialize(self, message: dict[Any, Any]) -> bytes:
+    def serialize(self, message: Dict[Any, Any]) -> bytes:
         """serialize to queue"""
 
     @abstractmethod

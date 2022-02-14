@@ -1,7 +1,7 @@
 import os
 import time
 from dataclasses import dataclass
-from typing import Any, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 from prometheus_client import Summary
 from rsmq import RedisSMQ
@@ -176,7 +176,7 @@ class RSMQProducer(BaseProducer):
         return status
 
     @retry(reraise=True, stop=stop_after_attempt(5), wait=wait_fixed(2))
-    def send_message(self, queue_name: str, message: bytes, produce_cfg: dict[str, Any]) -> bool:
+    def send_message(self, queue_name: str, message: bytes, produce_cfg: Dict[str, Any]) -> bool:
         """wrapper function to handle retries retrying"""
         msg_id: str = self.queue.sendMessage(
             qname=queue_name,

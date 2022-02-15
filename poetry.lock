@@ -58,10 +58,7 @@ mypy-extensions = ">=0.4.3"
 pathspec = ">=0.9.0,<1"
 platformdirs = ">=2"
 tomli = ">=0.2.6,<2.0.0"
-typing-extensions = [
-    {version = ">=3.10.0.0", markers = "python_version < \"3.10\""},
-    {version = "!=3.10.0.1", markers = "python_version >= \"3.10\""},
-]
+typing-extensions = ">=3.10.0.0"
 
 [package.extras]
 colorama = ["colorama (>=0.4.3)"]
@@ -881,7 +878,7 @@ python-versions = "*"
 
 [[package]]
 name = "typing-extensions"
-version = "4.0.1"
+version = "4.1.0"
 description = "Backported and Experimental Type Hints for Python 3.6+"
 category = "main"
 optional = false
@@ -933,8 +930,8 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.8,<3.11"
-content-hash = "d2c4ed1ad9cdef4fcd6a38872dd156dc621a67edeee247db7397e821e662f20a"
+python-versions = "^3.8,<3.10"
+content-hash = "8bedc1d859d669287b68651f2bb292d7020651a02f887214513be3117dd4e2d3"
 
 [metadata.files]
 astroid = [
@@ -979,6 +976,7 @@ colorama = [
     {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
 ]
 confluent-kafka = [
+    {file = "confluent-kafka-1.8.2.tar.gz", hash = "sha256:b79e836c3554bc51c6837a8a0152f7521c9bf31342f5b8e21eba6b28044fa585"},
     {file = "confluent_kafka-1.8.2-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:02b78bb6d1199ea350240eae1f4415f22014896199a46edf85f779a69751f984"},
     {file = "confluent_kafka-1.8.2-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:d50b091770d277714766943d885ad6b2c5c427e67328706cfd33dc86eef540c9"},
     {file = "confluent_kafka-1.8.2-cp36-cp36m-win32.whl", hash = "sha256:4f26052ef53212752039cd1d9e932b2feb6a0975d717ab070af323629a72a0b9"},
@@ -1687,8 +1685,8 @@ types-urllib3 = [
     {file = "types_urllib3-1.26.9-py3-none-any.whl", hash = "sha256:4a54f6274ab1c80968115634a55fb9341a699492b95e32104a7c513db9fe02e9"},
 ]
 typing-extensions = [
-    {file = "typing_extensions-4.0.1-py3-none-any.whl", hash = "sha256:7f001e5ac290a0c0401508864c7ec868be4e701886d5b573a9528ed3973d9d3b"},
-    {file = "typing_extensions-4.0.1.tar.gz", hash = "sha256:4ca091dea149f945ec56afb48dae714f21e8692ef22a395223bcd328961b6a0e"},
+    {file = "typing_extensions-4.1.0-py3-none-any.whl", hash = "sha256:c13180fbaa7cd97065a4915ceba012bdb31dc34743e63ddee16360161d358414"},
+    {file = "typing_extensions-4.1.0.tar.gz", hash = "sha256:ba97c5143e5bb067b57793c726dd857b1671d4b02ced273ca0538e71ff009095"},
 ]
 urllib3 = [
     {file = "urllib3-1.26.8-py2.py3-none-any.whl", hash = "sha256:000ca7f471a233c2251c6c7023ee85305721bfdf18621ebff4fd17a8653427ed"},

@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "py_volley"
 version = "0.15.4"
-description = "send messages everywhere"
+description = "Pluggable message queueing for Python"
 authors = ["ask-machine-learning <shipt@shipt.com>"]
 
 packages = [

@@ -2,9 +2,11 @@
 
 Documentation: https://animated-guacamole-53e254cf.pages.github.io/
 
-Volley makes building event stream applications easier and more accessible. Use Volley if you need to quickly develop an application to consume messages, processes them (and do other things), then publish results to one or many places. Dead letters queues are also easily configured. Volley was inspired ease of use and developer experience provided by the [Flask](https://github.com/pallets/flask) and [FastAPI](https://github.com/tiangolo/fastapi) projects, and aims to make working with queue based and event driven system as accessible as REST APIs.
+Volley makes building event stream applications easier and more accessible. Use Volley if you need to quickly develop an application to consume messages, processes them (and do other things), then publish results to one or many places. Volley was inspired ease of use and developer experience provided by the [Flask](https://github.com/pallets/flask) and [FastAPI](https://github.com/tiangolo/fastapi) projects, and aims to make working with queue based and event driven system as accessible as REST APIs.
 
-Volley provides an extensible Python interface to queue-like technologies with built in support for [Apache Kafka](https://kafka.apache.org/) and [RSMQ](https://github.com/mlasevich/PyRSMQ) (Redis Simple Message Queue). Volley is easily extended to any queue technology through plugins. We provide an example for building a plugin for a Postgres queue in our [examples](./example/plugins/my_plugin.py)
+Volley handles a number of operations that need to happen before and after processing a message. Reading the data, serialization, data validation, all need to happen before data reaches your application. If these fail, Volley can route the message to a dead-letter-queue. After processing, Volley again handles data validation, serialization, and the writing/publishing of data to any number of output queues. Finally, upon successfully delivery of that message to the target queue, Volley handles marking it as read or deleting it from the input queue.
+
+All of Volley's major operations (connectors, serializers, data validation/model handling) can be extended with plugins, and comes with built in support for queues-like technologies [Apache Kafka](https://kafka.apache.org/) and [RSMQ](https://github.com/mlasevich/PyRSMQ) (Redis Simple Message Queue). There is a plugin built for a Postgres queue in our [examples](./example/plugins/my_plugin.py).
 
 
 [![Build Status](https://drone.shipt.com/api/badges/shipt/py-volley/status.svg?ref=refs/heads/main)](https://drone.shipt.com/shipt/py-volley)
@@ -34,107 +36,175 @@ Volley handles the process of consuming/producing by providing developers with e
 - model_handler - handler and interface which works very closely with serializers. Typically used to turn serialized data into a structured Python data model. Pydantic is Volley's most supported data_model and can handler serialization itself.
 - data_model - When your application receives data from a queue, what schema and object do you expect it in? The data_model is provided by the user. And the `model_handler` describes how to construct your `data_model`.
 
-Below is a basic example:
-1) consumes from `input-topic` (a kafka topic).
-2) evaluates the message from the queue
-3) publishes a message to `output-queue`
-4) Provides a path to a Pydantic model that provides schema validation to both inputs and outputs.
-5) Configures a dead-letter queue for any incoming messages that violate the specified schema.
 
+To demonstrate, let's create an application with two worker nodes. One consumes from Kafka, finds the maximum value in a list then publishes it to Redis. The other consumes the message from Redis - if the max value is > 10, it logs to console otherwise it constructs a new list and publishes to the same Kafka topic. 
 
-```python
-# my_models.py
-from typing import List
-from pydantic import BaseModel
+You can skip the details and just run `make intro.start`, which runs this example through `./example/intro/docker-compose.yml`
 
-class InputMessage(BaseModel):
-  my_values: List[int]
+1. start Kafka and Redis instance
+
+```
+docker run -d -p 6379:6379 redis:5.0.0
+docker run -d -p 9092:9092 bashj79/kafka-kraft
 ```
 
+2. Configure the queues and data models. Let's put this in `./my_config.py`.
+
 ```python
-# app.py
+# ./my_config.py
 from typing import List, Tuple
+from pydantic import BaseModel
 
-from volley.engine import Engine
-from volley.data_models import GenericMessage
+from volley import Engine
 
+# define the schemas for the first and second worker nodes.
+class InputMessage(BaseModel):
+  my_values: List[float]
+
+class OutputMessage(BaseModel):
+  the_max: float
+
+# define the configurations for the two queues, one in Kafka and the other in Redis.
 queue_config = {
-    "input-topic": {
-      "value": "stg.kafka.myapp.input",
+    "my-kafka-input": {
+      "value": "my.kafka.topic.name",
       "profile": "confluent",
-      "data_model": "my_models.InputMessage"
+      "data_model": "my_config
+      "config": {
+        "bootstrap.servers": "localhost:9092",
+        "group.id": "my.consumer.group"
+      }
     },
-    "output-queue": {
-      "value": "stg.ds-marketplace.v1.my_kafka_topic_output",
+    "my-redis-output": {
+      "value": "my.redis.output.queue.name",
       "profile": "rsmq",
+      "config": {
+        "host": "localhost",
+        "port": 6379,
+      }
     },
 }
+```
 
-app = Engine(
-  app_name="my_volley_app",
-  input_queue="input-topic",
-  output_queues=["output-queue"],
-  dead_letter_queue="dead-letter-queue",
+3. Build the first worker node - consume from Kafka, find the max value, publish to Redis
+
+```python
+# ./app_0.py
+from typing import List, Tuple
+from volley import Engine
+
+from my_config import queue_config, InputMessage, OutputMessage
+# the first node - reads from kafka and writes to redis
+app_0 = Engine(
+  app_name="app_0",
+  input_queue="my-kafka-input",  # one input
+  output_queues=["my-redis-output"],  # zero to many outputs
   queue_config=queue_config
 )
 
-@app.stream_app
-def hello_world(msg: InputMessage) -> List[Tuple[str, GenericMessage]]:
+@app_0.stream_app
+def kafka_to_redis(msg: InputMessage) -> List[Tuple[str, OutputMessage]]:
+  print(f"Received {msg.json()}")
   max_val = max(msg.my_values)
-  if max_val > 0:
-    out_value = "foo"
-  else:
-    out_value = "bar"
-  
-  out = GenericMessage(hello=out_value)
+  out = OutputMessage(the_max=max_val)
+  print(out)
+  return [("my-redis-output", out)]  # a list of one or many output targets and messages
 
-  return [("output-topic", out)]  # a list of one or many output targets and messages
+if __name__ == "__main__":
+  kafka_to_redis()
+
 ```
 
-Set environment variables for the Kafka connector:
+4. Run the first application in a terminal
 ```bash
-KAFKA_KEY=<kafka username>
-KAFKA_SECRET=<kafka password>
-KAFKA_BROKERS=<host:port of the brokers>
+python app_0.py
 ```
 
-Alternatively, all consumer and producer configurations can be passed through to the connectors.
-For reference
-- [Kafka Configs](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md)
+
+5. Build the second worker node - consume from Redis, determine if we log to console or recycle the message as a new list.
 ```python
-queue_config = {
-    "input-topic": {
-      "config": {  # configs to pass to kafka connector
-        "group.id": "my-consumer-group",
-        "bootstrap.servers": os.environ["KAFKA_BROKERS"],
-        "sasl.username": os.environ["KAFKA_KEY"],
-        "sasl.password": os.environ["KAFKA_SECRET"],
-      },
-      "value": "stg.kafka.myapp.input",
-      "profile": "confluent",
-      "data_model": "my_models.InputMessage",
-    },
-    ...
+# ./app_1.py
+from typing import List, Tuple, Union
+from volley import Engine
+
+from my_config import OutputMessage, queue_config, InputMessage
+
+# the second node
+app_1 = Engine(
+  app_name="app_1",
+  input_queue="my-redis-output",
+  output_queues=["my-kafka-input"],
+  queue_config=queue_config,
+  metrics_port=None
+)
+
+@app_1.stream_app
+def redis_to_kafka(msg: OutputMessage) -> Union[bool, List[Tuple[str, InputMessage]]]:
+  print(f"The maximum: {msg.the_max}")
+  if msg.the_max > 10:
+    print("That's it, we are done!")
+    return True
+  else:
+    out = InputMessage(my_values=[msg.the_max, msg.the_max+1, msg.the_max+2])
+    return [("my-kafka-input", out)]  # a list of one or many output targets and messages
+
+if __name__ == "__main__":
+    redis_to_kafka()
 ```
 
-## Complete example
+6. Run the second worker node in another terminal
+```bash
+python app_1.py
+```
 
-Clone this repo and run `make run.example` to see a complete example of:
+7. Finally, let's manually publish a message to the input kafka topic:
+```python
+from confluent_kafka import Producer
+import json
+producer = Producer({"bootstrap.servers": "localhost:9092"})
+producer.produce(topic="my.kafka.topic.name", value=json.dumps({"my_values":[1,2,3]}))
+producer.flush(5)
+```
+
+You should see the following in your two terminals
+
+__./app_0.py__
+```
+Received {"my_values": [1.0, 2.0, 3.0]}
+the_max=3.0
+Received {"my_values": [3.0, 4.0, 5.0]}
+the_max=5.0
+Received {"my_values": [5.0, 6.0, 7.0]}
+the_max=7.0
+Received {"my_values": [7.0, 8.0, 9.0]}
+the_max=9.0
+Received {"my_values": [9.0, 10.0, 11.0]}
+the_max=11.0
+```
+
+__./app_1.py__
+```
+The maximum: 3.0
+The maximum: 5.0
+The maximum: 7.0
+The maximum: 9.0
+The maximum: 11.0
+That's it, we are done!
+```
+
+# Complete example
+
+Clone this repo and `make run.example` to see a complete example of:
 - consuming a message from a Kafka topic
 - producing to RSMQ
-- consuming from RSMQ and publishing to Kafka. Using a custom plugin to publish a Postgres based queue.
+- consuming from RSMQ and publishing to Kafka and Postgres using custom plugin for Postgres.
 
 # CI / CD
 
-See `.drone.yml` for test gates. A Semantic tagged release triggers a build and publish to pypi.shipt.com.
+See `.drone.yml` for test gates. A Semantic tagged release of `main` triggers a build and publish to pypi.shipt.com and pypi.org.
 
 # Testing
 
 `make test.unit` Runs unit tests on individual components with mocked responses dependencies external to the code. Docker is not involved in this process.
 
 `make test.integration` Runs an "end-to-end" test against the example project in `./example`. The tests validate messages make it through all supported connectors and queues, plus a user defined connector plugin (postgres).
-
-
-# Support
-
-`#ask-machine-learning`

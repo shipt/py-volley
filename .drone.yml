@@ -11,10 +11,18 @@ trigger:
     - main
 
 steps:
-  - name: unit-test
-    image: python:3.9.4
+  - name: unit-test-3.10.2
+    image: python:3.10.2
     commands:
-    - pip install poetry==1.1.10
+    - apt-get update && apt-get install -y librdkafka-dev
+    - pip install poetry==1.1.13
+    - poetry install
+    - poetry run pytest --ignore=tests/integration_tests
+
+  - name: unit-test-3.9.8
+    image: python:3.9.8
+    commands:
+    - pip install poetry==1.1.13
     - poetry install
     - make test.unit
     - poetry run codecov
@@ -22,10 +30,24 @@ steps:
       CODECOV_TOKEN:
         from_secret: CODECOV_TOKEN
 
-  - name: lints
-    image: python:3.9.4
+  - name: unit-test-3.9
+    image: python:3.9
     commands:
-      - pip install poetry==1.1.10
+    - pip install poetry==1.1.13
+    - poetry install
+    - poetry run pytest --ignore=tests/integration_tests
+
+  - name: unit-test-3.8
+    image: python:3.8
+    commands:
+    - pip install poetry==1.1.13
+    - poetry install
+    - poetry run pytest --ignore=tests/integration_tests
+
+  - name: lints
+    image: python:3.9.8
+    commands:
+      - pip install poetry==1.1.13
       - poetry install
       - make lints
 
@@ -66,7 +88,7 @@ steps:
       POETRY_HTTP_BASIC_SHIPT_PASSWORD:
         from_secret: SHIPT_PYPI_PASSWORD
     commands:
-      - pip install poetry==1.1.10
+      - pip install poetry==1.1.13
       - test "v$(poetry version --short)" "=" "$DRONE_TAG"
       - poetry publish --repository=shipt --build
       - poetry publish
@@ -77,5 +99,8 @@ steps:
         - tag
     depends_on:
       - lints
-      - unit-test
+      - unit-test-3.10.2
+      - unit-test-3.9.8
+      - unit-test-3.9
+      - unit-test-3.8
       - test-integration

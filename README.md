@@ -14,6 +14,8 @@ All of Volley's major operations (connectors, serializers, data validation/model
 
 # Installation
 
+Requires Python >= 3.8
+
 ```bash
 pip install py-volley
 ```

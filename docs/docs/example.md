@@ -128,7 +128,7 @@ When run, the function will receive a message of the type which was defined in t
 You produce messages by returning a list of tuples from your function.
 
 ```python
-List[Tuple[str, Any, Optional[dict[str Any]]]]
+List[Tuple[str, Any, Optional[Dict[str Any]]]]
 ```
 
 Each element in the list is a message destined for the queue specified by the first element in the tuple. The second tuple element is the message itself. The third tuple element is optional runtime configurations for your producer. For the Confluent producer, these might be a partition key or a callback. They are passed to the producer's `produce()` function as expanded key word arguments.

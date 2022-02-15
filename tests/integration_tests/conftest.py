@@ -41,7 +41,7 @@ env = Environment(
 
 
 @fixture
-def broker_config() -> dict[str, str]:
+def broker_config() -> Dict[str, str]:
     return {"bootstrap.servers": env.brokers, "group.id": env.consumer_group, "auto.offset.reset": "earliest"}
 
 

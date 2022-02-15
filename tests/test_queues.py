@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 
 import pytest
 
@@ -17,7 +17,7 @@ def test_bad_connnect_type(confluent_consumer_profile: Profile) -> None:
         q.connect("BAD_TYPE")  # type: ignore
 
 
-def test_missing_queue_attr(confluent_consumer_profile: Profile, config_dict: dict[str, dict[str, str]]) -> None:
+def test_missing_queue_attr(confluent_consumer_profile: Profile, config_dict: Dict[str, Dict[str, str]]) -> None:
     del config_dict["input-topic"]["value"]
     pm = {"input-topic": confluent_consumer_profile}
 

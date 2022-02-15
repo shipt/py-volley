@@ -4,7 +4,7 @@
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Dict, Optional
 
 from volley.data_models import QueueMessage
 
@@ -15,7 +15,7 @@ class BaseConsumer(ABC):
 
     queue_name: str
     host: Optional[str] = None
-    config: dict[str, Any] = field(default_factory=dict)
+    config: Dict[str, Any] = field(default_factory=dict)
 
     @abstractmethod
     def consume(self) -> Optional[QueueMessage]:
@@ -46,7 +46,7 @@ class BaseProducer(ABC):
 
     queue_name: str
     host: Optional[str] = None
-    config: dict[str, Any] = field(default_factory=dict)
+    config: Dict[str, Any] = field(default_factory=dict)
 
     callback_delivery: bool = False
     on_success: Optional[Callable[[Any], None]] = None

@@ -3,6 +3,8 @@ PYTHON_VERSION=3.9.8
 
 SOURCE_OBJECTS=example volley tests
 
+INTRO_COMPOSE=example/intro/docker-compose.yml
+
 deploy:
 	poetry build
 
@@ -11,6 +13,13 @@ format.black:
 format.isort:
 	poetry run isort --atomic ${SOURCE_OBJECTS}
 format: format.black format.isort 
+
+intro.start:
+	docker-compose -f ${INTRO_COMPOSE} up -d kafka redis && sleep 10
+	docker-compose -f ${INTRO_COMPOSE} up single_message
+	docker-compose -f ${INTRO_COMPOSE} up app_0 app_1
+intro.stop:
+	docker-compose -f ${INTRO_COMPOSE} down
 
 lints.format.check:
 	poetry run black --check ${SOURCE_OBJECTS}

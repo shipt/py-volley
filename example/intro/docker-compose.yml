@@ -1,0 +1,82 @@
+version: '3.5'
+services:
+    single_message:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        environment:
+            - KAFKA_BROKERS=kafka:9092
+        depends_on:
+            - kafka
+        volumes:
+            - ./:/app/ 
+        command: python single_message.py
+
+    app_0:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        environment:
+            - KAFKA_BROKERS=kafka:9092
+            - REDIS_HOST=redis
+        depends_on:
+            - kafka
+            - redis
+        volumes:
+            - ./:/app/ 
+        command: python app_0.py
+
+    app_1:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        environment:
+            - KAFKA_BROKERS=kafka:9092
+            - REDIS_HOST=redis
+        depends_on:
+            - kafka
+            - redis
+        volumes:
+            - ./:/app/ 
+        command: python app_1.py
+
+    redis:
+        container_name: redis
+        image: redis:latest
+        ports:
+            - 6379:6379
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 5s
+            timeout: 30s
+            retries: 50
+
+    zookeeper:
+        image: confluentinc/cp-zookeeper:5.2.5
+        ports:
+            - "2181:2181"
+        environment:
+            ZOOKEEPER_CLIENT_PORT: 2181
+            ZOOKEEPER_TICK_TIME: 2000
+            KAFKA_JMX_PORT: 39999
+
+    kafka:
+        image: confluentinc/cp-kafka:5.2.5
+        container_name: kafka
+        restart: always
+        depends_on:
+            - zookeeper
+        ports:
+            - "9092:9092"
+            - "29092:29092"
+            - "7071:7071"
+            - "49999:49999"
+        # https://rmoff.net/2018/08/02/kafka-listeners-explained/
+        environment:
+            KAFKA_BROKER_ID: 1
+            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+            KAFKA_JMX_PORT: 49999

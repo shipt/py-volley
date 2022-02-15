@@ -19,7 +19,7 @@ def test_non_exist_profile() -> None:
     assert non_exist_profile in str(err.value)
 
 
-def test_non_exist_profile_init(config_dict: dict[str, dict[str, Any]]) -> None:
+def test_non_exist_profile_init(config_dict: Dict[str, Dict[str, Any]]) -> None:
     """requesting a non existent profile should fail on init too"""
     non_exist_profile = f"non_exist_{str(uuid4())}"
     config_dict["input-topic"]["profile"] = non_exist_profile
@@ -56,7 +56,7 @@ def test_construct_consumer_profiles() -> None:
         assert isinstance(profile, Profile)
 
 
-def test_load_named_profiles(config_dict: dict[str, dict[str, Any]]) -> None:
+def test_load_named_profiles(config_dict: Dict[str, Dict[str, Any]]) -> None:
     """use config_dict test fixture to validate loading of named profiles
     fixture specifies several named configurations, including DLQ
     """

@@ -3,7 +3,7 @@
 # LICENSE file in the root directory of this source tree.
 
 from dataclasses import dataclass
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from prometheus_client import Counter
 
@@ -24,8 +24,8 @@ class DeliveryReport:
 
 
 def produce_handler(
-    outputs: Union[List[Tuple[str, Any]], List[Tuple[str, Any, dict[str, Any]]]],
-    queue_map: dict[str, Queue],
+    outputs: Union[List[Tuple[str, Any]], List[Tuple[str, Any, Dict[str, Any]]]],
+    queue_map: Dict[str, Queue],
     app_name: str,
     input_name: str,
     message_context: Any,
@@ -61,7 +61,7 @@ def produce_handler(
                 serializer=out_queue.serializer,
             )
             if len(args):
-                kwargs: dict[str, Any] = args[0]
+                kwargs: Dict[str, Any] = args[0]
             else:
                 kwargs = {}
             status = out_queue.producer_con.produce(

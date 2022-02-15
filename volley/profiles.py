@@ -42,7 +42,7 @@ class Profile(BaseModel):
 
     @root_validator
     @classmethod
-    def validate_connectors(cls, values: dict[str, Any]) -> Any:
+    def validate_connectors(cls, values: Dict[str, Any]) -> Any:
         if values.get("producer") is None and values["connection_type"] == ConnectionType.PRODUCER:
             raise ValueError("Invalid Profile. Must provide a producer for output queues.")
         if values.get("consumer") is None and values["connection_type"] == ConnectionType.CONSUMER:
@@ -51,7 +51,7 @@ class Profile(BaseModel):
 
     @root_validator
     @classmethod
-    def validate_handler(cls, values: dict[str, Any]) -> Any:
+    def validate_handler(cls, values: Dict[str, Any]) -> Any:
         """Volley cannot construct data into a data model without a model handler
         both model_handler and data_model can be None, however
         """
@@ -71,7 +71,7 @@ class Profile(BaseModel):
             )
 
 
-def construct_profiles(queue_configs: dict[str, dict[str, Any]]) -> Dict[str, Profile]:
+def construct_profiles(queue_configs: Dict[str, Dict[str, Any]]) -> Dict[str, Profile]:
     """Constructs a profile from each queue configuration provided by user
     User behavior:
         1. Specifies a named profile with no overrides

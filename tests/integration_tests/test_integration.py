@@ -1,7 +1,7 @@
 import json
 import time
 from threading import Thread
-from typing import Any, List
+from typing import Any, Dict, List
 from uuid import uuid4
 
 import pytest
@@ -27,7 +27,7 @@ from volley.logging import logger
 POLL_TIMEOUT = 30
 
 
-def consume_messages(consumer: Consumer, num_expected: int, serialize: bool = True) -> List[dict[str, Any]]:
+def consume_messages(consumer: Consumer, num_expected: int, serialize: bool = True) -> List[Dict[str, Any]]:
     """helper function for polling 'everything' off a topic"""
     start = time.time()
     consumed_messages = []
@@ -173,7 +173,7 @@ def test_dlq_serialization_failure(
 
 @pytest.mark.integration
 def test_confluent_consume(
-    broker_config: dict[str, str], environment: Environment, int_test_consumer: Consumer
+    broker_config: Dict[str, str], environment: Environment, int_test_consumer: Consumer
 ) -> None:
     """offsets must commit properly
     publish some messages. consume them. commit offsets.
@@ -223,7 +223,7 @@ def test_confluent_consume(
 
 @pytest.mark.integration
 def test_confluent_async_consume(
-    broker_config: dict[str, str], environment: Environment, int_test_consumer: Consumer
+    broker_config: Dict[str, str], environment: Environment, int_test_consumer: Consumer
 ) -> None:
     """offsets must commit properly
     publish some messages. consume them. commit offsets.

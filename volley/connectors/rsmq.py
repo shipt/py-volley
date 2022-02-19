@@ -128,7 +128,7 @@ class RSMQConsumer(BaseConsumer):
     @retry(reraise=True, stop=stop_after_attempt(10), wait=wait_exponential(multiplier=1, min=4, max=10))
     def delete_message(self, message_id: str) -> bool:
         """wrapper function to handle retries
-        
+
         Raises a TimeoutError after attempts have been exhausted.
         """
         result: bool = self.queue.deleteMessage(qname=self.queue_name, id=message_id).execute()

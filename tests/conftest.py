@@ -61,6 +61,24 @@ def mock_rsmq_consumer() -> RSMQConsumer:
         return c
 
 
+@fixture
+def mock_rsmq_consumer_id_bytes() -> RSMQConsumer:
+    msg = {
+        "id": bytes("xyz456", "utf-8"),
+        "message": json.dumps({"kafka": "message"}).encode("utf-8"),
+    }
+    with patch("volley.connectors.rsmq.RedisSMQ"):
+        c = RSMQConsumer(
+            host="redis",
+            queue_name="test",
+        )
+        execute = MagicMock(return_value=msg)
+        c.queue.receiveMessage.return_value.exceptions.return_value.execute = (
+            execute  # MagicMock(return_value=exceptions)
+        )
+        return c
+
+
 class KafkaMessage:
     _offset: int = randint(1, 200)
     _error_msg = "MOCK ERROR"

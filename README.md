@@ -69,7 +69,7 @@ queue_config = {
     "my-kafka-input": {
       "value": "my.kafka.topic.name",
       "profile": "confluent",
-      "data_model": "my_config.InputMessage"
+      "data_model": "my_config.InputMessage",
       "config": {
         "bootstrap.servers": "localhost:9092",
         "group.id": "my.consumer.group"

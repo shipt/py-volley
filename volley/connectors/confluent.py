@@ -101,7 +101,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
             self.last_offset[partition] = this_offset
 
     def on_fail(self, message_context: Message) -> None:
-        logger.info(
+        logger.error(
             "Downstream failure. Did not commit offset: %d, partition: %d, message: %s",
             message_context.offset(),
             message_context.partition(),
@@ -162,7 +162,7 @@ class ConfluentKafkaProducer(BaseProducer):
             self.on_fail(consumer_context)  # type: ignore
 
         else:
-            logger.info(
+            logger.debug(
                 "Successful delivery to %s, partion: %d, offset: %d", msg.topic(), msg.partition(), msg.offset()
             )
             DELIVERY_STATUS.labels("success").inc()
@@ -177,7 +177,7 @@ class ConfluentKafkaProducer(BaseProducer):
             callback=lambda err, msg, obj=message_context: self.acked(err, msg, obj),
         ),
 
-        logger.info("Sent to topic: %s", queue_name)
+        logger.debug("Sent to topic: %s", queue_name)
         return True
 
     def shutdown(self) -> None:

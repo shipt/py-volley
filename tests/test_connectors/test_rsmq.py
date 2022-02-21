@@ -82,3 +82,14 @@ def test_init_config(mocked_rsmq: MagicMock, monkeypatch: MonkeyPatch) -> None: 
     with raises(RSMQConfigError):
         # no host provided - should crash
         RSMQProducer(queue_name="test", config=config.copy())
+
+
+def test_rsmq_consumer_msg_id_bytes(mock_rsmq_consumer_id_bytes: RSMQConsumer) -> None:
+
+    output = mock_rsmq_consumer_id_bytes.consume()
+
+    if output is not None:
+        assert type(output.message_context) == str
+        assert output.message_context == "xyz456"
+    else:
+        assert False

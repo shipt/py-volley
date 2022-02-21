@@ -1,3 +1,4 @@
+import logging
 from random import randint
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
@@ -102,6 +103,7 @@ def test_consumer_group_init(mock_consumer: MagicMock, monkeypatch: MonkeyPatch)
 def test_callback(mock_confluent_producer: ConfluentKafkaProducer, caplog: LogCaptureFixture) -> None:
     mock_confluent_producer.on_fail = MagicMock()
     mock_confluent_producer.on_success = MagicMock()
+    caplog.set_level(logging.DEBUG)
 
     m = KafkaMessage()
     expected_log_error = "my-logged-error"

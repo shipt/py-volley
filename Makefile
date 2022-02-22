@@ -1,12 +1,7 @@
-PROJECT=volley
 PYTHON_VERSION=3.9.8
-
 SOURCE_OBJECTS=example volley tests
-
 INTRO_COMPOSE=example/intro/docker-compose.yml
 
-deploy:
-	poetry build
 
 format.black:
 	poetry run black ${SOURCE_OBJECTS}
@@ -59,8 +54,6 @@ setup.sysdep.poetry:
         || (echo "Poetry not found. \n  Installation instructions: https://python-poetry.org/docs/" \
             && exit 1)
 
-test:
-	docker-compose up unit-tests
 test.clean:
 	docker-compose down
 	-docker images -a | grep ${PROJECT} | awk '{print $3}' | xargs docker rmi

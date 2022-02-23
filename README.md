@@ -39,6 +39,16 @@ Volley handles the process of consuming/producing by providing developers with e
 
 To demonstrate, let's create an application with two worker nodes. One consumes from Kafka, finds the maximum value in a list then publishes it to Redis. The other consumes the message from Redis - if the max value is > 10, it logs to console otherwise it constructs a new list and publishes to the same Kafka topic. 
 
+```mermaid
+flowchart LR
+A[(Kafka)] --> |consume| B[Worker 1]
+B --> |publish| C[(Redis)]
+C --> |consume| D[Worker 2]
+D --> E{>10}
+E --> | no | A
+E --> | yes | F[Log to Console]
+```
+
 You can skip the details and just run `make intro.start`, which runs this example through `./example/intro/docker-compose.yml`
 
 1. start Kafka and Redis instance

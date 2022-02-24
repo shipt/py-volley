@@ -218,3 +218,11 @@ See `.drone.yml` for test gates. A Semantic tagged release of `main` triggers a 
 `make test.unit` Runs unit tests on individual components with mocked responses dependencies external to the code. Docker is not involved in this process.
 
 `make test.integration` Runs an "end-to-end" test against the example project in `./example`. The tests validate messages make it through all supported connectors and queues, plus a user defined connector plugin (postgres).
+
+## ✨ Contributors
+
+Thanks goes to these incredible people:
+
+<a href="https://github.com/shipt/py-volley/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=shipt/py-volley" />
+</a>

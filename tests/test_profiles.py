@@ -123,7 +123,7 @@ def test_invalid_handler_config(confluent_consumer_profile: Profile) -> None:
     ],
 )
 def test_profile_override(data_model: Optional[str], model_handler: Optional[str], serializer: Optional[str]) -> None:
-    """all or none of a profiles can be overriden by the user"""
+    """all or none of a profiles can be overridden by the user"""
     qname = "test-topic"
     consumer_group = str(uuid4())
     qvalue = "test.topic"

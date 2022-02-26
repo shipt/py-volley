@@ -4,12 +4,15 @@
 
 from copy import deepcopy
 from enum import Enum, auto
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Type, Union
 
 from pydantic import BaseModel, root_validator, validator
 
 from volley.config import get_configs
+from volley.connectors.base import BaseConsumer, BaseProducer
 from volley.logging import logger
+from volley.models.base import BaseModelHandler
+from volley.serializers.base import BaseSerialization
 
 
 class ConnectionType(Enum):
@@ -22,12 +25,13 @@ class ConnectionType(Enum):
 class Profile(BaseModel):
 
     connection_type: ConnectionType
-    # all str - path to the objects
-    consumer: Optional[str]
-    producer: Optional[str]
-    model_handler: Optional[str]
-    data_model: Optional[str]
-    serializer: Optional[str]
+    # dot path to the object, or the object itself
+    # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#the-type-of-class-objects
+    consumer: Optional[Union[str, Type[BaseConsumer]]]
+    producer: Optional[Union[str, Type[BaseProducer]]]
+    model_handler: Optional[Union[str, Type[BaseModelHandler]]]
+    data_model: Optional[Union[str, type]]
+    serializer: Optional[Union[str, Type[BaseSerialization]]]
 
     @validator("model_handler", "data_model", "serializer")
     @classmethod
@@ -61,7 +65,8 @@ class Profile(BaseModel):
             # happy path - both are provided
             return values
         elif data_model is None and model_handler is None:
-            # happy, but unconvential path
+            # happy, but unconventional path
+            # could happen if someone wants to send bytes to their application
             logger.info("model_handler and data_model are disabled")
             return values
         else:

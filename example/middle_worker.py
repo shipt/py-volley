@@ -12,10 +12,9 @@ from example.data_models import (
 )
 from example.plugins.my_plugin import MyPGConsumer
 from volley.data_models import GenericMessage
-from volley.models.pydantic_model import PydanticModelHandler
 from volley.engine import Engine
 from volley.logging import logger
-from volley.models import PydanticModelHandler
+from volley.models.pydantic_model import PydanticModelHandler
 from volley.serializers import MsgPackSerialization
 
 logging.basicConfig(level=logging.INFO)

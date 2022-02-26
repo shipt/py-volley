@@ -26,7 +26,6 @@ class Profile(BaseModel):
 
     connection_type: ConnectionType
     # dot path to the object, or the object itself
-    # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#the-type-of-class-objects
     consumer: Optional[Union[str, Type[BaseConsumer]]]
     producer: Optional[Union[str, Type[BaseProducer]]]
     model_handler: Optional[Union[str, Type[BaseModelHandler]]]

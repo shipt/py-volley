@@ -12,6 +12,7 @@ from example.data_models import (
 )
 from example.plugins.my_plugin import MyPGConsumer
 from volley.data_models import GenericMessage
+from volley.models.pydantic_model import PydanticModelHandler
 from volley.engine import Engine
 from volley.logging import logger
 from volley.models import PydanticModelHandler
@@ -27,6 +28,7 @@ queue_config = {
         "profile": "rsmq",
         "serializer": MsgPackSerialization,
         "data_model": GenericMessage,
+        "model_handler": PydanticModelHandler,
     },
     "postgres_queue": {
         "value": "my_long_table_name",

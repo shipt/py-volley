@@ -1,9 +1,17 @@
-from typing import Dict, List
+from typing import Dict, List, Type, Union
 
 import pytest
 
+from volley.connectors.base import BaseConsumer, BaseProducer
+from volley.connectors.confluent import ConfluentKafkaConsumer, ConfluentKafkaProducer
+from volley.connectors.rsmq import RSMQConsumer, RSMQProducer
+from volley.data_models import GenericMessage
+from volley.models.base import BaseModelHandler
+from volley.models.pydantic_model import PydanticModelHandler
 from volley.profiles import ConnectionType, Profile
 from volley.queues import Queue, construct_queue_map
+from volley.serializers.base import BaseSerialization
+from volley.serializers.msgpack_serializer import MsgPackSerialization
 
 
 def test_bad_connnect_type(confluent_consumer_profile: Profile) -> None:
@@ -65,3 +73,70 @@ def test_invalid_supported_queues(
         profile.data_model = "bad.path.to.object"
         with pytest.raises(ImportError):
             Queue(name="test", value="test", profile=profile)
+
+
+@pytest.mark.parametrize(
+    "consumer,producer,data_model,model_handler,serializer,connection_type",
+    [
+        (
+            ConfluentKafkaConsumer,
+            "volley.connectors.confluent.ConfluentKafkaProducer",
+            GenericMessage,
+            PydanticModelHandler,
+            "volley.serializers.msgpack_serializer.MsgPackSerialization",
+            ConnectionType.PRODUCER,
+        ),
+        (
+            ConfluentKafkaConsumer,
+            "volley.connectors.confluent.ConfluentKafkaProducer",
+            "volley.data_models.GenericMessage",
+            PydanticModelHandler,
+            "volley.serializers.msgpack_serializer.MsgPackSerialization",
+            ConnectionType.CONSUMER,
+        ),
+        (
+            RSMQConsumer,
+            ConfluentKafkaProducer,
+            GenericMessage,
+            PydanticModelHandler,
+            MsgPackSerialization,
+            ConnectionType.PRODUCER,
+        ),
+        (
+            ConfluentKafkaConsumer,
+            RSMQProducer,
+            GenericMessage,
+            PydanticModelHandler,
+            MsgPackSerialization,
+            ConnectionType.CONSUMER,
+        ),
+    ],
+)
+def test_queue_from_module_profile(
+    consumer: Union[str, Type[BaseConsumer]],
+    producer: Union[str, Type[BaseProducer]],
+    data_model: Union[str, type],
+    model_handler: Union[str, Type[BaseModelHandler]],
+    serializer: Union[str, Type[BaseSerialization]],
+    connection_type: ConnectionType,
+) -> None:
+    """initialize profile using combination of dot path and object configurations"""
+    profile = Profile(
+        consumer=consumer,
+        producer=producer,
+        data_model=data_model,
+        model_handler=model_handler,
+        serializer=serializer,
+        connection_type=connection_type,
+    )
+    queue = Queue(name="test", value="test", profile=profile)
+    queue.connect(connection_type)
+
+    if connection_type == ConnectionType.CONSUMER:
+        assert isinstance(queue.consumer_con, BaseConsumer)
+    else:
+        assert isinstance(queue.producer_con, BaseProducer)
+
+    assert isinstance(queue.data_model, type)
+    assert isinstance(queue.model_handler, BaseModelHandler)
+    assert isinstance(queue.serializer, BaseSerialization)

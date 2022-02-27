@@ -14,13 +14,13 @@ queue_config = {
     "input-topic": {
         "value": INPUT_TOPIC,
         "profile": "confluent",
-        "data_model": "example.data_models.InputMessage",
+        "data_model": InputMessage,
         "config": {"group.id": CONSUMER_GROUP},
     },
     "output-topic": {
         "value": OUTPUT_TOPIC,
         "profile": "confluent",
-        "data_model": "example.data_models.KafkaKafkaOutput",
+        "data_model": KafkaKafkaOutput,
     },
     "dead-letter-queue": {
         "value": "localhost.kafka.kafka.dlq",

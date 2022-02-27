@@ -13,7 +13,7 @@ from volley.connectors import (
     RSMQConsumer,
     RSMQProducer,
 )
-from volley.data_models import QueueMessage
+from volley.data_models import GenericMessage, QueueMessage
 from volley.engine import Engine
 from volley.profiles import ConnectionType, Profile
 
@@ -170,7 +170,7 @@ def config_dict() -> Dict[str, Dict[str, Any]]:
         "comp_1": {
             "value": "comp1",
             "profile": "rsmq",
-            "data_model": "volley.data_models.GenericMessage",
+            "data_model": GenericMessage,
         },
         "output-topic": {
             "value": "localhost.kafka.output",

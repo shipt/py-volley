@@ -19,13 +19,13 @@ queue_config = {
     "my-kafka-input": {
         "value": "my.kafka.topic.name",
         "profile": "confluent",
-        "data_model": "my_config.InputMessage",
+        "data_model": InputMessage,
         "config": {"bootstrap.servers": os.getenv("KAFKA_BROKERS", "localhost:9092"), "group.id": "my.consumer.group"},
     },
     "my-redis-output": {
         "value": "my.redis.output.queue.name",
-        "data_model": "my_config.OutputMessage",
         "profile": "rsmq",
+        "data_model": OutputMessage,
         "config": {
             "host": os.getenv("REDIS_HOST", "localhost"),
             "port": 6379,

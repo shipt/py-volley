@@ -79,7 +79,7 @@ queue_config = {
     "my-kafka-input": {
       "value": "my.kafka.topic.name",
       "profile": "confluent",
-      "data_model": "my_config.InputMessage",
+      "data_model": InputMessage,
       "config": {
         "bootstrap.servers": "localhost:9092",
         "group.id": "my.consumer.group"
@@ -88,6 +88,7 @@ queue_config = {
     "my-redis-output": {
       "value": "my.redis.output.queue.name",
       "profile": "rsmq",
+      "data_model": OutputMessage,
       "config": {
         "host": "localhost",
         "port": 6379,

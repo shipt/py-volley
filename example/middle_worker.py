@@ -10,11 +10,14 @@ from example.data_models import (
     PostgresMessage,
     Queue1Message,
 )
+from example.plugins.my_plugin import MyPGConsumer
+from volley.data_models import GenericMessage
 from volley.engine import Engine
 from volley.logging import logger
+from volley.models.pydantic_model import PydanticModelHandler
+from volley.serializers import MsgPackSerialization
 
 logging.basicConfig(level=logging.INFO)
-
 
 queue_config = {
     # define queue configurations in a dict
@@ -22,27 +25,29 @@ queue_config = {
     "redis_queue": {
         "value": "long_name_1",
         "profile": "rsmq",
-        "serializer": "volley.serializers.MsgPackSerialization",
-        "data_model": "volley.data_models.GenericMessage",
+        "serializer": MsgPackSerialization,
+        "data_model": GenericMessage,
+        "model_handler": PydanticModelHandler,
     },
     "postgres_queue": {
         "value": "my_long_table_name",
         "data_model": "example.data_models.PostgresMessage",
-        "model_handler": "volley.models.PydanticModelHandler",
+        "model_handler": PydanticModelHandler,
         # disable serializer - sqlachemy implementation in example/plugin/my_plugin.py handles this
         "serializer": "disabled",
+        # both dot path to the object or the object itself are valid
         "producer": "example.plugins.my_plugin.MyPGProducer",
-        "consumer": "example.plugins.my_plugin.MyPGConsumer",
+        "consumer": MyPGConsumer,
     },
     "input-topic": {
         "value": "localhost.kafka.input",
         "profile": "confluent",
-        "data_model": "example.data_models.InputMessage",
+        "data_model": InputMessage,
     },
     "output-topic": {
         "value": "localhost.kafka.output",
         "profile": "confluent-pydantic",
-        "data_model": "example.data_models.OutputMessage",
+        "data_model": OutputMessage,
     },
 }
 

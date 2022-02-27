@@ -43,26 +43,38 @@ class Queue:
     def __post_init__(self) -> None:
         """Load modules provided in Profile"""
         # data model is assigned by not instantiated
-        if self.profile.data_model is not None:
+        if isinstance(self.profile.data_model, str):
             self.data_model = import_module_from_string(self.profile.data_model)
+        elif self.profile.data_model is not None:
+            self.data_model = self.profile.data_model
 
         # model_handler and serializer are instantiated on init
-        if self.profile.model_handler is not None:
+        if isinstance(self.profile.model_handler, str):
             self.model_handler = import_module_from_string(self.profile.model_handler)()
-        if self.profile.serializer is not None:
+        elif self.profile.model_handler is not None:
+            self.model_handler = self.profile.model_handler()
+        if isinstance(self.profile.serializer, str):
             self.serializer = import_module_from_string(self.profile.serializer)()
+        elif self.profile.serializer is not None:
+            self.serializer = self.profile.serializer()
 
     def connect(self, con_type: ConnectionType) -> None:
         """instantiate the connector class"""
         if con_type == ConnectionType.CONSUMER:
             if self.profile.consumer is None:
                 raise ValueError("Must provide a consumer connector")
-            _class = import_module_from_string(self.profile.consumer)
+            if isinstance(self.profile.consumer, str):
+                _class = import_module_from_string(self.profile.consumer)
+            else:
+                _class = self.profile.consumer
             self.consumer_con = _class(queue_name=self.value, config=self.pass_through_config.copy())
         elif con_type == ConnectionType.PRODUCER:
             if self.profile.producer is None:
                 raise ValueError("Must provide a producer connector")
-            _class = import_module_from_string(self.profile.producer)
+            if isinstance(self.profile.producer, str):
+                _class = import_module_from_string(self.profile.producer)
+            else:
+                _class = self.profile.producer
             self.producer_con = _class(queue_name=self.value, config=self.pass_through_config.copy())
         else:
             raise TypeError(f"{con_type=} is not valid")

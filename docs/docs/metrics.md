@@ -1,6 +1,6 @@
 # Metrics
 
-Volley exposes [Prometheus metrics](https://prometheus.io/docs/concepts/metric_types/) list below on an http server. The metrics serving port can be configured or disabled completely.
+Volley exposes [Prometheus metrics](https://prometheus.io/docs/concepts/metric_types/) on an http server. The metrics serving port can be configured or disabled completely.
 
 Expose metrics on port 8081.
 

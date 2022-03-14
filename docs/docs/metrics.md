@@ -1,6 +1,25 @@
 # Metrics
 
-Volley exports selected [Prometheus metrics](https://prometheus.io/docs/concepts/metric_types/) on all workers.
+Volley exposes [Prometheus metrics](https://prometheus.io/docs/concepts/metric_types/) on an http server. The metrics serving port can be configured or disabled completely.
+
+Expose metrics on port 8081.
+
+```python
+from volley import Engine
+app = Engine(
+    ...
+    metrics_port=8081
+)
+```
+
+To disable:
+```python
+from volley import Engine
+app = Engine(
+    ...
+    metrics_port=None # disabled
+)
+```
 
 All metrics contain the label `volley_app` which is directly tied to the `app_name` parameter passed in when initializing `volley.Engine()`. Below are descriptions of each of the metrics produced by Volley.
 
@@ -45,5 +64,9 @@ All metrics contain the label `volley_app` which is directly tied to the `app_na
             - `delete` : time to delete a message from the queue
             - `write` : time to add a message to the queue
 
+## `heartbeats`
+- Type: [Counter](https://prometheus.io/docs/concepts/metric_types/#counter)
+- Counter is incremented at the start of each poll cycle. It is incremented more frequently when messages are consumed and at the rate of the `volley.Engine` `poll_interval` when no messages are available to be consumed.
+- Labels: There are no labels on this metric.
 
-Applications can export their own metrics as well. Examples in the Prometheus official [python client](https://github.com/prometheus/client_python) are a great place to start. The Volley exporter will collect these metrics and expose them to be scraped by a Prometheus server.
+Applications can export their own metrics as well. Examples in the Prometheus official [python client](https://github.com/prometheus/client_python) are a great place to start. The Volley exporter will collect these metrics and expose them to be scraped by a Prometheus server. To serve multiprocess metrics, disable Volley's metrics server and implement the Multiprocess collector according to the official [python client docs](https://github.com/prometheus/client_python).

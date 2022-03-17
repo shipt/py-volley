@@ -12,7 +12,7 @@ def main() -> None:
 
     for request in range(1, 10):
         print("Sending request ", request, "...")
-        msg = {"hello": f"cat: {request}"}
+        msg = {"req_id": request, "height": 10, "weight": 200}
         socket.send(msgpack.dumps(msg))
         _message = socket.recv()
         message = msgpack.loads(_message)

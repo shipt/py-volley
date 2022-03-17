@@ -28,7 +28,7 @@ pip install py-volley[zmq]  # ZeroMQ dependencies
 ```
 
 ## Features
-- Built in support for [Apache Kafka](https://kafka.apache.org/) and [RSMQ](https://github.com/mlasevich/PyRSMQ)
+- Built in support for [Apache Kafka](https://kafka.apache.org/) and [RSMQ](https://github.com/smrchy/rsmq)
 - Optionally configured integration with dead-letter-queues
 - [Prometheus](https://prometheus.io/) metrics for all operations such as function processing time, and consumption and production count.
 - Serialization in JSON and [MessagePack](https://msgpack.org/index.html)

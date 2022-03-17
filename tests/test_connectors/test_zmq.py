@@ -19,7 +19,7 @@ def test_zmqconsumer(mocked_zsmq: MagicMock) -> None:
 
 
 @patch("volley.connectors.zmq._socket")
-def test_zmqproducer(mocked_zsmq: MagicMock) -> None:
+def test_zmqproducer(mocked_zsmq: MagicMock) -> None:  # pylint: disable=W0613
     msg = b"test-message"
     producer = ZMQProducer(host="redis", queue_name="test", config={"port": 5555})
     producer.produce(queue_name="test", message=msg)

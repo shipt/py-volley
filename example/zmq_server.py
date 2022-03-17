@@ -12,10 +12,13 @@ from volley.serializers import MsgPackSerialization
 
 logging.basicConfig(level=logging.INFO)
 
+ZMQ_PORT = os.getenv("ZMQ_PORT", 5555)
+
 
 class InputMessage(BaseModel):
     height: float
     weight: float
+    req_id: int = 0
 
 
 class BMI(BaseModel):
@@ -29,7 +32,7 @@ cfg = {
         "serializer": MsgPackSerialization,
         "model_handler": PydanticModelHandler,
         "data_model": InputMessage,
-        "config": {"port": os.environ["ZMQ_PORT"]},
+        "config": {"port": ZMQ_PORT},
     },
     "response": {
         "value": "zmq",
@@ -37,7 +40,7 @@ cfg = {
         "serializer": MsgPackSerialization,
         "model_handler": PydanticModelHandler,
         "data_model": BMI,
-        "config": {"port": os.environ["ZMQ_PORT"]},
+        "config": {"port": ZMQ_PORT},
     },
 }
 

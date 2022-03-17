@@ -962,21 +962,10 @@ python-versions = ">=3.7"
 docs = ["sphinx", "jaraco.packaging (>=8.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
-[[package]]
-name = "zmq"
-version = "0.0.0"
-description = "You are probably looking for pyzmq."
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-pyzmq = "*"
-
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.11"
-content-hash = "d0e954718ba4e4973c087d847eedbbc9dc209dace7927e15cad0a67f295cc9a8"
+content-hash = "8a3d11b26e715d537bd42ea4415678375cb76930a84cf0ca095584b4c746dad6"
 
 [metadata.files]
 astroid = [
@@ -1942,8 +1931,4 @@ wrapt = [
 zipp = [
     {file = "zipp-3.7.0-py3-none-any.whl", hash = "sha256:b47250dd24f92b7dd6a0a8fc5244da14608f3ca90a5efcd37a3b1642fac9a375"},
     {file = "zipp-3.7.0.tar.gz", hash = "sha256:9f50f446828eb9d45b267433fd3e9da8d801f614129124863f9c51ebceafb87d"},
-]
-zmq = [
-    {file = "zmq-0.0.0.tar.gz", hash = "sha256:6b1a1de53338646e8c8405803cffb659e8eb7bb02fff4c9be62a7acfac8370c9"},
-    {file = "zmq-0.0.0.zip", hash = "sha256:21cfc6be254c9bc25e4dabb8a3b2006a4227966b7b39a637426084c8dc6901f7"},
 ]

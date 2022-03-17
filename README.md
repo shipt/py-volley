@@ -17,7 +17,14 @@ All of Volley's major operations (connectors, serializers, data validation/model
 Requires Python >= 3.8
 
 ```bash
-pip install py-volley
+pip install py-volley[standard]
+```
+
+You can also limit the dependencies by:
+```bash
+pip install py-volley[confluent]  # Kafka dependencies (librdkafka)
+pip install py-volley[rsmq]  # RSMQ dependencies
+pip install py-volley[zmq]  # ZeroMQ dependencies
 ```
 
 ## Features

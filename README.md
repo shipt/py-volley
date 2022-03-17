@@ -17,7 +17,7 @@ All of Volley's major operations (connectors, serializers, data validation/model
 Requires Python >= 3.8
 
 ```bash
-pip install py-volley[standard]
+pip install py-volley[all]
 ```
 
 You can also limit the dependencies by:

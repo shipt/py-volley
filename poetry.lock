@@ -963,15 +963,15 @@ docs = ["sphinx", "jaraco.packaging (>=8.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
 [extras]
+all = ["confluent-kafka", "PyRSMQ", "hiredis", "tenacity"]
 confluent = ["confluent-kafka"]
 rmsq = ["PyRSMQ", "hiredis", "tenacity"]
-standard = ["confluent-kafka", "PyRSMQ", "hiredis", "tenacity"]
 zmq = ["pyzmq"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.11"
-content-hash = "00a96767d1480397df44c9add475203b9c41c24147f6eda941bb405ce2d91fe7"
+content-hash = "9c340cc3288a742f153fcca1b346631f5e93c750376025fea81fca164ba5558f"
 
 [metadata.files]
 astroid = [

@@ -39,7 +39,7 @@ setup.ci.poetry:
 setup.project:
 	@poetry env use $$(python -c "import sys; print(sys.executable)")
 	@echo "Active interpreter path: $$(poetry env info --path)/bin/python"
-	poetry install -E standard
+	poetry install -E all
 setup.python.activation:
 	@pyenv local ${PYTHON_VERSION} >/dev/null 2>&1 || true
 	@asdf local python ${PYTHON_VERSION} >/dev/null 2>&1 || true

@@ -1,43 +1,59 @@
 import logging
-from typing import Dict, List, Tuple
+import os
+from typing import List, Tuple
 
 from pydantic import BaseModel
 
-from example.data_models import InputMessage, Queue1Message
 from volley import Engine
-from volley.logging import logger
-
-logging.basicConfig(level=logging.INFO)
 from volley.connectors import ZMQConsumer, ZMQProducer
+from volley.logging import logger
 from volley.models import PydanticModelHandler
 from volley.serializers import MsgPackSerialization
 
+logging.basicConfig(level=logging.INFO)
+
 
 class InputMessage(BaseModel):
-    hello: str
+    height: float
+    weight: float
+
+
+class BMI(BaseModel):
+    bmi: float
 
 
 cfg = {
     "request": {
         "value": "zmq",
         "consumer": ZMQConsumer,
-        "producer": ZMQProducer,
         "serializer": MsgPackSerialization,
         "model_handler": PydanticModelHandler,
         "data_model": InputMessage,
-        "config": {"port": 5555},
+        "config": {"port": os.environ["ZMQ_PORT"]},
+    },
+    "response": {
+        "value": "zmq",
+        "producer": ZMQProducer,
+        "serializer": MsgPackSerialization,
+        "model_handler": PydanticModelHandler,
+        "data_model": BMI,
+        "config": {"port": os.environ["ZMQ_PORT"]},
     },
 }
 
 
-eng = Engine(input_queue="request", output_queues=["request"], queue_config=cfg)
+eng = Engine(input_queue="request", output_queues=["response"], queue_config=cfg)
+
+
+def calc_bmi(height: float, weight: float) -> BMI:
+    return BMI(bmi=(weight / (height ** 2)))
 
 
 @eng.stream_app
-async def main(msg: InputMessage) -> List[Tuple[str, Queue1Message, Dict[str, float]]]:
+async def main(msg: InputMessage) -> List[Tuple[str, BMI]]:
     logger.info(msg)
-    msg.hello = "dog" + msg.hello
-    return [("request", msg)]
+    bmi = calc_bmi(height=msg.height, weight=msg.weight)
+    return [("response", bmi)]
 
 
 if __name__ == "__main__":

@@ -47,10 +47,7 @@ class ZMQConsumer(BaseConsumer):
         msg = _socket.recv()  # type: ignore
         _duration = time.time() - _start
         PROCESS_TIME.labels("read").observe(_duration)
-        if msg:
-            return QueueMessage(message_context=None, message=msg)
-        else:
-            return None
+        return QueueMessage(message_context=None, message=msg)
 
     def on_success(self, message_context: str) -> None:
         pass

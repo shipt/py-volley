@@ -1,11 +1,9 @@
 # https://learning-0mq-with-pyzmq.readthedocs.io/en/latest/pyzmq/patterns/client_server.html
-import sys
-
 import msgpack
 import zmq
 
 
-def main():
+def main() -> None:
     port = 5555
     context = zmq.Context()
     print("Connecting to server...")

@@ -7,8 +7,11 @@ import pytest
 from pytest import LogCaptureFixture, MonkeyPatch
 
 from tests.conftest import KafkaMessage
-from volley.connectors import ConfluentKafkaConsumer, ConfluentKafkaProducer
-from volley.connectors.confluent import handle_creds
+from volley.connectors.confluent import (
+    ConfluentKafkaConsumer,
+    ConfluentKafkaProducer,
+    handle_creds,
+)
 from volley.data_models import QueueMessage
 
 

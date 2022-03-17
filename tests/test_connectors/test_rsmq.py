@@ -3,8 +3,7 @@ from unittest.mock import MagicMock, patch
 from pytest import MonkeyPatch, raises
 from tenacity import stop_after_attempt
 
-from volley.connectors import RSMQConsumer, RSMQProducer
-from volley.connectors.rsmq import RSMQConfigError
+from volley.connectors.rsmq import RSMQConfigError, RSMQConsumer, RSMQProducer
 from volley.data_models import QueueMessage
 
 

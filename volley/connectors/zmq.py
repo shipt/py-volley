@@ -44,7 +44,7 @@ class ZMQConsumer(BaseConsumer):
     def consume(self) -> Optional[QueueMessage]:
         global _socket
         _start = time.time()
-        msg = _socket.recv()
+        msg = _socket.recv()  # type: ignore
         _duration = time.time() - _start
         PROCESS_TIME.labels("read").observe(_duration)
         if msg:
@@ -61,7 +61,7 @@ class ZMQConsumer(BaseConsumer):
     def shutdown(self) -> None:
         global _socket
         global _socket
-        _socket.close()
+        _socket.close()  # type: ignore
         context.term()
 
 
@@ -87,7 +87,7 @@ class ZMQProducer(BaseProducer):
     ) -> bool:
         global _socket
         _start = time.time()
-        _socket.send(message)
+        _socket.send(message)  # type: ignore
         _duration = time.time() - _start
         PROCESS_TIME.labels("write").observe(_duration)
         return True
@@ -95,5 +95,5 @@ class ZMQProducer(BaseProducer):
     def shutdown(self) -> None:
         global _socket
         global _socket
-        _socket.close()
+        _socket.close()  # type: ignore
         context.term()

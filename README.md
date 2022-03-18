@@ -22,7 +22,7 @@ pip install py-volley[all]
 
 You can also limit the dependencies by:
 ```bash
-pip install py-volley[confluent]  # Kafka dependencies (librdkafka)
+pip install py-volley[kafka]  # Kafka dependencies (librdkafka)
 pip install py-volley[rsmq]  # RSMQ dependencies
 pip install py-volley[zmq]  # ZeroMQ dependencies
 ```

@@ -7,12 +7,8 @@ from unittest.mock import MagicMock, patch
 from pytest import MonkeyPatch, fixture
 
 from volley.config import get_configs
-from volley.connectors import (
-    ConfluentKafkaConsumer,
-    ConfluentKafkaProducer,
-    RSMQConsumer,
-    RSMQProducer,
-)
+from volley.connectors.confluent import ConfluentKafkaConsumer, ConfluentKafkaProducer
+from volley.connectors.rsmq import RSMQConsumer, RSMQProducer
 from volley.data_models import GenericMessage, QueueMessage
 from volley.engine import Engine
 from volley.profiles import ConnectionType, Profile

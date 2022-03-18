@@ -34,3 +34,7 @@
 ### [jd/tenacity](https://github.com/jd/tenacity)
 - [License-Apache](https://github.com/jd/tenacity/blob/master/LICENSE)
 - [Contributors](https://github.com/jd/tenacity/graphs/contributors)
+
+### [zeromq/pyzmq](https://github.com/zeromq/pyzmq)
+- [License-New BSD](https://github.com/zeromq/pyzmq/blob/main/COPYING.BSD)
+- [Contributors](https://github.com/zeromq/pyzmq/graphs/contributors)

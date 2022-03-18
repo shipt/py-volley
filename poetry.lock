@@ -963,7 +963,7 @@ docs = ["sphinx", "jaraco.packaging (>=8.2)", "rst.linker (>=1.9)"]
 testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-cov", "pytest-enabler (>=1.0.1)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
 [extras]
-all = ["confluent-kafka", "PyRSMQ", "hiredis", "tenacity"]
+all = ["confluent-kafka", "PyRSMQ", "hiredis", "tenacity", "pyzmq"]
 kafka = ["confluent-kafka"]
 rmsq = ["PyRSMQ", "hiredis", "tenacity"]
 zmq = ["pyzmq"]
@@ -971,7 +971,7 @@ zmq = ["pyzmq"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.11"
-content-hash = "3080100934d1cee4b4852b2165f08dc4db5afb67f7df651d15d62ff6bf2961a2"
+content-hash = "86168422c8372f252a1cd0ec4189bb0364a1e1867606c35dfd7558e5f4673132"
 
 [metadata.files]
 astroid = [

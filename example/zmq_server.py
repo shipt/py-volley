@@ -5,7 +5,7 @@ from typing import List, Tuple
 from pydantic import BaseModel
 
 from volley import Engine
-from volley.connectors import ZMQConsumer, ZMQProducer
+from volley.connectors.zmq import ZMQConsumer, ZMQProducer
 from volley.logging import logger
 from volley.models import PydanticModelHandler
 from volley.serializers import MsgPackSerialization

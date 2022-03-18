@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch
 
-from volley.connectors import ZMQConsumer, ZMQProducer
+from volley.connectors.zmq import ZMQConsumer, ZMQProducer
 from volley.data_models import QueueMessage
 
 

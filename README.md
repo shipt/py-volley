@@ -17,15 +17,22 @@ All of Volley's major operations (connectors, serializers, data validation/model
 Requires Python >= 3.8
 
 ```bash
-pip install py-volley
+pip install py-volley[all]
+```
+
+You can also limit the dependencies by:
+```bash
+pip install py-volley[kafka]  # Kafka dependencies (librdkafka)
+pip install py-volley[rsmq]  # RSMQ dependencies
+pip install py-volley[zmq]  # ZeroMQ dependencies
 ```
 
 ## Features
-- Built in support for [Apache Kafka](https://kafka.apache.org/) and [RSMQ](https://github.com/mlasevich/PyRSMQ)
-- Optionally configured integration with dead-letter-queues
+- Built in support for [Apache Kafka](https://kafka.apache.org/), [RSMQ](https://github.com/smrchy/rsmq), [ZeroMQ](https://zeromq.org/)
 - [Prometheus](https://prometheus.io/) metrics for all operations such as function processing time, and consumption and production count.
 - Serialization in JSON and [MessagePack](https://msgpack.org/index.html)
 - Data validation via [Pydantic](https://pydantic-docs.helpmanual.io/)
+- Optionally configured integration with dead-letter-queues
 - Extendible connectors (consumer/producers), serializers, model handlers, and model handlers via plugins.
 
 ## Getting started

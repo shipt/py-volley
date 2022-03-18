@@ -16,11 +16,8 @@ from example.kafka_kafka_worker import main as kafka_test_app
 from example.redis_kafka_worker import main as redis_test_app
 from example.redis_kafka_worker import redis_app as redis_kafka_eng
 from tests.integration_tests.conftest import Environment
-from volley.connectors import (
-    ConfluentKafkaConsumer,
-    ConfluentKafkaProducer,
-    RSMQProducer,
-)
+from volley.connectors.confluent import ConfluentKafkaConsumer, ConfluentKafkaProducer
+from volley.connectors.rsmq import RSMQProducer
 from volley.data_models import QueueMessage
 from volley.logging import logger
 

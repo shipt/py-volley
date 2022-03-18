@@ -964,14 +964,14 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytest-
 
 [extras]
 all = ["confluent-kafka", "PyRSMQ", "hiredis", "tenacity"]
-confluent = ["confluent-kafka"]
+kafka = ["confluent-kafka"]
 rmsq = ["PyRSMQ", "hiredis", "tenacity"]
 zmq = ["pyzmq"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8,<3.11"
-content-hash = "9c340cc3288a742f153fcca1b346631f5e93c750376025fea81fca164ba5558f"
+content-hash = "3080100934d1cee4b4852b2165f08dc4db5afb67f7df651d15d62ff6bf2961a2"
 
 [metadata.files]
 astroid = [

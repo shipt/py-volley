@@ -2,6 +2,8 @@ import logging
 from random import randint
 from typing import Dict, List, Tuple, Union
 
+import msgpack
+import zmq
 from pydantic.main import BaseModel
 
 from example.data_models import (
@@ -57,9 +59,27 @@ eng = Engine(
     queue_config=queue_config,
 )
 
+port = 5555
+context = zmq.Context()
+print("Connecting to server...")
+socket = context.socket(zmq.REQ)
+socket.connect("tcp://zmq_worker:%s" % port)
+
+
+class BMI(BaseModel):
+    bmi: float
+
 
 @eng.stream_app
 def main(msg: Queue1Message) -> Union[List[Tuple[str, BaseModel, Dict[str, str]]], List[Tuple[str, InputMessage]]]:
+    """Calc BMI via the zmq 'worker'"""
+    # NOTE: Validating functionality with socket session
+    _ = {"height": 1.1, "weight": 1.2}
+    logger.info("Go Low")
+    socket.send(msgpack.dumps(_))
+    result = BMI.parse_obj(msgpack.loads(socket.recv()))
+    logger.info(f"result: {result}")
+
     """adds one to a value"""
     req_id = msg.request_id
     max_val = msg.max_value

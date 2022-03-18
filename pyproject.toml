@@ -33,7 +33,7 @@ pyzmq = {version ="^22.3.0", optional = true}
 [tool.poetry.extras]
 all = ["confluent-kafka", "PyRSMQ", "hiredis", "tenacity", "zmq"]
 rmsq = ["PyRSMQ", "hiredis", "tenacity"]
-confluent = ["confluent-kafka"]
+kafka = ["confluent-kafka"]
 zmq = ["pyzmq"]
 
 [tool.poetry.dev-dependencies]

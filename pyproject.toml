@@ -10,7 +10,7 @@ packages = [
 
 [[tool.poetry.source]]
 name = "shipt"
-url = "https://github.com/shipt/py-volley"
+url = "https://pypi.shipt.com/simple/"
 secondary = true
 
 [tool.poetry.urls]
@@ -32,7 +32,7 @@ pyzmq = {version ="^22.3.0", optional = true}
 
 [tool.poetry.extras]
 all = ["confluent-kafka", "PyRSMQ", "hiredis", "tenacity", "pyzmq"]
-rmsq = ["PyRSMQ", "hiredis", "tenacity"]
+rsmq = ["PyRSMQ", "hiredis", "tenacity"]
 kafka = ["confluent-kafka"]
 zmq = ["pyzmq"]
 

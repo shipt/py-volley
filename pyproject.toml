@@ -25,6 +25,7 @@ orjson = "^3.6.4"
 msgpack = "^1.0.3"
 confluent-kafka = "^1.7.0"
 tenacity = "^8.0.1"
+pyzmq = "^22.3.0"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.2"

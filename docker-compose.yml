@@ -1,136 +1,147 @@
-version: '3.5'
+version: "3.5"
 services:
-    data_producer:
-        environment:
-            - REDIS_HOST=redis
-            - REDIS_PORT=6379
-            - KAFKA_BROKERS=kafka:9092
-        build:
-            context: .
-            dockerfile: Dockerfile
-            target: dev
-        depends_on:
-            - kafka
-        volumes:
-            - ./:/app/ 
-        # ports:
-        #     - 5678:5678
-        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m example.external_data_producer
-        command: python -m example.external_data_producer
+  data_producer:
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - KAFKA_BROKERS=kafka:9092
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    depends_on:
+      - kafka
+    volumes:
+      - ./:/app/
+    # ports:
+    #     - 5678:5678
+    # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m example.external_data_producer
+    command: python -m example.external_data_producer
 
-    input_worker:
-        environment:
-            - REDIS_HOST=redis
-            - REDIS_PORT=6379
-            - KAFKA_BROKERS=kafka:9092
-        build:
-            target: dev
-            context: .
-            dockerfile: Dockerfile
-        depends_on:
-            - kafka
-            - redis
-        volumes:
-            - ./:/app/
-        # ports:
-        #     - 3000:3000
-        #     - 5678:5678
-        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m example.input_worker
-        command: python -m example.input_worker
+  input_worker:
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - KAFKA_BROKERS=kafka:9092
+    build:
+      target: dev
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+      - redis
+    volumes:
+      - ./:/app/
+    # ports:
+    #     - 3000:3000
+    #     - 5678:5678
+    # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m example.input_worker
+    command: python -m example.input_worker
 
-    middle_worker:
-        environment:
-            - REDIS_HOST=redis
-            - REDIS_PORT=6379
-            - KAFKA_BROKERS=kafka:9092
-        build:
-            target: dev
-            context: .
-            dockerfile: Dockerfile
-        depends_on:
-            - redis
-        volumes:
-            - ./:/app/
-        # ports:
-        #     - 3000:3000
-        #     - 5678:5678
-        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m example.middle_worker
-        command: python -m example.middle_worker
+  middle_worker:
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - KAFKA_BROKERS=kafka:9092
+    build:
+      target: dev
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - redis
+    volumes:
+      - ./:/app/
+    # ports:
+    #     - 3000:3000
+    #     - 5678:5678
+    # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m example.middle_worker
+    command: python -m example.middle_worker
 
-    data_consumer:
-        environment:
-            - REDIS_HOST=redis
-            - REDIS_PORT=6379
-        build:
-            target: dev
-            context: .
-            dockerfile: Dockerfile
-        volumes:
-            - ./:/app/
-        depends_on:
-            - kafka
-        # ports:
-        #     - 5678:5678
-        # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m example.external_data_consumer
-        command: python -m example.external_data_consumer
+  zmq_worker:
+    environment:
+      - ZMQ_PORT=5555
+    build:
+      target: dev
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/app/
+    command: python -m example.zmq_server
 
-    redis:
-        container_name: redis
-        image: redis:latest
-        ports:
-            - 6379:6379
-        healthcheck:
-            test: ["CMD", "redis-cli", "ping"]
-            interval: 5s
-            timeout: 30s
-            retries: 50
+  data_consumer:
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    build:
+      target: dev
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/app/
+    depends_on:
+      - kafka
+    # ports:
+    #     - 5678:5678
+    # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m example.external_data_consumer
+    command: python -m example.external_data_consumer
 
-    zookeeper:
-        image: confluentinc/cp-zookeeper:5.2.5
-        ports:
-            - "2181:2181"
-        environment:
-            ZOOKEEPER_CLIENT_PORT: 2181
-            ZOOKEEPER_TICK_TIME: 2000
-            KAFKA_JMX_PORT: 39999
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 30s
+      retries: 50
 
-    kafka:
-        image: confluentinc/cp-kafka:5.2.5
-        container_name: kafka
-        restart: always
-        depends_on:
-            - zookeeper
-        ports:
-            - "9092:9092"
-            - "29092:29092"
-            - "7071:7071"
-            - "49999:49999"
-        # https://rmoff.net/2018/08/02/kafka-listeners-explained/
-        environment:
-            KAFKA_BROKER_ID: 1
-            KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-            KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-            KAFKA_JMX_PORT: 49999
+  zookeeper:
+    image: confluentinc/cp-zookeeper:5.2.5
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_JMX_PORT: 39999
 
-    postgres:
-        restart: always
-        image: postgres:12.3
-        container_name: postgres
-        ports:
-            - 5432:5432
-        environment:
-            POSTGRES_PASSWORD: password
+  kafka:
+    image: confluentinc/cp-kafka:5.2.5
+    container_name: kafka
+    restart: always
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+      - "7071:7071"
+      - "49999:49999"
+    # https://rmoff.net/2018/08/02/kafka-listeners-explained/
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 49999
 
-    int-tests:
-        build:
-            context: .
-            dockerfile: Dockerfile
-            target: dev
-        environment:
-            KAFKA_BROKERS: kafka:9092
-        volumes:
-            - ./:/app/
-        command: pytest tests/integration_tests/test_integration.py
+  postgres:
+    restart: always
+    image: postgres:12.3
+    container_name: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: password
+
+  int-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    environment:
+      KAFKA_BROKERS: kafka:9092
+    volumes:
+      - ./:/app/
+    command: pytest tests/integration_tests/test_integration.py

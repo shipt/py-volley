@@ -1,3 +1,4 @@
+import logging
 import os
 from dataclasses import dataclass
 from threading import Thread
@@ -8,7 +9,8 @@ from prometheus_client import Counter
 
 from volley.connectors.base import BaseConsumer, BaseProducer
 from volley.data_models import QueueMessage
-from volley.logging import logger
+
+logger = logging.getLogger(__name__)
 
 DELIVERY_STATUS = Counter("delivery_report_status", "Kafka delivered message", ["status"])
 

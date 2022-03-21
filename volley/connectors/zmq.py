@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 from dataclasses import dataclass
@@ -8,7 +9,8 @@ from prometheus_client import Summary
 
 from volley.connectors.base import BaseConsumer, BaseProducer
 from volley.data_models import QueueMessage
-from volley.logging import logger
+
+logger = logging.getLogger(__name__)
 
 PROCESS_TIME = Summary("zmq_process_time_seconds", "Time spent interacting with zmq", ["operation"])
 

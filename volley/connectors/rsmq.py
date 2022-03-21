@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 from dataclasses import dataclass
@@ -9,7 +10,8 @@ from tenacity import retry, stop_after_attempt, wait_exponential, wait_fixed
 
 from volley.connectors.base import BaseConsumer, BaseProducer
 from volley.data_models import QueueMessage
-from volley.logging import logger
+
+logger = logging.getLogger(__name__)
 
 PROCESS_TIME = Summary("redis_process_time_seconds", "Time spent interacting with rsmq", ["operation"])
 

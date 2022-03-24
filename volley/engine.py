@@ -154,7 +154,7 @@ class Engine:
                 if producer_con.callback_delivery:
                     producer_con.init_callbacks(consumer=self.queue_map[self.input_queue].consumer_con)
 
-            logger.info("Starting Volley application: %s -- %s", self.app_name, not self.killer.kill_now)
+            logger.info("Starting Volley application: %s", self.app_name)
             while not self.killer.kill_now:
                 HEARTBEAT.inc()
                 _start_time = time.time()
@@ -163,7 +163,7 @@ class Engine:
                 if in_message is None:
                     # if no messages, handle poll interval
                     # TODO: this should be dynamic with some sort of backoff
-                    logger.info("No messages - sleeping POLL_INTERVAL=%s", self.poll_interval_seconds)
+                    logger.debug("No messages - sleeping POLL_INTERVAL=%s", self.poll_interval_seconds)
                     time.sleep(self.poll_interval_seconds)
                     continue
 

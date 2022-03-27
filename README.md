@@ -217,19 +217,13 @@ Clone this repo and `make run.example` to see a complete example of:
 - producing to RSMQ
 - consuming from RSMQ and publishing to Kafka and Postgres using custom plugin for Postgres.
 
-# CI / CD
+# Contributing
 
-See `.drone.yml` for test gates. A Semantic tagged release of `main` triggers a build and publish to pypi.shipt.com and pypi.org.
-
-# Testing
-
-`make test.unit` Runs unit tests on individual components with mocked responses dependencies external to the code. Docker is not involved in this process.
-
-`make test.integration` Runs an "end-to-end" test against the example project in `./example`. The tests validate messages make it through all supported connectors and queues, plus a user defined connector plugin (postgres).
+See our [contributing guide](./CONTRIBUTING.md).
 
 ## ✨ Contributors
 
-Thanks goes to these incredible people:
+Thanks goes to great [projects](./ATTRIBUTIONS.md) and these incredible people.
 
 <a href="https://github.com/shipt/py-volley/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=shipt/py-volley" />

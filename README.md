@@ -221,8 +221,6 @@ Clone this repo and `make run.example` to see a complete example of:
 
 See our [contributing guide](./CONTRIBUTING.md).
 
-## ✨ Contributors
-
 Thanks goes to great [projects](./ATTRIBUTIONS.md) and these incredible people.
 
 <a href="https://github.com/shipt/py-volley/graphs/contributors">

@@ -203,7 +203,6 @@ def handle_creds(config_dict: Dict[str, Any]) -> Dict[str, Any]:
     if config_dict.get("sasl.username") and config_dict.get("sasl.password"):
         config_dict["security.protocol"] = "SASL_SSL"
         config_dict["sasl.mechanism"] = "PLAIN"
-        return config_dict
     else:
         sasl_username = os.getenv("KAFKA_KEY")
         sasl_password = os.getenv("KAFKA_SECRET")

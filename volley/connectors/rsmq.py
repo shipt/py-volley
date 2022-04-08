@@ -73,7 +73,6 @@ class RSMQConsumer(BaseConsumer):
 
         defaults.update(self.config)
         self.config = defaults
-        logger.info("RSMQ Consumer configs %s", self.config)
         self.queue = RedisSMQ(**self.config)
         logger.info("Creating queue: %s", self.queue_name)
         self.queue.createQueue().exceptions(False).execute()
@@ -164,7 +163,6 @@ class RSMQProducer(BaseProducer):
 
         defaults.update(self.config)
         self.config = defaults
-        logger.info("RSMQ Producer configs: %s", self.config)
         self.queue = RedisSMQ(**self.config)
         logger.info("Creating queue: %s", self.queue_name)
         self.queue.createQueue().exceptions(False).execute()

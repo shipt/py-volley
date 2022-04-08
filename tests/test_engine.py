@@ -372,7 +372,7 @@ def test_init_no_output(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:  
 @patch("volley.engine.RUN_ONCE", True)
 @patch("volley.logging.logger.propagate", True)
 @patch("volley.connectors.confluent.Consumer")
-def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture, monkeypatch: MonkeyPatch) -> None:
+def test_kafka_config_init(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> None:
     """init volley with a kafka queue with user provided kafka config"""
     monkeypatch.delenv("KAFKA_BROKERS", raising=True)
 

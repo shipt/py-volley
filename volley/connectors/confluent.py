@@ -66,7 +66,6 @@ class ConfluentKafkaConsumer(BaseConsumer):
         # on_success calls store_offsets()
         self.config["enable.auto.offset.store"] = False
         self.c = Consumer(self.config, logger=logger)
-        logger.info("Kafka Consumer Configuration: %s", self.config)
         self.c.subscribe([self.queue_name])
         logger.info("Subscribed to %s", self.queue_name)
 
@@ -129,8 +128,6 @@ class ConfluentKafkaProducer(BaseProducer):
             self.config["compression.type"] = self.compression_type
 
         self.p = Producer(self.config, logger=logger)
-        # self.config comes from super class
-        logger.info("Kafka Producer Configuration: %s", self.config)
 
         # producer poll thread
         self.kill_poll_thread = False

@@ -62,13 +62,12 @@ class Engine:
 
     app_name: str = "volley"
     dead_letter_queue: Optional[str] = None
-
-    # set in post_init
-    queue_map: Dict[str, Queue] = field(default_factory=dict)
-    poll_interval_seconds: float = 1.0
     queue_config: Optional[Dict[str, Any]] = None
     yaml_config_path: str = "./volley_config.yml"
     metrics_port: Optional[int] = 3000
+    poll_interval_seconds: float = 1.0
+
+    queue_map: Dict[str, Queue] = field(default_factory=dict, init=False)
 
     def __post_init__(self) -> None:
         """Validates configuration and initializes queue configs

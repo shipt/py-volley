@@ -395,12 +395,10 @@ def test_kafka_config_init(mock_consumer: MagicMock, caplog: LogCaptureFixture, 
     def func(msg: GenericMessage) -> bool:  # pylint: disable=W0613
         return True
 
-    with caplog.at_level(logging.INFO):
-        func()
-        # kafka connector prints out its raw config
-        # consumer group should be in that text
-        assert consumer_group in caplog.text
-        assert kafka_brokers in caplog.text
+    func()
+
+    assert consumer_group == eng.queue_map["comp_1"].pass_through_config["group.id"]
+    assert kafka_brokers == eng.queue_map["comp_1"].pass_through_config["bootstrap.servers"]
     eng.shutdown()
 
 

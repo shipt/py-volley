@@ -1,6 +1,6 @@
 import logging
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from threading import Thread
 from typing import Any, Dict, List, Optional, Union
 
@@ -25,7 +25,9 @@ class ConfluentKafkaConsumer(BaseConsumer):
         https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 
     ## Multi-topic subscription
-    You may find yourself wanting to configure a single Volley worker to consume from multiple Kafka topics, each with the same message schema. You can do this by specifying the queue value as a comma separated list of topics:
+    You may find yourself wanting to configure a single Volley worker to consume from multiple Kafka topics,
+    each with the same message schema. You can do this by specifying the queue value as a comma
+    separated list of topics:
 
     ```python hl_lines="4"
     cfg = {
@@ -38,7 +40,9 @@ class ConfluentKafkaConsumer(BaseConsumer):
     }
     ```
 
-    Note: multi-topic is only supported for consumption. Volley will only be able to *consume* to the queue as configured above. To produce to multiple topics, specify each topic as a separate queue and publish to them.
+    Note: multi-topic is only supported for consumption.
+    Volley will only be able to *consume* to the queue as configured above.
+    To produce to multiple topics, specify each topic as a separate queue and publish to them.
 
     ```python
     return [
@@ -52,11 +56,10 @@ class ConfluentKafkaConsumer(BaseConsumer):
     poll_interval: float = 10
     auto_offset_reset: str = "earliest"
     auto_commit_interval_ms: int = 3000
+    # mapping of topic -> partition/offset of the last stored commit
+    last_offset: Dict[str, Dict[int, int]] = field(init=False)
 
     def __post_init__(self) -> None:  # noqa: C901
-        # mapping of topic -> partition/offset of the last stored commit
-        self.last_offset: Dict[str, Dict[int, int]] = {}
-
         self.config = handle_creds(self.config)
 
         if "auto.offset.reset" not in self.config:
@@ -91,11 +94,16 @@ class ConfluentKafkaConsumer(BaseConsumer):
         self.config["enable.auto.offset.store"] = False
         self.c = Consumer(self.config, logger=logger)
 
-        # https://github.com/apache/kafka/blob/8007211cc982d8458223e866c1ee7d94b69e0249/core/src/main/scala/kafka/common/Topic.scala#L29
-        # "," are not allowed in Apache Kafka topic names. Allow multi-topic subscription by supplying a comma separated lists of topics
+        # https://github.com/apache/kafka/blob/
+        # 8007211cc982d8458223e866c1ee7d94b69e0249/core/src/main/scala/kafka/common/Topic.scala#L29
+        # "," are not allowed in Apache Kafka topic names.
+        # Allow multi-topic subscription by supplying a comma separated lists of topics
         topics: List[str] = self.queue_name.split(",")
         self.c.subscribe(topics)
-        logger.info("Subscribed to %s", self.queue_name)
+
+        self.last_offset = {topic: {} for topic in topics}
+
+        logger.info("Subscribed to %s", topics)
 
     def consume(  # type: ignore
         self,
@@ -123,7 +131,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
         try:
             last_commit = self.last_offset[topic][partition]
         except KeyError:
-            # first message from this partition
+            # first message from this topic-partition
             self.last_offset[topic][partition] = this_offset
             self.c.store_offsets(message_context)
             return

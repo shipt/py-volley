@@ -2,7 +2,7 @@ import logging
 import os
 from dataclasses import dataclass
 from threading import Thread
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from confluent_kafka import Consumer, Message, Producer
 from prometheus_client import Counter
@@ -21,8 +21,32 @@ class ConfluentKafkaConsumer(BaseConsumer):
     Use for consuming a single message from a single Kafka topic.
 
     Built on confluent-kafka-python/librdkafka. Offsets are stored in librdkafka
-        and commited according to auto.commit.interval.ms
+        and commmitted according to auto.commit.interval.ms
         https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
+
+    ## Multi-topic subscription
+    You may find yourself wanting to configure a single Volley worker to consume from multiple Kafka topics, each with the same message schema. You can do this by specifying the queue value as a comma separated list of topics:
+
+    ```python hl_lines="4"
+    cfg = {
+        "input-topic": {
+            "profile": "confluent",
+            "value": "kafka.topic.0,kafka.topic.1",
+            "consumer": "volley.connectors.confluent.ConfluentKafkaConsumer",
+            "config": {"bootstrap.servers": "kafka:9092", "group.id": "myConsumerGroup"},
+        }
+    }
+    ```
+
+    Note: multi-topic is only supported for consumption. Volley will only be able to *consume* to the queue as configured above. To produce to multiple topics, specify each topic as a separate queue and publish to them.
+
+    ```python
+    return [
+        ("output-topic-0", message_object),
+        ("output-topic-1", message_object)
+    ]
+    ```
+
     """
 
     poll_interval: float = 10
@@ -30,8 +54,8 @@ class ConfluentKafkaConsumer(BaseConsumer):
     auto_commit_interval_ms: int = 3000
 
     def __post_init__(self) -> None:  # noqa: C901
-        # mapping of partition/offset of the last stored commit
-        self.last_offset: Dict[int, int] = {}
+        # mapping of topic -> partition/offset of the last stored commit
+        self.last_offset: Dict[str, Dict[int, int]] = {}
 
         self.config = handle_creds(self.config)
 
@@ -66,7 +90,11 @@ class ConfluentKafkaConsumer(BaseConsumer):
         # on_success calls store_offsets()
         self.config["enable.auto.offset.store"] = False
         self.c = Consumer(self.config, logger=logger)
-        self.c.subscribe([self.queue_name])
+
+        # https://github.com/apache/kafka/blob/8007211cc982d8458223e866c1ee7d94b69e0249/core/src/main/scala/kafka/common/Topic.scala#L29
+        # "," are not allowed in Apache Kafka topic names. Allow multi-topic subscription by supplying a comma separated lists of topics
+        topics: List[str] = self.queue_name.split(",")
+        self.c.subscribe(topics)
         logger.info("Subscribed to %s", self.queue_name)
 
     def consume(  # type: ignore
@@ -83,6 +111,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
 
     def on_success(self, message_context: Message) -> None:
         """stores any offsets that are able to be stored"""
+        topic = message_context.topic()
         partition = message_context.partition()
         this_offset = message_context.offset()
 
@@ -90,16 +119,17 @@ class ConfluentKafkaConsumer(BaseConsumer):
         # delivery report from kafka producer are not guaranteed to be in order
         # that they were produced
         # https://github.com/confluentinc/confluent-kafka-python/issues/300#issuecomment-358416432
+
         try:
-            last_commit = self.last_offset[partition]
+            last_commit = self.last_offset[topic][partition]
         except KeyError:
             # first message from this partition
-            self.last_offset[partition] = this_offset
+            self.last_offset[topic][partition] = this_offset
             self.c.store_offsets(message_context)
             return
         if this_offset > last_commit:
             self.c.store_offsets(message_context)  # committed according to auto.commit.interval.ms
-            self.last_offset[partition] = this_offset
+            self.last_offset[topic][partition] = this_offset
 
     def on_fail(self, message_context: Message) -> None:
         logger.error(

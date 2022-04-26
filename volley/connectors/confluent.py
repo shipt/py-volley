@@ -36,7 +36,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
             "value": "kafka.topic.0,kafka.topic.1",
             "consumer": "volley.connectors.confluent.ConfluentKafkaConsumer",
             "config": {"bootstrap.servers": "kafka:9092", "group.id": "myConsumerGroup"},
-        }
+        },
     }
     ```
 

@@ -21,7 +21,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
     Use for consuming a single message from a single Kafka topic.
 
     Built on confluent-kafka-python/librdkafka. Offsets are stored in librdkafka
-        and commmitted according to auto.commit.interval.ms
+        and committed according to auto.commit.interval.ms
         https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 
     ## Multi-topic subscription

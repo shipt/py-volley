@@ -257,7 +257,7 @@ def test_confluent_async_consume(
         queue_name=environment.test_topic, message="message".encode("utf-8"), message_context=message_0.message_context
     )
     # poll before produce, will not produce a deliver report or change local state
-    assert consumer1.last_offset == {}
+    assert consumer1.last_offset == {environment.test_topic: {}}
     # init the callback poll
     producer1.init_callbacks(consumer=consumer1, thread=True)
     time.sleep(1)
@@ -290,7 +290,7 @@ def test_confluent_async_consume(
         queue_name=environment.test_topic, message="message".encode("utf-8"), message_context=message_1.message_context
     )
     # producer will call poll(), but there should be no pending reports
-    assert consumer2.last_offset == {}
+    assert consumer2.last_offset == {environment.test_topic: {}}
     # init the callbacks
     producer2.init_callbacks(consumer=consumer2)
     # there is a delay, so wait. this will call poll and change local state

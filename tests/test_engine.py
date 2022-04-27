@@ -35,7 +35,7 @@ def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -
         metrics_port=None,
     )
     input_msg = json.dumps(InputMessage.schema()["examples"][0]).encode("utf-8")
-    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=input_msg)
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=input_msg)
 
     output_msg = OutputMessage.parse_obj(OutputMessage.schema()["examples"][0])
     # component returns "just none"
@@ -64,7 +64,7 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
         metrics_port=None,
     )
     msg = json.dumps(InputMessage.schema()["examples"][0]).encode("utf-8")
-    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=msg)
 
     # component returns "just none"
     @eng.stream_app
@@ -139,7 +139,7 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: Dict[str, Dict[st
 
     data = InputMessage.schema()["examples"][0]
     msg = json.dumps(data).encode("utf-8")
-    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=msg)
     input_queue = "input-topic"
     output_queues = list(config_dict.keys())
 
@@ -193,7 +193,7 @@ def test_null_serializer_fail(
 
     data = InputMessage.schema()["examples"][0]
     msg = json.dumps(data).encode("utf-8")
-    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=msg)
     input_queue = "input-topic"
     output_queues = list(config_dict.keys())
     eng = Engine(
@@ -377,7 +377,7 @@ def test_kafka_config_init(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -
     monkeypatch.delenv("KAFKA_BROKERS", raising=True)
 
     msg = b"""{"x":"y"}"""
-    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="kafka.topic", msg=msg)
     consumer_group = str(uuid4())
     kafka_brokers = f"my_broker_{str(uuid4())}:9092"
     cfg = {
@@ -442,7 +442,7 @@ def test_runtime_connector_configs(mock_consumer: MagicMock, config_dict: Dict[s
     """test wrapped func can return variable length tuples"""
     data = InputMessage.schema()["examples"][0]
     msg = json.dumps(data).encode("utf-8")
-    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=msg)
     input_queue = "input-topic"
     output_queues = list(config_dict.keys())
 

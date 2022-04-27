@@ -5,10 +5,12 @@ All supported producer connector configurations are accessible through an option
 Configurations passed into `Engine()` init will be used in both Producer and Consumer constructors.
 
 ```python hl_lines="5"
+from volley.connectors.confluent import ConfluentKafkaProducer
 cfg = {
     "output-topic": {
         "profile": "confluent",
-        "producer": "volley.connectors.kafka.KafkaProducer",
+        "value": "my.kafka.topic",
+        "producer": ConfluentKafkaProducer,
         "config": {"bootstrap.servers": "kafka:9092"},
     }
 }
@@ -27,7 +29,8 @@ Likewise, consumer configurations are passed to consumer initializers.
 cfg = {
     "output-topic": {
         "profile": "confluent",
-        "consumer": "volley.connectors.kafka.KafkaConsumer",
+        "value": "my.kafka.topic",
+        "consumer": "volley.connectors.confluent.ConfluentKafkaConsumer",
         "config": {"bootstrap.servers": "kafka:9092", "group.id": "myConsumerGroup"},
     }
 }

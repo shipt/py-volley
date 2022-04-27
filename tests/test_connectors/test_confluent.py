@@ -136,34 +136,45 @@ def test_producer_init_configs() -> None:
     p.shutdown()
 
 
+@pytest.mark.parametrize(
+    "queue",
+    [("topic0"), ("topic0,topic1,topic2")],
+)
 @patch("volley.connectors.confluent.Consumer", MagicMock())
-def test_callback_consumer() -> None:
-    m = KafkaMessage(partition=24, offset=42)
-    ackc = ConfluentKafkaConsumer(queue_name="test")
+def test_callback_consumer(queue: str) -> None:
+    topics = queue.split(",")
+    ackc = ConfluentKafkaConsumer(queue_name=queue)
+
     # first commit
-    ackc.on_success(m)
-    assert ackc.last_offset[24] == 42
+    for topic in topics:
+        m = KafkaMessage(topic=topic, partition=24, offset=42)
+        ackc.on_success(m)
+        assert ackc.last_offset[topic][24] == 42
 
     # commit a higher offset, same partition
-    m = KafkaMessage(partition=24, offset=43)
-    ackc.on_success(m)
-    assert ackc.last_offset[24] == 43
+    for topic in topics:
+        m = KafkaMessage(topic=topic, partition=24, offset=43)
+        ackc.on_success(m)
+        assert ackc.last_offset[topic][24] == 43
 
     # commit a lower offset, same partition
     # should not change the last commit
-    m = KafkaMessage(partition=24, offset=1)
-    ackc.on_success(m)
-    assert ackc.last_offset[24] == 43
+    for topic in topics:
+        m = KafkaMessage(topic=topic, partition=24, offset=1)
+        ackc.on_success(m)
+        assert ackc.last_offset[topic][24] == 43
 
     # commit to different partition
-    m = KafkaMessage(partition=1, offset=100)
-    ackc.on_success(m)
-    assert ackc.last_offset[1] == 100
-    assert ackc.last_offset[24] == 43
+    for topic in topics:
+        m = KafkaMessage(topic=topic, partition=1, offset=100)
+        ackc.on_success(m)
+        assert ackc.last_offset[topic][1] == 100
+        assert ackc.last_offset[topic][24] == 43
 
     # repeatedly commit same data
-    m = KafkaMessage(partition=1, offset=100)
-    for _ in range(10):
-        ackc.on_success(m)
-    assert ackc.last_offset[1] == 100
-    assert ackc.last_offset[24] == 43
+    for topic in topics:
+        m = KafkaMessage(topic=topic, partition=1, offset=100)
+        for _ in range(10):
+            ackc.on_success(m)
+        assert ackc.last_offset[topic][1] == 100
+        assert ackc.last_offset[topic][24] == 43

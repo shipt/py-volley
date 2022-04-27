@@ -40,7 +40,7 @@ zmq = ["pyzmq"]
 flake8 = "^3.9.2"
 mypy = "^0.910"
 coverage = "^6.0"
-black = "^21.9b0"
+black = "^22.3.0"
 pytest = "^6.2.5"
 isort = "^5.9.3"
 pydantic = "^1.8.2"
@@ -60,6 +60,8 @@ pylint = "^2.12.1"
 pytest-asyncio = "^0.16.0"
 types-PyYAML = "^6.0.3"
 types-redis = "^4.1.10"
+MarkupSafe = "2.0.1"
+Jinja2 = "<3.0.0"
 
 [tool.isort]
 profile = "black"

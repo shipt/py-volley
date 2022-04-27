@@ -49,7 +49,7 @@ eng = Engine(input_queue="request", output_queues=["response"], queue_config=cfg
 
 
 def calc_bmi(height: float, weight: float) -> BMI:
-    return BMI(bmi=(weight / (height ** 2)))
+    return BMI(bmi=(weight / (height**2)))
 
 
 @eng.stream_app

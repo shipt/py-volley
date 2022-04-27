@@ -84,7 +84,7 @@ class KafkaMessage:
         self,
         error: bool = False,
         msg: Optional[bytes] = None,
-        topic: Optional[str] = None,
+        topic: Optional[str] = "test",
         partition: Optional[int] = None,
         offset: Optional[int] = None,
     ) -> None:

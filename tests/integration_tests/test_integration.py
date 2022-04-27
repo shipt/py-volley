@@ -252,20 +252,20 @@ def test_confluent_async_consume(
     )
     # do not init the callbacks
     # should not have stored anything in local state
-    assert consumer1.last_offset == {}
+    assert consumer1.last_offset == {environment.test_topic: {}}
     producer1.produce(
         queue_name=environment.test_topic, message="message".encode("utf-8"), message_context=message_0.message_context
     )
     # poll before produce, will not produce a deliver report or change local state
-    assert consumer1.last_offset == {}
+    assert consumer1.last_offset == {environment.test_topic: {}}
     # init the callback poll
     producer1.init_callbacks(consumer=consumer1, thread=True)
     time.sleep(1)
-    assert consumer1.last_offset[0] == offset_0
+    assert consumer1.last_offset[environment.test_topic][0] == offset_0
     producer1.produce(
         queue_name=environment.test_topic, message="message".encode("utf-8"), message_context=message_0.message_context
     )
-    assert consumer1.last_offset[0] == offset_0
+    assert consumer1.last_offset[environment.test_topic][0] == offset_0
     # this will store offset in local state. it should also store_offsets() and commit to broker()
     # leave consumer group, shutdown producer
     consumer1.shutdown()
@@ -273,7 +273,7 @@ def test_confluent_async_consume(
 
     # recreate consumer. validate our offsets committed properly
     consumer2 = ConfluentKafkaConsumer(queue_name=environment.test_topic, config=broker_config, poll_interval=30)
-    assert consumer2.last_offset == {}
+    assert consumer2.last_offset == {environment.test_topic: {}}
     # consumer another message. our previous offsets should have been committed
     message_1: QueueMessage = consumer2.consume()  # type: ignore
     offset_1 = message_1.message_context.offset()
@@ -284,18 +284,18 @@ def test_confluent_async_consume(
         queue_name=environment.test_topic, config={"bootstrap.servers": environment.brokers}
     )
     # should be no local state on the consumer yet
-    assert consumer2.last_offset == {}
+    assert consumer2.last_offset == {environment.test_topic: {}}
     # producing a message should
     producer2.produce(
         queue_name=environment.test_topic, message="message".encode("utf-8"), message_context=message_1.message_context
     )
     # producer will call poll(), but there should be no pending reports
-    assert consumer2.last_offset == {}
+    assert consumer2.last_offset == {environment.test_topic: {}}
     # init the callbacks
     producer2.init_callbacks(consumer=consumer2)
     # there is a delay, so wait. this will call poll and change local state
     time.sleep(1)
-    assert consumer2.last_offset[0] == offset_1
+    assert consumer2.last_offset[environment.test_topic][0] == offset_1
 
     # close connections
     consumer2.shutdown()

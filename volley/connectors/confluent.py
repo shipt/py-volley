@@ -1,5 +1,6 @@
 import logging
 import os
+import signal
 from dataclasses import dataclass, field
 from threading import Thread
 from typing import Any, Dict, List, Optional, Union
@@ -56,6 +57,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
     poll_interval: float = 10
     auto_offset_reset: str = "earliest"
     auto_commit_interval_ms: int = 3000
+    stop_on_failure: bool = True
     # mapping of topic -> partition/offset of the last stored commit
     last_offset: Dict[str, Dict[int, int]] = field(init=False)
 
@@ -70,6 +72,20 @@ class ConfluentKafkaConsumer(BaseConsumer):
             logger.info("Assigning auto.commit.interval.ms default: %s", self.auto_commit_interval_ms)
             self.config["auto.commit.interval.ms"] = self.auto_commit_interval_ms
 
+        if "stop_on_failure" in self.config:
+            self.stop_on_failure = self.config["stop_on_failure"]
+
+        if self.stop_on_failure:
+            logger.info(
+                "`stop_on_failure` = %s. Application will gracefully shutdown when" "there are downstream failures.",
+                self.stop_on_failure,
+            )
+        else:
+            logger.warning(
+                "`stop_on_failure` = %s. Application will log a CRITICAL level message"
+                "and continue processing on downstream failures.",
+                self.stop_on_failure,
+            )
         # self.config provided from base Consumer class
         # consumer group assignment
         # try config, then env var, then command line argument w/ env
@@ -140,12 +156,19 @@ class ConfluentKafkaConsumer(BaseConsumer):
             self.last_offset[topic][partition] = this_offset
 
     def on_fail(self, message_context: Message) -> None:
-        logger.error(
-            "Downstream failure. Did not commit offset: %d, partition: %d, message: %s",
-            message_context.offset(),
+        logger.critical(
+            "Downstream failure. Did not commit topic: %s, partition: %d, offset: %d, message: %s.",
+            message_context.topic(),
             message_context.partition(),
+            message_context.offset(),
             message_context.value(),
         )
+        if self.stop_on_failure:
+            logger.critical("Downstream failure. Stopping application.")
+            # explicitly call the connectors shutdown
+            self.shutdown()
+            # this send a kill command to py-volley engine to handle any other graceful shutdown procedures
+            os.kill(os.getpid(), signal.SIGINT)
 
     def shutdown(self) -> None:
         self.c.close()

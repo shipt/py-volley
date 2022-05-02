@@ -230,7 +230,6 @@ class Engine:
                     break
 
             self.shutdown()
-            logger.info("Shutdown %s complete", self.app_name)
 
         # used for unit testing as a means to access the wrapped component without the decorator
         run_component.__wrapped__ = func  # type: ignore
@@ -246,3 +245,4 @@ class Engine:
             out_queue.producer_con.shutdown()
             logger.info("%s, %s shutdown complete", self.app_name, q_name)
         self.queue_map[self.input_queue].consumer_con.shutdown()
+        logger.info("Shutdown %s complete", self.app_name)

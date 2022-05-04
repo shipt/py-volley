@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py_volley"
-version = "0.18.0"
+version = "0.19.0"
 description = "Pluggable message queueing for Python"
 authors = ["ask-machine-learning <shipt@shipt.com>"]
 

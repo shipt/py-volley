@@ -1,8 +1,9 @@
 [tool.poetry]
 name = "py_volley"
-version = "0.18.0"
+version = "0.19.0"
 description = "Pluggable message queueing for Python"
 authors = ["ask-machine-learning <shipt@shipt.com>"]
+readme = "README.md"
 
 packages = [
     { include = "volley" },
@@ -14,7 +15,9 @@ url = "https://pypi.shipt.com/simple/"
 secondary = true
 
 [tool.poetry.urls]
-"Docs" = "https://shipt.github.io/py-volley/"
+"Homepage" = "https://github.com/shipt/py-volley"
+"Repository" = "https://github.com/shipt/py-volley"
+"Documentation" = "https://shipt.github.io/py-volley/"
 
 [tool.poetry.dependencies]
 python = "^3.8,<3.11"

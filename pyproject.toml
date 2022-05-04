@@ -8,7 +8,6 @@ packages = [
     { include = "volley" },
 ]
 
-
 [[tool.poetry.source]]
 name = "shipt"
 url = "https://pypi.shipt.com/simple/"

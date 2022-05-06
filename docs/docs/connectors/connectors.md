@@ -46,6 +46,8 @@ Applications have the option to receive the raw runtime message context from Vol
 
 In a Kafka consumer, `msg_ctx` is the raw `confluent_kafka.Message` object returned from Poll(). In RSMQ, it is simply the message id. More generally, the `msg_ctx` is the value of `volley.data_models.QueueMessage.message_context`. Take note that it is a reference to the `QueueMessage`, and mutating the object may cause undesired results.
 
+Receiving the `msg_ctx` does not change any behavior of Volley. Volley will still handle serialization and data validation according to the provided queue configuration, and if either of these fails the message will still be routed to the DLQ (if configured) or crash the application (if DLQ not configured).
+
 Example using `msg_ctx` in a Confluent Kafka consumer.
 
 ```python

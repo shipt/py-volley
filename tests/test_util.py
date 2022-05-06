@@ -31,7 +31,7 @@ def test_graceful_kill(mock_consumer: MagicMock) -> None:
 def test_func_envelope() -> None:
     """Test proper signature on wrapped function"""
 
-    def fun0(m: Any, msg_ctx: Any) -> None:
+    def fun0(m: Any, msg_ctx: Any) -> None:  # pylint: disable=W0613
         pass
 
     wrapped = FuncEnvelope(fun0)
@@ -40,7 +40,7 @@ def test_func_envelope() -> None:
     assert wrapped.message_param == "m"
 
     # any order of params must work
-    def fun1(msg_ctx: Any, message: Any) -> None:
+    def fun1(msg_ctx: Any, message: Any) -> None:  # pylint: disable=W0613
         pass
 
     wrapped = FuncEnvelope(fun1)
@@ -49,7 +49,7 @@ def test_func_envelope() -> None:
     assert wrapped.message_param == "message"
 
     # async function should be coroutine
-    async def fun2(m: Any) -> None:
+    async def fun2(m: Any) -> None:  # pylint: disable=W0613
         pass
 
     wrapped = FuncEnvelope(fun2)
@@ -59,7 +59,7 @@ def test_func_envelope() -> None:
 def test_func_envelope_toomanyparam() -> None:
     """Test proper signature on wrapped function"""
 
-    def fun(m: Any, msg_ctx: Any, extra: Any) -> None:
+    def fun(m: Any, msg_ctx: Any, extra: Any) -> None:  # pylint: disable=W0613
         pass
 
     with pytest.raises(TypeError):

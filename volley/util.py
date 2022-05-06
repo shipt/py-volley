@@ -2,7 +2,7 @@ import asyncio
 import inspect
 import signal
 from dataclasses import dataclass, field
-from typing import Any, Awaitable, Callable, Dict, List, Tuple, Union
+from typing import Any, Callable
 
 from volley.logging import logger
 

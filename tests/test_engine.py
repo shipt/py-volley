@@ -15,7 +15,6 @@ from tests.conftest import KafkaMessage
 # from tests.test_connectors.test_kafka import KafkaMessage
 from volley.data_models import GenericMessage
 from volley.engine import Engine
-from volley.models.pydantic_model import QueueMessage
 from volley.queues import DLQNotConfiguredError
 
 
@@ -512,11 +511,11 @@ def test_invalid_queue(config_dict: Dict[str, Dict[str, str]]) -> None:
 
 @patch("volley.engine.RUN_ONCE", True)
 @patch("volley.connectors.confluent.Producer.poll", MagicMock())
-@patch("volley.connectors.confluent.Producer")
+@patch("volley.connectors.confluent.Producer", MagicMock())
 @patch("volley.connectors.confluent.Consumer")
 def test_pass_msg_ctx(
-    mock_consumer: MagicMock, mock_producer: MagicMock, queue_message: QueueMessage
-) -> None:  # pylint: disable=W0613
+    mock_consumer: MagicMock,
+) -> None:
     """client function defines `msg_ctx` and parameter and receives QueueMessage.message_context"""
 
     eng = Engine(
@@ -535,7 +534,7 @@ def test_pass_msg_ctx(
     # component returns "just none"
 
     @eng.stream_app
-    def func(msg: Any, msg_ctx: Any) -> List[Tuple[str, OutputMessage]]:  # pylint: disable=W0613
+    def func(msg: Any, msg_ctx: Any) -> List[Tuple[str, OutputMessage]]:
         assert msg == InputMessage.parse_raw(input_msg)
         assert isinstance(msg_ctx, KafkaMessage)
         return [("output-topic", output_msg)]

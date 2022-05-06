@@ -2,6 +2,7 @@ import asyncio
 import logging
 import time
 from typing import Dict, List, Tuple
+from confluent_kafka import Message
 
 from example.data_models import InputMessage, Queue1Message
 from volley import Engine
@@ -28,8 +29,8 @@ async def fun2() -> None:
 
 
 @eng.stream_app
-async def main(msg: InputMessage) -> List[Tuple[str, Queue1Message, Dict[str, float]]]:
-
+async def main(msg: InputMessage, msg_ctx: Message) -> List[Tuple[str, Queue1Message, Dict[str, float]]]:
+    logger.info("Consumed partition: %s, offset: %s", msg_ctx.partition(), msg_ctx.offset())
     req_id = msg.request_id
     values = msg.list_of_values
     msg_count = msg.msg_counter

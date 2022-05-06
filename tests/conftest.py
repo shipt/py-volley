@@ -19,7 +19,7 @@ os.environ["KAFKA_CONSUMER_GROUP"] = "test-group"
 
 
 @fixture
-def bundle_message() -> QueueMessage:
+def queue_message() -> QueueMessage:
     return QueueMessage(
         message_context="123",
         message={

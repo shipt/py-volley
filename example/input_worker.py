@@ -2,6 +2,7 @@ import asyncio
 import logging
 import time
 from typing import Dict, List, Tuple
+
 from confluent_kafka import Message
 
 from example.data_models import InputMessage, Queue1Message

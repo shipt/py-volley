@@ -11,7 +11,6 @@ from pytest import LogCaptureFixture, MonkeyPatch
 
 from example.data_models import InputMessage, OutputMessage
 from tests.conftest import KafkaMessage
-
 from volley.data_models import GenericMessage
 from volley.engine import Engine
 from volley.queues import DLQNotConfiguredError

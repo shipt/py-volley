@@ -7,9 +7,9 @@ from volley.connectors.rsmq import RSMQConfigError, RSMQConsumer, RSMQProducer
 from volley.data_models import QueueMessage
 
 
-def test_rsmq_producer(mock_rsmq_producer: RSMQProducer, bundle_message: QueueMessage) -> None:
+def test_rsmq_producer(mock_rsmq_producer: RSMQProducer, queue_message: QueueMessage) -> None:
     assert mock_rsmq_producer.produce(
-        queue_name="test", message=bundle_message.json().encode("utf-8"), message_context="message-id-from-consumed"
+        queue_name="test", message=queue_message.json().encode("utf-8"), message_context="message-id-from-consumed"
     )
 
 

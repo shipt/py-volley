@@ -1,5 +1,3 @@
-All supported producer connector configurations are accessible through an optional third positional in the return tuple from the Volley application. Return a dictionary of configurations and they will be passed in to the producer as key-word arguments.
-
 ## Initialization Configurations
 
 Configurations passed into `Engine()` init will be used in both Producer and Consumer constructors.
@@ -42,12 +40,35 @@ from confluent_kafka import Consumer
 c = Consumer({"bootstrap.servers": "kafka:9092", "group.id": "myConsumerGroup"})
 ```
 
-## Producer Runtime Configuration
-You will likely find the need to pass configuration or parameters directly to a producer at runtime. Some common examples of these are assigning a partition key in the Kafka producer or a visibility delay in an RSMQ producer.
+## Consumer's Runtime Message Context
 
-```python 
+Applications have the option to receive the raw runtime message context from Volley. This is accomplished by adding a reserved parameter, `msg_ctx` to their function definition. This can be valuable if the application needs access a lower level connector detail such as the message's Kafka partition, headers, offset, etc.
+
+In a Kafka consumer, `msg_ctx` is the raw `confluent_kafka.Message` object returned from Poll(). In RSMQ, it is simply the message id. More generally, the `msg_ctx` is the value of `volley.data_models.QueueMessage.message_context`. Take note that it is a reference to the `QueueMessage`, and mutating the object may cause undesired results.
+
+Receiving the `msg_ctx` does not change any behavior of Volley. Volley will still handle serialization and data validation according to the provided queue configuration, and if either of these fails the message will still be routed to the DLQ (if configured) or crash the application (if DLQ not configured).
+
+Example using `msg_ctx` in a Confluent Kafka consumer.
+
+```python
+from confluent_kafka import Message
+
+@app.stream_app
+def main(message, msg_ctx: Message):
+    partition = msg_ctx.partition()
+    offset = msg_ctx.offset()
+   ...
+```
+
+## Producer Runtime Configuration
+All producer connector runtime configurations and parameters are accessible through an optional third positional in the return tuple from the Volley application. Return a dictionary of configurations and they will be passed in to the producer as key-word arguments.
+
+Some common examples of these are assigning a partition key to a specific message in a Kafka producer or a visibility delay in an RSMQ producer.
+
+```python
+# example passing partition key for a message to the Kafka producer
 return [
-    ("output-topic", message_object, {"producer": "configs"})
+    ("output-topic", message_object, {"key": "<partition_key>"})
 ]
 ```
 

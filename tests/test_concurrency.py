@@ -3,6 +3,7 @@ from uuid import uuid4
 import pytest
 
 from volley.concurrency import run_worker_function
+from volley.util import FuncEnvelope
 
 
 @pytest.mark.asyncio
@@ -16,7 +17,10 @@ async def test_run_worker_function() -> None:
     def sync_fun(msg: str) -> str:
         return msg
 
-    async_res = await run_worker_function(async_fun, message=async_msg, is_coroutine=True)
+    wrapped_async = FuncEnvelope(async_fun)
+    wrapped_sync = FuncEnvelope(sync_fun)
+
+    async_res = await run_worker_function(wrapped_async, message=async_msg, ctx="test-context")
     assert async_res == async_msg
-    sync_res = await run_worker_function(sync_fun, message=sync_msg, is_coroutine=False)
+    sync_res = await run_worker_function(wrapped_sync, message=sync_msg, ctx="test-context")
     assert sync_res == sync_msg

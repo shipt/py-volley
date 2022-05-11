@@ -2,10 +2,12 @@
 
 
 ## Overview
-Model handlers live between serialization and the application and handle converting data to a model that your application is expecting to consume. Post processing from the application, they convert data to a format which can be serialized by a serialization handler. Model handlers can handle both serialization and model construction if serialization is disabled in configuration by setting `serializer: None|disabled`.
+Model handlers live between serialization and the application and handle converting data to a model that your application is expecting to consume. Post processing from the application, they convert data to a format which can be serialized by a serialization handler. Model handlers can handle both serialization and model construction if serialization is disabled in configuration by setting `serializer: None|disabled`. `volley.models.PydanticParserModelHandler` is an example of a model handler that also conducts serialization.
+
+
 
 ## Example
-All model handlers inherit from `BaseModelHandler`. They need to construct a data model, and deconstruct it. To illustrate, we will use the following example:
+All model handlers inherit from `BaseModelHandler`. They need to construct and deconstruct a data model. To illustrate, we will use the following example:
 
 - KafkaConsumer consumed message from topic as bytes: b'{"hello": "world"}'
 
@@ -37,7 +39,7 @@ config = {
 }
 ```
 
-Volley uses the `PydanticModelHandler` to construct an instance of `myIncomingData` using `message` data. When the message is incoming to the application, the `construct()` method is called with `myIncomingData` and the incoming `message` (serialized to dict from orjson). This effectively becomes the following operation:
+Volley uses the `PydanticModelHandler` to construct an instance of `myIncomingData` using `message` data. When the message is incoming to the application, `PydanticModelHandler.construct()` is called with `myIncomingData` and the incoming `message` (deserialized to dict from orjson). This effectively becomes the following operation:
 
 ```python
 incoming_model = myModel.parse_obj(message)

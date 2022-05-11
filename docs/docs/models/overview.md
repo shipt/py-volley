@@ -2,9 +2,13 @@
 
 
 ## Overview
-Model handlers live between serialization and the application and handle converting data to a model that your application is expecting to consume. Post processing from the application, they convert data to a format which can be serialized by a serialization handler. Model handlers can handle both serialization and model construction if serialization is disabled in configuration by setting `serializer: None|disabled`. `volley.models.PydanticParserModelHandler` is an example of a model handler that also conducts serialization.
+Model handlers live between serialization and the application and handle converting data to a model that your application is expecting to consume. Post processing from the application, they convert data to a format which can be serialized by a serialization handler. Model handlers can handle both serialization and model construction if serialization is disabled in configuration by setting `serializer: None|disabled`. 
 
+`PydanticModelHandler` calls `.parse_obj()` on the user provided Pydantic model, which takes in a `dict` then validates the data and creates the instance of the Pydantic model.
 
+`PydanticParserModelHandler` calls `.parse_raw()` on the user provided Pydantic model, which takes in `str|bytes` and parses to json before validating and creating and instance of the Pydantic model.
+
+`volley.models.PydanticParserModelHandler` is an example of a model handler that also conducts serialization.
 
 ## Example
 All model handlers inherit from `BaseModelHandler`. They need to construct and deconstruct a data model. To illustrate, we will use the following example:
@@ -13,7 +17,7 @@ All model handlers inherit from `BaseModelHandler`. They need to construct and d
 
 - JSONSerializer converts the bytes to dict: {"hello":"world"}
 
-- PydanticModelHandler is the default handler. User creates pydantic models for input and output data with the following definition:
+- PydanticModelHandler is the default handler. User creates Pydantic models for input and output data with the following definition:
 
 
 ```python

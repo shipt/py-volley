@@ -17,7 +17,7 @@ All model handlers inherit from `BaseModelHandler`. They need to construct and d
 
 - JSONSerializer converts the bytes to dict: {"hello":"world"}
 
-- PydanticModelHandler is the default handler. User creates Pydantic models for input and output data with the following definition:
+- PydanticModelHandler is the default handler for most profiles. User creates Pydantic models for input and output data with the following definition:
 
 
 ```python
@@ -30,20 +30,21 @@ class myOutgoingData(BaseModel):
 ```
 
 This model is registered in configuration:
+
 ```python
 config = {
     "input-queue":{
         ...,
-        "data_model": "mymodels.myIncomingData"
+        "data_model": myIncomingData
     },
     "output-queue":{
         ...,
-        "data_model": "mymodels.myOutgoingData"
+        "data_model": myOutgoingData
     },  
 }
 ```
 
-Volley uses the `PydanticModelHandler` to construct an instance of `myIncomingData` using `message` data. When the message is incoming to the application, `PydanticModelHandler.construct()` is called with `myIncomingData` and the incoming `message` (deserialized to dict from orjson). This effectively becomes the following operation:
+When Volley uses the `PydanticModelHandler` to construct an instance of `myIncomingData` using the raw incoming message data. `PydanticModelHandler.construct()` is called with `myIncomingData` and the incoming `message` (deserialized to dict from orjson). This effectively becomes the following operation:
 
 ```python
 incoming_model = myModel.parse_obj(message)
@@ -57,7 +58,6 @@ return [("output-queue", out_message)]
 ```
 
 Volley then uses `PydanticModelHandler` to `deconstruct` `myOutgoingData` to a `dict` which is then passed to `orjson` for serialization, finally to Kafka via the connector.
-
 
 ## Extending Models
 

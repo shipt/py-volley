@@ -40,9 +40,9 @@ app = Engine(
 
 Profiles define the following:
 
-`consumer` : (str) - dot path to the concrete implementation of the base [Consumer](./connectors/base.md#consumer). Consumers define how Volley should consume a message from a queue and mark a message as successfully read and processed.
+`consumer` : (str) - dot path to the concrete implementation of the base [Consumer](./connectors/overview.md#consumer). Consumers define how Volley should consume a message from a queue and mark a message as successfully read and processed.
 
-`producer` : (str) - dot path to the concrete implementation of the base [Producer](./connectors/base.md#consumer). Defines how Volley should produce a message to a queue.
+`producer` : (str) - dot path to the concrete implementation of the base [Producer](./connectors/overview.md#producers). Defines how Volley should produce a message to a queue.
 
 `serializer` : (str) - dot path to the concrete implementation of the base [BaseSerialization](./serializers/BaseSerialization.md#serialization). Defines how to turn raw `bytes` into a primitive python object.
 

@@ -77,6 +77,11 @@ steps:
 
   - name: test-integration
     image: docker/compose
+    environment:
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_USERNAME:
+        from_secret: ARTIFACTORY_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_PASSWORD:
+        from_secret: ARTIFACTORY_PYPI_PASSWORD
     volumes:
       - name: docker_socket
         path: /var/run/docker.sock

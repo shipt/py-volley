@@ -13,6 +13,11 @@ trigger:
 steps:
   - name: unit-test-3.10.2
     image: python:3.10.2
+    environment:
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_USERNAME:
+        from_secret: ARTIFACTORY_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_PASSWORD:
+        from_secret: ARTIFACTORY_PYPI_PASSWORD
     commands:
     - apt-get update && apt-get install -y librdkafka-dev
     - pip install poetry==1.1.13
@@ -21,17 +26,26 @@ steps:
 
   - name: unit-test-3.9.8
     image: python:3.9.8
+    environment:
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_USERNAME:
+        from_secret: ARTIFACTORY_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_PASSWORD:
+        from_secret: ARTIFACTORY_PYPI_PASSWORD
+      CODECOV_TOKEN:
+        from_secret: CODECOV_TOKEN
     commands:
     - pip install poetry==1.1.13
     - poetry install -E all
     - make test.unit
     - poetry run codecov
-    environment:
-      CODECOV_TOKEN:
-        from_secret: CODECOV_TOKEN
 
   - name: unit-test-3.9
     image: python:3.9
+    environment:
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_USERNAME:
+        from_secret: ARTIFACTORY_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_PASSWORD:
+        from_secret: ARTIFACTORY_PYPI_PASSWORD
     commands:
     - pip install poetry==1.1.13
     - poetry install -E all
@@ -39,6 +53,11 @@ steps:
 
   - name: unit-test-3.8
     image: python:3.8
+    environment:
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_USERNAME:
+        from_secret: ARTIFACTORY_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_PASSWORD:
+        from_secret: ARTIFACTORY_PYPI_PASSWORD
     commands:
     - pip install poetry==1.1.13
     - poetry install -E all
@@ -46,6 +65,11 @@ steps:
 
   - name: lints
     image: python:3.9.8
+    environment:
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_USERNAME:
+        from_secret: ARTIFACTORY_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_PASSWORD:
+        from_secret: ARTIFACTORY_PYPI_PASSWORD
     commands:
       - pip install poetry==1.1.13
       - poetry install -E all

@@ -75,23 +75,19 @@ steps:
       status:
       - failure
       - success
-  
+
   - name: publish-release
     image: python:3.9.4
     environment:
-      POETRY_HTTP_BASIC_PYPI_USERNAME:
-        from_secret: PYPI_ORG_USERNAME
-      POETRY_HTTP_BASIC_PYPI_PASSWORD:
-        from_secret: PYPI_ORG_PASSWORD
-      POETRY_HTTP_BASIC_SHIPT_USERNAME:
-        from_secret: SHIPT_PYPI_USERNAME
-      POETRY_HTTP_BASIC_SHIPT_PASSWORD:
-        from_secret: SHIPT_PYPI_PASSWORD
+      POETRY_HTTP_BASIC_SHIPT_DEPLOY_USERNAME:
+        from_secret: ARTIFACTORY_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_DEPLOY_PASSWORD:
+        from_secret: ARTIFACTORY_PYPI_PASSWORD
     commands:
       - pip install poetry==1.1.13
       - test "v$(poetry version --short)" "=" "$DRONE_TAG"
-      - poetry publish --repository=shipt --build
-      - poetry publish
+      - poetry config repositories.shipt-deploy https://artifactory.shipt.com/artifactory/api/pypi/pypi-local
+      - poetry publish --repository shipt-deploy --build
     when:
       branch:
         - main

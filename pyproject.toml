@@ -8,10 +8,22 @@ packages = [
     { include = "volley" },
 ]
 
+# Access Shipt's private Artifactory remote PyPi repository. It serves as a caching proxy.
+# Generate Identity Token in Artifactory and use it as password and then have these ENV's set:
+# export POETRY_HTTP_BASIC_SHIPT_RESOLVE_USERNAME=${ARTIFACTORY_PYPI_USERNAME}
+# export POETRY_HTTP_BASIC_SHIPT_RESOLVE_PASSWORD=${ARTIFACTORY_PYPI_PASSWORD}
 [[tool.poetry.source]]
-name = "shipt"
-url = "https://pypi.shipt.com/simple/"
-secondary = true
+name = "shipt-resolve"
+url = "https://artifactory.shipt.com/artifactory/api/pypi/pypi-virtual/simple"
+default = true
+
+# Current poetry version has an issue with multiple sources and does not respect
+# default=false and secondary=true settings. Please use drone artifactory-poetry-publish step to publish packages.
+# [[tool.poetry.source]]
+# name = "shipt-deploy"
+# url = "https://artifactory.shipt.com/artifactory/api/pypi/pypi-local"
+# default = false
+# secondary = true
 
 [tool.poetry.urls]
 "Docs" = "https://shipt.github.io/py-volley/"

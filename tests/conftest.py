@@ -19,7 +19,7 @@ os.environ["KAFKA_CONSUMER_GROUP"] = "test-group"
 
 
 @fixture
-def bundle_message() -> QueueMessage:
+def queue_message() -> QueueMessage:
     return QueueMessage(
         message_context="123",
         message={
@@ -84,7 +84,7 @@ class KafkaMessage:
         self,
         error: bool = False,
         msg: Optional[bytes] = None,
-        topic: Optional[str] = None,
+        topic: Optional[str] = "test",
         partition: Optional[int] = None,
         offset: Optional[int] = None,
     ) -> None:

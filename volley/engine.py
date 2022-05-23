@@ -2,7 +2,6 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-import asyncio
 import builtins
 import time
 from dataclasses import dataclass, field
@@ -19,7 +18,7 @@ from volley.models.base import message_model_handler
 from volley.profiles import ConnectionType, Profile, construct_profiles
 from volley.queues import DLQNotConfiguredError, Queue, construct_queue_map
 from volley.transport import DeliveryReport, delivery_success, produce_handler
-from volley.util import GracefulKiller
+from volley.util import FuncEnvelope, GracefulKiller
 
 # enables mocking the infinite loop to finite
 RUN_ONCE = False
@@ -119,13 +118,11 @@ class Engine:
 
     def stream_app(  # noqa: C901
         self,
-        func: Callable[
-            [Any], Union[Awaitable[Any], List[Tuple[str, Any]], List[Tuple[str, Any, Dict[str, Any]]], bool]
-        ],
+        func: Callable[..., Union[Awaitable[Any], List[Tuple[str, Any]], List[Tuple[str, Any, Dict[str, Any]]], bool]],
     ) -> Callable[..., None]:
         """Main decorator for applications"""
 
-        is_coroutine = asyncio.iscoroutinefunction(func)
+        _func = FuncEnvelope(func)
 
         @run_async
         @wraps(func)
@@ -192,7 +189,11 @@ class Engine:
                     # this is happy path
                     # if outputs have been assigned it means this message is destined for a DLQ
                     _start_main = time.time()
-                    outputs = await run_worker_function(func, message=data_model, is_coroutine=is_coroutine)
+                    outputs = await run_worker_function(
+                        f=_func,
+                        message=data_model,
+                        ctx=in_message.message_context,
+                    )
                     _fun_duration = time.time() - _start_main
                     PROCESS_TIME.labels(volley_app=self.app_name, process_name="component").observe(_fun_duration)
 
@@ -230,7 +231,6 @@ class Engine:
                     break
 
             self.shutdown()
-            logger.info("Shutdown %s complete", self.app_name)
 
         # used for unit testing as a means to access the wrapped component without the decorator
         run_component.__wrapped__ = func  # type: ignore
@@ -246,3 +246,4 @@ class Engine:
             out_queue.producer_con.shutdown()
             logger.info("%s, %s shutdown complete", self.app_name, q_name)
         self.queue_map[self.input_queue].consumer_con.shutdown()
+        logger.info("Shutdown %s complete", self.app_name)

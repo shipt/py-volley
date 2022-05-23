@@ -11,8 +11,6 @@ from pytest import LogCaptureFixture, MonkeyPatch
 
 from example.data_models import InputMessage, OutputMessage
 from tests.conftest import KafkaMessage
-
-# from tests.test_connectors.test_kafka import KafkaMessage
 from volley.data_models import GenericMessage
 from volley.engine import Engine
 from volley.queues import DLQNotConfiguredError
@@ -35,7 +33,7 @@ def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -
         metrics_port=None,
     )
     input_msg = json.dumps(InputMessage.schema()["examples"][0]).encode("utf-8")
-    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=input_msg)
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=input_msg)
 
     output_msg = OutputMessage.parse_obj(OutputMessage.schema()["examples"][0])
     # component returns "just none"
@@ -64,7 +62,7 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
         metrics_port=None,
     )
     msg = json.dumps(InputMessage.schema()["examples"][0]).encode("utf-8")
-    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=msg)
 
     # component returns "just none"
     @eng.stream_app
@@ -139,7 +137,7 @@ def test_init_from_dict(mock_consumer: MagicMock, config_dict: Dict[str, Dict[st
 
     data = InputMessage.schema()["examples"][0]
     msg = json.dumps(data).encode("utf-8")
-    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=msg)
     input_queue = "input-topic"
     output_queues = list(config_dict.keys())
 
@@ -193,7 +191,7 @@ def test_null_serializer_fail(
 
     data = InputMessage.schema()["examples"][0]
     msg = json.dumps(data).encode("utf-8")
-    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=msg)
     input_queue = "input-topic"
     output_queues = list(config_dict.keys())
     eng = Engine(
@@ -377,7 +375,7 @@ def test_kafka_config_init(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -
     monkeypatch.delenv("KAFKA_BROKERS", raising=True)
 
     msg = b"""{"x":"y"}"""
-    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="kafka.topic", msg=msg)
     consumer_group = str(uuid4())
     kafka_brokers = f"my_broker_{str(uuid4())}:9092"
     cfg = {
@@ -442,7 +440,7 @@ def test_runtime_connector_configs(mock_consumer: MagicMock, config_dict: Dict[s
     """test wrapped func can return variable length tuples"""
     data = InputMessage.schema()["examples"][0]
     msg = json.dumps(data).encode("utf-8")
-    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=msg)
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=msg)
     input_queue = "input-topic"
     output_queues = list(config_dict.keys())
 
@@ -507,3 +505,37 @@ def test_invalid_queue(config_dict: Dict[str, Dict[str, str]]) -> None:
             metrics_port=None,
         )
     assert _id in str(err.value)
+
+
+@patch("volley.engine.RUN_ONCE", True)
+@patch("volley.connectors.confluent.Producer.poll", MagicMock())
+@patch("volley.connectors.confluent.Producer", MagicMock())
+@patch("volley.connectors.confluent.Consumer")
+def test_pass_msg_ctx(
+    mock_consumer: MagicMock,
+) -> None:
+    """client function defines `msg_ctx` and parameter and receives QueueMessage.message_context"""
+
+    eng = Engine(
+        input_queue="input-topic",
+        output_queues=["output-topic"],
+        yaml_config_path="./example/volley_config.yml",
+        dead_letter_queue="dead-letter-queue",
+        metrics_port=None,
+    )
+    input_msg = json.dumps(InputMessage.schema()["examples"][0]).encode("utf-8")
+    kafka_msg = KafkaMessage(topic="localhost.kafka.input", msg=input_msg)
+    mock_message = lambda x: kafka_msg  # noqa
+    mock_consumer.return_value.poll = mock_message
+
+    output_msg = OutputMessage.parse_obj(OutputMessage.schema()["examples"][0])
+    # component returns "just none"
+
+    @eng.stream_app
+    def func(msg: Any, msg_ctx: Any) -> List[Tuple[str, OutputMessage]]:
+        assert msg == InputMessage.parse_raw(input_msg)
+        assert isinstance(msg_ctx, KafkaMessage)
+        return [("output-topic", output_msg)]
+
+    func()
+    eng.shutdown()

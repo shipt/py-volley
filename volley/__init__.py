@@ -1,5 +1,5 @@
 from volley.engine import Engine
 
-__version__ = "0.17.2"
+__version__ = "0.20.0"
 
 __all__ = ["Engine"]

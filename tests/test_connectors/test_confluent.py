@@ -1,12 +1,16 @@
+import json
 import logging
 from random import randint
+from typing import Any, List, Tuple
 from unittest.mock import MagicMock, patch
 from uuid import uuid4
 
 import pytest
 from pytest import LogCaptureFixture, MonkeyPatch
 
+from example.data_models import InputMessage, OutputMessage
 from tests.conftest import KafkaMessage
+from volley import Engine
 from volley.connectors.confluent import (
     ConfluentKafkaConsumer,
     ConfluentKafkaProducer,
@@ -136,34 +140,103 @@ def test_producer_init_configs() -> None:
     p.shutdown()
 
 
+@pytest.mark.parametrize(
+    "queue",
+    [("topic0"), ("topic0,topic1,topic2")],
+)
 @patch("volley.connectors.confluent.Consumer", MagicMock())
-def test_callback_consumer() -> None:
-    m = KafkaMessage(partition=24, offset=42)
-    ackc = ConfluentKafkaConsumer(queue_name="test")
+def test_callback_consumer(queue: str) -> None:
+    topics = queue.split(",")
+    ackc = ConfluentKafkaConsumer(queue_name=queue)
+
     # first commit
-    ackc.on_success(m)
-    assert ackc.last_offset[24] == 42
+    for topic in topics:
+        m = KafkaMessage(topic=topic, partition=24, offset=42)
+        ackc.on_success(m)
+        assert ackc.last_offset[topic][24] == 42
 
     # commit a higher offset, same partition
-    m = KafkaMessage(partition=24, offset=43)
-    ackc.on_success(m)
-    assert ackc.last_offset[24] == 43
+    for topic in topics:
+        m = KafkaMessage(topic=topic, partition=24, offset=43)
+        ackc.on_success(m)
+        assert ackc.last_offset[topic][24] == 43
 
     # commit a lower offset, same partition
     # should not change the last commit
-    m = KafkaMessage(partition=24, offset=1)
-    ackc.on_success(m)
-    assert ackc.last_offset[24] == 43
+    for topic in topics:
+        m = KafkaMessage(topic=topic, partition=24, offset=1)
+        ackc.on_success(m)
+        assert ackc.last_offset[topic][24] == 43
 
     # commit to different partition
-    m = KafkaMessage(partition=1, offset=100)
-    ackc.on_success(m)
-    assert ackc.last_offset[1] == 100
-    assert ackc.last_offset[24] == 43
+    for topic in topics:
+        m = KafkaMessage(topic=topic, partition=1, offset=100)
+        ackc.on_success(m)
+        assert ackc.last_offset[topic][1] == 100
+        assert ackc.last_offset[topic][24] == 43
 
     # repeatedly commit same data
-    m = KafkaMessage(partition=1, offset=100)
-    for _ in range(10):
-        ackc.on_success(m)
-    assert ackc.last_offset[1] == 100
-    assert ackc.last_offset[24] == 43
+    for topic in topics:
+        m = KafkaMessage(topic=topic, partition=1, offset=100)
+        for _ in range(10):
+            ackc.on_success(m)
+        assert ackc.last_offset[topic][1] == 100
+        assert ackc.last_offset[topic][24] == 43
+
+
+@patch("volley.connectors.confluent.os", MagicMock())
+@patch("volley.connectors.confluent.Consumer", MagicMock())
+def test_downstream_failure(caplog: LogCaptureFixture) -> None:
+    """validate a downstream failure triggers the expected connector's shutdown procedure"""
+    config = {"stop_on_failure": True}
+    p = ConfluentKafkaConsumer(queue_name="test", config=config)
+
+    with caplog.at_level(logging.ERROR):
+        p.on_fail(message_context=KafkaMessage())
+    assert "stopping application" in caplog.text.lower()
+
+    config = {"stop_on_failure": False}
+    p = ConfluentKafkaConsumer(queue_name="test", config=config)
+
+    with caplog.at_level(logging.WARNING):
+        p.on_fail(message_context=KafkaMessage())
+    assert "critical" in caplog.text.lower()
+
+
+@patch("volley.connectors.rsmq.RSMQProducer")
+@patch("volley.connectors.confluent.Consumer")
+def test_downstream_failure_shutdown(
+    mock_consumer: MagicMock, mock_producer: MagicMock, caplog: LogCaptureFixture
+) -> None:
+    """Validate a downstream failure triggers all the expected graceful shutdown procedures"""
+    eng = Engine(
+        input_queue="input-topic",
+        output_queues=["redis_queue"],
+        yaml_config_path="./example/volley_config.yml",
+        metrics_port=None,
+    )
+
+    input_msg = json.dumps(InputMessage.schema()["examples"][0]).encode("utf-8")
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=input_msg)
+
+    # for simplicity, make it a synchronous producer
+    mock_producer.return_value.callback_delivery = False
+    # mock the failure to produce
+    mock_producer.return_value.produce = lambda *args, **kwargs: False
+
+    # dummy output object to try to produce
+    output_msg = OutputMessage.parse_obj(OutputMessage.schema()["examples"][0])
+
+    @eng.stream_app
+    def func(msg: Any) -> List[Tuple[str, OutputMessage]]:
+        print(msg.json())
+        return [("redis_queue", output_msg)]
+
+    # function should run then exit
+    with caplog.at_level(logging.INFO):
+        func()
+
+    # make sure volley's graceful killer is set to shutdown
+    assert eng.killer.kill_now is True
+    assert "downstream failure" in caplog.text.lower()
+    assert "shutdown volley complete" in caplog.text.lower()

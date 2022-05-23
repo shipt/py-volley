@@ -19,6 +19,8 @@ nav:
     - Profiles: 'profiles.md'
     - Application: 'engine.md'
     - Consumer & Producer: './connectors/connectors.md'
+    - Serialization: './serializers/overview.md'
+    - Model Handlers: './models/overview.md'
     - Dead Letter Queues: 'deadletterqueue.md'
   - Metrics: 'metrics.md'
   - Advanced Example: 'advanced_example.md'

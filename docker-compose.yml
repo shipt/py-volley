@@ -140,6 +140,9 @@ services:
       context: .
       dockerfile: Dockerfile
       target: dev
+      args:
+        ARTIFACTORY_PYPI_USERNAME: ${POETRY_HTTP_BASIC_SHIPT_RESOLVE_USERNAME}
+        ARTIFACTORY_PYPI_PASSWORD: ${POETRY_HTTP_BASIC_SHIPT_RESOLVE_PASSWORD}
     environment:
       KAFKA_BROKERS: kafka:9092
     volumes:

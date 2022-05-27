@@ -115,8 +115,12 @@ steps:
     commands:
       - pip install poetry==1.1.13
       - test "v$(poetry version --short)" "=" "$DRONE_TAG"
+        # publish to Artifactory
       - poetry config repositories.shipt-deploy https://artifactory.shipt.com/artifactory/api/pypi/pypi-local
       - poetry publish --repository shipt-deploy --build
+        # publish to PyPI
+      - poetry config repositories.pypi-public https://upload.pypi.org/legacy
+      - poetry publish --repository pypi-public --build
     when:
       branch:
         - main

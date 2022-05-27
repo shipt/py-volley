@@ -63,9 +63,9 @@ test.integration: run.datastores run.components
 test.unit: setup
 	poetry run coverage run -m pytest -s \
 			--ignore=tests/integration_tests \
-            --cov=./ \
-            --cov-report=xml:coverage.xml \
-            --cov-report term
+			--cov=./ \
+			--cov-report=xml:coverage.xml \
+			--cov-report term
 
 run.components:
 	docker-compose up --build -d input_worker middle_worker zmq_worker
@@ -84,7 +84,8 @@ stop:
 	docker compose down --remove-orphans
 
 publish:
-	poetry publish --repository=shipt --build
+
+	poetry publish --repository shipt-deploy --build
 poetry.pre.patch:
 	poetry version prepatch
 poetry.pre.minor:

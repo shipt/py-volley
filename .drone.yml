@@ -13,6 +13,11 @@ trigger:
 steps:
   - name: unit-test-3.10.2
     image: python:3.10.2
+    environment:
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_USERNAME:
+        from_secret: ARTIFACTORY_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_PASSWORD:
+        from_secret: ARTIFACTORY_PYPI_PASSWORD
     commands:
     - apt-get update && apt-get install -y librdkafka-dev
     - pip install poetry==1.1.13
@@ -21,17 +26,26 @@ steps:
 
   - name: unit-test-3.9.8
     image: python:3.9.8
+    environment:
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_USERNAME:
+        from_secret: ARTIFACTORY_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_PASSWORD:
+        from_secret: ARTIFACTORY_PYPI_PASSWORD
+      CODECOV_TOKEN:
+        from_secret: CODECOV_TOKEN
     commands:
     - pip install poetry==1.1.13
     - poetry install -E all
     - make test.unit
     - poetry run codecov
-    environment:
-      CODECOV_TOKEN:
-        from_secret: CODECOV_TOKEN
 
   - name: unit-test-3.9
     image: python:3.9
+    environment:
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_USERNAME:
+        from_secret: ARTIFACTORY_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_PASSWORD:
+        from_secret: ARTIFACTORY_PYPI_PASSWORD
     commands:
     - pip install poetry==1.1.13
     - poetry install -E all
@@ -39,6 +53,11 @@ steps:
 
   - name: unit-test-3.8
     image: python:3.8
+    environment:
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_USERNAME:
+        from_secret: ARTIFACTORY_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_PASSWORD:
+        from_secret: ARTIFACTORY_PYPI_PASSWORD
     commands:
     - pip install poetry==1.1.13
     - poetry install -E all
@@ -46,6 +65,11 @@ steps:
 
   - name: lints
     image: python:3.9.8
+    environment:
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_USERNAME:
+        from_secret: ARTIFACTORY_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_PASSWORD:
+        from_secret: ARTIFACTORY_PYPI_PASSWORD
     commands:
       - pip install poetry==1.1.13
       - poetry install -E all
@@ -53,6 +77,11 @@ steps:
 
   - name: test-integration
     image: docker/compose
+    environment:
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_USERNAME:
+        from_secret: ARTIFACTORY_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_RESOLVE_PASSWORD:
+        from_secret: ARTIFACTORY_PYPI_PASSWORD
     volumes:
       - name: docker_socket
         path: /var/run/docker.sock
@@ -75,23 +104,23 @@ steps:
       status:
       - failure
       - success
-  
+
   - name: publish-release
     image: python:3.9.4
     environment:
-      POETRY_HTTP_BASIC_PYPI_USERNAME:
-        from_secret: PYPI_ORG_USERNAME
-      POETRY_HTTP_BASIC_PYPI_PASSWORD:
-        from_secret: PYPI_ORG_PASSWORD
-      POETRY_HTTP_BASIC_SHIPT_USERNAME:
-        from_secret: SHIPT_PYPI_USERNAME
-      POETRY_HTTP_BASIC_SHIPT_PASSWORD:
-        from_secret: SHIPT_PYPI_PASSWORD
+      POETRY_HTTP_BASIC_SHIPT_DEPLOY_USERNAME:
+        from_secret: ARTIFACTORY_PYPI_USERNAME
+      POETRY_HTTP_BASIC_SHIPT_DEPLOY_PASSWORD:
+        from_secret: ARTIFACTORY_PYPI_PASSWORD
     commands:
       - pip install poetry==1.1.13
       - test "v$(poetry version --short)" "=" "$DRONE_TAG"
-      - poetry publish --repository=shipt --build
-      - poetry publish
+        # publish to Artifactory
+
+      - poetry publish --repository shipt-deploy --build
+        # publish to PyPI
+      - poetry config repositories.pypi-public https://upload.pypi.org/legacy
+      - poetry publish --repository pypi-public --build
     when:
       branch:
         - main

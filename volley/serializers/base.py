@@ -3,7 +3,7 @@
 # LICENSE file in the root directory of this source tree.
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any, Dict, TypeVar
 
 
 class BaseSerialization(ABC):
@@ -16,3 +16,6 @@ class BaseSerialization(ABC):
     @abstractmethod
     def deserialize(self, message: bytes) -> Any:
         """deserialize from queue"""
+
+
+BaseSerializationType = TypeVar("BaseSerializationType", bound=BaseSerialization)

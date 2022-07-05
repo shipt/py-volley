@@ -11,7 +11,7 @@ from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple, Union
 from prometheus_client import Counter, Summary, start_http_server
 
 from volley.concurrency import run_async, run_worker_function
-from volley.config import load_yaml
+from volley.config import QueueConfig, load_yaml
 from volley.data_models import QueueMessage
 from volley.logging import logger
 from volley.models.base import message_model_handler
@@ -43,7 +43,7 @@ class Engine:
             Not required if the application does not produce anywhere!
         dead_letter_queue: Points to the queue in configuration used as the dead letter queue.
         poll_interval_seconds: globally set time to to halt between polls on the consumer
-        queue_config: dictionary provided all queue configurations.
+        queue_config: either a list of QueueConfig (one for each queue) or a dictionary of queue configurations.
             Must provide one of queue_config or yaml_config_path
         yaml_config_path: path to a yaml config file.
             Must provide one of yaml_config_path or queue_config
@@ -61,7 +61,7 @@ class Engine:
 
     app_name: str = "volley"
     dead_letter_queue: Optional[str] = None
-    queue_config: Optional[Dict[str, Any]] = None
+    queue_config: Union[List[QueueConfig], Dict[str, Any], None] = None
     yaml_config_path: str = "./volley_config.yml"
     metrics_port: Optional[int] = 3000
     poll_interval_seconds: float = 1.0
@@ -77,8 +77,15 @@ class Engine:
         if self.output_queues == []:
             logger.warning("No output queues provided")
 
-        # if user provided config, use it
-        if self.queue_config:
+        # queue config can come in three ways
+        # 1. List[QueueConfig] , list of typed configurations, one for each queue
+        # 2. dictionary, queueName: configurations
+        # 3. yaml file
+
+        if isinstance(self.queue_config, list):
+            # parse List[QueueConfig]
+            print("parse")
+        elif isinstance(self.queue_config, dict):
             cfg = self.queue_config
         else:
             logger.info("loading configuration from %s", self.yaml_config_path)
@@ -95,7 +102,7 @@ class Engine:
         else:
             logger.warning("DLQ not provided. Application will crash on schema violations")
 
-        # cfg can contain more queues that the app needs
+        # cfg can contain configs for more queues that the app needs
         # filter out queues that are not required by app
         cfg = {k: v for k, v in cfg.items() if k in [self.input_queue] + self.output_queues}
 

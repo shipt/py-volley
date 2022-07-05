@@ -4,7 +4,7 @@
 
 from abc import ABC, abstractmethod
 from time import time
-from typing import Any, Optional, Tuple
+from typing import Any, Optional, Tuple, TypeVar
 
 from prometheus_client import Summary
 
@@ -136,3 +136,6 @@ def model_message_handler(
     except Exception:
         logger.exception("failed transporting message to connector: data_model=%s", data_model)
         raise
+
+
+BaseModelHandlerType = TypeVar("BaseModelHandlerType", bound=BaseModelHandler)

@@ -159,22 +159,26 @@ def none_producer_decorated(monkeypatch: MonkeyPatch) -> Generator[Callable[...,
 def config_dict() -> Dict[str, Dict[str, Any]]:
     return {
         "input-topic": {
+            "name": "input-topic",
             "value": "localhost.kafka.input",
             "profile": "confluent",
             "data_model": "example.data_models.InputMessage",
         },
         "comp_1": {
+            "name": "comp_1",
             "value": "comp1",
             "profile": "rsmq",
             "data_model": GenericMessage,
         },
         "output-topic": {
+            "name": "output-topic",
             "value": "localhost.kafka.output",
             "profile": "confluent",
             "data_model": "volley.data_models.GenericMessage",
             "config": {"compression.type": "gzip"},
         },
         "dead-letter-queue": {
+            "name": "dead-letter-queue",
             "value": "localhost.kafka.dlq",
             "profile": "confluent-dlq",
         },

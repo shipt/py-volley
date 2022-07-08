@@ -83,6 +83,7 @@ class QueueConfig:
     profile: Optional[str] = None
     consumer: Optional[Union[str, Type[BaseConsumer]]] = None
     producer: Optional[Union[str, Type[BaseProducer]]] = None
+    data_model: Optional[Union[str, Any]] = None
     model_handler: Optional[Union[str, Type[BaseModelHandler]]] = None
     serializer: Optional[Union[str, Type[BaseSerialization]]] = None
     config: Optional[Dict[Any, Any]] = None

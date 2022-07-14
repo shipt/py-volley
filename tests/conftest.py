@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 from pytest import MonkeyPatch, fixture
 
-from volley.config import get_configs
+from volley.config import QueueConfig, get_configs
 from volley.connectors.confluent import ConfluentKafkaConsumer, ConfluentKafkaProducer
 from volley.connectors.rsmq import RSMQConsumer, RSMQProducer
 from volley.data_models import GenericMessage, QueueMessage
@@ -183,6 +183,11 @@ def config_dict() -> Dict[str, Dict[str, Any]]:
             "profile": "confluent-dlq",
         },
     }
+
+
+@fixture
+def typedConfig_list(config_dict: Dict[str, Dict[str, Any]]) -> List[QueueConfig]:
+    return [QueueConfig(**x) for x in config_dict.values()]
 
 
 @fixture

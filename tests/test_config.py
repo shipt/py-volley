@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Any, Dict
 
 import pytest
 from pydantic.main import BaseModel
@@ -32,17 +32,16 @@ def test_typed_config() -> None:
     """initialize single queue config"""
     cfg = QueueConfig(name="test-cfg", value="my-queue", profile="confluent", config={"random": "configValue"})
     cfg_dict = cfg.to_dict()
-    assert cfg.name in list(cfg_dict.keys())[0]
     for key in ["model_handler", "consumer", "producer", "model_handler", "data_model", "serializer"]:
-        assert key not in cfg_dict[cfg.name]
-    assert "profile" in cfg_dict[cfg.name]
-    assert "config" in cfg_dict[cfg.name]
+        assert key not in cfg_dict
+    assert "profile" in cfg_dict
+    assert "config" in cfg_dict
 
 
-def test_typed_config_init(config_dict) -> None:
+def test_typed_config_init(config_dict: Dict[str, Dict[str, Any]]) -> None:
     # : Dict[str, Dict[str, str]]
     configs = {}
-    for k, v in config_dict.items():
+    for _, v in config_dict.items():
         _cfg = QueueConfig(**v).to_dict()
-        configs.update(_cfg)
+        configs[_cfg["name"]] = _cfg
     assert configs == config_dict

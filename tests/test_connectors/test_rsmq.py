@@ -27,7 +27,7 @@ def test_rsmq_delete(mock_rsmq_consumer: RSMQConsumer) -> None:
 def test_rsmq_delete_fail(mock_rsmq_consumer: RSMQConsumer) -> None:
     """force a failure to delete message and assert its failure handled"""
     mock_rsmq_consumer.queue.deleteMessage.return_value.execute.return_value = False
-    mock_rsmq_consumer.delete_message.retry.stop = stop_after_attempt(1)
+    mock_rsmq_consumer.delete_message.retry.stop = stop_after_attempt(1)  # type: ignore
     # mock_rsmq_consumer.delete_message.retry.stop = wait_none()
     with raises(TimeoutError):
         mock_rsmq_consumer.on_success("message_id_test")

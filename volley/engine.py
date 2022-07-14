@@ -83,8 +83,7 @@ class Engine:
         # 3. yaml file
 
         if isinstance(self.queue_config, list):
-            # parse List[QueueConfig]
-            print("parse")
+            cfg = {x.name: x.to_dict() for x in self.queue_config}
         elif isinstance(self.queue_config, dict):
             cfg = self.queue_config
         else:
@@ -96,7 +95,7 @@ class Engine:
             # if provided by user, DLQ becomes a producer target
             # flag the queue using the DLQ profile
             if self.dead_letter_queue not in cfg:
-                raise KeyError("%s not present in configuration", self.dead_letter_queue)
+                raise KeyError(f"{self.dead_letter_queue} not present in configuration")
             else:
                 self.output_queues.append(self.dead_letter_queue)
         else:

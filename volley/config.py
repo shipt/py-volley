@@ -88,7 +88,6 @@ class QueueConfig:
     serializer: Optional[Union[str, Type[BaseSerialization]]] = None
     config: Optional[Dict[Any, Any]] = None
 
-    def to_dict(self) -> Dict[str, Dict[str, Any]]:
+    def to_dict(self) -> Dict[str, Any]:
         """transform to dictionary omitting optional fields when not provided"""
-        not_none = {k: v for k, v in self.__dict__.items() if v is not None}
-        return {self.name: not_none}
+        return {k: v for k, v in self.__dict__.items() if v is not None}

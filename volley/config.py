@@ -3,10 +3,10 @@
 # LICENSE file in the root directory of this source tree.
 
 import importlib
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional, Type, Union
 
+from pydantic import BaseModel
 from yaml import Loader, load
 
 from volley.connectors.base import BaseConsumer, BaseProducer
@@ -48,15 +48,26 @@ def get_configs() -> Dict[str, Dict[str, Any]]:
     return load_yaml(GLOBALS)
 
 
-@dataclass
-class QueueConfig:
+class QueueConfig(BaseModel):
     """Represents the configuration for a single queue. Provides the
     application with necessary configuration for interacting with the
     specified queue.
 
-    Example:
+    Attributes:
+        name (str): Alias for a particular queue.
+        value (str): The system name for a queue. For example, the name of a Kafka topic (prd.my.long.kafka.topic.name) or name of a RSMQ queue.
+        profile (Optional[str]): Either `kafka|rsmq`. Pertains to the type of connector required to produce and consume from the queue. If not provided, must provide values for ALL of `consumer, producer, serializer, model_handler`.
+        data_model (Optional[str]): Defaults to `volley.data_models.GenericMessage`. Path to the Pydantic model used for data validation. When default is used, Volley will only validate that messages can be successfully converted to a Pydantic model or dictionary.
+        serializer (Optional[str]): Defaults to `volley.serializers.OrJsonSerializer`. Path to the serializer.
+        producer (Optional[str]): Used for providing a custom producer connector. Overrides the producer pertaining to that provided in `type`. Provide the dot path to the producer class. e.g. for Kafka, defaults to `volley.connectors.kafka.KafkaProducer`; cf. [Extending Connectors](./connectors/connectors.md#extending-connectors-with-plugins).
+        consumer (Optional[str]): Used for providing a custom consumer connector. Overrides the consumer pertaining to that provided in `type`. Provide the dot path to the consumer class. e.g. for Kafka, defaults to `volley.connectors.kafka.KafkaConsumer`; cf. [Extending Connectors](./connectors/connectors.md#extending-connectors-with-plugins).
+        config: (Optional[str]): Any configuration to be passed directly to the queue connector. For example, all [librdkafka configurations](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) can be passed through to the connector via a dictionary here.
+
+    # Example
 
     ```python
+    from volley import Engine, QueueConfig
+
     input_cfg = QueueConfig(
         name="my-input-queue",
         value="my.input.kafka.topic",

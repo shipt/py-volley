@@ -6,37 +6,15 @@ It is recommended to define Volley's configuration by passing a dictionary direc
 
 ## Queue Configuration
 
-The queue configuration object is a dictionary passed into the Volley engine at initialization.
+The queue configuration object is a dictionary passed into the Volley engine at initialization. It can be defined either via a list of QueueConfig, `dict`, or a .yaml file.
 
-The queue configuration can be defined either via a `dict` or a .yaml file.
-
-### Attributes
-
-`value` 
-: (str) - *required* : The system name for a queue. For example, the name of a Kafka topic (prd.my.long.kafka.topic.name) or name of a RSMQ queue.
-
-`profile`
-: (str) - *required* : Either `kafka|rsmq`. Pertains to the type of connector required to produce and consume from the queue.
-
-`data_model`
-: (str) - *optional* : Defaults to `volley.data_models.GenericMessage`. Path to the Pydantic model used for data validation. When default is used, Volley will only validate that messages can be successfully converted to a Pydantic model or dictionary.
-
-`serializer`
-: (str) - *optional* : Defaults to `volley.serializers.OrJsonSerializer`. Path to the serializer.
-
-`producer`
-: (str) - *optional* : Used for providing a custom producer connector. Overrides the producer pertaining to that provided in `type`. Provide the dot path to the producer class. e.g. for Kafka, defaults to `volley.connectors.kafka.KafkaProducer`; cf. [Extending Connectors](./connectors/connectors.md#extending-connectors-with-plugins).
-
-`consumer`
-: (str) - *optional* : Used for providing a custom consumer connector. Overrides the consumer pertaining to that provided in `type`. Provide the dot path to the consumer class. e.g. for Kafka, defaults to `volley.connectors.kafka.KafkaConsumer`; cf. [Extending Connectors](./connectors/connectors.md#extending-connectors-with-plugins).
-
-`config`
-: (dict) - *optional* : Any configuration to be passed directly to the queue connector. For example, all [librdkafka configurations](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) can be passed through to the connector via a dictionary here.
+## QueueConfig
+### ::: volley.config.QueueConfig
 
 
-## Example
+## Dict Example
 
-Let's define configuration for three queues; one input queue, an output queue, and a dead letter queue.
+The queue configuration can also be composed as `Dict[str, Dict[str, str]]`. Each key in the dictionary represents the name (alias) for the queue, and the value is a dictionary of the queue's specific configurations and accept the same attributes as documented in the `volley.QueueConfig` class.
 
 ```python
 queue_config = {

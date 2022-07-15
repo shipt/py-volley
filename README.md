@@ -89,7 +89,7 @@ queue_config = [
     profile="confluent",
     data_model=InputMessage,
     config={
-      "group.id": "my.consumer.group"
+      "group.id": "my.consumer.group",
       "bootstrap.servers": "localhost:9092",
     }
   ),

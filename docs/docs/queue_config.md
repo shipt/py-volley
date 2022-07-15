@@ -6,13 +6,13 @@ It is recommended to define Volley's configuration by passing a dictionary direc
 
 ## Queue Configuration
 
-The queue configuration object is a dictionary passed into the Volley engine at initialization. It can be defined either via a list of QueueConfig, `dict`, or a .yaml file.
+The queue configuration object is a dictionary passed into the Volley engine at initialization. It can be defined either via a `list[QueueConfig]`, a `dict`, or a .yaml file.
 
-## QueueConfig
+## List[QueueConfig]
 ### ::: volley.config.QueueConfig
 
 
-## Dict Example
+## Dict
 
 The queue configuration can also be composed as `Dict[str, Dict[str, str]]`. Each key in the dictionary represents the name (alias) for the queue, and the value is a dictionary of the queue's specific configurations and accept the same attributes as documented in the `volley.QueueConfig` class.
 
@@ -45,7 +45,7 @@ app = Engine(
     queue_config=queue_config
 )
 ```
-
+## yaml
 Queue configuration can also be defined via a yml file. The below is equivalent to the example shown above. This can be useful when needing to configure multiple Volley workers, particularly when multiple workers may need to publish to the same queue. Define the queues in one place and import the configuration everywhere.
 
 

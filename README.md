@@ -72,7 +72,7 @@ docker run -d -p 9092:9092 bashj79/kafka-kraft
 from typing import List, Tuple
 from pydantic import BaseModel
 
-from volley import Engine
+from volley import Engine, QueueConfig
 
 # define the schemas for the first and second worker nodes.
 class InputMessage(BaseModel):
@@ -82,26 +82,28 @@ class OutputMessage(BaseModel):
   the_max: float
 
 # define the configurations for the two queues, one in Kafka and the other in Redis.
-queue_config = {
-    "my-kafka-input": {
-      "value": "my.kafka.topic.name",
-      "profile": "confluent",
-      "data_model": InputMessage,
-      "config": {
-        "bootstrap.servers": "localhost:9092",
-        "group.id": "my.consumer.group"
-      }
-    },
-    "my-redis-output": {
-      "value": "my.redis.output.queue.name",
-      "profile": "rsmq",
-      "data_model": OutputMessage,
-      "config": {
-        "host": "localhost",
-        "port": 6379,
-      }
-    },
-}
+queue_config = [
+  QueueConfig(
+    name="my-kafka-input",
+    value="my.kafka.topic.name",
+    profile="confluent",
+    data_model=InputMessage,
+    config={
+      "group.id": "my.consumer.group"
+      "bootstrap.servers": "localhost:9092",
+    }
+  ),
+  QueueConfig(
+    name="my-redis-output",
+    value="my.redis.output.queue.name",
+    profile="rsmq",
+    data_model=OutputMessage,
+    config={
+      "host": "localhost",
+      "port": 6379,
+    }
+  )
+]
 ```
 
 3. Build the first worker node - consume from Kafka, find the max value, publish to Redis

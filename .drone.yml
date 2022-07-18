@@ -82,7 +82,7 @@ steps:
       - pip install poetry==1.1.13
       - test "v$(poetry version --short)" "=" "$DRONE_TAG"
         # publish to the public PyPI registry
-      - poetry publish
+      - poetry publish --build
     when:
       branch:
         - main

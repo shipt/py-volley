@@ -84,8 +84,7 @@ stop:
 	docker compose down --remove-orphans
 
 publish:
-	poetry config repositories.shipt-deploy https://artifactory.shipt.com/artifactory/api/pypi/pypi-local
-	poetry publish --repository shipt-deploy --build
+	poetry publish
 poetry.pre.patch:
 	poetry version prepatch
 poetry.pre.minor:

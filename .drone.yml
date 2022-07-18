@@ -119,8 +119,7 @@ steps:
       - poetry config repositories.shipt-deploy https://artifactory.shipt.com/artifactory/api/pypi/pypi-local
       - poetry publish --repository shipt-deploy --build
         # publish to PyPI
-      - poetry config repositories.pypi-public https://upload.pypi.org/legacy
-      - poetry publish --repository pypi-public --build
+      - poetry publish
     when:
       branch:
         - main

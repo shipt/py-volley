@@ -84,8 +84,7 @@ stop:
 	docker compose down --remove-orphans
 
 publish:
-
-	poetry publish --repository shipt-deploy --build
+	poetry publish
 poetry.pre.patch:
 	poetry version prepatch
 poetry.pre.minor:

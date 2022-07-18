@@ -2,7 +2,7 @@ import logging
 from typing import List, Tuple
 
 from example.data_models import InputMessage, KafkaKafkaOutput
-from volley import Engine
+from volley import Engine, QueueConfig
 
 logging.basicConfig(level=logging.INFO)
 
@@ -10,23 +10,28 @@ CONSUMER_GROUP = "kafka.kafka.worker"
 INPUT_TOPIC = "localhost.kafka.kafka.input"
 OUTPUT_TOPIC = "localhost.kafka.kafka.output"
 
-queue_config = {
-    "input-topic": {
-        "value": INPUT_TOPIC,
-        "profile": "confluent",
-        "data_model": InputMessage,
-        "config": {"group.id": CONSUMER_GROUP},
-    },
-    "output-topic": {
-        "value": OUTPUT_TOPIC,
-        "profile": "confluent",
-        "data_model": KafkaKafkaOutput,
-    },
-    "dead-letter-queue": {
-        "value": "localhost.kafka.kafka.dlq",
-        "profile": "confluent-dlq",
-    },
-}
+queue_config = [
+    QueueConfig(
+        name="input-topic",
+        value=INPUT_TOPIC,
+        profile="confluent",
+        data_model=InputMessage,
+        config={"group.id": CONSUMER_GROUP},
+    ),
+    QueueConfig(
+        name="output-topic",
+        value=OUTPUT_TOPIC,
+        profile="confluent",
+        data_model=KafkaKafkaOutput,
+    ),
+    QueueConfig(
+        name="dead-letter-queue",
+        value="dead-letter-queue",
+        profile="confluent-dlq",
+    ),
+]
+
+
 eng = Engine(
     app_name="kafka_to_kafka_example",
     input_queue="input-topic",

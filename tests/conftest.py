@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 from pytest import MonkeyPatch, fixture
 
-from volley.config import get_configs
+from volley.config import QueueConfig, get_configs
 from volley.connectors.confluent import ConfluentKafkaConsumer, ConfluentKafkaProducer
 from volley.connectors.rsmq import RSMQConsumer, RSMQProducer
 from volley.data_models import GenericMessage, QueueMessage
@@ -159,26 +159,35 @@ def none_producer_decorated(monkeypatch: MonkeyPatch) -> Generator[Callable[...,
 def config_dict() -> Dict[str, Dict[str, Any]]:
     return {
         "input-topic": {
+            "name": "input-topic",
             "value": "localhost.kafka.input",
             "profile": "confluent",
             "data_model": "example.data_models.InputMessage",
         },
         "comp_1": {
+            "name": "comp_1",
             "value": "comp1",
             "profile": "rsmq",
             "data_model": GenericMessage,
         },
         "output-topic": {
+            "name": "output-topic",
             "value": "localhost.kafka.output",
             "profile": "confluent",
             "data_model": "volley.data_models.GenericMessage",
             "config": {"compression.type": "gzip"},
         },
         "dead-letter-queue": {
+            "name": "dead-letter-queue",
             "value": "localhost.kafka.dlq",
             "profile": "confluent-dlq",
         },
     }
+
+
+@fixture
+def typedConfig_list(config_dict: Dict[str, Dict[str, Any]]) -> List[QueueConfig]:
+    return [QueueConfig(**x) for x in config_dict.values()]
 
 
 @fixture

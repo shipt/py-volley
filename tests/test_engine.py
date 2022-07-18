@@ -11,6 +11,7 @@ from pytest import LogCaptureFixture, MonkeyPatch
 
 from example.data_models import InputMessage, OutputMessage
 from tests.conftest import KafkaMessage
+from volley.config import QueueConfig
 from volley.data_models import GenericMessage
 from volley.engine import Engine
 from volley.queues import DLQNotConfiguredError
@@ -539,3 +540,15 @@ def test_pass_msg_ctx(
 
     func()
     eng.shutdown()
+
+
+@patch("volley.connectors.confluent.Producer", MagicMock())
+def test_init_typedConfig(typedConfig_list: List[QueueConfig]) -> None:
+    """init Engine from typed configuration object"""
+    eng = Engine(
+        input_queue="input-topic",
+        output_queues=["comp_1", "output-topic"],
+        dead_letter_queue="dead-letter-queue",
+        queue_config=typedConfig_list,
+    )
+    assert eng.app_name

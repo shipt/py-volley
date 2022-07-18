@@ -9,11 +9,6 @@ packages = [
     { include = "volley" },
 ]
 
-[[tool.poetry.source]]
-name = "shipt-resolve"
-url = "https://artifactory.shipt.com/artifactory/api/pypi/pypi-virtual/simple"
-secondary = true
-
 [tool.poetry.urls]
 "Homepage" = "https://github.com/shipt/py-volley"
 "Repository" = "https://github.com/shipt/py-volley"

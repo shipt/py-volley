@@ -85,7 +85,7 @@ steps:
         from_secret: PYPI_ORG_PASSWORD
     commands:
       - pip install poetry
-      - test "v$(poetry version --short)" "=" "$DRONE_TAG"
+#      - test "v$(poetry version --short)" "=" "$DRONE_TAG"
         # publish to the public PyPI registry
       - poetry publish --build -n
     when:

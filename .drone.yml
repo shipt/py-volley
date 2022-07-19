@@ -78,6 +78,11 @@ steps:
 
   - name: publish-release
     image: python:3.9.4
+    environment:
+      POETRY_HTTP_BASIC_PYPI_USERNAME:
+        from_secret: PYPI_ORG_USERNAME
+      POETRY_HTTP_BASIC_PYPI_PASSWORD:
+        from_secret: PYPI_ORG_PASSWORD
     commands:
       - pip install poetry==1.1.13
       - test "v$(poetry version --short)" "=" "$DRONE_TAG"

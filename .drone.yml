@@ -79,8 +79,8 @@ steps:
   - name: publish-release
     image: python:3.9.4
     commands:
-      - pip install poetry==1.1.13
-      - test "v$(poetry version --short)" "=" "$DRONE_TAG"
+      - pip install poetry
+#      - test "v$(poetry version --short)" "=" "$DRONE_TAG"
         # publish to the public PyPI registry
       - poetry build -n
       - poetry publish -n

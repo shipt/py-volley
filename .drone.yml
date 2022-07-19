@@ -8,7 +8,7 @@ trigger:
     - pull_request
     - tag
   branch:
-    - patchBuild
+    - main
 
 steps:
   - name: unit-test-3.10.2
@@ -78,9 +78,14 @@ steps:
 
   - name: publish-release
     image: python:3.9.4
+    environment:
+      POETRY_HTTP_BASIC_PYPI_USERNAME:
+        from_secret: PYPI_ORG_USERNAME
+      POETRY_HTTP_BASIC_PYPI_PASSWORD:
+        from_secret: PYPI_ORG_PASSWORD
     commands:
       - pip install poetry
-#      - test "v$(poetry version --short)" "=" "$DRONE_TAG"
+      - test "v$(poetry version --short)" "=" "$DRONE_TAG"
         # publish to the public PyPI registry
       - poetry build -n
       - poetry publish -n

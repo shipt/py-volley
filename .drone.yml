@@ -8,7 +8,7 @@ trigger:
     - pull_request
     - tag
   branch:
-    - main
+    - patchBuild
 
 steps:
   - name: unit-test-3.10.2

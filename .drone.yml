@@ -1,5 +1,5 @@
 kind: pipeline
-name: test
+name: unit-tests
 type: docker
 
 trigger:
@@ -7,8 +7,6 @@ trigger:
     - push
     - pull_request
     - tag
-  branch:
-    - main
 
 steps:
   - name: unit-test-3.10.2
@@ -50,7 +48,21 @@ steps:
     - poetry install -E all
     - poetry run pytest --ignore=tests/integration_tests
 
+---
+kind: pipeline
+type: docker
+name: lints
 
+workspace:
+  path: /drone/src
+
+trigger:
+  event:
+    - push
+    - pull_request
+    - tag
+
+steps:
   - name: lints
     image: python:3.9.8
     commands:
@@ -58,6 +70,23 @@ steps:
       - poetry install -E all
       - make lints
 
+---
+kind: pipeline
+type: docker
+name: int-tests
+
+workspace:
+  path: /drone/src
+
+trigger:
+  event:
+    - push
+    - pull_request
+    - tag
+  branch:
+    - main
+
+steps:
   - name: test-integration
     image: docker/compose
     volumes:
@@ -83,6 +112,26 @@ steps:
       - failure
       - success
 
+---
+kind: pipeline
+type: docker
+name: release
+
+workspace:
+  path: /drone/src
+
+trigger:
+  event:
+    - tag
+  branch:
+    - main
+
+depends_on:
+  - unit-tests
+  - int-tests
+  - lints
+
+steps:
   - name: publish-release
     image: python:3.9.4
     environment:
@@ -95,15 +144,3 @@ steps:
       - test "v$(poetry version --short)" "=" "$DRONE_TAG"
         # publish to the public PyPI registry
       - poetry publish --build
-    when:
-      branch:
-        - main
-      event:
-        - tag
-    depends_on:
-      - lints
-      - unit-test-3.10.2
-      - unit-test-3.9.8
-      - unit-test-3.9
-      - unit-test-3.8
-      - test-integration

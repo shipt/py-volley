@@ -1,4 +1,4 @@
-PYTHON_VERSION=3.9.8
+PYTHON_VERSION=3.10.2
 SOURCE_OBJECTS=example volley tests
 INTRO_COMPOSE=example/intro/docker-compose.yml
 

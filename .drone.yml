@@ -1,5 +1,5 @@
 kind: pipeline
-name: test
+name: unit-tests
 type: docker
 
 trigger:
@@ -7,8 +7,6 @@ trigger:
     - push
     - pull_request
     - tag
-  branch:
-    - main
 
 steps:
   - name: unit-test-3.10.2
@@ -17,18 +15,25 @@ steps:
     - apt-get update && apt-get install -y librdkafka-dev
     - pip install poetry==1.1.13
     - poetry install -E all
+    - make test.unit
     - poetry run pytest --ignore=tests/integration_tests
+
+  - name: code-analysis
+    image: plugins/sonarqube-drone-plugin
+    environment:
+      SONAR_HOST:
+        from_secret: SONAR_HOST
+      SONAR_TOKEN:
+        from_secret: SONAR_TOKEN
+    depends_on:
+      - unit-test-3.10.2
 
   - name: unit-test-3.9.8
     image: python:3.9.8
-    environment:
-      CODECOV_TOKEN:
-        from_secret: CODECOV_TOKEN
     commands:
     - pip install poetry==1.1.13
     - poetry install -E all
-    - make test.unit
-    - poetry run codecov
+    - poetry run pytest --ignore=tests/integration_tests
 
   - name: unit-test-3.9
     image: python:3.9
@@ -44,6 +49,21 @@ steps:
     - poetry install -E all
     - poetry run pytest --ignore=tests/integration_tests
 
+---
+kind: pipeline
+type: docker
+name: lints
+
+workspace:
+  path: /drone/src
+
+trigger:
+  event:
+    - push
+    - pull_request
+    - tag
+
+steps:
   - name: lints
     image: python:3.9.8
     commands:
@@ -51,6 +71,23 @@ steps:
       - poetry install -E all
       - make lints
 
+---
+kind: pipeline
+type: docker
+name: int-tests
+
+workspace:
+  path: /drone/src
+
+trigger:
+  event:
+    - push
+    - pull_request
+    - tag
+  branch:
+    - main
+
+steps:
   - name: test-integration
     image: docker/compose
     volumes:
@@ -76,6 +113,26 @@ steps:
       - failure
       - success
 
+---
+kind: pipeline
+type: docker
+name: release
+
+workspace:
+  path: /drone/src
+
+trigger:
+  event:
+    - tag
+  branch:
+    - main
+
+depends_on:
+  - unit-tests
+  - int-tests
+  - lints
+
+steps:
   - name: publish-release
     image: python:3.9.4
     environment:
@@ -88,15 +145,3 @@ steps:
       - test "v$(poetry version --short)" "=" "$DRONE_TAG"
         # publish to the public PyPI registry
       - poetry publish --build
-    when:
-      branch:
-        - main
-      event:
-        - tag
-    depends_on:
-      - lints
-      - unit-test-3.10.2
-      - unit-test-3.9.8
-      - unit-test-3.9
-      - unit-test-3.8
-      - test-integration

@@ -10,7 +10,6 @@ All of Volley's major operations (connectors, serializers, data validation/model
 
 
 [![Build Status](https://drone.shipt.com/api/badges/shipt/py-volley/status.svg?ref=refs/heads/main)](https://drone.shipt.com/shipt/py-volley)
-[![codecov](https://codecov.io/gh/shipt/py-volley/branch/main/graph/badge.svg?token=axP0uxJwPX)](https://codecov.io/gh/shipt/py-volley)
 
 # Installation
 

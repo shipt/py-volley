@@ -44,6 +44,16 @@ steps:
     - poetry install -E all
     - poetry run pytest --ignore=tests/integration_tests
 
+  - name: code-analysis
+    image: plugins/sonarqube-drone-plugin
+    environment:
+      SONAR_HOST:
+        from_secret: SONAR_HOST
+      SONAR_TOKEN:
+        from_secret: SONAR_TOKEN
+    depends_on:
+      - unit-test-3.10.2
+
   - name: lints
     image: python:3.9.8
     commands:

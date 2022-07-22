@@ -10,6 +10,7 @@ All of Volley's major operations (connectors, serializers, data validation/model
 
 
 [![Build Status](https://drone.shipt.com/api/badges/shipt/py-volley/status.svg?ref=refs/heads/main)](https://drone.shipt.com/shipt/py-volley)
+[![Coverage](https://sonarqube.shipt.com/api/project_badges/measure?project=shipt_py-volley_AYImTs5MsYUjTdFQ7Awt&metric=coverage&token=squ_e98968a6b1bce0281e001fd0e70e538f6228b47f)](https://sonarqube.shipt.com/dashboard?id=shipt_py-volley_AYImTs5MsYUjTdFQ7Awt)
 
 # Installation
 

@@ -15,6 +15,7 @@ steps:
     - apt-get update && apt-get install -y librdkafka-dev
     - pip install poetry==1.1.13
     - poetry install -E all
+    - make test.unit
     - poetry run pytest --ignore=tests/integration_tests
 
   - name: code-analysis
@@ -32,7 +33,7 @@ steps:
     commands:
     - pip install poetry==1.1.13
     - poetry install -E all
-    - make test.unit
+    - poetry run pytest --ignore=tests/integration_tests
 
   - name: unit-test-3.9
     image: python:3.9

@@ -98,21 +98,52 @@ steps:
     - sed -i -e '/volumes:/,+1d' docker-compose.yml
     - make test.integration
 
-  - name: cleanup-test-integration
-    image: docker/compose
-    volumes:
-      - name: docker_socket
-        path: /var/run/docker.sock
-    commands:
-      - docker-compose logs
-      - docker-compose down --remove-orphans
+services:
+  - name: redis
+    image: redis:latest
+    ports:
+      - 6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 30s
+      retries: 50
+  - name: postgres
+    restart: always
+    image: postgres:12.3
+    container_name: postgres
+    ports:
+      - 5432
+    environment:
+      POSTGRES_PASSWORD: password
+  - name: zookeeper
+    image: confluentinc/cp-zookeeper:5.2.5
+    ports:
+      - 2181
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_JMX_PORT: 39999
+  - name: kafka
+    image: confluentinc/cp-kafka:5.2.5
+    restart: always
     depends_on:
-      - test-integration
-    when:
-      status:
-      - failure
-      - success
-
+      - zookeeper
+    ports:
+      - 9092
+      - 29092
+      - 7071
+      - 49999
+    # https://rmoff.net/2018/08/02/kafka-listeners-explained/
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 49999
+      
 ---
 kind: pipeline
 type: docker

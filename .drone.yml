@@ -85,6 +85,7 @@ steps:
     environment:
       KAFKA_BROKERS: kafka:9092
     commands:
+    - sleep 20
     - apt-get update && apt-get install -y librdkafka-dev
     - poetry install -E all
     - poetry run pytest tests/integration_tests/test_integration.py

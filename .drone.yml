@@ -79,24 +79,15 @@ name: int-tests
 workspace:
   path: /drone/src
 
-trigger:
-  event:
-    - push
-    - pull_request
-    - tag
-  branch:
-    - main
-
 steps:
   - name: test-integration
-    image: docker/compose
-    volumes:
-      - name: docker_socket
-        path: /var/run/docker.sock
+    image: harbor.shipttech.com/apps/python-images/shipt-python:3.9.13_poetry_1.1.13
+    environment:
+      KAFKA_BROKERS: kafka:9092
     commands:
-    - apk add make
-    - sed -i -e '/volumes:/,+1d' docker-compose.yml
-    - make test.integration
+    - apt-get update && apt-get install -y librdkafka-dev
+    - poetry install -E all
+    - poetry run pytest tests/integration_tests/test_integration.py
 
 services:
   - name: redis
@@ -127,8 +118,6 @@ services:
   - name: kafka
     image: confluentinc/cp-kafka:5.2.5
     restart: always
-    depends_on:
-      - zookeeper
     ports:
       - 9092
       - 29092
@@ -143,7 +132,7 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_JMX_PORT: 49999
-      
+
 ---
 kind: pipeline
 type: docker

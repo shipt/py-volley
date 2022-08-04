@@ -9,8 +9,6 @@ services:
       context: .
       dockerfile: Dockerfile
       target: dev
-    volumes:
-      - ./:/app/
     # ports:
     #     - 5678:5678
     # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m example.external_data_producer
@@ -25,8 +23,6 @@ services:
       target: dev
       context: .
       dockerfile: Dockerfile
-    volumes:
-      - ./:/app/
     # ports:
     #     - 3000:3000
     #     - 5678:5678
@@ -42,8 +38,6 @@ services:
       target: dev
       context: .
       dockerfile: Dockerfile
-    volumes:
-      - ./:/app/
     # ports:
     #     - 3000:3000
     #     - 5678:5678
@@ -57,8 +51,6 @@ services:
       target: dev
       context: .
       dockerfile: Dockerfile
-    volumes:
-      - ./:/app/
     command: python -m example.zmq_server
 
   data_consumer:
@@ -69,8 +61,6 @@ services:
       target: dev
       context: .
       dockerfile: Dockerfile
-    volumes:
-      - ./:/app/
     # ports:
     #     - 5678:5678
     # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m example.external_data_consumer
@@ -133,6 +123,4 @@ services:
       target: dev
     environment:
       KAFKA_BROKERS: kafka:9092
-    volumes:
-      - ./:/app/
     command: pytest tests/integration_tests/test_integration.py

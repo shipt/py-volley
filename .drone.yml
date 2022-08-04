@@ -80,17 +80,30 @@ workspace:
   path: /drone/src
 
 steps:
+  - name: wait for kafka
+    image: alpine:latest
+    commands:
+      - apk add --update netcat-openbsd bash
+      - timeout 60 bash -c 'until nc -vz zookeeper 2181; do sleep 0.5; done'
+      - timeout 60 bash -c 'until nc -vz kafka 9092; do sleep 0.5; done'
   - name: test-integration
     image: harbor.shipttech.com/apps/python-images/shipt-python:3.9.13_poetry_1.1.13
     environment:
       KAFKA_BROKERS: kafka:9092
     commands:
-    - sleep 20
-    - apt-get update && apt-get install -y librdkafka-dev
-    - poetry install -E all
-    - poetry run pytest tests/integration_tests/test_integration.py
+      - apt-get update && apt-get install -y librdkafka-dev
+      - poetry install -E all
+      - poetry run pytest tests/integration_tests/test_integration.py
 
 services:
+  - name: zookeeper
+    image: confluentinc/cp-zookeeper:5.2.5
+    ports:
+      - 2181
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_JMX_PORT: 39999
   - name: redis
     image: redis:latest
     ports:
@@ -108,17 +121,11 @@ services:
       - 5432
     environment:
       POSTGRES_PASSWORD: password
-  - name: zookeeper
-    image: confluentinc/cp-zookeeper:5.2.5
-    ports:
-      - 2181
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-      KAFKA_JMX_PORT: 39999
   - name: kafka
     image: confluentinc/cp-kafka:5.2.5
     restart: always
+    depends_on:
+      - zookeeper
     ports:
       - 9092
       - 29092

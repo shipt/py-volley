@@ -79,6 +79,13 @@ name: int-tests
 workspace:
   path: /drone/src
 
+kafka_env: &kafka_env
+  environment:
+      KAFKA_BROKERS: kafka:9092
+      ZMQ_PORT: 5555
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
 steps:
   - name: wait for kafka
     image: alpine:latest
@@ -86,10 +93,33 @@ steps:
       - apk add --update netcat-openbsd bash
       - timeout 60 bash -c 'until nc -vz zookeeper 2181; do sleep 0.5; done'
       - timeout 60 bash -c 'until nc -vz kafka 9092; do sleep 0.5; done'
+  - name: input worker
+    image: harbor.shipttech.com/apps/python-images/shipt-python:3.9.13_poetry_1.1.13
+    detach: true
+    <<: *kafka_env
+    commands:
+      - apt-get update && apt-get install -y librdkafka-dev
+      - poetry install -E all
+      - poetry run python -m example.input_worker --daemon
+  - name: middle worker
+    image: harbor.shipttech.com/apps/python-images/shipt-python:3.9.13_poetry_1.1.13
+    detach: true
+    <<: *kafka_env
+    commands:
+      - apt-get update && apt-get install -y librdkafka-dev
+      - poetry install -E all
+      - poetry run python -m example.middle_worker --daemon
+  - name: zmq
+    image: harbor.shipttech.com/apps/python-images/shipt-python:3.9.13_poetry_1.1.13
+    detach: true
+    <<: *kafka_env
+    commands:
+      - apt-get update && apt-get install -y librdkafka-dev
+      - poetry install -E all
+      - poetry run python -m example.zmq_server --daemon
   - name: test-integration
     image: harbor.shipttech.com/apps/python-images/shipt-python:3.9.13_poetry_1.1.13
-    environment:
-      KAFKA_BROKERS: kafka:9092
+    <<: *kafka_env
     commands:
       - apt-get update && apt-get install -y librdkafka-dev
       - poetry install -E all

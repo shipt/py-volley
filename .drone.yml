@@ -86,6 +86,16 @@ kafka_env: &kafka_env
       REDIS_HOST: redis
       REDIS_PORT: 6379
 
+# Define the common setup commands
+image_installation: &image_installation |
+  apt-get update && apt-get install -y librdkafka-dev
+  poetry install -E all
+
+# Define a shared image
+image_and_run: &image_and_run
+  image: harbor.shipttech.com/apps/python-images/shipt-python:3.9.13_poetry_1.1.13
+  detach: true  # let the step run without waiting for it to complete
+
 steps:
   - name: wait for kafka
     image: alpine:latest
@@ -94,35 +104,30 @@ steps:
       - timeout 60 bash -c 'until nc -vz zookeeper 2181; do sleep 0.5; done'
       - timeout 60 bash -c 'until nc -vz kafka 9092; do sleep 0.5; done'
   - name: input worker
-    image: harbor.shipttech.com/apps/python-images/shipt-python:3.9.13_poetry_1.1.13
-    detach: true
+    <<: *image_and_run
     <<: *kafka_env
     commands:
-      - apt-get update && apt-get install -y librdkafka-dev
-      - poetry install -E all
-      - poetry run python -m example.input_worker --daemon
+      - *image_installation
+      - poetry run python -m example.input_worker
   - name: middle worker
-    image: harbor.shipttech.com/apps/python-images/shipt-python:3.9.13_poetry_1.1.13
-    detach: true
+    <<: *image_and_run
     <<: *kafka_env
     commands:
-      - apt-get update && apt-get install -y librdkafka-dev
-      - poetry install -E all
-      - poetry run python -m example.middle_worker --daemon
+      - *image_installation
+      - poetry run python -m example.middle_worker
   - name: zmq
     image: harbor.shipttech.com/apps/python-images/shipt-python:3.9.13_poetry_1.1.13
-    detach: true
+    <<: *image_and_run
     <<: *kafka_env
     commands:
-      - apt-get update && apt-get install -y librdkafka-dev
-      - poetry install -E all
-      - poetry run python -m example.zmq_server --daemon
+      - *image_installation
+      - poetry run python -m example.zmq_server
   - name: test-integration
     image: harbor.shipttech.com/apps/python-images/shipt-python:3.9.13_poetry_1.1.13
     <<: *kafka_env
     commands:
-      - apt-get update && apt-get install -y librdkafka-dev
-      - poetry install -E all
+      - *image_installation
+      - wait 10
       - poetry run pytest tests/integration_tests/test_integration.py
 
 services:

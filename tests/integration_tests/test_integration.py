@@ -77,12 +77,12 @@ def test_end_to_end(int_test_producer: Producer, int_test_consumer: Consumer, en
     for m in consumed_messages:
         # assert all consumed IDs were from the list we produced
         _id = m["request_id"]
-        assert _id in request_ids
+        assert _id in request_ids, "consumed unexpected data"
         conusumed_ids.append(_id)
 
     for _id in request_ids:
         # assert all ids we produced were in the list we consumed
-        assert _id in conusumed_ids
+        assert _id in conusumed_ids, "expected data was not consumed"
 
     assert len(request_ids) == len(conusumed_ids)
 

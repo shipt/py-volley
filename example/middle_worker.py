@@ -63,7 +63,7 @@ port = 5555
 context = zmq.Context()
 print("Connecting to server...")
 socket = context.socket(zmq.REQ)
-socket.connect("tcp://zmq_worker:%s" % port)
+socket.connect("tcp://zmq-worker:%s" % port)
 
 
 class BMI(BaseModel):

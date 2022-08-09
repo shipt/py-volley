@@ -68,7 +68,7 @@ test.unit: setup
 			--cov-report term
 
 run.components:
-	docker-compose up --build -d input_worker middle_worker zmq_worker
+	docker-compose up --build -d input_worker middle_worker zmq-worker
 
 run.example: run.datastores run.components run.externals
 	docker compose up --build -d data_producer input_worker middle_worker data_consumer

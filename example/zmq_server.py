@@ -45,7 +45,7 @@ cfg = {
 }
 
 
-eng = Engine(input_queue="request", output_queues=["response"], queue_config=cfg)
+eng = Engine(app_name="zmq_worker", input_queue="request", output_queues=["response"], queue_config=cfg)
 
 
 def calc_bmi(height: float, weight: float) -> BMI:

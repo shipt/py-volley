@@ -23,7 +23,7 @@ def init_zmq(port: int) -> None:
     global _socket
     if _socket is None:
         _socket = context.socket(zmq.REP)
-        _socket.bind("tcp://*:%s" % port)
+        _socket.bind("tcp://0.0.0.0:%s" % port)
     else:
         logger.info("Socket already initialized")
 
@@ -52,9 +52,11 @@ class ZMQConsumer(BaseConsumer):
         return QueueMessage(message_context=None, message=msg)
 
     def on_success(self, message_context: str) -> None:
+        """No action. Synchronous request/response implementation"""
         pass
 
     def on_fail(self, message_context: str) -> None:
+        """No action. Synchronous request/response implementation"""
         pass
 
     def shutdown(self) -> None:

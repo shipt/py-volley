@@ -57,7 +57,7 @@ services:
     # command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client -m example.middle_worker
     command: python -m example.middle_worker
 
-  zmq_worker:
+  zmq-worker:
     environment:
       - ZMQ_PORT=5555
     build:

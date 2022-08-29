@@ -7,7 +7,7 @@ from prometheus_client import Counter
 
 from volley.util import FuncEnvelope
 
-APP_STATUS = Counter("app_cycle_status", "Application cycle status", ["app_name", "status"])  # success/failure
+APP_STATUS = Counter("volley_app_completions", "Application cycle status", ["app_name", "status"])  # success/failure
 
 
 async def run_in_threadpool(func: Callable[..., Any], *args: Any) -> Any:

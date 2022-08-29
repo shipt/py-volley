@@ -32,7 +32,7 @@ async def test_run_worker_function_fail() -> None:
     async def async_fun(msg: str) -> str:
         raise Exception()
 
-    def sync_fun(msg: str) -> str:
+    def sync_fun(msg: str) -> str:  # type: ignore
         raise Exception()
 
     wrapped_async = FuncEnvelope(async_fun)

@@ -19,7 +19,12 @@ async def run_in_threadpool(func: Callable[..., Any], *args: Any) -> Any:
     return await loop.run_in_executor(None, func, *args)
 
 
-async def run_worker_function(app_name: str, f: FuncEnvelope, message: Any, ctx: Any) -> Any:
+async def run_worker_function(
+    f: FuncEnvelope,
+    message: Any,
+    ctx: Any,
+    app_name: str = "volley",
+) -> Any:
     if f.needs_msg_ctx:
         f.func = functools.partial(f.func, **{f.message_ctx_param: ctx})
     try:

@@ -1,6 +1,6 @@
 FROM python:3.9.4 as base
 
-ENV LIBRDKAFKA_VER=1.8.2
+ENV LIBRDKAFKA_VER=1.9.0
 
 RUN apt-get update && \
     apt-get install -y \

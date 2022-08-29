@@ -70,3 +70,13 @@ All metrics contain the label `volley_app` which is directly tied to the `app_na
 - Labels: There are no labels on this metric.
 
 Applications can export their own metrics as well. Examples in the Prometheus official [python client](https://github.com/prometheus/client_python) are a great place to start. The Volley exporter will collect these metrics and expose them to be scraped by a Prometheus server. To serve multiprocess metrics, disable Volley's metrics server and implement the Multiprocess collector according to the official [python client docs](https://github.com/prometheus/client_python).
+
+
+## `volley_app_completions`
+- Type: [Counter](https://prometheus.io/docs/concepts/metric_types/#counter)
+- Counter is incremented each time an application attempts to process a message. The labels depend on the outcome the application wrapped by `volley.Engine.stream_app`. The labels on the metric indicate the outcome of the application cycle.
+- Labels:
+    - `status`:
+        - Values
+            - `success` : application processed a message without raising an exception.
+            - `failure` : application raised an exception to Volley.

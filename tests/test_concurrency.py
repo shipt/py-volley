@@ -28,9 +28,7 @@ async def test_run_worker_function() -> None:
 
 @pytest.mark.asyncio
 async def test_run_worker_function_fail() -> None:
-    async_msg = str(uuid4())
-    sync_msg = str(uuid4())
-
+    """unhandled app exceptions should crash hard"""
     async def async_fun(msg: str) -> str:
         raise Exception()
 
@@ -41,6 +39,6 @@ async def test_run_worker_function_fail() -> None:
     wrapped_sync = FuncEnvelope(sync_fun)
 
     with pytest.raises(Exception):
-        await run_worker_function(wrapped_async, message=async_msg, ctx="test-context")
+        await run_worker_function(wrapped_async, message="msg", ctx="test-context")
     with pytest.raises(Exception):
-        await run_worker_function(wrapped_sync, message=sync_msg, ctx="test-context")
+        await run_worker_function(wrapped_sync, message="msg", ctx="test-context")

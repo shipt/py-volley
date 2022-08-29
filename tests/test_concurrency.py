@@ -29,10 +29,11 @@ async def test_run_worker_function() -> None:
 @pytest.mark.asyncio
 async def test_run_worker_function_fail() -> None:
     """unhandled app exceptions should crash hard"""
+
     async def async_fun(msg: str) -> str:
         raise Exception()
 
-    def sync_fun(msg: str) -> str:  # type: ignore
+    def sync_fun(msg: str) -> str:
         raise Exception()
 
     wrapped_async = FuncEnvelope(async_fun)

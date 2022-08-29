@@ -24,3 +24,23 @@ async def test_run_worker_function() -> None:
     assert async_res == async_msg
     sync_res = await run_worker_function(wrapped_sync, message=sync_msg, ctx="test-context")
     assert sync_res == sync_msg
+
+
+@pytest.mark.asyncio
+async def test_run_worker_function_fail() -> None:
+    async_msg = str(uuid4())
+    sync_msg = str(uuid4())
+
+    async def async_fun(msg: str) -> str:
+        raise Exception()
+
+    def sync_fun(msg: str) -> str:
+        raise Exception()
+
+    wrapped_async = FuncEnvelope(async_fun)
+    wrapped_sync = FuncEnvelope(sync_fun)
+
+    with pytest.raises(Exception):
+        await run_worker_function(wrapped_async, message=async_msg, ctx="test-context")
+    with pytest.raises(Exception):
+        await run_worker_function(wrapped_sync, message=sync_msg, ctx="test-context")

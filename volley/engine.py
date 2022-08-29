@@ -196,6 +196,7 @@ class Engine:
                     # if outputs have been assigned it means this message is destined for a DLQ
                     _start_main = time.time()
                     outputs = await run_worker_function(
+                        app_name=self.app_name,
                         f=_func,
                         message=data_model,
                         ctx=in_message.message_context,

@@ -3,7 +3,11 @@ import contextvars
 import functools
 from typing import Any, Awaitable, Callable
 
+from prometheus_client import Counter
+
 from volley.util import FuncEnvelope
+
+APP_STATUS = Counter("app_cycle_status", "Application cycle status", ["app_name", "status"])  # success/failure
 
 
 async def run_in_threadpool(func: Callable[..., Any], *args: Any) -> Any:
@@ -15,13 +19,19 @@ async def run_in_threadpool(func: Callable[..., Any], *args: Any) -> Any:
     return await loop.run_in_executor(None, func, *args)
 
 
-async def run_worker_function(f: FuncEnvelope, message: Any, ctx: Any) -> Any:
+async def run_worker_function(app_name: str, f: FuncEnvelope, message: Any, ctx: Any) -> Any:
     if f.needs_msg_ctx:
         f.func = functools.partial(f.func, **{f.message_ctx_param: ctx})
-    if f.is_coroutine:
-        return await f.func(message)
-    else:
-        return await run_in_threadpool(f.func, message)
+    try:
+        if f.is_coroutine:
+            fun_result = await f.func(message)
+        else:
+            fun_result = await run_in_threadpool(f.func, message)
+    except Exception:
+        APP_STATUS.labels(app_name=app_name, status="failure").inc()
+        raise
+    APP_STATUS.labels(app_name=app_name, status="success").inc()
+    return fun_result
 
 
 def run_async(func: Callable[..., Awaitable[Any]]) -> Callable[..., None]:

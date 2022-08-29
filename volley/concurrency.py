@@ -25,6 +25,20 @@ async def run_worker_function(
     ctx: Any,
     app_name: str = "volley",
 ) -> Any:
+    """Handles executing the function provides by user.
+    `async def` functions need to get called in threadpool.
+    If user requests message context in their function, then volley needs to provide
+    it to the wrapped function as well.
+
+    Args:
+        f: Envelope passed from volley.Engine
+        message: the message constructed by user specified message and model handler
+        ctx: the raw consumed object from queue, can contain `message`
+        app_name: Defined an volley.Engine init. Defaults to "volley"
+
+    Returns:
+        Whatever is returned by the user's python function
+    """
     if f.needs_msg_ctx:
         f.func = functools.partial(f.func, **{f.message_ctx_param: ctx})
     try:

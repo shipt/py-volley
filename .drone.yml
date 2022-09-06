@@ -157,12 +157,12 @@ workspace:
 trigger:
   event:
     - push
-  branch:
-    - main
+  # branch:
+  #   - main
 
 steps:
   - name: publish-docs
     image: python:3.9.4
     commands:
-      - git diff --name-only | grep docs/ && DOC_CHANGE=1 || DOC_CHANGE=0; echo $DOC_CHANGE
-      - if [ -z "$DOC_CHANGE" ] ; then poetry install && cd docs && poetry run mkdocs gh-deploy; else echo "No doc change"
+      - git diff --name-only | grep docs/ && export DOC_CHANGE=1 || export DOC_CHANGE=0;
+      - if [ -z "$DOC_CHANGE" ] ; then poetry install && cd docs && poetry run mkdocs gh-deploy; else echo "No doc change"; fi

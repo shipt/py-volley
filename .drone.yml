@@ -157,8 +157,8 @@ workspace:
 trigger:
   event:
     - push
-  # branch:
-  #   - main
+  branch:
+    - main
 
 steps:
   - name: publish-docs

@@ -30,13 +30,14 @@ Let's create a dictionary of configurations for each Kafka topic. Each key in th
 First, let's define the configuration for the "input-queue".
 
 ```python
+from my_models import InputMessage
 # app.py
 input_topic_cfg = {
     "value": "incoming.kafka.topic",
     "consumer": "volley.connectors.ConfluentKafkaConsumer",
     "serializer": "volley.serializers.OrJsonSerialization",
     "model_handler": "volley.models.PydanticModelHandler",
-    "data_model": "my_models.InputMessage",
+    "data_model": InputMessage,
     "config": {
         "group.id": "my-consumer-group",
         "bootstrap.servers": "kafka:9092",
@@ -70,10 +71,11 @@ Profiles (currently) do not include `config` attributes, so we still need to set
 
 ```python
 # app.py
+from my_models import OutputMessage
 output_topic_cfg = {
     "value": "outgoing.kafka.topic",
     "profile": "confluent",
-    "data_model": "my_models.OutputMessage",
+    "data_model": OutputMessage,
     "config": {
         "bootstrap.servers": "kafka:9092"
     }

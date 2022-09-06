@@ -23,6 +23,7 @@ class OutputMessage(BaseModel):
     max_value: float
 ```
 
+
 ### 2. Queue configuration
 
 Let's create a dictionary of configurations for each Kafka topic. Each key in the dictionary contains the configurations for that topic. These configurations define the relationship between your application and the queue, and generally determine how your application will consume/produce to the queue, and how it wants to parse the data to/from the queue. See also [queue configuration](./queue_config.md) for more detailed explanation of queues
@@ -30,13 +31,14 @@ Let's create a dictionary of configurations for each Kafka topic. Each key in th
 First, let's define the configuration for the "input-queue".
 
 ```python
+from my_models import InputMessage
 # app.py
 input_topic_cfg = {
     "value": "incoming.kafka.topic",
     "consumer": "volley.connectors.ConfluentKafkaConsumer",
     "serializer": "volley.serializers.OrJsonSerialization",
     "model_handler": "volley.models.PydanticModelHandler",
-    "data_model": "my_models.InputMessage",
+    "data_model": InputMessage,
     "config": {
         "group.id": "my-consumer-group",
         "bootstrap.servers": "kafka:9092",
@@ -70,10 +72,11 @@ Profiles (currently) do not include `config` attributes, so we still need to set
 
 ```python
 # app.py
+from my_models import OutputMessage
 output_topic_cfg = {
     "value": "outgoing.kafka.topic",
     "profile": "confluent",
-    "data_model": "my_models.OutputMessage",
+    "data_model": OutputMessage,
     "config": {
         "bootstrap.servers": "kafka:9092"
     }

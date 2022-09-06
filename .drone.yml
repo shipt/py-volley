@@ -165,4 +165,4 @@ steps:
     image: python:3.9.4
     commands:
       - git diff $DRONE_COMMIT_BEFORE..$DRONE_COMMIT_AFTER --name-only | grep docs/ && export DOC_CHANGE=1 || export DOC_CHANGE=0;
-      - if [ $DOC_CHANGE ] ; then poetry install && cd docs && poetry run mkdocs gh-deploy; else echo "No doc change"; fi
+      - if [ $DOC_CHANGE ] ; then make publish.docs; else echo "No doc change"; fi

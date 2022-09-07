@@ -86,7 +86,7 @@ stop:
 publish:
 	poetry publish
 publish.docs: setup.ci
-	cd docs && poetry run mkdocs gh-deploy
+	cd docs && poetry run mkdocs gh-deploy --force
 poetry.pre.patch:
 	poetry version prepatch
 poetry.pre.minor:

@@ -24,7 +24,7 @@ def test_multiproc_metric_server(monkeypatch: pytest.MonkeyPatch) -> None:
     mock_uvicorn.assert_called_once()
 
 
-def test_metric_server(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_metric_server() -> None:
     """test the single process collector"""
     port = 1235
     serve_metrics(port=port)

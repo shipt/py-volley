@@ -26,7 +26,7 @@ def test_multiproc_metric_server(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_metric_server(monkeypatch: pytest.MonkeyPatch) -> None:
     """test the single process collector"""
-    port = 1234
+    port = 1235
     serve_metrics(port=port)
     time.sleep(0.5)
     resp = urllib.request.urlopen(f"http://0.0.0.0:{port}/metrics")

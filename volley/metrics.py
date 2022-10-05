@@ -17,6 +17,10 @@ from volley.logging import logger
 
 
 def multiproc_collector() -> Starlette:
+    """Serves a multiprocess collector
+    https://github.com/prometheus/client_python#multiprocess-mode-eg-gunicorn
+    """
+
     async def app(request):
         prometheus_registry = CollectorRegistry()
         multiprocess.MultiProcessCollector(prometheus_registry)
@@ -35,6 +39,11 @@ def multiproc_collector() -> Starlette:
 
 
 def serve_metrics(port: int) -> None:
+    """Serves the built-in prometheus webserver by default.
+    Serves multiprocess collector when PROMETHEUS_MULTIPROC_DIR present in env vars.
+
+    Both method's webserver run on a daemon thread
+    """
     if os.getenv("PROMETHEUS_MULTIPROC_DIR") is not None:
         logger.info("Serving multi-process collector")
         server = multiproc_collector()

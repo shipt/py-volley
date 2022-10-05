@@ -1,6 +1,6 @@
 import time
 import urllib.request
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -26,7 +26,11 @@ def test_multiproc_metric_server(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_metric_server(monkeypatch: pytest.MonkeyPatch) -> None:
     """test the single process collector"""
-    port = 1235
+    port = 1234
+    serve_metrics(port=port)
+    time.sleep(0.5)
+    resp = urllib.request.urlopen(f"http://0.0.0.0:{port}/metrics")
+    assert resp.status == 200
     with patch("volley.metrics.start_http_server") as mock_http:
         serve_metrics(port=port)
     mock_http.assert_called_once()

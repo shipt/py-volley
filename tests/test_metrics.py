@@ -12,7 +12,7 @@ def test_multiproc_metric_server(monkeypatch: pytest.MonkeyPatch) -> None:
     port = 1234
     serve_metrics(port=port)
     time.sleep(0.5)
-    resp = urllib.request.urlopen(f"http://localhost:{port}/metrics")
+    resp = urllib.request.urlopen(f"http://0.0.0.0:{port}/metrics")
     assert resp.status == 200
     assert "Multiprocess" in resp.read().decode("utf-8")
 
@@ -23,6 +23,6 @@ def test_metric_server(monkeypatch: pytest.MonkeyPatch) -> None:
     serve_metrics(port=port)
     time.sleep(0.5)
 
-    resp = urllib.request.urlopen(f"http://localhost:{port}/metrics")
+    resp = urllib.request.urlopen(f"http://0.0.0.0:{port}/metrics")
     assert resp.status == 200
     assert "Multiprocess" not in resp.read().decode("utf-8")

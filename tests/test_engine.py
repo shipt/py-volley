@@ -580,7 +580,7 @@ def test_multiproc_metrics(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -
     t.start()
     time.sleep(1)
     try:
-        resp = urllib.request.urlopen(f"http://localhost:{port}/metrics")
+        resp = urllib.request.urlopen(f"http://0.0.0.0:{port}/metrics")
         assert resp.status == 200
         assert "Multiprocess" in resp.read().decode("utf-8")
     finally:

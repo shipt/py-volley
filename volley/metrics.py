@@ -10,18 +10,19 @@ from prometheus_client import (
     start_http_server,
 )
 from starlette.applications import Starlette
+from starlette.requests import Request
 from starlette.responses import Response
 from starlette.routing import Route
 
 from volley.logging import logger
 
 
-def multiproc_collector() -> Starlette:
+def multiproc_collector_server() -> Starlette:
     """Serves a multiprocess collector
     https://github.com/prometheus/client_python#multiprocess-mode-eg-gunicorn
     """
 
-    async def app(request):
+    async def app(request: Request) -> Response:  # pylint: disable=W0613
         prometheus_registry = CollectorRegistry()
         multiprocess.MultiProcessCollector(prometheus_registry)
         data = generate_latest(prometheus_registry)
@@ -46,7 +47,7 @@ def serve_metrics(port: int) -> None:
     """
     if os.getenv("PROMETHEUS_MULTIPROC_DIR") is not None:
         logger.info("Serving multi-process collector")
-        server = multiproc_collector()
+        server = multiproc_collector_server()
         t = threading.Thread(target=uvicorn.run, args=(server,), kwargs={"host": "0.0.0.0", "port": port}, daemon=True)
         t.start()
     else:

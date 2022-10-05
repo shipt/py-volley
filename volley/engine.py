@@ -8,13 +8,7 @@ from dataclasses import dataclass, field
 from functools import wraps
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple, Union
 
-from prometheus_client import (
-    REGISTRY,
-    CollectorRegistry,
-    Counter,
-    Summary,
-    start_http_server,
-)
+from prometheus_client import Counter, Summary
 
 from volley.concurrency import run_async, run_worker_function
 from volley.config import QueueConfig, load_yaml

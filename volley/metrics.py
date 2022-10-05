@@ -1,6 +1,7 @@
 import os
 import threading
 
+import uvicorn
 from prometheus_client import (
     CONTENT_TYPE_LATEST,
     CollectorRegistry,
@@ -8,17 +9,14 @@ from prometheus_client import (
     multiprocess,
     start_http_server,
 )
+from starlette.applications import Starlette
+from starlette.responses import Response
+from starlette.routing import Route
 
 from volley.logging import logger
 
-from starlette.applications import Starlette
-from starlette.routing import Route
-from starlette.responses import Response
-import uvicorn
-
 
 def multiproc_collector() -> Starlette:
-
     async def app(request):
         prometheus_registry = CollectorRegistry()
         multiprocess.MultiProcessCollector(prometheus_registry)
@@ -29,18 +27,18 @@ def multiproc_collector() -> Starlette:
         }
         return Response(data, media_type=CONTENT_TYPE_LATEST, headers=headers)
 
-
-    return Starlette(routes=[
-        Route('/metrics', app),
-    ])
+    return Starlette(
+        routes=[
+            Route("/metrics", app),
+        ]
+    )
 
 
 def serve_metrics(port: int) -> None:
     if os.getenv("PROMETHEUS_MULTIPROC_DIR") is not None:
         logger.info("Serving multi-process collector")
         server = multiproc_collector()
-        t = threading.Thread(target=uvicorn.run, args=(server,), kwargs={'host': "0.0.0.0", "port": port})
-        t.daemon = True
+        t = threading.Thread(target=uvicorn.run, args=(server,), kwargs={"host": "0.0.0.0", "port": port}, daemon=True)
         t.start()
     else:
         start_http_server(port=port)

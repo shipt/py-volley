@@ -8,12 +8,19 @@ from dataclasses import dataclass, field
 from functools import wraps
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple, Union
 
-from prometheus_client import Counter, Summary, start_http_server
+from prometheus_client import (
+    REGISTRY,
+    CollectorRegistry,
+    Counter,
+    Summary,
+    start_http_server,
+)
 
 from volley.concurrency import run_async, run_worker_function
 from volley.config import QueueConfig, load_yaml
 from volley.data_models import QueueMessage
 from volley.logging import logger
+from volley.metrics import serve_metrics
 from volley.models.base import message_model_handler
 from volley.profiles import ConnectionType, Profile, construct_profiles
 from volley.queues import DLQNotConfiguredError, Queue, construct_queue_map
@@ -134,7 +141,8 @@ class Engine:
         @wraps(func)
         async def run_component() -> None:
             if self.metrics_port is not None:
-                start_http_server(port=self.metrics_port)
+                serve_metrics(port=self.metrics_port)
+
             # the component function is passed in as `func`
             # first setup the connections to the input and outputs queues that the component will need
             # we only want to set these up once, before the component is invoked
@@ -222,7 +230,7 @@ class Engine:
                     delivery_report = delivery_success(delivery_reports)
                 if delivery_report.status is True and not delivery_report.asynchronous:
                     # asynchronous delivery reports are handled within the Producer's callback
-                    # synchrnous delivery reports are handled here
+                    # synchronous delivery reports are handled here
                     input_con.consumer_con.on_success(
                         message_context=in_message.message_context,
                     )

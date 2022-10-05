@@ -1,5 +1,8 @@
 import json
 import logging
+import threading
+import time
+import urllib.request
 from datetime import datetime
 from typing import Any, Dict, List, Tuple
 from unittest.mock import MagicMock, patch
@@ -552,3 +555,33 @@ def test_init_typedConfig(typedConfig_list: List[QueueConfig]) -> None:
         queue_config=typedConfig_list,
     )
     assert eng.app_name
+
+
+@patch("volley.connectors.confluent.Consumer")
+def test_multiproc_metrics(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> None:  # pylint: disable=W0613
+    """test a stubbed component that does not produce messages"""
+    cfg = [QueueConfig(name="test-cfg", value="my-topic", profile="confluent")]
+    port = 1233
+    eng = Engine(
+        input_queue="test-cfg",
+        queue_config=cfg,
+        poll_interval_seconds=0.1,
+        metrics_port=port,
+    )
+    mock_consumer.return_value.poll = lambda x: KafkaMessage(msg=b'{"random":"message"}', topic="my-topic")
+
+    monkeypatch.setenv("PROMETHEUS_MULTIPROC_DIR", "/tmp")
+
+    @eng.stream_app
+    def func(args: Any) -> bool:  # pylint: disable=W0613
+        return True
+
+    t = threading.Thread(target=func, daemon=True)
+    t.start()
+    time.sleep(1)
+    try:
+        resp = urllib.request.urlopen(f"http://localhost:{port}/metrics")
+        assert resp.status == 200
+        assert "Multiprocess" in resp.read().decode("utf-8")
+    finally:
+        t.join(timeout=1.0)

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py_volley"
-version = "0.22.1"
+version = "0.23.0"
 description = "Pluggable message queueing for Python"
 authors = ["ask-machine-learning <shipt@shipt.com>"]
 readme = "README.md"
@@ -21,6 +21,8 @@ pydantic = ">=1.8.2, <1.11"
 PyYAML = ">=5.4.1, <6.1"
 orjson = ">=3.6.4, <4.0"
 msgpack = "^1.0.3"
+starlette = "<1"
+uvicorn = "<1"
 
 confluent-kafka = {version ="^1.8.2", optional = true}
 PyRSMQ = {version ="^0.4.5", optional = true}

@@ -43,7 +43,7 @@ def serve_metrics(port: int) -> None:
     """Serves the built-in prometheus webserver by default.
     Serves multiprocess collector when PROMETHEUS_MULTIPROC_DIR present in env vars.
 
-    Both method's webserver run on a daemon thread
+    Both methods run the webserver on a daemon thread
     """
     if os.getenv("PROMETHEUS_MULTIPROC_DIR") is not None:
         logger.info("Serving multi-process collector")

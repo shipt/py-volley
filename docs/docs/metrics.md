@@ -1,6 +1,6 @@
 # Metrics
 
-Volley exposes [Prometheus metrics](https://prometheus.io/docs/concepts/metric_types/) on an http server. The metrics serving port can be configured or disabled completely.
+Volley exposes [Prometheus metrics](https://prometheus.io/docs/concepts/metric_types/) on an http server. The metrics serving port can be configured or disabled completely. Prometheus [Multiprocess Mode](https://github.com/prometheus/client_python#multiprocess-mode-eg-gunicorn) is also supported, just set `PROMETHEUS_MULTIPROC_DIR` to an appropriate value. See [Prometheus docs](https://github.com/prometheus/client_python#multiprocess-mode-eg-gunicorn) for more details.
 
 Expose metrics on port 8081.
 

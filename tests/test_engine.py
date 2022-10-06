@@ -559,7 +559,7 @@ def test_init_typedConfig(typedConfig_list: List[QueueConfig]) -> None:
 
 @patch("volley.connectors.confluent.Consumer")
 def test_multiproc_metrics(mock_consumer: MagicMock, monkeypatch: MonkeyPatch) -> None:  # pylint: disable=W0613
-    """test a stubbed component that does not produce messages"""
+    """test metrics server"""
     cfg = [QueueConfig(name="test-cfg", value="my-topic", profile="confluent")]
     port = 1233
     eng = Engine(

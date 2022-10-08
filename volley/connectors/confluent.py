@@ -272,3 +272,73 @@ def handle_creds(config_dict: Dict[str, Any]) -> Dict[str, Any]:
             config_dict["security.protocol"] = "SASL_SSL"
             config_dict["sasl.mechanism"] = "PLAIN"
     return config_dict
+
+
+class BatchJsonConfluentConsumer(ConfluentKafkaConsumer):
+    """Consumes multiple messages before process.
+    Parses messages to byte string json
+    """
+
+    batch_size: int = 2
+    batch_time_seconds: float = 5.0
+
+    def __post_init__(self) -> None:
+        # handle some configurations before setting ConfluentKafkaConsumer
+        if "batch_size" in self.config:
+            self.batch_size = self.config.pop("batch_size")
+        if "batch_time_seconds" in self.config:
+            self.batch_time_seconds = self.config.pop("batch_time_seconds")
+        super().__post_init__()
+
+    def consume(  # type: ignore
+        self,
+    ) -> Optional[QueueMessage]:
+        """consumes BATCH_SIZE messages from the input topic
+        if TIMEOUT reached, return however many messages currently consumed
+        other wise keep polling for messages until BATCH_SIZE is reached
+        """
+
+        messages: list[Optional[bytes]] = []
+        raw_messages: list[Union[Message, None]] = self.c.consume(
+            num_messages=self.batch_size, timeout=self.batch_time_seconds
+        )
+        for_commit: list[Message] = []
+        if not len(raw_messages):
+            logger.debug("No messages")
+            return None
+        for m in raw_messages:
+            if m.error():
+                logger.error(m.error())
+                continue
+            else:
+                for_commit.append(m)
+                messages.append(m.value())
+        num_messages = len(messages)
+        if num_messages:
+            logger.debug("messages in batch/batch_size %s / %s", num_messages, self.batch_size)
+            return QueueMessage(message_context=for_commit, message=b"[" + b",".join(messages) + b"]")
+        else:
+            return None
+
+    def on_success(self, message_context: list[Message]) -> None:
+        """stores any offsets that are able to be stored"""
+
+        # see if we've already committed this or a higher offset
+        # delivery report from kafka producer are not guaranteed to be in order
+        # that they were produced
+        # https://github.com/confluentinc/confluent-kafka-python/issues/300#issuecomment-358416432
+        for m in message_context:
+            topic = m.topic()
+            partition = m.partition()
+            this_offset = m.offset()
+
+            try:
+                last_commit = self.last_offset[topic][partition]
+            except KeyError:
+                # first message from this topic-partition
+                self.last_offset[topic][partition] = this_offset
+                self.c.store_offsets(m)
+                return
+            if this_offset > last_commit:
+                self.c.store_offsets(m)  # committed according to auto.commit.interval.ms
+                self.last_offset[topic][partition] = this_offset

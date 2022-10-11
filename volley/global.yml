@@ -6,7 +6,8 @@ profiles:
     data_model: volley.data_models.GenericMessage
     serializer: volley.serializers.orjson_serializer.OrJsonSerialization
   confluent-batch-json:
-    consumer: volley.connectors.confluent.ConfluentKafkaConsumer
+    consumer: volley.connectors.confluent.BatchJsonConfluentConsumer
+    producer: volley.connectors.confluent.ConfluentKafkaProducer
     serializer: volley.serializers.orjson_serializer.OrJsonSerialization
     model_handler: volley.models.PydanticListParser
     data_model: volley.data_models.GenericMessage

@@ -76,9 +76,7 @@ def mock_rsmq_consumer_id_bytes() -> RSMQConsumer:
 
 
 class KafkaMessage:
-    _offset: int = randint(1, 200)
     _error_msg = "MOCK ERROR"
-    _partition = 0
 
     def __init__(
         self,
@@ -91,10 +89,14 @@ class KafkaMessage:
         self._error = error
         self._value = msg
         self._topic = topic
-        if partition:
+        if partition is not None:
             self._partition = partition
-        if offset:
+        else:
+            self._partition = 0
+        if offset is not None:
             self._offset = offset
+        else:
+            self._offset = randint(1, 200)
 
     def error(self) -> bool:
         return self._error

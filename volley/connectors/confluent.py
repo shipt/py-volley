@@ -338,7 +338,7 @@ class BatchJsonConfluentConsumer(ConfluentKafkaConsumer):
                 # first message from this topic-partition
                 self.last_offset[topic][partition] = this_offset
                 self.c.store_offsets(m)
-                return
+                continue
             if this_offset > last_commit:
                 self.c.store_offsets(m)  # committed according to auto.commit.interval.ms
                 self.last_offset[topic][partition] = this_offset

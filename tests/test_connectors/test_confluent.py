@@ -12,6 +12,7 @@ from example.data_models import InputMessage, OutputMessage
 from tests.conftest import KafkaMessage
 from volley import Engine
 from volley.connectors.confluent import (
+    BatchJsonConfluentConsumer,
     ConfluentKafkaConsumer,
     ConfluentKafkaProducer,
     handle_creds,
@@ -240,3 +241,69 @@ def test_downstream_failure_shutdown(
     assert eng.killer.kill_now is True
     assert "downstream failure" in caplog.text.lower()
     assert "shutdown volley complete" in caplog.text.lower()
+
+
+@patch("volley.connectors.confluent.Consumer")
+def test_batch_consumer_success(monkeypatch: MonkeyPatch) -> None:
+    """validate success modes on batch consumer"""
+    monkeypatch.setenv("KAFKA_CONSUMER_GROUP", "test-group")
+
+    batch_size = BatchJsonConfluentConsumer.batch_size
+
+    topic = "test-topic"
+    partition = 0
+    from uuid import uuid4
+
+    messages: list[KafkaMessage] = []
+    for i in range(batch_size):
+        messages.append(
+            KafkaMessage(
+                msg=json.dumps({"random": str(uuid4())}).encode("utf-8"), partition=partition, offset=i, topic=topic
+            )
+        )
+    b = BatchJsonConfluentConsumer(host="localhost", queue_name=topic)
+    b.c.consume = MagicMock(return_value=messages)
+    q_message = b.consume()
+
+    assert isinstance(q_message, QueueMessage)
+
+    mocked_messages = [json.loads(m._value) for m in messages]
+    consumed_messages = json.loads(q_message.message)
+    assert mocked_messages == consumed_messages
+
+    b.on_success(q_message.message_context)
+    # offset must be the highest offset in the mocked messages
+    assert b.last_offset[topic][partition] == i
+
+
+@patch("volley.connectors.confluent.Consumer")
+def test_batch_consumer_fail(monkeypatch: MonkeyPatch) -> None:
+    """validate error modes on batch consumer"""
+    monkeypatch.setenv("KAFKA_CONSUMER_GROUP", "test-group")
+
+    topic = "test-topic"
+    b = BatchJsonConfluentConsumer(host="localhost", queue_name=topic)
+    # mock Consumer.consume returning empty list (no messages)
+    b.c.consume = MagicMock(return_value=[])
+    q_message = b.consume()
+    assert q_message is None
+
+    # an error message also returns None
+    err_msg = [KafkaMessage(error=True)]
+    b.c.consume = MagicMock(return_value=err_msg)
+    q_message = b.consume()
+    assert q_message is None
+
+
+@patch("volley.connectors.confluent.Consumer")
+def test_batch_consumer_config(monkeypatch: MonkeyPatch) -> None:
+    """validate error modes on batch consumer"""
+    monkeypatch.setenv("KAFKA_CONSUMER_GROUP", "test-group")
+
+    topic = "test-topic"
+    batch_size = randint(1, 20)
+    batch_time = randint(1, 5)
+    cfg = {"batch_size": batch_size, "batch_time_seconds": batch_time}
+    b = BatchJsonConfluentConsumer(host="localhost", queue_name=topic, config=cfg)
+    assert b.batch_size == batch_size
+    assert b.batch_time_seconds == batch_time

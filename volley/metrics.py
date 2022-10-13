@@ -1,5 +1,4 @@
 import os
-os.environ["PROMETHEUS_MULTIPROC_DIR"] = "/tmp"
 import threading
 
 import uvicorn

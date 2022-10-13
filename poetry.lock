@@ -1020,7 +1020,7 @@ zmq = ["pyzmq"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8, <4"
-content-hash = "b22dc8a4fa6c8bef48f38cd89e77f4c72687bd45ebb2986af942e4bc20d6fbe5"
+content-hash = "fcf15e8b89486f84c188da5eb791177b96b155af3a3e934d14e045e151f7cfdb"
 
 [metadata.files]
 anyio = [

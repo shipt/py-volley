@@ -17,10 +17,10 @@ packages = [
 [tool.poetry.dependencies]
 python = ">=3.8, <4"
 prometheus-client = ">=0.11.0, <1"
-pydantic = ">=1.8.2"
+pydantic = ">=1.8.2, <2"
 PyYAML = ">=5.4.1, <6.1"
 orjson = ">=3.6.4, <4.0"
-msgpack = "^1.0.3"
+msgpack = "^1.0.3, <2"
 starlette = "<1"
 uvicorn = "<1"
 

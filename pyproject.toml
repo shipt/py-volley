@@ -15,9 +15,9 @@ packages = [
 "Documentation" = "https://shipt.github.io/py-volley/"
 
 [tool.poetry.dependencies]
-python = "^3.8,<3.11"
-prometheus-client = ">=0.11.0, <0.15.0"
-pydantic = ">=1.8.2, <1.11"
+python = ">=3.8, <4"
+prometheus-client = ">=0.11.0, <1"
+pydantic = ">=1.8.2"
 PyYAML = ">=5.4.1, <6.1"
 orjson = ">=3.6.4, <4.0"
 msgpack = "^1.0.3"

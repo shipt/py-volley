@@ -1,4 +1,5 @@
 import os
+os.environ["PROMETHEUS_MULTIPROC_DIR"] = "/tmp"
 import threading
 
 import uvicorn
@@ -22,9 +23,10 @@ def multiproc_collector_server() -> Starlette:
     https://github.com/prometheus/client_python#multiprocess-mode-eg-gunicorn
     """
 
+    prometheus_registry = CollectorRegistry()
+    multiprocess.MultiProcessCollector(prometheus_registry)
+
     async def app(request: Request) -> Response:  # pylint: disable=W0613
-        prometheus_registry = CollectorRegistry()
-        multiprocess.MultiProcessCollector(prometheus_registry)
         data = generate_latest(prometheus_registry)
         headers = {
             "Content-type": CONTENT_TYPE_LATEST,

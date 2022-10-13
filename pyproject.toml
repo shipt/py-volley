@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py_volley"
-version = "0.23.0"
+version = "0.23.1"
 description = "Pluggable message queueing for Python"
 authors = ["ask-machine-learning <shipt@shipt.com>"]
 readme = "README.md"
@@ -15,12 +15,12 @@ packages = [
 "Documentation" = "https://shipt.github.io/py-volley/"
 
 [tool.poetry.dependencies]
-python = "^3.8,<3.11"
-prometheus-client = ">=0.11.0, <0.15.0"
-pydantic = ">=1.8.2, <1.11"
+python = ">=3.8, <4"
+prometheus-client = ">=0.11.0, <1"
+pydantic = ">=1.8.2, <2"
 PyYAML = ">=5.4.1, <6.1"
 orjson = ">=3.6.4, <4.0"
-msgpack = "^1.0.3"
+msgpack = "^1.0.3, <2"
 starlette = "<1"
 uvicorn = "<1"
 

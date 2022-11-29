@@ -290,7 +290,7 @@ class BatchJsonConfluentConsumer(ConfluentKafkaConsumer):
             self.batch_time_seconds = self.config.pop("batch_time_seconds")
         super().__post_init__()
 
-    def consume(  # type: ignore
+    def consume(
         self,
     ) -> Optional[QueueMessage]:
         """consumes BATCH_SIZE messages from the input topic
@@ -298,16 +298,18 @@ class BatchJsonConfluentConsumer(ConfluentKafkaConsumer):
         other wise keep polling for messages until BATCH_SIZE is reached
         """
 
-        messages: list[Optional[bytes]] = []
-        raw_messages: list[Union[Message, None]] = self.c.consume(
+        messages: List[Optional[bytes]] = []
+        raw_messages: List[Union[Message, None]] = self.c.consume(
             num_messages=self.batch_size, timeout=self.batch_time_seconds
         )
-        for_commit: list[Message] = []
+        for_commit: List[Message] = []
         if not len(raw_messages):
             logger.debug("No messages")
             return None
         for m in raw_messages:
-            if m.error():
+            if m is None:
+                continue
+            elif m.error():
                 logger.error(m.error())
                 continue
             else:
@@ -316,7 +318,8 @@ class BatchJsonConfluentConsumer(ConfluentKafkaConsumer):
         num_messages = len(messages)
         if num_messages:
             logger.debug("messages in batch/batch_size %s / %s", num_messages, self.batch_size)
-            return QueueMessage(message_context=for_commit, message=b"[" + b",".join(messages) + b"]")
+            all_msg: bytes = b"[" + b",".join(messages) + b"]"  # type: ignore
+            return QueueMessage(message_context=for_commit, message=all_msg)
         else:
             return None
 

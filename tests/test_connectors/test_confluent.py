@@ -267,7 +267,7 @@ def test_batch_consumer_success(monkeypatch: MonkeyPatch) -> None:
 
     assert isinstance(q_message, QueueMessage)
 
-    mocked_messages = [json.loads(m._value) for m in messages]
+    mocked_messages = [json.loads(m.value()) for m in messages]  # type: ignore
     consumed_messages = json.loads(q_message.message)
     assert mocked_messages == consumed_messages
 

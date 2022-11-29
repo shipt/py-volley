@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, TypeVar, Union
+from typing import Any, Dict, List, Type, TypeVar
 
 from pydantic import BaseModel, Extra, parse_obj_as
 
@@ -34,7 +34,7 @@ class PydanticParserModelHandler(BaseModelHandler):
 class PydanticListParser(BaseModelHandler):
     """for pydantic model that offloads serialization to serializer"""
 
-    def construct(self, message: List[Union[str, Any]], schema: Type[BaseModelType]) -> List[BaseModelType]:
+    def construct(self, message: List[Any], schema: Type[BaseModelType]) -> List[BaseModelType]:
         """coverts a dict to a Pydantic model"""
         return parse_obj_as(List[schema], message)  # type: ignore
 

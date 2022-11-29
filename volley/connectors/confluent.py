@@ -272,3 +272,118 @@ def handle_creds(config_dict: Dict[str, Any]) -> Dict[str, Any]:
             config_dict["security.protocol"] = "SASL_SSL"
             config_dict["sasl.mechanism"] = "PLAIN"
     return config_dict
+
+
+class BatchJsonConfluentConsumer(ConfluentKafkaConsumer):
+    """Consumes multiple messages before process.
+    Parses messages to byte string json
+
+    ## Configuration
+    You may find yourself wanting to configure a single Volley worker to consume
+        and process multiple messages per cycle.
+    For example, consume 10 messages for a batch write to a Redis cache.
+
+    Use the batch Kafka Consumer by either specifying `profile`:
+
+    ```python hl_lines="3"
+    cfg = {
+        "input-topic": {
+            "profile": "confluent-batch-json",
+            "value": "kafka.topic.0,kafka.topic.1",
+            "config": {
+                "bootstrap.servers": "kafka:9092",
+                "group.id": "myConsumerGroup",
+                "batch_size" 10,
+                "batch_time_seconds": 2.5,
+            },
+        },
+    }
+    ```
+
+    Or by overriding the consumer:
+
+    ```python hl_lines="5"
+    cfg = {
+        "input-topic": {
+            "value": "kafka.topic.0,kafka.topic.1",
+            "profile": "confluent",
+            "consumer": "volley.connectors.confluent.ConfluentKafkaConsumer",
+            "config": {
+                "bootstrap.servers": "kafka:9092",
+                "group.id": "myConsumerGroup",
+                "batch_size" 10,
+                "batch_time_seconds": 2.5,
+            },
+        },
+    }
+    ```
+    Your application then receives a `List` of 10 messages (assuming there were 10 available to be consumed).
+
+    """
+
+    batch_size: int = 5
+    batch_time_seconds: float = 2.0
+
+    def __post_init__(self) -> None:
+        # handle some configurations before setting ConfluentKafkaConsumer
+        if "batch_size" in self.config:
+            self.batch_size = self.config.pop("batch_size")
+        if "batch_time_seconds" in self.config:
+            self.batch_time_seconds = self.config.pop("batch_time_seconds")
+        super().__post_init__()
+
+    def consume(
+        self,
+    ) -> Optional[QueueMessage]:
+        """consumes self.config["batch_size"] messages from the input topic
+        if self.config["batch_time_seconds"] reached, return however many messages currently consumed
+        other wise keep polling for messages until batch_size is reached
+        """
+
+        messages: List[Optional[bytes]] = []
+        raw_messages: List[Union[Message, None]] = self.c.consume(
+            num_messages=self.batch_size, timeout=self.batch_time_seconds
+        )
+        for_commit: List[Message] = []
+        if not len(raw_messages):
+            logger.debug("No messages")
+            return None
+        for m in raw_messages:
+            if m is None:
+                continue
+            elif m.error():
+                logger.error(m.error())
+                continue
+            else:
+                for_commit.append(m)
+                messages.append(m.value())
+        num_messages = len(messages)
+        if num_messages:
+            logger.debug("messages in batch/batch_size %s / %s", num_messages, self.batch_size)
+            all_msg: bytes = b"[" + b",".join(messages) + b"]"  # type: ignore
+            return QueueMessage(message_context=for_commit, message=all_msg)
+        else:
+            return None
+
+    def on_success(self, message_context: List[Message]) -> None:
+        """stores any offsets that are able to be stored"""
+
+        # see if we've already committed this or a higher offset
+        # delivery report from kafka producer are not guaranteed to be in order
+        # that they were produced
+        # https://github.com/confluentinc/confluent-kafka-python/issues/300#issuecomment-358416432
+        for m in message_context:
+            topic = m.topic()
+            partition = m.partition()
+            this_offset = m.offset()
+
+            try:
+                last_commit = self.last_offset[topic][partition]
+            except KeyError:
+                # first message from this topic-partition
+                self.last_offset[topic][partition] = this_offset
+                self.c.store_offsets(m)
+                continue
+            if this_offset > last_commit:
+                self.c.store_offsets(m)  # committed according to auto.commit.interval.ms
+                self.last_offset[topic][partition] = this_offset

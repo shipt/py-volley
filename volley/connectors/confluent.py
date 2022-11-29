@@ -279,7 +279,8 @@ class BatchJsonConfluentConsumer(ConfluentKafkaConsumer):
     Parses messages to byte string json
 
     ## Configuration
-    You may find yourself wanting to configure a single Volley worker to consume and process multiple messages per cycle.
+    You may find yourself wanting to configure a single Volley worker to consume
+        and process multiple messages per cycle.
     For example, consume 10 messages for a batch write to a Redis cache.
 
     Use the batch Kafka Consumer by either specifying `profile`:

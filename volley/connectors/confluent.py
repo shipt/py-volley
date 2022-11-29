@@ -277,10 +277,51 @@ def handle_creds(config_dict: Dict[str, Any]) -> Dict[str, Any]:
 class BatchJsonConfluentConsumer(ConfluentKafkaConsumer):
     """Consumes multiple messages before process.
     Parses messages to byte string json
+
+    ## Configuration
+    You may find yourself wanting to configure a single Volley worker to consume and process multiple messages per cycle.
+    For example, consume 10 messages for a batch write to a Redis cache.
+
+    Use the batch Kafka Consumer by either specifying `profile`:
+
+    ```python hl_lines="3"
+    cfg = {
+        "input-topic": {
+            "profile": "confluent-batch-json",
+            "value": "kafka.topic.0,kafka.topic.1",
+            "config": {
+                "bootstrap.servers": "kafka:9092",
+                "group.id": "myConsumerGroup",
+                "batch_size" 10,
+                "batch_time_seconds": 2.5,
+            },
+        },
+    }
+    ```
+
+    Or by overriding the consumer:
+
+    ```python hl_lines="5"
+    cfg = {
+        "input-topic": {
+            "value": "kafka.topic.0,kafka.topic.1",
+            "profile": "confluent",
+            "consumer": "volley.connectors.confluent.ConfluentKafkaConsumer",
+            "config": {
+                "bootstrap.servers": "kafka:9092",
+                "group.id": "myConsumerGroup",
+                "batch_size" 10,
+                "batch_time_seconds": 2.5,
+            },
+        },
+    }
+    ```
+    Your application then receives a `List` of 10 messages (assuming there were 10 available to be consumed).
+
     """
 
-    batch_size: int = 2
-    batch_time_seconds: float = 5.0
+    batch_size: int = 5
+    batch_time_seconds: float = 2.0
 
     def __post_init__(self) -> None:
         # handle some configurations before setting ConfluentKafkaConsumer
@@ -293,9 +334,9 @@ class BatchJsonConfluentConsumer(ConfluentKafkaConsumer):
     def consume(
         self,
     ) -> Optional[QueueMessage]:
-        """consumes BATCH_SIZE messages from the input topic
-        if TIMEOUT reached, return however many messages currently consumed
-        other wise keep polling for messages until BATCH_SIZE is reached
+        """consumes self.config["batch_size"] messages from the input topic
+        if self.config["batch_time_seconds"] reached, return however many messages currently consumed
+        other wise keep polling for messages until batch_size is reached
         """
 
         messages: List[Optional[bytes]] = []

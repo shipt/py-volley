@@ -214,7 +214,7 @@ class Engine:
                     delivery_report = DeliveryReport(status=outputs, asynchronous=False)
 
                 else:
-                    delivery_reports: list[DeliveryReport] = produce_handler(
+                    delivery_reports: List[DeliveryReport] = produce_handler(
                         outputs=outputs,
                         queue_map=self.queue_map,
                         app_name=self.app_name,

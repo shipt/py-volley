@@ -1,6 +1,6 @@
-from typing import Any, Dict, Type, TypeVar
+from typing import Any, Dict, List, Type, TypeVar
 
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel, Extra, parse_obj_as
 
 from volley.models.base import BaseModelHandler
 
@@ -29,6 +29,18 @@ class PydanticParserModelHandler(BaseModelHandler):
     def deconstruct(self, model: BaseModelType) -> bytes:
         """converts a pydantic model to bytes"""
         return model.json().encode("utf-8")
+
+
+class PydanticListParser(BaseModelHandler):
+    """for pydantic model that offloads serialization to serializer"""
+
+    def construct(self, message: List[Any], schema: Type[BaseModelType]) -> List[BaseModelType]:
+        """coverts a dict to a Pydantic model"""
+        return parse_obj_as(List[schema], message)  # type: ignore
+
+    def deconstruct(self, model: List[BaseModelType]) -> List[Dict[str, Any]]:
+        """converts a pydantic model to a dict"""
+        return [m.dict() for m in model]
 
 
 class GenericMessage(BaseModel):

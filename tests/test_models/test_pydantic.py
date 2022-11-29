@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from volley.models.pydantic_model import (
     GenericMessage,
+    PydanticListParser,
     PydanticModelHandler,
     PydanticParserModelHandler,
 )
@@ -41,3 +42,19 @@ def test_pydantic() -> None:
 
     deconstructed = parser.deconstruct(data_model)
     assert deconstructed == msg
+
+
+def test_list_parser() -> None:
+    """validates pydantic list parser
+
+    list of dict to list of models
+    """
+    msg_list = [{"msg": str(uuid4())}]
+    parser = PydanticListParser()
+    data_model = parser.construct(message=msg_list, schema=GenericMessage)
+    assert isinstance(data_model, list)
+    assert isinstance(data_model[0], BaseModel)
+    assert data_model[0].msg == msg_list[0]["msg"]  # type: ignore
+
+    deconstructed = parser.deconstruct(data_model)
+    assert deconstructed == msg_list

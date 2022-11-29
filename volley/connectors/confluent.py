@@ -323,7 +323,7 @@ class BatchJsonConfluentConsumer(ConfluentKafkaConsumer):
         else:
             return None
 
-    def on_success(self, message_context: list[Message]) -> None:
+    def on_success(self, message_context: List[Message]) -> None:
         """stores any offsets that are able to be stored"""
 
         # see if we've already committed this or a higher offset

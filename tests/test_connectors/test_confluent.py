@@ -254,7 +254,7 @@ def test_batch_consumer_success(monkeypatch: MonkeyPatch) -> None:
     partition = 0
     from uuid import uuid4
 
-    messages: list[KafkaMessage] = []
+    messages: List[KafkaMessage] = []
     for i in range(batch_size):
         messages.append(
             KafkaMessage(

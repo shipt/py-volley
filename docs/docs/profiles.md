@@ -153,6 +153,18 @@ The default confluent profile is most commonly used for applications working wit
 | serializer    | volley.serializers.orjson_serializer.OrJsonSerialization | [docs](serializers/OrJsonSerialization.md)
 
 
+### confluent-batch-json
+
+Consumes a configurable number of messages from a Kafka topic. The application wrapped `Engine.stream_app` will receive a `list` of messages constructed in to the data model provided to the queue config.
+
+| key           | value                                                    | link |
+| --------------| -------------------------------------------------------- | ---- |
+| consumer      | volley.connectors.confluent.BatchJsonConfluentConsumer   | [docs](connectors/kafka.md#confluentkafkaconsumer)
+| producer      | volley.connectors.confluent.ConfluentKafkaProducer       | [docs](connectors/kafka.md#confluentkafkaproducer)
+| data_model    | volley.data_models.GenericMessage                        | [docs](models/data_models.md#genericmessage)
+| model_handler | volley.models.PydanticListParser                         | [docs](models/PydanticModelHandler.md)
+| serializer    | volley.serializers.orjson_serializer.OrJsonSerialization | [docs](serializers/OrJsonSerialization.md)
+
 ### confluent-pydantic
 
 Very similar to the `confluent` profile. This profile uses Pydantic's default serializer mechanism to convert `bytes` to the Pydantic model.

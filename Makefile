@@ -79,7 +79,7 @@ stop:
 
 publish:
 	poetry publish
-publish.docs: setup.ci
+publish.docs: setup.project
 	cd docs && poetry run mkdocs gh-deploy --force
 poetry.pre.patch:
 	poetry version prepatch

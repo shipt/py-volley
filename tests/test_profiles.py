@@ -4,7 +4,7 @@ from uuid import uuid4
 import pytest
 from pydantic import ValidationError
 
-from volley import Engine
+from volley import Engine, QueueConfig
 from volley.config import get_configs, import_module_from_string
 from volley.profiles import ConnectionType, Profile, construct_profiles
 
@@ -141,34 +141,38 @@ def test_profile_override(data_model: Optional[str], model_handler: Optional[str
             "config": {"group.id": consumer_group},
         }
     }
-    app = Engine(input_queue=qname, queue_config=cfg, metrics_port=None)
-    test_topic_queue = app.queue_map[qname]
+    cfg_obj = [QueueConfig(name=qname,**cfg[qname])]
 
-    if data_model is None:
-        assert test_topic_queue.data_model is data_model
-    else:
-        # data_model is not the class object, not the instance
-        # model_handler creates the instance of data_model
-        assert test_topic_queue.data_model == import_module_from_string(data_model)
+    # run tests against both the dict and QueueConfig object
+    for _cfg in [cfg, cfg_obj]:
+        app = Engine(input_queue=qname, queue_config=_cfg, metrics_port=None)
+        test_topic_queue = app.queue_map[qname]
 
-    if model_handler is None:
-        assert test_topic_queue.model_handler is model_handler
-    else:
-        assert isinstance(test_topic_queue.model_handler, import_module_from_string(model_handler))
+        if data_model is None:
+            assert test_topic_queue.data_model is data_model
+        else:
+            # data_model is not the class object, not the instance
+            # model_handler creates the instance of data_model
+            assert test_topic_queue.data_model == import_module_from_string(data_model)
 
-    if serializer is None:
-        assert test_topic_queue.serializer is serializer
-    else:
-        assert isinstance(test_topic_queue.serializer, import_module_from_string(serializer))
+        if model_handler is None:
+            assert test_topic_queue.model_handler is model_handler
+        else:
+            assert isinstance(test_topic_queue.model_handler, import_module_from_string(model_handler))
 
-    # these Queue attributes are str
-    assert test_topic_queue.name == qname
-    assert test_topic_queue.value == qvalue
+        if serializer is None:
+            assert test_topic_queue.serializer is serializer
+        else:
+            assert isinstance(test_topic_queue.serializer, import_module_from_string(serializer))
 
-    # profile attributes are Optional[str]
-    assert test_topic_queue.profile.model_handler is model_handler
-    assert test_topic_queue.profile.data_model is data_model
+        # these Queue attributes are str
+        assert test_topic_queue.name == qname
+        assert test_topic_queue.value == qvalue
 
-    # verify not overriden
-    assert test_topic_queue.profile.producer == confluent_profile_data["producer"]
-    assert test_topic_queue.profile.consumer == confluent_profile_data["consumer"]
+        # profile attributes are Optional[str]
+        assert test_topic_queue.profile.model_handler is model_handler
+        assert test_topic_queue.profile.data_model is data_model
+
+        # verify not overriden
+        assert test_topic_queue.profile.producer == confluent_profile_data["producer"]
+        assert test_topic_queue.profile.consumer == confluent_profile_data["consumer"]

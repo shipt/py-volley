@@ -33,7 +33,7 @@ steps:
       SONAR_TOKEN:
         from_secret: SONAR_TOKEN
     depends_on:
-      - unit-test-3.10.2
+      - unit-test-3.11
 
   - name: unit-test-3.9
     image: python:3.9

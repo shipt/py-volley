@@ -30,17 +30,6 @@ lints: lints.flake8 lints.format.check lints.mypy lints.pylint
 lints.strict: lints.pylint lints.flake8.strict lints.mypy lints.format.check
 
 setup: setup.sysdeps setup.python setup.project
-setup.uninstall:
-	@export _venv_path=$$(poetry env info --path); \
-    if [ ! -n "$${_venv_path:+1}" ]; then \
-      echo "\nsetup.uninstall: didn't find a virtualenv to clean up"; \
-      exit 0; \
-    fi; \
-    echo "\nattempting cleanup of $$_venv_path" \
-    && export _venv_name=$$(basename $$_venv_path) \
-    && ((poetry env remove $$_venv_name > /dev/null 2>&1 \
-         || rm -rf ./.venv) && echo "all cleaned up!") \
-    || (echo "\nsetup.uninstall: failed to remove the virtualenv." && exit 1)
 setup.project:
 	poetry install -E all
 setup.python:
@@ -52,15 +41,12 @@ setup.python:
 	@poetry env use $$(python -c "import sys; print(sys.executable)")
 	@echo "Active interpreter path: $$(poetry env info --path)/bin/python"
 setup.sysdeps:
-	# bootstrap python first to avoid issues with plugin installs that count on python
 	@-asdf plugin-add python; asdf install python
 	@asdf plugin update --all \
       && for p in $$(cut -d" " -f1 .tool-versions | sort | tr '\n' ' '); do \
            asdf plugin add $$p || true; \
          done \
-      && asdf install \
-      || (echo "WARNING: Failed to install sysdeps, hopefully things aligned with the .tool-versions file.." \
-         && echo "   feel free to ignore when on drone")
+      && asdf install || echo "WARNING: Failed to install sysdeps. Environment may disagree with .tool-versions" 
 
 test.clean:
 	docker-compose down

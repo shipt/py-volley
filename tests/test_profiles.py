@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 import pytest
@@ -131,7 +131,7 @@ def test_profile_override(data_model: Optional[str], model_handler: Optional[str
     confluent = "confluent"
     confluent_profile_data = get_configs()["profiles"][confluent]
 
-    cfg = {
+    cfg: Dict[str, Any] = {
         qname: {
             "value": qvalue,
             "profile": confluent,
@@ -141,11 +141,11 @@ def test_profile_override(data_model: Optional[str], model_handler: Optional[str
             "config": {"group.id": consumer_group},
         }
     }
-    cfg_obj = [QueueConfig(name=qname,**cfg[qname])]
+    cfg_obj: List[QueueConfig] = [QueueConfig(name=qname, **cfg[qname])]
 
     # run tests against both the dict and QueueConfig object
     for _cfg in [cfg, cfg_obj]:
-        app = Engine(input_queue=qname, queue_config=_cfg, metrics_port=None)
+        app = Engine(input_queue=qname, queue_config=_cfg, metrics_port=None)  # type: ignore
         test_topic_queue = app.queue_map[qname]
 
         if data_model is None:

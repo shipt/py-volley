@@ -12,7 +12,7 @@ steps:
   - name: unit-test-3.11
     image: python:3.11
     commands:
-    - apt-get update && apt-get install -y librdkafka-dev
+    - apt-get update -y && apt-get install -y --no-install-recommends gcc git libssl-dev g++ make && cd /tmp && git clone https://github.com/edenhill/librdkafka.git && cd librdkafka && ./configure --prefix=/usr && make && make install
     - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.2.2 python3 -
     - poetry install -E all
     - poetry run pytest --ignore=tests/integration_tests

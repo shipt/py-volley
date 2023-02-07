@@ -133,12 +133,18 @@ class RSMQConsumer(BaseConsumer):
         Raises a TimeoutError after attempts have been exhausted.
         """
         result: bool = self.queue.deleteMessage(qname=self.queue_name, id=message_id).execute()
-        if result:
-            return result
-        else:
-            err = f"Failed deleting message: '{message_id}' from queue: '{self.queue_name}'"
-            logger.critical(err)
-            raise TimeoutError(err)
+        try:
+            if result:
+                return result
+            else:
+                # Second worker most likely started processing message before first worker finished.
+                msg = f"Failed deleting message: '{message_id}' from queue: '{self.queue_name}'"
+                logger.warning(msg)
+        except Exception as e:
+            logger.error(e)
+            
+            # Raise the last exception once retries are exhausted
+            raise
 
 
 @dataclass

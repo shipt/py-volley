@@ -144,7 +144,7 @@ class RSMQConsumer(BaseConsumer):
 
         except Exception as e:
             logger.error(e)
-    
+
             # Raise the last exception once retries are exhausted
             raise
 

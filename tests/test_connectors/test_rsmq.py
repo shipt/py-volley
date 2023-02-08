@@ -29,8 +29,9 @@ def test_rsmq_delete_fail(mock_rsmq_consumer: RSMQConsumer) -> None:
     mock_rsmq_consumer.queue.deleteMessage.return_value.execute.return_value = False
     mock_rsmq_consumer.delete_message.retry.stop = stop_after_attempt(1)  # type: ignore
     # mock_rsmq_consumer.delete_message.retry.stop = wait_none()
-    with raises(TimeoutError):
-        mock_rsmq_consumer.on_success("message_id_test")
+
+    # Verify failure to delete message does not cause an error
+    mock_rsmq_consumer.on_success("message_id_test")
 
 
 @patch("volley.connectors.rsmq.RedisSMQ")

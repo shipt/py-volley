@@ -131,7 +131,7 @@ class RSMQConsumer(BaseConsumer):
         """wrapper function to handle retries
 
         Returns:
-            Flag indicating the message was removed from the queue. 
+            Flag indicating the message was removed from the queue.
         """
         result: bool = self.queue.deleteMessage(qname=self.queue_name, id=message_id).execute()
         try:
@@ -139,7 +139,9 @@ class RSMQConsumer(BaseConsumer):
                 return result
             else:
                 # Second worker most likely started processing message before first worker finished.
-                logger.warning(f"Failed deleting message: '%s' from queue: '%s'", message_id, self.queue_name)
+                logger.warning("Failed deleting message: '%s' from queue: '%s'".format(
+                    message_id, self.queue_name
+                ))
                 return False
 
         except Exception as e:

@@ -139,9 +139,9 @@ class RSMQConsumer(BaseConsumer):
                 return result
             else:
                 # Second worker most likely started processing message before first worker finished.
-                logger.warning("Failed deleting message: {id} from queue: {qname}".format(
-                    id=message_id, qname=self.queue_name
-                ))
+                logger.warning(
+                    "Failed deleting message: {id} from queue: {qname}".format(id=message_id, qname=self.queue_name)
+                )
                 return False
 
         except Exception as e:

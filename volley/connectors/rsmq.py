@@ -130,7 +130,8 @@ class RSMQConsumer(BaseConsumer):
     def delete_message(self, message_id: str) -> bool:
         """wrapper function to handle retries
 
-        Raises a TimeoutError after attempts have been exhausted.
+        Returns:
+            Flag indicating the message was removed from the queue. 
         """
         result: bool = self.queue.deleteMessage(qname=self.queue_name, id=message_id).execute()
         try:

@@ -25,6 +25,7 @@ You can also limit the dependencies by:
 pip install py-volley[kafka]  # Kafka dependencies
 pip install py-volley[rsmq]  # RSMQ dependencies
 pip install py-volley[zmq]  # ZeroMQ dependencies
+pip install py-volley[kafka,rsmq]  # dependencies needed for the example below
 ```
 
 ## Features
@@ -137,13 +138,30 @@ if __name__ == "__main__":
 
 ```
 
-4. Create an environment by running `poetry install`. 
-5. Run the first application in a terminal
+4. Create a virtual environment
+For example, with venv:
 ```bash
-poetry run python app_0.py
+python -m venv .venv
+source .venv/bin/activate
 ```
 
-6. Build the second worker node - consume from Redis, determine if we log to console or recycle the message as a new list.
+5. Install py-volley, including extras
+```bash
+pip install py-volley[kafka,rsmq]
+```
+6. Run the first application in a terminal
+```bash
+python app_0.py
+```
+
+This leads to:
+```bash
+...
+KafkaError{code=UNKNOWN_TOPIC_OR_PART,val=3,str="Subscribed topic not available: my.kafka.topic.name: Broker: Unknown topic or partition"}
+```
+
+
+7. Build the second worker node - consume from Redis, determine if we log to console or recycle the message as a new list.
 ```python
 # ./app_1.py
 from typing import List, Tuple, Union
@@ -174,15 +192,22 @@ if __name__ == "__main__":
     redis_to_kafka()
 ```
 
-6. Run the second worker node in another terminal
+6. Run the second worker node in another terminal (remember to source your virtual environment first)
 ```bash
 python app_1.py
 ```
 
+This leads to 
+```bash
+QueueAlreadyExists: Exception while processing CreateQueueCommand: Queue 'my.redis.output.queue.name' already exists
+CONFWARN [rdkafka#producer-1] [thrd:app]: Configuration property group.id is a consumer property and will be ignored by this producer instance
+```
+
+
 7. Finally, let's manually publish a message to the input kafka topic:
 ```python
-from confluent_kafka import Producer
 import json
+from confluent_kafka import Producer
 producer = Producer({"bootstrap.servers": "localhost:9092"})
 producer.produce(topic="my.kafka.topic.name", value=json.dumps({"my_values":[1,2,3]}))
 producer.flush(5)

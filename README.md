@@ -36,14 +36,13 @@ pip install py-volley[kafka,rsmq]  # dependencies needed for the example below
 - Optionally configured integration with dead-letter-queues
 - Extendible connectors (consumer/producers), serializers, model handlers, and model handlers via plugins.
 
-## Getting started
-
 Volley handles the process of consuming/producing by providing developers with extendible interfaces and handlers:
 - connectors - consumer and producer interfaces which define how the application should read messages, write messages, and what actions to take when a message is successfully or fails processing.
 - serializers - handlers and interface which describe the behavior for reading an byte objects from connectors. For example, Json or MessagePack serializers.
 - model_handler - handler and interface which works very closely with serializers. Typically used to turn serialized data into a structured Python data model. Pydantic is Volley's most supported data_model and can handler serialization itself.
 - data_model - When your application receives data from a queue, what schema and object do you expect it in? The data_model is provided by the user. And the `model_handler` describes how to construct your `data_model`.
 
+## Getting started
 
 To demonstrate, let's create an application with two worker nodes. One consumes from Kafka, finds the maximum value in a list then publishes it to Redis. The other consumes the message from Redis - if the max value is > 10, it logs to console otherwise it constructs a new list and publishes to the same Kafka topic. 
 
@@ -59,7 +58,26 @@ E --> | yes | F[Log to Console]
 
 You can skip the details and just run `make intro.start`, which runs this example through `./example/intro/docker-compose.yml`
 
-1. Start Kafka and Redis instance
+
+1. Set up environment
+Py-volley is a library that you import and use within your own application.
+So to start, we can create a demo application called `volley_demo`.
+```bash
+mkdir volley_demo
+cd volley_demo
+```
+2. Create and activate a virtual environment
+For example, with venv:
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+3. Install py-volley, including extras
+```bash
+pip install py-volley[kafka,rsmq]
+```
+4. Start Kafka and Redis instan4e
   * Be sure to start Docker first
   * The `-d` flag will background the process; leave it out if you prefer to see the logs in your terminal
 
@@ -135,20 +153,8 @@ def kafka_to_redis(msg: InputMessage) -> List[Tuple[str, OutputMessage]]:
 
 if __name__ == "__main__":
   kafka_to_redis()
-
 ```
 
-4. Create a virtual environment
-For example, with venv:
-```bash
-python -m venv .venv
-source .venv/bin/activate
-```
-
-5. Install py-volley, including extras
-```bash
-pip install py-volley[kafka,rsmq]
-```
 6. Run the first application in a terminal
 ```bash
 python app_0.py

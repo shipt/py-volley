@@ -58,7 +58,9 @@ E --> | yes | F[Log to Console]
 
 You can skip the details and just run `make intro.start`, which runs this example through `./example/intro/docker-compose.yml`
 
-1. start Kafka and Redis instance
+1. Start Kafka and Redis instance
+  * Be sure to start Docker first
+  * The `-d` flag will background the process; leave it out if you prefer to see the logs in your terminal
 
 ```
 docker run -d -p 6379:6379 redis:5.0.0
@@ -69,10 +71,10 @@ docker run -d -p 9092:9092 bashj79/kafka-kraft
 
 ```python
 # ./my_config.py
-from typing import List, Tuple
+from typing import List
 from pydantic import BaseModel
 
-from volley import Engine, QueueConfig
+from volley import QueueConfig
 
 # define the schemas for the first and second worker nodes.
 class InputMessage(BaseModel):
@@ -135,13 +137,13 @@ if __name__ == "__main__":
 
 ```
 
-4. Run the first application in a terminal
+4. Create an environment by running `poetry install`. 
+5. Run the first application in a terminal
 ```bash
-python app_0.py
+poetry run python app_0.py
 ```
 
-
-5. Build the second worker node - consume from Redis, determine if we log to console or recycle the message as a new list.
+6. Build the second worker node - consume from Redis, determine if we log to console or recycle the message as a new list.
 ```python
 # ./app_1.py
 from typing import List, Tuple, Union

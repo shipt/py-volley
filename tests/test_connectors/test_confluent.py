@@ -15,7 +15,7 @@ from volley.connectors.confluent import (
     BatchJsonConfluentConsumer,
     ConfluentKafkaConsumer,
     ConfluentKafkaProducer,
-    handle_creds,
+    _handle_creds,
 )
 from volley.data_models import QueueMessage
 
@@ -28,15 +28,52 @@ def test_confluent_producer(mock_confluent_producer: ConfluentKafkaProducer) -> 
 
 
 def test_handle_creds(monkeypatch: MonkeyPatch) -> None:
-    monkeypatch.delenv("KAFKA_BROKERS")
-    with pytest.raises(KeyError):
-        handle_creds(config_dict={})
+    monkeypatch.setenv("KAFKA_BROKERS", "brokers")
+    monkeypatch.setenv("KAFKA_CONSUMER_BROKERS", "consumer_brokers")
+
+    # Verify bootstrap.servers overrides all env vars
+    creds = _handle_creds(config_dict={"bootstrap.servers": "default"}, is_consumer=True)
+    assert creds["bootstrap.servers"] == "default"
+
+    creds = _handle_creds(config_dict={}, is_consumer=False)
+    assert creds["bootstrap.servers"] == "brokers"
+
+    creds = _handle_creds(config_dict={}, is_consumer=True)
+    assert creds["bootstrap.servers"] == "consumer_brokers"
+
+
+def test_handle_creds_consumer_fallback(monkeypatch: MonkeyPatch) -> None:
+    monkeypatch.setenv("KAFKA_BROKERS", "brokers")
+
+    creds = _handle_creds(config_dict={}, is_consumer=False)
+    assert creds["bootstrap.servers"] == "brokers"
+
+    creds = _handle_creds(config_dict={}, is_consumer=True)
+    assert creds["bootstrap.servers"] == "brokers"
+
+
+def test_handle_consumer_creds(monkeypatch: MonkeyPatch) -> None:
+    monkeypatch.delenv("KAFKA_BROKERS", raising=False)
+    monkeypatch.delenv("KAFKA_CONSUMER_BROKERS", raising=False)
+
+    with pytest.raises(ValueError):
+        _handle_creds(config_dict={}, is_consumer=True)
+    with pytest.raises(ValueError):
+        _handle_creds(config_dict={}, is_consumer=False)
+
+    # Setting the consumers variable - consumer config will work, producer will not
+    monkeypatch.setenv("KAFKA_CONSUMER_BROKERS", "consumer_brokers")
+    creds = _handle_creds(config_dict={}, is_consumer=True)
+    assert creds["bootstrap.servers"] == "consumer_brokers"
+
+    with pytest.raises(ValueError):
+        _handle_creds(config_dict={}, is_consumer=False)
 
 
 def test_handle_creds_config_dict(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setenv("KAFKA_KEY", "get")
     monkeypatch.setenv("KAFKA_SECRET", "them")
-    result = handle_creds(config_dict={})
+    result = _handle_creds(config_dict={}, is_consumer=True)
     assert result["sasl.username"] == "get"
     assert result["sasl.password"] == "them"
     assert result["security.protocol"] == "SASL_SSL"

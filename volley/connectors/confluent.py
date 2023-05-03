@@ -262,21 +262,21 @@ def _handle_creds(config_dict: Dict[str, Any], is_consumer: bool) -> Dict[str, A
     values do not exist.
     """
 
-    if not "bootstrap.servers" in config_dict:
+    if "bootstrap.servers" not in config_dict:
         # Attempt to set consumer brokers first
         if is_consumer and os.getenv("KAFKA_CONSUMER_BROKERS") is not None:
             config_dict["bootstrap.servers"] = os.environ["KAFKA_CONSUMER_BROKERS"]
 
-    if not "bootstrap.servers" in config_dict:
+    if "bootstrap.servers" not in config_dict:
         if os.getenv("KAFKA_BROKERS") is not None:
             config_dict["bootstrap.servers"] = os.environ["KAFKA_BROKERS"]
 
-    if not "bootstrap.servers" in config_dict:
+    if "bootstrap.servers" not in config_dict:
         logger.error("Kafka brokers not specified, set in config dict or env var KAFKA_BROKERS")
         raise ValueError("bootstrap.servers is required")
 
     # No key == dev mode
-    if not "sasl.username" in config_dict and not "sasl.passsword" in config_dict:
+    if "sasl.username" not in config_dict and "sasl.passsword" not in config_dict:
         sasl_username = os.getenv("KAFKA_KEY")
         sasl_password = os.getenv("KAFKA_SECRET")
         if (sasl_username is not None) and (sasl_password is not None):

@@ -1,11 +1,11 @@
-FROM python:3.9.4 as base
+FROM python:3.9 as base
 
 ENV LIBRDKAFKA_VER=1.9.0
 
 RUN apt-get update && \
     apt-get install -y \
     libpq-dev \
-    libssl-dev \ 
+    libssl-dev \
     libzmq3-dev \
     python3-dev
 

@@ -12,12 +12,12 @@ steps:
   - name: unit-test-3.11
     image: python:3.11
     commands:
-    - apt-get update -y && apt-get install -y --no-install-recommends gcc git libssl-dev g++ make
-    - cd /tmp && git clone https://github.com/edenhill/librdkafka.git && cd librdkafka && ./configure --prefix=/usr && make && make install
-    - cd /drone/src
-    - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.2.2 python3 -
-    - poetry install -E all
-    - poetry run pytest --ignore=tests/integration_tests
+      - apt-get update -y && apt-get install -y --no-install-recommends gcc git libssl-dev g++ make
+      - cd /tmp && git clone https://github.com/edenhill/librdkafka.git && cd librdkafka && ./configure --prefix=/usr && make && make install
+      - cd /drone/src
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.2.2 python3 -
+      - poetry install -E all
+      - poetry run pytest --ignore=tests/integration_tests
 
   - name: code-analysis
     image: plugins/sonarqube-drone-plugin
@@ -32,23 +32,23 @@ steps:
   - name: unit-test-3.10
     image: python:3.10
     commands:
-    - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.2.2 python3 -
-    - poetry install -E all
-    - poetry run pytest --ignore=tests/integration_tests
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.2.2 python3 -
+      - poetry install -E all
+      - poetry run pytest --ignore=tests/integration_tests
 
   - name: unit-test-3.9
     image: python:3.9
     commands:
-    - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.2.2 python3 -
-    - poetry install -E all
-    - poetry run pytest --ignore=tests/integration_tests
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.2.2 python3 -
+      - poetry install -E all
+      - poetry run pytest --ignore=tests/integration_tests
 
   - name: unit-test-3.8
     image: python:3.8
     commands:
-    - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.2.2 python3 -
-    - poetry install -E all
-    - poetry run pytest --ignore=tests/integration_tests
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.2.2 python3 -
+      - poetry install -E all
+      - poetry run pytest --ignore=tests/integration_tests
 
 ---
 kind: pipeline
@@ -66,7 +66,7 @@ trigger:
 
 steps:
   - name: lints
-    image: python:3.9.8
+    image: python:3.9
     commands:
       - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.2.2 python3 -
       - poetry install -E all
@@ -95,9 +95,9 @@ steps:
       - name: docker_socket
         path: /var/run/docker.sock
     commands:
-    - apk add make
-    - sed -i -e '/volumes:/,+1d' docker-compose.yml
-    - make test.integration
+      - apk add make
+      - sed -i -e '/volumes:/,+1d' docker-compose.yml
+      - make test.integration
 
   - name: cleanup-test-integration
     image: docker/compose
@@ -111,8 +111,8 @@ steps:
       - test-integration
     when:
       status:
-      - failure
-      - success
+        - failure
+        - success
 
 ---
 kind: pipeline
@@ -135,7 +135,7 @@ depends_on:
 
 steps:
   - name: publish-release
-    image: python:3.9.4
+    image: python:3.9
     environment:
       POETRY_HTTP_BASIC_PYPI_USERNAME:
         from_secret: PYPI_ORG_USERNAME

@@ -1,11 +1,11 @@
-FROM python:3.9.4 as base
+FROM python:3.9 as base
 
 ENV LIBRDKAFKA_VER=1.9.0
 
 RUN apt-get update && \
     apt-get install -y \
     libpq-dev \
-    libssl-dev \ 
+    libssl-dev \
     libzmq3-dev \
     python3-dev
 
@@ -24,7 +24,7 @@ WORKDIR /app
 
 COPY poetry.lock pyproject.toml /app/
 
-RUN pip3 install poetry==1.1.11
+RUN pip3 install poetry==1.2.2
 
 RUN poetry config virtualenvs.create false
 

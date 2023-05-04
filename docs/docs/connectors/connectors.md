@@ -81,9 +81,11 @@ A complete set of available configurations can be found in [Confluent's Producer
 
 The following environment variables can be set in lieu of passing them as configuration:
 
-`KAFKA_BROKERS` - maps to `bootstrap.servers`
-`KAFKA_KEY` - maps to `sasl.username`
-`KAFKA_SECRET` - maps to `sasl.password`
+- `KAFKA_BROKERS` - maps to `bootstrap.servers`
+- `KAFKA_CONSUMER_BROKERS` - maps to `bootstrap.servers` for kafka consumers, falling back to `KAFKA_BROKERS` if not set
+- `KAFKA_PRODUCER_BROKERS` - maps to `bootstrap.servers` for kafka producers, falling back to `KAFKA_BROKERS` if not set
+- `KAFKA_KEY` - maps to `sasl.username`
+- `KAFKA_SECRET` - maps to `sasl.password`
 
 ### Redis
 The Redis producer is an implementation of the pyRSMQ project's producer. Most commonly used configurations:

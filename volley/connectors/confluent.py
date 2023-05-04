@@ -62,7 +62,7 @@ class ConfluentKafkaConsumer(BaseConsumer):
     last_offset: Dict[str, Dict[int, int]] = field(init=False)
 
     def __post_init__(self) -> None:  # noqa: C901
-        self.config = handle_creds(self.config)
+        self.config = _handle_creds(self.config, True)
 
         if "auto.offset.reset" not in self.config:
             logger.info("Assigning auto.offset.reset default: %s", self.auto_offset_reset)
@@ -183,7 +183,7 @@ class ConfluentKafkaProducer(BaseProducer):
 
     def __post_init__(self) -> None:  # noqa: C901
         self.callback_delivery = True
-        self.config = handle_creds(self.config)
+        self.config = _handle_creds(self.config, False)
         if "compression.type" not in self.config:
             logger.info("Assigning compression.type default: %s", self.compression_type)
             self.config["compression.type"] = self.compression_type
@@ -247,20 +247,42 @@ class ConfluentKafkaProducer(BaseProducer):
             self.poll_thread.join(self.poll_thread_timeout)
 
 
-def handle_creds(config_dict: Dict[str, Any]) -> Dict[str, Any]:
-    if "bootstrap.servers" in config_dict:
-        pass
-    else:
-        try:
+def _handle_creds(config_dict: Dict[str, Any], is_consumer: bool) -> Dict[str, Any]:
+    """Populates credential related kafka configuration values based on well
+    known environment variables.
+
+    Environment variable mappings:
+        * KAFKA_BROKERS maps to bootstrap.servers
+        * KAFKA_CONSUMER_BROKERS maps to bootstrap.servers for consumers only,
+          falling back to KAFKA_BROKERS.
+        * KAFKA_PRODUCER_BROKERS maps to bootstrap.servers for producers only,
+          falling back to KAFKA_BROKERS.
+        * KAFKA_KEY maps to sasl.username
+        * KAFKA_SECRET maps to sasl.password
+
+    Note that environment variables will only be used when previous config
+    values do not exist.
+    """
+
+    if "bootstrap.servers" not in config_dict:
+        # Attempt to set consumer / producer specific overrides first
+        if is_consumer and os.getenv("KAFKA_CONSUMER_BROKERS") is not None:
+            config_dict["bootstrap.servers"] = os.environ["KAFKA_CONSUMER_BROKERS"]
+
+        if not is_consumer and os.getenv("KAFKA_PRODUCER_BROKERS") is not None:
+            config_dict["bootstrap.servers"] = os.environ["KAFKA_PRODUCER_BROKERS"]
+
+    # Fall back to "KAFKA_BROKERS" for both consumers and producers if still not set
+    if "bootstrap.servers" not in config_dict:
+        if os.getenv("KAFKA_BROKERS") is not None:
             config_dict["bootstrap.servers"] = os.environ["KAFKA_BROKERS"]
-        except KeyError:
-            logger.exception("Kafka brokers not specified, set in config dict or env var KAFKA_BROKERS")
-            raise
+
+    if "bootstrap.servers" not in config_dict:
+        logger.error("Kafka brokers not specified, set in config dict or env var KAFKA_BROKERS")
+        raise ValueError("bootstrap.servers is required")
 
     # No key == dev mode
-    if config_dict.get("sasl.username") and config_dict.get("sasl.password"):
-        pass
-    else:
+    if "sasl.username" not in config_dict and "sasl.passsword" not in config_dict:
         sasl_username = os.getenv("KAFKA_KEY")
         sasl_password = os.getenv("KAFKA_SECRET")
         if (sasl_username is not None) and (sasl_password is not None):

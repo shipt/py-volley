@@ -30,13 +30,14 @@ def test_confluent_producer(mock_confluent_producer: ConfluentKafkaProducer) -> 
 def test_handle_creds(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setenv("KAFKA_BROKERS", "brokers")
     monkeypatch.setenv("KAFKA_CONSUMER_BROKERS", "consumer_brokers")
+    monkeypatch.setenv("KAFKA_PRODUCER_BROKERS", "producer_brokers")
 
     # Verify bootstrap.servers overrides all env vars
     creds = _handle_creds(config_dict={"bootstrap.servers": "default"}, is_consumer=True)
     assert creds["bootstrap.servers"] == "default"
 
     creds = _handle_creds(config_dict={}, is_consumer=False)
-    assert creds["bootstrap.servers"] == "brokers"
+    assert creds["bootstrap.servers"] == "producer_brokers"
 
     creds = _handle_creds(config_dict={}, is_consumer=True)
     assert creds["bootstrap.servers"] == "consumer_brokers"

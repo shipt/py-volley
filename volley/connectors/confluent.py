@@ -255,6 +255,8 @@ def _handle_creds(config_dict: Dict[str, Any], is_consumer: bool) -> Dict[str, A
         * KAFKA_BROKERS maps to bootstrap.servers
         * KAFKA_CONSUMER_BROKERS maps to bootstrap.servers for consumers only,
           falling back to KAFKA_BROKERS.
+        * KAFKA_PRODUCER_BROKERS maps to bootstrap.servers for producers only,
+          falling back to KAFKA_BROKERS.
         * KAFKA_KEY maps to sasl.username
         * KAFKA_SECRET maps to sasl.password
 
@@ -263,10 +265,14 @@ def _handle_creds(config_dict: Dict[str, Any], is_consumer: bool) -> Dict[str, A
     """
 
     if "bootstrap.servers" not in config_dict:
-        # Attempt to set consumer brokers first
+        # Attempt to set consumer / producer specific overrides first
         if is_consumer and os.getenv("KAFKA_CONSUMER_BROKERS") is not None:
             config_dict["bootstrap.servers"] = os.environ["KAFKA_CONSUMER_BROKERS"]
 
+        if not is_consumer and os.getenv("KAFKA_PRODUCER_BROKERS") is not None:
+            config_dict["bootstrap.servers"] = os.environ["KAFKA_PRODUCER_BROKERS"]
+
+    # Fall back to "KAFKA_BROKERS" for both consumers and producers if still not set
     if "bootstrap.servers" not in config_dict:
         if os.getenv("KAFKA_BROKERS") is not None:
             config_dict["bootstrap.servers"] = os.environ["KAFKA_BROKERS"]

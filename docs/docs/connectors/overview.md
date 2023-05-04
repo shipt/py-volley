@@ -2,7 +2,7 @@
 
 Connectors are specific implementations of producers and consumers. They handle the direct read, write, delete, or even update with a data store. Volley currently supports connectors for Kafka and RSMQ. Consumers and producers are each concrete implementations of a base class, `volley.connectors.base.BaseConsumer` and `volley.connectors.base.BaseProducer`. Inherit these two classes to get started building your own connectors.
 
-## Consumers 
+## Consumers
 
 Consumers handle reading a message from a queue.
 
@@ -35,10 +35,10 @@ Implemented on [confluent_kafka](https://docs.confluent.io/platform/current/clie
 The following configurations can be provided via environment variables:
 
 ```bash
-KAFKA_CONSUMER_GROUP=<kafka_consumer_group>
-KAFKA_KEY=<kafka username>
-KAFKA_SECRET=<kafka password>
-KAFKA_BROKERS=<host:port of the brokers>
+KAFKA_CONSUMER_GROUP=kafka_consumer_group
+KAFKA_KEY=kafka_username
+KAFKA_SECRET=kafka_password
+KAFKA_BROKERS=host:port
 ```
 
 But all [librdkafka configurations](https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md) can be passed through to the connector as `config`. The `bootstrap.servers` configuration is passed through in the example below.
@@ -53,7 +53,7 @@ cfg = {
       "bootstrap.servers": "kafka_broker_host:9092"
     }
   }
-} 
+}
 ```
 
 ## Extending Connectors with Plugins

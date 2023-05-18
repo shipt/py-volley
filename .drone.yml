@@ -15,7 +15,7 @@ steps:
       - apt-get update -y && apt-get install -y --no-install-recommends gcc git libssl-dev g++ make
       - cd /tmp && git clone https://github.com/edenhill/librdkafka.git && cd librdkafka && ./configure --prefix=/usr && make && make install
       - cd /drone/src
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.2.2 python3 -
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
       - poetry install -E all
       - poetry run pytest --ignore=tests/integration_tests
 
@@ -32,21 +32,21 @@ steps:
   - name: unit-test-3.10
     image: python:3.10
     commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.2.2 python3 -
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
       - poetry install -E all
       - poetry run pytest --ignore=tests/integration_tests
 
   - name: unit-test-3.9
     image: python:3.9
     commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.2.2 python3 -
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
       - poetry install -E all
       - poetry run pytest --ignore=tests/integration_tests
 
   - name: unit-test-3.8
     image: python:3.8
     commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.2.2 python3 -
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
       - poetry install -E all
       - poetry run pytest --ignore=tests/integration_tests
 
@@ -68,7 +68,7 @@ steps:
   - name: lints
     image: python:3.9
     commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.2.2 python3 -
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
       - poetry install -E all
       - make lints
 
@@ -142,7 +142,7 @@ steps:
       POETRY_HTTP_BASIC_PYPI_PASSWORD:
         from_secret: PYPI_ORG_PASSWORD
     commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.2.2 python3 -
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
       - test "v$(poetry version --short)" "=" "$DRONE_TAG"
         # publish to the public PyPI registry
       - poetry publish --build
@@ -165,6 +165,6 @@ steps:
   - name: publish-docs
     image: python:3.10.2
     commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.2.2 python3 -
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
       - git diff $DRONE_COMMIT_BEFORE..$DRONE_COMMIT_AFTER --name-only | grep docs/ && export DOC_CHANGE=1 || export DOC_CHANGE=0;
       - if [ $DOC_CHANGE ] ; then make publish.docs; else echo "No doc change"; fi

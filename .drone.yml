@@ -163,19 +163,19 @@ services:
   - name: redis
     image: redis
     ports:
-      - 6379:6379
+      - 6379
 
   - name: postgres
     image: postgres:12.3
     ports:
-      - 5432:5432
+      - 5432
     environment:
       POSTGRES_PASSWORD: password
 
   - name: zookeeper
     image: confluentinc/cp-zookeeper
     ports:
-      - "2181:2181"
+      - 2181
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -183,7 +183,7 @@ services:
   - name: kafka
     image: confluentinc/cp-kafka
     ports:
-      - 9092:9092
+      - 9092
     # https://rmoff.net/2018/08/02/kafka-listeners-explained/
     environment:
       KAFKA_BROKER_ID: 1

@@ -1,4 +1,4 @@
-FROM python:3.9 as base
+FROM python:3.9
 
 ENV LIBRDKAFKA_VER=1.9.0
 
@@ -19,16 +19,10 @@ RUN ./configure --prefix=$KAFKA_DIR \
     && ldconfig
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$KAFKA_DIR/lib
 
-
 WORKDIR /app
 
-COPY poetry.lock pyproject.toml /app/
+COPY . .
 
 RUN pip3 install poetry==1.4.2
-
 RUN poetry config virtualenvs.create false
-
-FROM base as dev
-
 RUN poetry install --no-root -E all
-COPY . /app/

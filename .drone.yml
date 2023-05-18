@@ -9,6 +9,14 @@ trigger:
     - tag
 
 steps:
+  - name: wait-for-services
+    image: appropriate/nc
+    commands:
+      - timeout -t 60 sh -c 'until nc -vz redis 6379; do sleep 0.5; done'
+      - timeout -t 60 sh -c 'until nc -vz postgres 5432; do sleep 0.5; done'
+      - timeout -t 60 sh -c 'until nc -vz zookeeper 2181; do sleep 0.5; done'
+      - timeout -t 60 sh -c 'until nc -vz kafka 9092; do sleep 0.5; done'
+
   - name: unit-test-3.11
     image: python:3.11
     commands:
@@ -90,29 +98,11 @@ trigger:
 
 steps:
   - name: test-integration
-    image: docker/compose
-    volumes:
-      - name: docker_socket
-        path: /var/run/docker.sock
+    image: python:3.11
     commands:
-      - apk add make
-      - sed -i -e '/volumes:/,+1d' docker-compose.yml
-      - make test.integration
-
-  - name: cleanup-test-integration
-    image: docker/compose
-    volumes:
-      - name: docker_socket
-        path: /var/run/docker.sock
-    commands:
-      - docker-compose logs
-      - docker-compose down --remove-orphans
-    depends_on:
-      - test-integration
-    when:
-      status:
-        - failure
-        - success
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
+      - poetry install -E all
+      - poetry run pytest tests/integration_tests
 
 ---
 kind: pipeline
@@ -168,3 +158,37 @@ steps:
       - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
       - git diff $DRONE_COMMIT_BEFORE..$DRONE_COMMIT_AFTER --name-only | grep docs/ && export DOC_CHANGE=1 || export DOC_CHANGE=0;
       - if [ $DOC_CHANGE ] ; then make publish.docs; else echo "No doc change"; fi
+
+services:
+  - name: redis
+    image: redis
+    ports:
+      - 6379:6379
+
+  - name: postgres
+    image: postgres:12.3
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: password
+
+  - name: zookeeper
+    image: confluentinc/cp-zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  - name: kafka
+    image: confluentinc/cp-kafka
+    ports:
+      - 9092:9092
+    # https://rmoff.net/2018/08/02/kafka-listeners-explained/
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1

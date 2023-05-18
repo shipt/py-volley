@@ -24,7 +24,7 @@ WORKDIR /app
 
 COPY poetry.lock pyproject.toml /app/
 
-RUN pip3 install poetry==1.2.2
+RUN pip3 install poetry==1.4.2
 
 RUN poetry config virtualenvs.create false
 

@@ -24,6 +24,8 @@ steps:
       - poetry install -E all
       - makr format
       - make lints
+    depends_on:
+      - wait-for-services
 
   - name: unit-test-3.11
     image: python:3.11

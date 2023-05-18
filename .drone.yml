@@ -22,7 +22,7 @@ steps:
     commands:
       - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
       - poetry install -E all
-      - makr format
+      - make format
       - make lints
     depends_on:
       - wait-for-services

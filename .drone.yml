@@ -37,7 +37,7 @@ steps:
       - poetry install -E all
       - poetry run pytest --ignore=tests/integration_tests
     depends_on:
-      - lints
+      - wait-for-services
 
   - name: unit-test-3.10
     image: python:3.10
@@ -46,7 +46,7 @@ steps:
       - poetry install -E all
       - poetry run pytest --ignore=tests/integration_tests
     depends_on:
-      - lints
+      - wait-for-services
 
   - name: unit-test-3.9
     image: python:3.9
@@ -55,7 +55,7 @@ steps:
       - poetry install -E all
       - poetry run pytest --ignore=tests/integration_tests
     depends_on:
-      - lints
+      - wait-for-services
 
   - name: unit-test-3.8
     image: python:3.8
@@ -64,7 +64,7 @@ steps:
       - poetry install -E all
       - poetry run pytest --ignore=tests/integration_tests
     depends_on:
-      - lints
+      - wait-for-services
 
   - name: integration-test
     image: python:3.11
@@ -73,7 +73,7 @@ steps:
       - poetry install -E all
       - poetry run pytest tests/integration_tests
     depends_on:
-      - lints
+      - wait-for-services
 
   - name: code-analysis
     image: plugins/sonarqube-drone-plugin
@@ -83,6 +83,7 @@ steps:
       SONAR_TOKEN:
         from_secret: SONAR_TOKEN
     depends_on:
+      - lints
       - unit-test-3.11
       - unit-test-3.10
       - unit-test-3.9

@@ -17,6 +17,14 @@ steps:
       - timeout -t 60 sh -c 'until nc -vz zookeeper 2181; do sleep 0.5; done'
       - timeout -t 60 sh -c 'until nc -vz kafka 9092; do sleep 0.5; done'
 
+  - name: lints
+    image: python:3.9
+    commands:
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
+      - poetry install -E all
+      - makr format
+      - make lints
+
   - name: unit-test-3.11
     image: python:3.11
     commands:
@@ -26,6 +34,44 @@ steps:
       - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
       - poetry install -E all
       - poetry run pytest --ignore=tests/integration_tests
+    depends_on:
+      - lints
+
+  - name: unit-test-3.10
+    image: python:3.10
+    commands:
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
+      - poetry install -E all
+      - poetry run pytest --ignore=tests/integration_tests
+    depends_on:
+      - lints
+
+  - name: unit-test-3.9
+    image: python:3.9
+    commands:
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
+      - poetry install -E all
+      - poetry run pytest --ignore=tests/integration_tests
+    depends_on:
+      - lints
+
+  - name: unit-test-3.8
+    image: python:3.8
+    commands:
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
+      - poetry install -E all
+      - poetry run pytest --ignore=tests/integration_tests
+    depends_on:
+      - lints
+
+  - name: integration-test
+    image: python:3.11
+    commands:
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
+      - poetry install -E all
+      - poetry run pytest tests/integration_tests
+    depends_on:
+      - lints
 
   - name: code-analysis
     image: plugins/sonarqube-drone-plugin
@@ -36,128 +82,10 @@ steps:
         from_secret: SONAR_TOKEN
     depends_on:
       - unit-test-3.11
-
-  - name: unit-test-3.10
-    image: python:3.10
-    commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
-      - poetry install -E all
-      - poetry run pytest --ignore=tests/integration_tests
-
-  - name: unit-test-3.9
-    image: python:3.9
-    commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
-      - poetry install -E all
-      - poetry run pytest --ignore=tests/integration_tests
-
-  - name: unit-test-3.8
-    image: python:3.8
-    commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
-      - poetry install -E all
-      - poetry run pytest --ignore=tests/integration_tests
-
----
-kind: pipeline
-type: docker
-name: lints
-
-workspace:
-  path: /drone/src
-
-trigger:
-  event:
-    - push
-    - pull_request
-    - tag
-
-steps:
-  - name: lints
-    image: python:3.9
-    commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
-      - poetry install -E all
-      - make lints
-
----
-kind: pipeline
-type: docker
-name: int-tests
-
-workspace:
-  path: /drone/src
-
-trigger:
-  event:
-    - push
-    - pull_request
-    - tag
-  branch:
-    - main
-
-steps:
-  - name: test-integration
-    image: python:3.11
-    commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
-      - poetry install -E all
-      - poetry run pytest tests/integration_tests
-
----
-kind: pipeline
-type: docker
-name: release
-
-workspace:
-  path: /drone/src
-
-trigger:
-  event:
-    - tag
-  branch:
-    - main
-
-depends_on:
-  - unit-tests
-  - int-tests
-  - lints
-
-steps:
-  - name: publish-release
-    image: python:3.9
-    environment:
-      POETRY_HTTP_BASIC_PYPI_USERNAME:
-        from_secret: PYPI_ORG_USERNAME
-      POETRY_HTTP_BASIC_PYPI_PASSWORD:
-        from_secret: PYPI_ORG_PASSWORD
-    commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
-      - test "v$(poetry version --short)" "=" "$DRONE_TAG"
-        # publish to the public PyPI registry
-      - poetry publish --build
-
----
-kind: pipeline
-type: docker
-name: publish-docs
-
-workspace:
-  path: /drone/src
-
-trigger:
-  event:
-    - push
-  branch:
-    - main
-
-steps:
-  - name: publish-docs
-    image: python:3.10.2
-    commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
-      - git diff $DRONE_COMMIT_BEFORE..$DRONE_COMMIT_AFTER --name-only | grep docs/ && export DOC_CHANGE=1 || export DOC_CHANGE=0;
-      - if [ $DOC_CHANGE ] ; then make publish.docs; else echo "No doc change"; fi
+      - unit-test-3.10
+      - unit-test-3.9
+      - unit-test-3.8
+      - integration-test
 
 services:
   - name: redis
@@ -192,3 +120,59 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+---
+kind: pipeline
+type: docker
+name: release
+
+workspace:
+  path: /drone/src
+
+trigger:
+  event:
+    - tag
+  branch:
+    - main
+
+depends_on:
+  - unit-tests
+
+steps:
+  - name: publish-release
+    image: python:3.9
+    environment:
+      POETRY_HTTP_BASIC_PYPI_USERNAME:
+        from_secret: PYPI_ORG_USERNAME
+      POETRY_HTTP_BASIC_PYPI_PASSWORD:
+        from_secret: PYPI_ORG_PASSWORD
+    commands:
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
+      - test "v$(poetry version --short)" "=" "$DRONE_TAG"
+        # publish to the public PyPI registry
+      - poetry publish --build
+
+---
+kind: pipeline
+type: docker
+name: publish-docs
+
+depends_on:
+  - unit-tests
+
+workspace:
+  path: /drone/src
+
+trigger:
+  event:
+    - push
+  branch:
+    - main
+
+steps:
+  - name: publish-docs
+    image: python:3.10.2
+    commands:
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
+      - git diff $DRONE_COMMIT_BEFORE..$DRONE_COMMIT_AFTER --name-only | grep docs/ && export DOC_CHANGE=1 || export DOC_CHANGE=0;
+      - if [ $DOC_CHANGE ] ; then make publish.docs; else echo "No doc change"; fi

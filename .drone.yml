@@ -81,9 +81,6 @@ steps:
       REDIS_PORT: 6379
       KAFKA_BROKERS: kafka:9092
     commands:
-      - echo "working directory is "
-      - pwd
-      - ls -al .
       - pip install poetry==1.4.2
       - poetry config virtualenvs.create false
       - poetry install --no-root -E all
@@ -174,9 +171,6 @@ kind: pipeline
 type: docker
 name: release
 
-workspace:
-  path: /drone/src
-
 trigger:
   event:
     - tag
@@ -208,9 +202,7 @@ name: publish-docs
 
 depends_on:
   - unit-tests
-
-workspace:
-  path: /drone/src
+  - integration-tests
 
 trigger:
   event:

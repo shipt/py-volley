@@ -67,9 +67,6 @@ kind: pipeline
 name: integration-tests
 type: docker
 
-depends_on:
-  - unit-tests
-
 steps:
   - name: wait-for-services
     image: appropriate/nc
@@ -183,6 +180,7 @@ trigger:
     - main
 
 depends_on:
+  - unit-tests
   - integration-tests
 
 steps:

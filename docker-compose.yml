@@ -8,7 +8,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: dev
     depends_on:
       - kafka
     volumes:
@@ -24,7 +23,6 @@ services:
       - REDIS_PORT=6379
       - KAFKA_BROKERS=kafka:9092
     build:
-      target: dev
       context: .
       dockerfile: Dockerfile
     depends_on:
@@ -44,7 +42,6 @@ services:
       - REDIS_PORT=6379
       - KAFKA_BROKERS=kafka:9092
     build:
-      target: dev
       context: .
       dockerfile: Dockerfile
     depends_on:
@@ -61,7 +58,6 @@ services:
     environment:
       - ZMQ_PORT=5555
     build:
-      target: dev
       context: .
       dockerfile: Dockerfile
     volumes:
@@ -73,7 +69,6 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
     build:
-      target: dev
       context: .
       dockerfile: Dockerfile
     volumes:
@@ -134,7 +129,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: dev
     environment:
       KAFKA_BROKERS: kafka:9092
     volumes:

@@ -9,14 +9,6 @@ trigger:
     - tag
 
 steps:
-  - name: wait-for-services
-    image: appropriate/nc
-    commands:
-      - timeout -t 60 sh -c 'until nc -vz redis 6379; do sleep 0.5; done'
-      - timeout -t 60 sh -c 'until nc -vz postgres 5432; do sleep 0.5; done'
-      - timeout -t 60 sh -c 'until nc -vz zookeeper 2181; do sleep 0.5; done'
-      - timeout -t 60 sh -c 'until nc -vz kafka 9092; do sleep 0.5; done'
-
   - name: lints
     image: python:3.9
     commands:
@@ -36,8 +28,6 @@ steps:
       - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
       - poetry install -E all
       - poetry run pytest --ignore=tests/integration_tests
-    depends_on:
-      - wait-for-services
 
   - name: unit-test-3.10
     image: python:3.10
@@ -45,8 +35,6 @@ steps:
       - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
       - poetry install -E all
       - poetry run pytest --ignore=tests/integration_tests
-    depends_on:
-      - wait-for-services
 
   - name: unit-test-3.9
     image: python:3.9
@@ -54,8 +42,6 @@ steps:
       - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
       - poetry install -E all
       - poetry run pytest --ignore=tests/integration_tests
-    depends_on:
-      - wait-for-services
 
   - name: unit-test-3.8
     image: python:3.8
@@ -63,20 +49,6 @@ steps:
       - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
       - poetry install -E all
       - poetry run pytest --ignore=tests/integration_tests
-    depends_on:
-      - wait-for-services
-
-  - name: integration-test
-    image: python:3.11
-    commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
-      - poetry install -E all
-      - poetry run pytest tests/integration_tests
-    environment:
-      KAFKA_BROKERS: kafka:9092
-      REDIS_HOST: redis:6379
-    depends_on:
-      - wait-for-services
 
   - name: code-analysis
     image: plugins/sonarqube-drone-plugin
@@ -91,7 +63,78 @@ steps:
       - unit-test-3.10
       - unit-test-3.9
       - unit-test-3.8
-      - integration-test
+
+---
+kind: pipeline
+name: integration-tests
+type: docker
+
+depends_on:
+  - unit-tests
+
+steps:
+  - name: wait-for-services
+    image: appropriate/nc
+    commands:
+      - timeout -t 60 sh -c 'until nc -vz redis 6379; do sleep 0.5; done'
+      - timeout -t 60 sh -c 'until nc -vz postgres 5432; do sleep 0.5; done'
+      - timeout -t 60 sh -c 'until nc -vz zookeeper 2181; do sleep 0.5; done'
+      - timeout -t 60 sh -c 'until nc -vz kafka 9092; do sleep 0.5; done'
+
+  - name: input-worker
+    image: python:3.9
+    detach: true
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+    commands:
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
+      - poetry install -E all
+      - python -m example.input_worker
+    depends_on:
+      - wait-for-services
+
+  - name: middle-worker
+    image: python:3.9
+    detach: true
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+    commands:
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
+      - poetry install -E all
+      - python -m example.middle_worker
+    depends_on:
+      - wait-for-services
+
+  - name: zmq-worker
+    image: python:3.9
+    detach: true
+    environment:
+      ZMQ_PORT: 5555
+    commands:
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
+      - poetry install -E all
+      - python -m example.zmq_server
+    depends_on:
+      - wait-for-services
+
+  - name: integration-test
+    image: python:3.11
+    commands:
+      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
+      - poetry install -E all
+      - poetry run pytest tests/integration_tests
+    environment:
+      KAFKA_BROKERS: kafka:9092
+      REDIS_HOST: redis:6379
+    depends_on:
+      - wait-for-services
+      - input-worker
+      - middle-worker
+      - zmq-worker
 
 services:
   - name: redis
@@ -142,7 +185,7 @@ trigger:
     - main
 
 depends_on:
-  - unit-tests
+  - integration-tests
 
 steps:
   - name: publish-release

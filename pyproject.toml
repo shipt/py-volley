@@ -38,7 +38,9 @@ zmq = ["pyzmq"]
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.2"
+# TODO(@damon): Update mypy to ^0
 mypy = "^0.910"
+# TODo(@damon): Remove coverage
 coverage = "^6.0"
 black = "^22.3.0"
 pytest = "^7.2"
@@ -70,6 +72,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.coverage]
+# TODO(@damon): Is this the correct symtax? Do we need the coverage tool?
 run.omit = [
     "./example/*",
     "./example.py",
@@ -85,6 +88,8 @@ target-version = ['py310', 'py39', 'py38']
 [tool.pytest.ini_options]
 log_cli = true
 log_cli_level = "INFO"
+
+# TODO(@damon): Is this marker used?
 markers = [
     "integration: mark a test as an integration test"
 ]
@@ -93,6 +98,7 @@ markers = [
 ignore="example"
 
 [tool.pylint.messages_control]
+# TODO(@damon): Why are we only enabling certain messages?
 disable = "all"
 enable = [
     "abstract-method",

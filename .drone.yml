@@ -12,7 +12,7 @@ steps:
   - name: lints
     image: python:3.9
     commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
+      - pip install poetry==1.4.2
       - poetry install -E all
       - make format
       - make lints
@@ -20,31 +20,28 @@ steps:
   - name: unit-test-3.11
     image: python:3.11
     commands:
-      - apt-get update -y && apt-get install -y --no-install-recommends gcc git libssl-dev g++ make
-      - cd /tmp && git clone https://github.com/edenhill/librdkafka.git && cd librdkafka && ./configure --prefix=/usr && make && make install
-      - cd /drone/src
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
+      - pip install poetry==1.4.2
       - poetry install -E all
       - poetry run pytest --ignore=tests/integration_tests
 
   - name: unit-test-3.10
     image: python:3.10
     commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
+      - pip install poetry==1.4.2
       - poetry install -E all
       - poetry run pytest --ignore=tests/integration_tests
 
   - name: unit-test-3.9
     image: python:3.9
     commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
+      - pip install poetry==1.4.2
       - poetry install -E all
       - poetry run pytest --ignore=tests/integration_tests
 
   - name: unit-test-3.8
     image: python:3.8
     commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
+      - pip install poetry==1.4.2
       - poetry install -E all
       - poetry run pytest --ignore=tests/integration_tests
 

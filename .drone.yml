@@ -84,8 +84,12 @@ steps:
       REDIS_PORT: 6379
       KAFKA_BROKERS: kafka:9092
     commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
-      - poetry install -E all
+      - echo "working directory is "
+      - pwd
+      - ls -al .
+      - pip install poetry==1.4.2
+      - poetry config virtualenvs.create false
+      - poetry install --no-root -E all
       - python -m example.input_worker
     depends_on:
       - wait-for-services
@@ -98,8 +102,9 @@ steps:
       REDIS_PORT: 6379
       KAFKA_BROKERS: kafka:9092
     commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
-      - poetry install -E all
+      - pip install poetry==1.4.2
+      - poetry config virtualenvs.create false
+      - poetry install --no-root -E all
       - python -m example.middle_worker
     depends_on:
       - wait-for-services
@@ -110,8 +115,9 @@ steps:
     environment:
       ZMQ_PORT: 5555
     commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
-      - poetry install -E all
+      - pip install poetry==1.4.2
+      - poetry config virtualenvs.create false
+      - poetry install --no-root -E all
       - python -m example.zmq_server
     depends_on:
       - wait-for-services
@@ -119,8 +125,9 @@ steps:
   - name: integration-test
     image: python:3.11
     commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
-      - poetry install -E all
+      - pip install poetry==1.4.2
+      - poetry config virtualenvs.create false
+      - poetry install --no-root -E all
       - poetry run pytest tests/integration_tests
     environment:
       KAFKA_BROKERS: kafka:9092

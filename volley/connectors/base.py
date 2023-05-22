@@ -9,7 +9,7 @@ from typing import Any, Callable, Dict, Optional
 from volley.data_models import QueueMessage
 
 
-@dataclass  # type: ignore
+@dataclass
 class BaseConsumer(ABC):
     """Base class for implementing a consumer"""
 
@@ -40,7 +40,7 @@ class BaseConsumer(ABC):
         """
 
 
-@dataclass  # type: ignore
+@dataclass
 class BaseProducer(ABC):
     """Base class for implementing a producer"""
 

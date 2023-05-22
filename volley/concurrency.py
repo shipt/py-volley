@@ -1,7 +1,7 @@
 import asyncio
 import contextvars
 import functools
-from typing import Any, Awaitable, Callable
+from typing import Any, Callable, Coroutine
 
 from prometheus_client import Counter
 
@@ -53,7 +53,7 @@ async def run_worker_function(
     return fun_result
 
 
-def run_async(func: Callable[..., Awaitable[Any]]) -> Callable[..., None]:
+def run_async(func: Callable[..., Coroutine[Any, Any, Any]]) -> Callable[..., None]:
     def wrapper() -> None:
         asyncio.run(func())
 

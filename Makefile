@@ -9,11 +9,11 @@ format.isort:
 format: format.black format.isort
 
 intro.start:
-	docker-compose -f ${INTRO_COMPOSE} up -d kafka redis && sleep 10
-	docker-compose -f ${INTRO_COMPOSE} up single_message
-	docker-compose -f ${INTRO_COMPOSE} up app_0 app_1
+	docker compose -f ${INTRO_COMPOSE} up -d kafka redis && sleep 10
+	docker compose -f ${INTRO_COMPOSE} up single_message
+	docker compose -f ${INTRO_COMPOSE} up app_0 app_1
 intro.stop:
-	docker-compose -f ${INTRO_COMPOSE} down
+	docker compose -f ${INTRO_COMPOSE} down
 
 lints.format.check:
 	poetry run black --check ${SOURCE_OBJECTS}
@@ -49,13 +49,13 @@ setup.sysdeps:
       && asdf install || echo "WARNING: Failed to install sysdeps. Environment may disagree with .tool-versions"
 
 test.clean:
-	docker-compose down
+	-docker compose down
 	-docker images -a | grep ${PROJECT} | awk '{print $3}' | xargs docker rmi
 	-docker image prune -f
 test.integration: run.datastores run.components
 	docker-compose up --exit-code-from int-tests --build int-tests
 test.unit: setup
-	poetry run coverage run -m pytest -s \
+	poetry run pytest -s \
 			--ignore=tests/integration_tests \
 			--cov=./ \
 			--cov-report=xml:coverage.xml \

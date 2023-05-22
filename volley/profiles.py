@@ -101,6 +101,6 @@ def construct_profiles(queue_configs: Dict[str, Dict[str, Any]]) -> Dict[str, Pr
                 f"`{profile_requested}` is not a valid profile name. "
                 f"Available profiles: `{list(supported_profiles.keys())}`"
             )
-        constructed_profiles[q_name] = Profile(**this_profile)
+        constructed_profiles[q_name] = Profile.parse_obj(this_profile)
 
     return constructed_profiles

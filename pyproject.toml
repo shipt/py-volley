@@ -15,14 +15,14 @@ packages = [
 "Documentation" = "https://shipt.github.io/py-volley/"
 
 [tool.poetry.dependencies]
-python = ">=3.8, <4"
-prometheus-client = ">=0.11.0, <1"
-pydantic = ">=1.8.2, <2"
-PyYAML = ">=5.4.1, <6.1"
-orjson = ">=3.6.4, <4.0"
-msgpack = "^1.0.3, <2"
-starlette = "<1"
-uvicorn = "<1"
+python = "^3.8.1"
+prometheus-client = "^0"
+pydantic = "^1.8.2"
+PyYAML = "^6.0.0"
+orjson = "^3.6.4"
+msgpack = "^1.0.3"
+starlette = "^0"
+uvicorn = "^0"
 
 confluent-kafka = {version ="^2.0.0", optional = true}
 PyRSMQ = {version ="^0.4.5", optional = true}
@@ -37,15 +37,13 @@ kafka = ["confluent-kafka"]
 zmq = ["pyzmq"]
 
 [tool.poetry.dev-dependencies]
-flake8 = "^3.9.2"
-# TODO(@damon): Update mypy to ^0
-mypy = "^0.910"
+flake8 = "^6.0.0"
+mypy = "^1.0.0"
 # TODo(@damon): Remove coverage
 coverage = "^6.0"
 black = "^22.3.0"
 pytest = "^7.2"
 isort = "^5.9.3"
-pydantic = "^1.8.2"
 debugpy = "^1.5.0"
 pytest-cov = "^3.0.0"
 types-requests = "^2.25.11"
@@ -72,7 +70,6 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.coverage]
-# TODO(@damon): Is this the correct symtax? Do we need the coverage tool?
 run.omit = [
     "./example/*",
     "./example.py",
@@ -89,7 +86,6 @@ target-version = ['py310', 'py39', 'py38']
 log_cli = true
 log_cli_level = "INFO"
 
-# TODO(@damon): Is this marker used?
 markers = [
     "integration: mark a test as an integration test"
 ]
@@ -98,7 +94,6 @@ markers = [
 ignore="example"
 
 [tool.pylint.messages_control]
-# TODO(@damon): Why are we only enabling certain messages?
 disable = "all"
 enable = [
     "abstract-method",

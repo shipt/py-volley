@@ -8,8 +8,6 @@ services:
             - KAFKA_BROKERS=kafka:9092
         depends_on:
             - kafka
-        volumes:
-            - ./:/app/ 
         command: python single_message.py
 
     app_0:
@@ -22,8 +20,6 @@ services:
         depends_on:
             - kafka
             - redis
-        volumes:
-            - ./:/app/ 
         command: python app_0.py
 
     app_1:
@@ -36,8 +32,6 @@ services:
         depends_on:
             - kafka
             - redis
-        volumes:
-            - ./:/app/ 
         command: python app_1.py
 
     redis:
@@ -46,7 +40,7 @@ services:
         ports:
             - 6379:6379
         healthcheck:
-            test: ["CMD", "redis-cli", "ping"]
+            test: [ "CMD", "redis-cli", "ping" ]
             interval: 5s
             timeout: 30s
             retries: 50

@@ -6,14 +6,14 @@ format.black:
 	poetry run black ${SOURCE_OBJECTS}
 format.isort:
 	poetry run isort --atomic ${SOURCE_OBJECTS}
-format: format.black format.isort 
+format: format.black format.isort
 
 intro.start:
-	docker-compose -f ${INTRO_COMPOSE} up -d kafka redis && sleep 10
-	docker-compose -f ${INTRO_COMPOSE} up single_message
-	docker-compose -f ${INTRO_COMPOSE} up app_0 app_1
+	docker compose -f ${INTRO_COMPOSE} up -d kafka redis && sleep 10
+	docker compose -f ${INTRO_COMPOSE} up single_message
+	docker compose -f ${INTRO_COMPOSE} up app_0 app_1
 intro.stop:
-	docker-compose -f ${INTRO_COMPOSE} down
+	docker compose -f ${INTRO_COMPOSE} down
 
 lints.format.check:
 	poetry run black --check ${SOURCE_OBJECTS}
@@ -46,30 +46,30 @@ setup.sysdeps:
       && for p in $$(cut -d" " -f1 .tool-versions | sort | tr '\n' ' '); do \
            asdf plugin add $$p || true; \
          done \
-      && asdf install || echo "WARNING: Failed to install sysdeps. Environment may disagree with .tool-versions" 
+      && asdf install || echo "WARNING: Failed to install sysdeps. Environment may disagree with .tool-versions"
 
 test.clean:
-	docker-compose down
+	-docker compose down
 	-docker images -a | grep ${PROJECT} | awk '{print $3}' | xargs docker rmi
 	-docker image prune -f
 test.integration: run.datastores run.components
 	docker-compose up --exit-code-from int-tests --build int-tests
 test.unit: setup
-	poetry run coverage run -m pytest -s \
+	poetry run pytest -s \
 			--ignore=tests/integration_tests \
 			--cov=./ \
 			--cov-report=xml:coverage.xml \
 			--cov-report term
 
 run.components:
-	docker-compose up --build -d input_worker middle_worker zmq-worker
+	docker compose up --build -d input_worker middle_worker zmq-worker
 
 run.example: run.datastores run.components run.externals
 	docker compose up --build -d data_producer input_worker middle_worker data_consumer
 run.externals:
 	docker compose up --build -d data_producer data_consumer
 run.datastores:
-	docker-compose up -d redis kafka zookeeper postgres
+	docker compose up -d redis kafka zookeeper postgres
 run:
 	docker compose up --build -d
 stop.components:
@@ -81,12 +81,3 @@ publish:
 	poetry publish
 publish.docs: setup.project
 	cd docs && poetry run mkdocs gh-deploy --force
-poetry.pre.patch:
-	poetry version prepatch
-poetry.pre.minor:
-	poetry version preminor
-poetry.pre.major:
-	poetry version premajor
-publish.pre.patch: poetry.pre.patch publish
-publish.pre.minor: poetry.pre.minor publish
-publish.pre.major: poetry.pre.major publish

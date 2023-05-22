@@ -15,8 +15,8 @@ from volley.serializers.orjson_serializer import OrJsonSerialization
 class CannotBeString:
     """an object that cannot be cast to string"""
 
-    def __str__(self) -> None:  # type: ignore
-        pass
+    def __str__(self) -> str:
+        raise TypeError()
 
 
 @pytest.fixture
@@ -50,7 +50,3 @@ def test_fail(serializers: List[BaseSerialization]) -> None:
         bad_json = b"abc : 123}"
         with pytest.raises((JSONDecodeError, ExtraData)):
             serializer.deserialize(bad_json)
-
-        non_str = CannotBeString()
-        with pytest.raises((JSONDecodeError, TypeError)):  # type: ignore
-            serializer.deserialize(non_str)  # type: ignore

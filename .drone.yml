@@ -9,13 +9,39 @@ trigger:
     - tag
 
 steps:
+  - name: lints
+    image: python:3.9
+    commands:
+      - pip install poetry==1.4.2
+      - poetry install -E all
+      - make format
+      - make lints
+
   - name: unit-test-3.11
     image: python:3.11
     commands:
-      - apt-get update -y && apt-get install -y --no-install-recommends gcc git libssl-dev g++ make
-      - cd /tmp && git clone https://github.com/edenhill/librdkafka.git && cd librdkafka && ./configure --prefix=/usr && make && make install
-      - cd /drone/src
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
+      - pip install poetry==1.4.2
+      - poetry install -E all
+      - poetry run pytest --ignore=tests/integration_tests
+
+  - name: unit-test-3.10
+    image: python:3.10
+    commands:
+      - pip install poetry==1.4.2
+      - poetry install -E all
+      - poetry run pytest --ignore=tests/integration_tests
+
+  - name: unit-test-3.9
+    image: python:3.9
+    commands:
+      - pip install poetry==1.4.2
+      - poetry install -E all
+      - poetry run pytest --ignore=tests/integration_tests
+
+  - name: unit-test-3.8
+    image: python:3.8
+    commands:
+      - pip install poetry==1.4.2
       - poetry install -E all
       - poetry run pytest --ignore=tests/integration_tests
 
@@ -27,100 +53,123 @@ steps:
       SONAR_TOKEN:
         from_secret: SONAR_TOKEN
     depends_on:
+      - lints
       - unit-test-3.11
-
-  - name: unit-test-3.10
-    image: python:3.10
-    commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
-      - poetry install -E all
-      - poetry run pytest --ignore=tests/integration_tests
-
-  - name: unit-test-3.9
-    image: python:3.9
-    commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
-      - poetry install -E all
-      - poetry run pytest --ignore=tests/integration_tests
-
-  - name: unit-test-3.8
-    image: python:3.8
-    commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
-      - poetry install -E all
-      - poetry run pytest --ignore=tests/integration_tests
+      - unit-test-3.10
+      - unit-test-3.9
+      - unit-test-3.8
 
 ---
 kind: pipeline
+name: integration-tests
 type: docker
-name: lints
-
-workspace:
-  path: /drone/src
-
-trigger:
-  event:
-    - push
-    - pull_request
-    - tag
 
 steps:
-  - name: lints
+  - name: wait-for-services
+    image: appropriate/nc
+    commands:
+      - timeout -t 60 sh -c 'until nc -vz redis 6379; do sleep 0.5; done'
+      - timeout -t 60 sh -c 'until nc -vz postgres 5432; do sleep 0.5; done'
+      - timeout -t 60 sh -c 'until nc -vz zookeeper 2181; do sleep 0.5; done'
+      - timeout -t 60 sh -c 'until nc -vz kafka 9092; do sleep 0.5; done'
+
+  - name: input-worker
     image: python:3.9
+    detach: true
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
     commands:
-      - curl -sSL https://install.python-poetry.org | POETRY_HOME=/ POETRY_VERSION=1.4.2 python3 -
-      - poetry install -E all
-      - make lints
-
----
-kind: pipeline
-type: docker
-name: int-tests
-
-workspace:
-  path: /drone/src
-
-trigger:
-  event:
-    - push
-    - pull_request
-    - tag
-  branch:
-    - main
-
-steps:
-  - name: test-integration
-    image: docker/compose
-    volumes:
-      - name: docker_socket
-        path: /var/run/docker.sock
-    commands:
-      - apk add make
-      - sed -i -e '/volumes:/,+1d' docker-compose.yml
-      - make test.integration
-
-  - name: cleanup-test-integration
-    image: docker/compose
-    volumes:
-      - name: docker_socket
-        path: /var/run/docker.sock
-    commands:
-      - docker-compose logs
-      - docker-compose down --remove-orphans
+      - pip install poetry==1.4.2
+      - poetry config virtualenvs.create false
+      - poetry install --no-root -E all
+      - python -m example.input_worker
     depends_on:
-      - test-integration
-    when:
-      status:
-        - failure
-        - success
+      - wait-for-services
+
+  - name: middle-worker
+    image: python:3.9
+    detach: true
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BROKERS: kafka:9092
+    commands:
+      - pip install poetry==1.4.2
+      - poetry config virtualenvs.create false
+      - poetry install --no-root -E all
+      - python -m example.middle_worker
+    depends_on:
+      - wait-for-services
+
+  - name: zmq-worker
+    image: python:3.9
+    detach: true
+    environment:
+      ZMQ_PORT: 5555
+    commands:
+      - pip install poetry==1.4.2
+      - poetry config virtualenvs.create false
+      - poetry install --no-root -E all
+      - python -m example.zmq_server
+    depends_on:
+      - wait-for-services
+
+  - name: integration-test
+    image: python:3.11
+    commands:
+      - pip install poetry==1.4.2
+      - poetry config virtualenvs.create false
+      - poetry install --no-root -E all
+      - poetry run pytest tests/integration_tests
+    environment:
+      KAFKA_BROKERS: kafka:9092
+      REDIS_HOST: redis:6379
+    depends_on:
+      - wait-for-services
+      - input-worker
+      - middle-worker
+      - zmq-worker
+
+services:
+  - name: redis
+    image: redis
+    ports:
+      - 6379
+
+  - name: postgres
+    image: postgres:12.3
+    ports:
+      - 5432
+    environment:
+      POSTGRES_PASSWORD: password
+
+  - name: zookeeper
+    image: confluentinc/cp-zookeeper
+    ports:
+      - 2181
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  - name: kafka
+    image: confluentinc/cp-kafka
+    ports:
+      - 9092
+    # https://rmoff.net/2018/08/02/kafka-listeners-explained/
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
 ---
 kind: pipeline
 type: docker
 name: release
-
-workspace:
-  path: /drone/src
 
 trigger:
   event:
@@ -130,8 +179,7 @@ trigger:
 
 depends_on:
   - unit-tests
-  - int-tests
-  - lints
+  - integration-tests
 
 steps:
   - name: publish-release
@@ -152,8 +200,9 @@ kind: pipeline
 type: docker
 name: publish-docs
 
-workspace:
-  path: /drone/src
+depends_on:
+  - unit-tests
+  - integration-tests
 
 trigger:
   event:

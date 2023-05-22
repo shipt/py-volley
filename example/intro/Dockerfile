@@ -1,5 +1,8 @@
-FROM python:3.9 as base
+FROM python:3.9
 
-RUN pip3 install py-volley
+WORKDIR /app
 
 COPY . /app/
+
+RUN pip3 install py-volley[all]
+

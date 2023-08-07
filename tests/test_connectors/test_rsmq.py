@@ -27,7 +27,7 @@ def test_rsmq_delete(mock_rsmq_consumer: RSMQConsumer) -> None:
 def test_rsmq_delete_fail(mock_rsmq_consumer: RSMQConsumer) -> None:
     """force a failure to delete message and assert its failure handled"""
     mock_rsmq_consumer.queue.deleteMessage.return_value.execute.return_value = False
-    mock_rsmq_consumer.delete_message.retry.stop = stop_after_attempt(1)  # type: ignore
+    mock_rsmq_consumer.delete_message.retry.stop = stop_after_attempt(1)
     # mock_rsmq_consumer.delete_message.retry.stop = wait_none()
 
     # Verify failure to delete message does not cause an error
@@ -85,11 +85,8 @@ def test_init_config(mocked_rsmq: MagicMock, monkeypatch: MonkeyPatch) -> None: 
 
 
 def test_rsmq_consumer_msg_id_bytes(mock_rsmq_consumer_id_bytes: RSMQConsumer) -> None:
-
     output = mock_rsmq_consumer_id_bytes.consume()
 
-    if output is not None:
-        assert type(output.message_context) == str
-        assert output.message_context == "xyz456"
-    else:
-        assert False
+    assert output is not None
+    assert isinstance(output.message_context, str)
+    assert output.message_context == "xyz456"

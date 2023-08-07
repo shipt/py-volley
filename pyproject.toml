@@ -5,9 +5,7 @@ description = "Pluggable message queueing for Python"
 authors = ["ask-machine-learning <shipt@shipt.com>"]
 readme = "README.md"
 
-packages = [
-    { include = "volley" },
-]
+packages = [{ include = "volley" }]
 
 [tool.poetry.urls]
 "Homepage" = "https://github.com/shipt/py-volley"
@@ -24,11 +22,11 @@ msgpack = "^1.0.3"
 starlette = "^0"
 uvicorn = "^0"
 
-confluent-kafka = {version ="^2.0.0", optional = true}
-PyRSMQ = {version ="^0.4.5", optional = true}
-hiredis = {version ="^2.0", optional = true}
-tenacity = {version ="^8.0.1", optional = true}
-pyzmq = {version =">=22.3.0", optional = true}
+confluent-kafka = { version = "^2.0.0", optional = true }
+PyRSMQ = { version = "^0.4.5", optional = true }
+hiredis = { version = "^2.0", optional = true }
+tenacity = { version = "^8.0.1", optional = true }
+pyzmq = { version = ">=22.3.0", optional = true }
 
 [tool.poetry.extras]
 all = ["confluent-kafka", "PyRSMQ", "hiredis", "tenacity", "pyzmq"]
@@ -39,8 +37,6 @@ zmq = ["pyzmq"]
 [tool.poetry.dev-dependencies]
 flake8 = "^6.0.0"
 mypy = "^1.0.0"
-# TODo(@damon): Remove coverage
-coverage = "^6.0"
 black = "^22.3.0"
 pytest = "^7.2"
 isort = "^5.9.3"
@@ -70,11 +66,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.coverage]
-run.omit = [
-    "./example/*",
-    "./example.py",
-    "./tests/*"
-    ]
+run.omit = ["./example/*", "./example.py", "./tests/*"]
 report.show_missing = true
 report.fail_under = 98
 
@@ -86,12 +78,10 @@ target-version = ['py310', 'py39', 'py38']
 log_cli = true
 log_cli_level = "INFO"
 
-markers = [
-    "integration: mark a test as an integration test"
-]
+markers = ["integration: mark a test as an integration test"]
 
 [tool.pylint.master]
-ignore="example"
+ignore = "example"
 
 [tool.pylint.messages_control]
 disable = "all"
@@ -116,5 +106,5 @@ enable = [
     "super-init-not-called",
     "unused-argument",
     "unused-variable",
-    "useless-object-inheritance"
+    "useless-object-inheritance",
 ]

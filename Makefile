@@ -58,8 +58,10 @@ test.unit: setup
 	poetry run pytest -s \
 			--ignore=tests/integration_tests \
 			--cov=./ \
-			--cov-report=xml:coverage.xml \
+			--cov-report=xml:coverage-report-unit-tests.xml \
+			--junitxml=coverage-junit-unit-tests.xml \
 			--cov-report term
+
 
 run.components:
 	docker compose up --build -d input_worker middle_worker zmq-worker

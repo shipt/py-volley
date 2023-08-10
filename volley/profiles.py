@@ -6,7 +6,7 @@ from copy import deepcopy
 from enum import Enum, auto
 from typing import Any, Dict, Optional, Type, Union
 
-from pydantic import field_validator, BaseModel, root_validator
+from pydantic import field_validator, BaseModel, model_validator
 
 from volley.config import get_configs
 from volley.connectors.base import BaseConsumer, BaseProducer
@@ -23,7 +23,6 @@ class ConnectionType(Enum):
 
 
 class Profile(BaseModel):
-
     connection_type: ConnectionType
     # dot path to the object, or the object itself
     consumer: Optional[Union[str, Type[BaseConsumer]]] = None
@@ -44,7 +43,7 @@ class Profile(BaseModel):
         else:
             return None
 
-    @root_validator
+    @model_validator
     @classmethod
     def validate_connectors(cls, values: Dict[str, Any]) -> Any:
         if values.get("producer") is None and values["connection_type"] == ConnectionType.PRODUCER:
@@ -53,7 +52,7 @@ class Profile(BaseModel):
             raise ValueError("Invalid Profile. Must provide a consumer for input queues.")
         return values
 
-    @root_validator
+    @model_validator
     @classmethod
     def validate_handler(cls, values: Dict[str, Any]) -> Any:
         """Volley cannot construct data into a data model without a model handler

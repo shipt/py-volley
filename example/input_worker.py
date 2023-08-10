@@ -40,7 +40,7 @@ async def main(msg: InputMessage, msg_ctx: Message) -> List[Tuple[str, Queue1Mes
 
     q1_msg = Queue1Message(request_id=req_id, max_value=max_val, msg_counter=msg_count)
 
-    logger.info(q1_msg.dict())
+    logger.info(q1_msg.model_dump())
 
     # demonstration of support for asyncio
     await asyncio.gather(fun1(), fun2())

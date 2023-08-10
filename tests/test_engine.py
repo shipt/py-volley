@@ -123,7 +123,7 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
 
     @eng.stream_app
     def hello_world(msg: GenericMessage) -> List[Tuple[str, GenericMessage]]:
-        msg_dict = msg.dict()
+        msg_dict = msg.model_dump()
         unique_val = msg_dict["uuid"]
         out = GenericMessage(hello="world", unique_val=unique_val)
         return [("comp_1", out)]
@@ -531,12 +531,12 @@ def test_pass_msg_ctx(
     mock_message = lambda x: kafka_msg  # noqa
     mock_consumer.return_value.poll = mock_message
 
-    output_msg = OutputMessage.parse_obj(OutputMessage.model_json_schema()["examples"][0])
+    output_msg = OutputMessage.model_validate(OutputMessage.model_json_schema()["examples"][0])
     # component returns "just none"
 
     @eng.stream_app
     def func(msg: Any, msg_ctx: Any) -> List[Tuple[str, OutputMessage]]:
-        assert msg == InputMessage.parse_raw(input_msg)
+        assert msg == InputMessage.model_validate_json(input_msg)
         assert isinstance(msg_ctx, KafkaMessage)
         return [("output-topic", output_msg)]
 

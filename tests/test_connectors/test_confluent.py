@@ -264,7 +264,7 @@ def test_downstream_failure_shutdown(
     mock_producer.return_value.produce = lambda *args, **kwargs: False
 
     # dummy output object to try to produce
-    output_msg = OutputMessage.parse_obj(OutputMessage.model_json_schema()["examples"][0])
+    output_msg = OutputMessage.model_validate(OutputMessage.model_json_schema()["examples"][0])
 
     @eng.stream_app
     def func(msg: Any) -> List[Tuple[str, OutputMessage]]:

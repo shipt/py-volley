@@ -85,7 +85,7 @@ def test_all_supported_profiles() -> None:
 
 def test_invalid_producer(confluent_producer_profile: Profile) -> None:
     """a producer without a producer connector should fail"""
-    prod = confluent_producer_profile.dict()
+    prod = confluent_producer_profile.model_dump()
     del prod["producer"]
     with pytest.raises(ValidationError) as info:
         Profile(**prod)
@@ -94,7 +94,7 @@ def test_invalid_producer(confluent_producer_profile: Profile) -> None:
 
 def test_invalid_consumer(confluent_consumer_profile: Profile) -> None:
     """a consumer without a consumer connector should fail"""
-    prod = confluent_consumer_profile.dict()
+    prod = confluent_consumer_profile.model_dump()
     del prod["consumer"]
     with pytest.raises(ValidationError) as info:
         Profile(**prod)
@@ -103,7 +103,7 @@ def test_invalid_consumer(confluent_consumer_profile: Profile) -> None:
 
 def test_invalid_handler_config(confluent_consumer_profile: Profile) -> None:
     """a data schema model without a handler should fail"""
-    prod = confluent_consumer_profile.dict()
+    prod = confluent_consumer_profile.model_dump()
     del prod["model_handler"]
     with pytest.raises(ValidationError) as info:
         Profile(**prod)

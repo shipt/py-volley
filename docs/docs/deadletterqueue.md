@@ -60,7 +60,7 @@ def my_app(msg: myInput) -> Union[List[Tuple[str, myInput]], bool]:
     1/rando
   except ZeroDivisionError:
       # send to DLQ as bytes
-      output_message = msg.json().encode("utf-8")
+      output_message = msg.model_dump_json().encode("utf-8")
       return [("my-dead-letter-queue", output_message)]
   # eat the message, mark incoming message as "success"
   return True

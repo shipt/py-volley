@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Type, TypeVar
 
-from pydantic import ConfigDict, BaseModel, parse_obj_as, TypeAdapter
+from pydantic import ConfigDict, BaseModel, TypeAdapter
 
 from volley.models.base import BaseModelHandler
 

@@ -124,7 +124,7 @@ app_0 = Engine(
 
 @app_0.stream_app
 def kafka_to_redis(msg: InputMessage) -> List[Tuple[str, OutputMessage]]:
-  print(f"Received {msg.json()}")
+  print(f"Received {msg.model_dump_json()}")
   max_val = max(msg.my_values)
   out = OutputMessage(the_max=max_val)
   print(out)

@@ -36,10 +36,10 @@ def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -
         dead_letter_queue="dead-letter-queue",
         metrics_port=None,
     )
-    input_msg = json.dumps(InputMessage.schema()["examples"][0]).encode("utf-8")
+    input_msg = json.dumps(InputMessage.model_json_schema()["examples"][0]).encode("utf-8")
     mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=input_msg)
 
-    output_msg = OutputMessage.parse_obj(OutputMessage.schema()["examples"][0])
+    output_msg = OutputMessage.model_validate(OutputMessage.model_json_schema()["examples"][0])
     # component returns "just none"
 
     @eng.stream_app
@@ -65,7 +65,7 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
         dead_letter_queue="dead-letter-queue",
         metrics_port=None,
     )
-    msg = json.dumps(InputMessage.schema()["examples"][0]).encode("utf-8")
+    msg = json.dumps(InputMessage.model_json_schema()["examples"][0]).encode("utf-8")
     mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=msg)
 
     # component returns "just none"
@@ -138,8 +138,7 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
 @patch("volley.connectors.confluent.Producer", MagicMock())
 @patch("volley.connectors.confluent.Consumer")
 def test_init_from_dict(mock_consumer: MagicMock, config_dict: Dict[str, Dict[str, str]]) -> None:
-
-    data = InputMessage.schema()["examples"][0]
+    data = InputMessage.model_json_schema()["examples"][0]
     msg = json.dumps(data).encode("utf-8")
     mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=msg)
     input_queue = "input-topic"
@@ -193,7 +192,7 @@ def test_null_serializer_fail(
     """
     config_dict["input-topic"]["serializer"] = "disabled"
 
-    data = InputMessage.schema()["examples"][0]
+    data = InputMessage.model_json_schema()["examples"][0]
     msg = json.dumps(data).encode("utf-8")
     mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=msg)
     input_queue = "input-topic"
@@ -442,7 +441,7 @@ def test_wild_dlq_error(mock_handler: MagicMock, mock_rsmq: MagicMock, caplog: L
 @patch("volley.connectors.confluent.Consumer")
 def test_runtime_connector_configs(mock_consumer: MagicMock, config_dict: Dict[str, Dict[str, str]]) -> None:
     """test wrapped func can return variable length tuples"""
-    data = InputMessage.schema()["examples"][0]
+    data = InputMessage.model_json_schema()["examples"][0]
     msg = json.dumps(data).encode("utf-8")
     mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=msg)
     input_queue = "input-topic"
@@ -527,12 +526,12 @@ def test_pass_msg_ctx(
         dead_letter_queue="dead-letter-queue",
         metrics_port=None,
     )
-    input_msg = json.dumps(InputMessage.schema()["examples"][0]).encode("utf-8")
+    input_msg = json.dumps(InputMessage.model_json_schema()["examples"][0]).encode("utf-8")
     kafka_msg = KafkaMessage(topic="localhost.kafka.input", msg=input_msg)
     mock_message = lambda x: kafka_msg  # noqa
     mock_consumer.return_value.poll = mock_message
 
-    output_msg = OutputMessage.parse_obj(OutputMessage.schema()["examples"][0])
+    output_msg = OutputMessage.parse_obj(OutputMessage.model_json_schema()["examples"][0])
     # component returns "just none"
 
     @eng.stream_app

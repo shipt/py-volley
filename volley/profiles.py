@@ -6,7 +6,7 @@ from copy import deepcopy
 from enum import Enum, auto
 from typing import Any, Dict, Optional, Type, Union
 
-from pydantic import BaseModel, root_validator, validator
+from pydantic import field_validator, BaseModel, root_validator
 
 from volley.config import get_configs
 from volley.connectors.base import BaseConsumer, BaseProducer
@@ -26,13 +26,14 @@ class Profile(BaseModel):
 
     connection_type: ConnectionType
     # dot path to the object, or the object itself
-    consumer: Optional[Union[str, Type[BaseConsumer]]]
-    producer: Optional[Union[str, Type[BaseProducer]]]
-    model_handler: Optional[Union[str, Type[BaseModelHandler]]]
-    data_model: Optional[Union[str, type]]
-    serializer: Optional[Union[str, Type[BaseSerialization]]]
+    consumer: Optional[Union[str, Type[BaseConsumer]]] = None
+    producer: Optional[Union[str, Type[BaseProducer]]] = None
+    model_handler: Optional[Union[str, Type[BaseModelHandler]]] = None
+    data_model: Optional[Union[str, type]] = None
+    serializer: Optional[Union[str, Type[BaseSerialization]]] = None
 
-    @validator("model_handler", "data_model", "serializer")
+    @field_validator("model_handler", "data_model", "serializer")
+    @classmethod
     @classmethod
     def validate_nullable(cls, value: Optional[str]) -> Optional[str]:
         """Ensures str or None types parse as `None`

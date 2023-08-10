@@ -84,7 +84,7 @@ class Engine:
         # 3. yaml file
 
         if isinstance(self.queue_config, list):
-            cfg = {x.name: x.dict(exclude_unset=True) for x in self.queue_config}
+            cfg = {x.name: x.model_dump(exclude_unset=True) for x in self.queue_config}
         elif isinstance(self.queue_config, dict):
             cfg = self.queue_config
         else:

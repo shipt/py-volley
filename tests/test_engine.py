@@ -215,7 +215,7 @@ def test_null_serializer_fail(
         func()
 
     assert "Failed model construction" in caplog.text
-    assert "pydantic.error_wrappers.ValidationError" in caplog.text
+    assert "pydantic_core._pydantic_core.ValidationError" in caplog.text
     assert "failed producing message to" not in caplog.text
     eng.shutdown()
 

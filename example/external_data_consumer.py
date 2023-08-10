@@ -13,7 +13,7 @@ eng = Engine(input_queue="output-topic", output_queues=[], yaml_config_path="./e
 def main(input_message: GenericMessage) -> bool:
     """mimics an data consumer external to Volley"""
 
-    logger.info(input_message.dict())
+    logger.info(input_message.model_dump())
 
     return True
 

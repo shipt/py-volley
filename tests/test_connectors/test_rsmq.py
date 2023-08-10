@@ -9,17 +9,17 @@ from volley.data_models import QueueMessage
 
 def test_rsmq_producer(mock_rsmq_producer: RSMQProducer, queue_message: QueueMessage) -> None:
     assert mock_rsmq_producer.produce(
-        queue_name="test", message=queue_message.json().encode("utf-8"), message_context="message-id-from-consumed"
+        queue_name="test",
+        message=queue_message.model_dump_json().encode("utf-8"),
+        message_context="message-id-from-consumed",
     )
 
 
 def test_rsmq_consumer(mock_rsmq_consumer: RSMQConsumer) -> None:
-
     assert mock_rsmq_consumer.consume()
 
 
 def test_rsmq_delete(mock_rsmq_consumer: RSMQConsumer) -> None:
-
     mock_rsmq_consumer.on_success(message_context="abc123")
 
 

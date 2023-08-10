@@ -54,7 +54,7 @@ def test_end_to_end(int_test_producer: Producer, int_test_consumer: Consumer, en
     logger.info(f"{environment.input_topic=}")
 
     # get some sample data
-    data = InputMessage.schema()["examples"][0]
+    data = InputMessage.model_json_schema()["examples"][0]
 
     # consumer the messages off the output topic
     consume_topic = environment.output_topic
@@ -344,7 +344,7 @@ def test_kafka_kafka_worker(int_test_producer: Producer, int_test_consumer: Cons
     # create some unique request id for tracking
     test_messages = 3
     request_ids: List[str] = [f"test_{x}_{str(uuid4())[:5]}" for x in range(test_messages)]
-    data = InputMessage.schema()["examples"][0]
+    data = InputMessage.model_json_schema()["examples"][0]
     for req_id in request_ids:
         # publish the messages
         data["request_id"] = req_id
@@ -407,7 +407,7 @@ def test_redis_to_kafka(int_test_consumer: Consumer, environment: Environment) -
     # add some data to the input rsmq
     test_messages = 5
     request_ids: List[str] = [f"test_{x}_{str(uuid4())[:5]}" for x in range(test_messages)]
-    data = InputMessage.schema()["examples"][0]
+    data = InputMessage.model_json_schema()["examples"][0]
     for req_id in request_ids:
         data["request_id"] = req_id
         _producer.produce(queue_name=input, message=json.dumps(data).encode("utf-8"))

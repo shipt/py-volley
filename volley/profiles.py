@@ -33,7 +33,6 @@ class Profile(BaseModel):
 
     @field_validator("model_handler", "data_model", "serializer")
     @classmethod
-    @classmethod
     def validate_nullable(cls, value: Optional[str]) -> Optional[str]:
         """Ensures str or None types parse as `None`
         This needs to be the top (first) validator
@@ -43,7 +42,7 @@ class Profile(BaseModel):
         else:
             return None
 
-    @model_validator
+    @model_validator(mode="before")
     @classmethod
     def validate_connectors(cls, values: Dict[str, Any]) -> Any:
         if values.get("producer") is None and values["connection_type"] == ConnectionType.PRODUCER:
@@ -52,7 +51,7 @@ class Profile(BaseModel):
             raise ValueError("Invalid Profile. Must provide a consumer for input queues.")
         return values
 
-    @model_validator
+    @model_validator(mode="before")
     @classmethod
     def validate_handler(cls, values: Dict[str, Any]) -> Any:
         """Volley cannot construct data into a data model without a model handler
@@ -101,6 +100,6 @@ def construct_profiles(queue_configs: Dict[str, Dict[str, Any]]) -> Dict[str, Pr
                 f"`{profile_requested}` is not a valid profile name. "
                 f"Available profiles: `{list(supported_profiles.keys())}`"
             )
-        constructed_profiles[q_name] = Profile.parse_obj(this_profile)
+        constructed_profiles[q_name] = Profile.model_validate(this_profile)
 
     return constructed_profiles

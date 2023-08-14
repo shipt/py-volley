@@ -121,8 +121,12 @@ class QueueConfig(BaseModel):
         return {k: v for k, v in self.__dict__.items() if v is not None}
 
     def custom_model_dump(self) -> Dict[str, Any]:
+        """replicates pydantic v1 behavior of .dict() which was broken in v2 because now pydantic tries to serialize the
+        data_model mappingproxy"""
         dump = self.model_dump(exclude="data_model", exclude_unset=True)
-        if self.data_model is not None:
+
+        # Preserve the previous behavior of not returning data model if it was not set
+        if "data_model" in self.model_fields_set:
             dump["data_model"] = self.data_model
 
         return dump

@@ -1,0 +1,1395 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-7.3.6">
+    
+    
+      
+        <title>ConfluentKafka - Volley</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.a57b2b03.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.3f5d1f46.min.css">
+        
+      
+    
+    
+    
+      
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
+        <style>:root{--md-text-font-family:"Roboto";--md-code-font-family:"Roboto Mono"}</style>
+      
+    
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    
+      
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent="">
+  
+    
+    <script>function __prefix(e){return new URL("../..",location).pathname+"."+e}function __get(e,t=localStorage){return JSON.parse(t.getItem(__prefix(e)))}</script>
+    
+      <script>var palette=__get("__palette");if(null!==palette&&"object"==typeof palette.color)for(var key in palette.color)document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#confluentkafkaconsumer" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Volley" class="md-header__button md-logo" aria-label="Volley" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Volley
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ConfluentKafka
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent=""  aria-label="dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3 3.19.09m3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95 2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="" data-md-color-accent=""  aria-label="light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5c-.84 0-1.65.15-2.39.42L12 2M3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29L3.34 7m.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14L3.36 17M20.65 7l-1.77 3.79a7.023 7.023 0 0 0-2.38-4.15l4.15.36m-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29L20.64 17M12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44L12 22z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Volley" class="md-nav__button md-logo" aria-label="Volley" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    Volley
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Volley
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../example/" class="md-nav__link">
+        Getting Started
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          Configuration
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Configuration" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Configuration
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../queue_config/" class="md-nav__link">
+        Queues
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../profiles/" class="md-nav__link">
+        Profiles
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../engine/" class="md-nav__link">
+        Application
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../connectors/" class="md-nav__link">
+        Consumer & Producer
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../serializers/overview/" class="md-nav__link">
+        Serialization
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../models/overview/" class="md-nav__link">
+        Model Handlers
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../deadletterqueue/" class="md-nav__link">
+        Dead Letter Queues
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../metrics/" class="md-nav__link">
+        Metrics
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../advanced_example/" class="md-nav__link">
+        Advanced Example
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6" type="checkbox" id="__nav_6" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6">
+          Extending Volley
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Extending Volley" data-md-level="1">
+        <label class="md-nav__title" for="__nav_6">
+          <span class="md-nav__icon md-icon"></span>
+          Extending Volley
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../extending/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_2" type="checkbox" id="__nav_6_2" checked>
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6_2">
+          Connectors
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Connectors" data-md-level="2">
+        <label class="md-nav__title" for="__nav_6_2">
+          <span class="md-nav__icon md-icon"></span>
+          Connectors
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          ConfluentKafka
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        ConfluentKafka
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#confluentkafkaconsumer" class="md-nav__link">
+    ConfluentKafkaConsumer
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#volley.connectors.confluent.ConfluentKafkaConsumer" class="md-nav__link">
+    volley.connectors.confluent.ConfluentKafkaConsumer
+  </a>
+  
+    <nav class="md-nav" aria-label="volley.connectors.confluent.ConfluentKafkaConsumer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#volley.connectors.confluent.ConfluentKafkaConsumer--multi-topic-subscription" class="md-nav__link">
+    Multi-topic subscription
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#volley.connectors.confluent.ConfluentKafkaConsumer.consume" class="md-nav__link">
+    consume()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#volley.connectors.confluent.ConfluentKafkaConsumer.on_fail" class="md-nav__link">
+    on_fail()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#volley.connectors.confluent.ConfluentKafkaConsumer.on_success" class="md-nav__link">
+    on_success()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#volley.connectors.confluent.ConfluentKafkaConsumer.shutdown" class="md-nav__link">
+    shutdown()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#confluentkafkaproducer" class="md-nav__link">
+    ConfluentKafkaProducer
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#volley.connectors.confluent.ConfluentKafkaProducer" class="md-nav__link">
+    volley.connectors.confluent.ConfluentKafkaProducer
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#volley.connectors.confluent.ConfluentKafkaProducer.produce" class="md-nav__link">
+    produce()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#volley.connectors.confluent.ConfluentKafkaProducer.shutdown" class="md-nav__link">
+    shutdown()
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rsmq/" class="md-nav__link">
+        RSMQ
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_3" type="checkbox" id="__nav_6_3" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6_3">
+          Serializers
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Serializers" data-md-level="2">
+        <label class="md-nav__title" for="__nav_6_3">
+          <span class="md-nav__icon md-icon"></span>
+          Serializers
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../serializers/overview/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../serializers/BaseSerialization/" class="md-nav__link">
+        BaseSerialization
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../serializers/JsonSerialization/" class="md-nav__link">
+        JsonSerialization
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../serializers/MsgPackSerialization/" class="md-nav__link">
+        MsgPackSerialization
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../serializers/OrJsonSerialization/" class="md-nav__link">
+        OrJsonSerialization
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_6_4" type="checkbox" id="__nav_6_4" >
+      
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6_4">
+          Model Handlers
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Model Handlers" data-md-level="2">
+        <label class="md-nav__title" for="__nav_6_4">
+          <span class="md-nav__icon md-icon"></span>
+          Model Handlers
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../models/overview/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../models/BaseModelHandler/" class="md-nav__link">
+        BaseModelHandler
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../models/PydanticModelHandler/" class="md-nav__link">
+        PydanticModelHandler
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../models/PydanticParserModelHandler/" class="md-nav__link">
+        PydanticParserModelHandler
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#confluentkafkaconsumer" class="md-nav__link">
+    ConfluentKafkaConsumer
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#volley.connectors.confluent.ConfluentKafkaConsumer" class="md-nav__link">
+    volley.connectors.confluent.ConfluentKafkaConsumer
+  </a>
+  
+    <nav class="md-nav" aria-label="volley.connectors.confluent.ConfluentKafkaConsumer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#volley.connectors.confluent.ConfluentKafkaConsumer--multi-topic-subscription" class="md-nav__link">
+    Multi-topic subscription
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#volley.connectors.confluent.ConfluentKafkaConsumer.consume" class="md-nav__link">
+    consume()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#volley.connectors.confluent.ConfluentKafkaConsumer.on_fail" class="md-nav__link">
+    on_fail()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#volley.connectors.confluent.ConfluentKafkaConsumer.on_success" class="md-nav__link">
+    on_success()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#volley.connectors.confluent.ConfluentKafkaConsumer.shutdown" class="md-nav__link">
+    shutdown()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#confluentkafkaproducer" class="md-nav__link">
+    ConfluentKafkaProducer
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#volley.connectors.confluent.ConfluentKafkaProducer" class="md-nav__link">
+    volley.connectors.confluent.ConfluentKafkaProducer
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#volley.connectors.confluent.ConfluentKafkaProducer.produce" class="md-nav__link">
+    produce()
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#volley.connectors.confluent.ConfluentKafkaProducer.shutdown" class="md-nav__link">
+    shutdown()
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                  <h1>ConfluentKafka</h1>
+                
+                <h2 id="confluentkafkaconsumer">ConfluentKafkaConsumer<a class="headerlink" href="#confluentkafkaconsumer" title="Permanent link">&para;</a></h2>
+
+
+  <div class="doc doc-object doc-class">
+
+<a id="volley.connectors.confluent.ConfluentKafkaConsumer"></a>
+    <div class="doc doc-contents first">
+
+      <p>Use for consuming a single message from a single Kafka topic.</p>
+<p>Built on confluent-kafka-python/librdkafka. Offsets are stored in librdkafka
+    and committed according to auto.commit.interval.ms
+    https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md</p>
+<h3 id="volley.connectors.confluent.ConfluentKafkaConsumer--multi-topic-subscription">Multi-topic subscription<a class="headerlink" href="#volley.connectors.confluent.ConfluentKafkaConsumer--multi-topic-subscription" title="Permanent link">&para;</a></h3>
+<p>You may find yourself wanting to configure a single Volley worker to consume from multiple Kafka topics,
+each with the same message schema. You can do this by specifying the queue value as a comma
+separated list of topics:</p>
+<div class="highlight"><pre><span></span><code><span class="n">cfg</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;input-topic&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;profile&quot;</span><span class="p">:</span> <span class="s2">&quot;confluent&quot;</span><span class="p">,</span>
+<span class="hll">        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="s2">&quot;kafka.topic.0,kafka.topic.1&quot;</span><span class="p">,</span>
+</span>        <span class="s2">&quot;consumer&quot;</span><span class="p">:</span> <span class="s2">&quot;volley.connectors.confluent.ConfluentKafkaConsumer&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;bootstrap.servers&quot;</span><span class="p">:</span> <span class="s2">&quot;kafka:9092&quot;</span><span class="p">,</span> <span class="s2">&quot;group.id&quot;</span><span class="p">:</span> <span class="s2">&quot;myConsumerGroup&quot;</span><span class="p">},</span>
+    <span class="p">},</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Note: multi-topic is only supported for consumption.
+Volley will only be able to <em>consume</em> to the queue as configured above.
+To produce to multiple topics, specify each topic as a separate queue and publish to them.</p>
+<div class="highlight"><pre><span></span><code><span class="k">return</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s2">&quot;output-topic-0&quot;</span><span class="p">,</span> <span class="n">message_object</span><span class="p">),</span>
+    <span class="p">(</span><span class="s2">&quot;output-topic-1&quot;</span><span class="p">,</span> <span class="n">message_object</span><span class="p">)</span>
+<span class="p">]</span>
+</code></pre></div>
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h2 id="volley.connectors.confluent.ConfluentKafkaConsumer.consume" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">consume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code>
+
+
+<a href="#volley.connectors.confluent.ConfluentKafkaConsumer.consume" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents ">
+
+      <p>consumes a message from any queue.
+Returns a QueueMessage object on success, or None when there are no messages</p>
+
+        <details class="quote">
+          <summary>Source code in <code>volley/connectors/confluent.py</code></summary>
+          <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">consume</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+    <span class="bp">self</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">QueueMessage</span><span class="p">]:</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">poll</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">poll_interval</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">message</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">elif</span> <span class="n">message</span><span class="o">.</span><span class="n">error</span><span class="p">():</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">error</span><span class="p">())</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">QueueMessage</span><span class="p">(</span><span class="n">message_context</span><span class="o">=</span><span class="n">message</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h2 id="volley.connectors.confluent.ConfluentKafkaConsumer.on_fail" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">on_fail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message_context</span><span class="p">)</span></code>
+
+
+<a href="#volley.connectors.confluent.ConfluentKafkaConsumer.on_fail" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents ">
+
+      <p>action to perform when serialization, or data validation has failed</p>
+
+        <details class="quote">
+          <summary>Source code in <code>volley/connectors/confluent.py</code></summary>
+          <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">on_fail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message_context</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span>
+        <span class="s2">&quot;Downstream failure. Did not commit topic: </span><span class="si">%s</span><span class="s2">, partition: </span><span class="si">%d</span><span class="s2">, offset: </span><span class="si">%d</span><span class="s2">, message: </span><span class="si">%s</span><span class="s2">.&quot;</span><span class="p">,</span>
+        <span class="n">message_context</span><span class="o">.</span><span class="n">topic</span><span class="p">(),</span>
+        <span class="n">message_context</span><span class="o">.</span><span class="n">partition</span><span class="p">(),</span>
+        <span class="n">message_context</span><span class="o">.</span><span class="n">offset</span><span class="p">(),</span>
+        <span class="n">message_context</span><span class="o">.</span><span class="n">value</span><span class="p">(),</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_on_failure</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&quot;Downstream failure. Stopping application.&quot;</span><span class="p">)</span>
+        <span class="c1"># explicitly call the connectors shutdown</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+        <span class="c1"># this send a kill command to py-volley engine to handle any other graceful shutdown procedures</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">(),</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h2 id="volley.connectors.confluent.ConfluentKafkaConsumer.on_success" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">on_success</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message_context</span><span class="p">)</span></code>
+
+
+<a href="#volley.connectors.confluent.ConfluentKafkaConsumer.on_success" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents ">
+
+      <p>stores any offsets that are able to be stored</p>
+
+        <details class="quote">
+          <summary>Source code in <code>volley/connectors/confluent.py</code></summary>
+          <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">on_success</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message_context</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;stores any offsets that are able to be stored&quot;&quot;&quot;</span>
+    <span class="n">topic</span> <span class="o">=</span> <span class="n">message_context</span><span class="o">.</span><span class="n">topic</span><span class="p">()</span>
+    <span class="n">partition</span> <span class="o">=</span> <span class="n">message_context</span><span class="o">.</span><span class="n">partition</span><span class="p">()</span>
+    <span class="n">this_offset</span> <span class="o">=</span> <span class="n">message_context</span><span class="o">.</span><span class="n">offset</span><span class="p">()</span>
+
+    <span class="c1"># see if we&#39;ve already committed this or a higher offset</span>
+    <span class="c1"># delivery report from kafka producer are not guaranteed to be in order</span>
+    <span class="c1"># that they were produced</span>
+    <span class="c1"># https://github.com/confluentinc/confluent-kafka-python/issues/300#issuecomment-358416432</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">last_commit</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_offset</span><span class="p">[</span><span class="n">topic</span><span class="p">][</span><span class="n">partition</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="c1"># first message from this topic-partition</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_offset</span><span class="p">[</span><span class="n">topic</span><span class="p">][</span><span class="n">partition</span><span class="p">]</span> <span class="o">=</span> <span class="n">this_offset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">store_offsets</span><span class="p">(</span><span class="n">message_context</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="n">this_offset</span> <span class="o">&gt;</span> <span class="n">last_commit</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">store_offsets</span><span class="p">(</span><span class="n">message_context</span><span class="p">)</span>  <span class="c1"># committed according to auto.commit.interval.ms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_offset</span><span class="p">[</span><span class="n">topic</span><span class="p">][</span><span class="n">partition</span><span class="p">]</span> <span class="o">=</span> <span class="n">this_offset</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h2 id="volley.connectors.confluent.ConfluentKafkaConsumer.shutdown" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code>
+
+
+<a href="#volley.connectors.confluent.ConfluentKafkaConsumer.shutdown" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents ">
+
+      <p>perform some action when shutting down the application.
+For example, close a connection or leave a consumer group</p>
+
+        <details class="quote">
+          <summary>Source code in <code>volley/connectors/confluent.py</code></summary>
+          <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">c</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Successfully commit offsets and left consumer group </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;group.id&quot;</span><span class="p">))</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+<h2 id="confluentkafkaproducer">ConfluentKafkaProducer<a class="headerlink" href="#confluentkafkaproducer" title="Permanent link">&para;</a></h2>
+
+
+  <div class="doc doc-object doc-class">
+
+<a id="volley.connectors.confluent.ConfluentKafkaProducer"></a>
+    <div class="doc doc-contents first">
+
+      <p>ConfluentKafkaProducer(queue_name: str, host: Optional[str] = None, config: Dict[str, Any] = <factory>, callback_delivery: bool = False, on_success: Optional[Callable[[Any], NoneType]] = None, on_fail: Optional[Callable[[Any], NoneType]] = None, compression_type: str = 'gzip', thread: bool = False, poll_thread_timeout: float = 1.0)</p>
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h2 id="volley.connectors.confluent.ConfluentKafkaProducer.produce" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">produce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queue_name</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">message_context</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
+
+
+<a href="#volley.connectors.confluent.ConfluentKafkaProducer.produce" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents ">
+
+      <p>Publish a message to a queue</p>
+
+<p><strong>Parameters:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+      <tr>
+        <td><code>queue_name</code></td>
+        <td><code>str</code></td>
+        <td><p>Destination queue name.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>message</code></td>
+        <td><code>Any</code></td>
+        <td><p>The message to publish.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>message_context</code></td>
+        <td><code>Any</code></td>
+        <td><p>Context for the consumed message.
+Often a message id, or a Kafka Message object.
+Used for Producer callbacks to consumer.</p></td>
+        <td><em>required</em></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>bool</code></td>
+      <td><p>status of the produce operation</p></td>
+    </tr>
+  </tbody>
+</table>
+        <details class="quote">
+          <summary>Source code in <code>volley/connectors/confluent.py</code></summary>
+          <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">produce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queue_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">message_context</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">produce</span><span class="p">(</span>
+        <span class="n">key</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;key&quot;</span><span class="p">),</span>
+        <span class="n">topic</span><span class="o">=</span><span class="n">queue_name</span><span class="p">,</span>
+        <span class="n">value</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
+        <span class="n">headers</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;headers&quot;</span><span class="p">),</span>
+        <span class="n">callback</span><span class="o">=</span><span class="k">lambda</span> <span class="n">err</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="n">message_context</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">acked</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">obj</span><span class="p">),</span>
+    <span class="p">),</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Sent to topic: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">queue_name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">True</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h2 id="volley.connectors.confluent.ConfluentKafkaProducer.shutdown" class="doc doc-heading">
+<code class="codehilite language-python"><span class="n">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></code>
+
+
+<a href="#volley.connectors.confluent.ConfluentKafkaProducer.shutdown" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents ">
+
+      <p>perform some action when shutting down the application</p>
+
+        <details class="quote">
+          <summary>Source code in <code>volley/connectors/confluent.py</code></summary>
+          <div class="codehilite"><pre><span></span><code><span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kill_poll_thread</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">poll_thread</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">poll_thread_timeout</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+        
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="../overview/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Overview" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Overview
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../rsmq/" class="md-footer__link md-footer__link--next" aria-label="Next: RSMQ" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              RSMQ
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        
+          Made with
+          <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+            Material for MkDocs
+          </a>
+        
+        
+      </div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.fcfe8b6d.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.b1047164.min.js"></script>
+      
+    
+  </body>
+</html>

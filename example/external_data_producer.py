@@ -21,7 +21,7 @@ def main() -> None:
     while True:
         uuid = str(uuid4())[:8]
         data = InputMessage(list_of_values=[1, 2, 3, 4.5], request_id=f"{uuid}-{i}")
-        p.produce(input_topic, data.json())
+        p.produce(input_topic, data.model_dump_json())
         logger.info(f"{data=}")
         time.sleep(2)
         i += 1

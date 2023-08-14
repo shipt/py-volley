@@ -19,7 +19,7 @@ def test_pydantic_parse() -> None:
 
     msg = {"msg": str(uuid4())}
 
-    bytes_msg = json.dumps(msg).encode("utf-8")
+    bytes_msg = json.dumps(msg, separators=(",", ":")).encode("utf-8")
     parser = PydanticParserModelHandler()
     data_model = parser.construct(message=bytes_msg, schema=GenericMessage)
     assert isinstance(data_model, BaseModel)

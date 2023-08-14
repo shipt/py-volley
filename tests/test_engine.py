@@ -125,7 +125,7 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
     def hello_world(msg: GenericMessage) -> List[Tuple[str, GenericMessage]]:
         msg_dict = msg.model_dump()
         unique_val = msg_dict["uuid"]
-        out = GenericMessage(hello="world", unique_val=unique_val)
+        out = GenericMessage(hello="world", unique_val=unique_val)  # type: ignore
         return [("comp_1", out)]
 
     # must not raise any exceptions
@@ -279,7 +279,7 @@ def test_engine_configuration_failures(mock_rsmq: MagicMock) -> None:
 
     @eng.stream_app
     def bad_return_queue(msg: GenericMessage) -> List[Tuple[str, GenericMessage]]:  # pylint: disable=W0613
-        out = GenericMessage(hello="world")
+        out = GenericMessage(hello="world")  # type: ignore
         return [("DOES_NOT_EXIST", out)]
 
     # trying to return a message to a queue that does not exist
@@ -345,7 +345,7 @@ def test_fail_produce(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:
 
     @eng.stream_app
     def func(msg: GenericMessage) -> Any:  # pylint: disable=W0613
-        out = GenericMessage(hello="world")
+        out = GenericMessage(hello="world")  # type: ignore
         return [("comp_1", out)]
 
     func()
@@ -455,7 +455,7 @@ def test_runtime_connector_configs(mock_consumer: MagicMock, config_dict: Dict[s
         metrics_port=None,
     )
 
-    m = GenericMessage(hello="world")
+    m = GenericMessage(hello="world")  # type: ignore
 
     # define function the returns producer runtime configs
     @eng.stream_app

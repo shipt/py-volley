@@ -36,8 +36,8 @@ class PydanticListParser(BaseModelHandler):
 
     def construct(self, message: List[Any], schema: Type[BaseModelType]) -> List[BaseModelType]:
         """coverts a dict to a Pydantic model"""
-        Adapter = TypeAdapter(type=List[schema])
-        return Adapter.validate_python(message)  # type: ignore
+        Adapter = TypeAdapter(type=List[schema])  # type: ignore
+        return Adapter.validate_python(message)
 
     def deconstruct(self, model: List[BaseModelType]) -> List[Dict[str, Any]]:
         """converts a pydantic model to a dict"""

@@ -119,3 +119,10 @@ class QueueConfig(BaseModel):
     def to_dict(self) -> Dict[str, Any]:
         """transform to dictionary omitting optional fields when not provided"""
         return {k: v for k, v in self.__dict__.items() if v is not None}
+
+    def custom_model_dump(self) -> Dict[str, Any]:
+        dump = self.model_dump(exclude="data_model", exclude_unset=True)
+        if self.data_model is not None:
+            dump["data_model"] = self.data_model
+
+        return dump

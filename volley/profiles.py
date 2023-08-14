@@ -6,7 +6,7 @@ from copy import deepcopy
 from enum import Enum, auto
 from typing import Any, Dict, Optional, Type, Union
 
-from pydantic import field_validator, BaseModel, model_validator
+from pydantic import BaseModel, field_validator, model_validator
 
 from volley.config import get_configs
 from volley.connectors.base import BaseConsumer, BaseProducer

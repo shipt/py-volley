@@ -45,7 +45,7 @@ def test_message_to_model_handler_success() -> None:
         message=msg, schema=schema, model_handler=model_handler, serializer=ser
     )
     assert status is True
-    assert handled_model == GenericMessage.parse_raw(msg)
+    assert handled_model == GenericMessage.model_validate_json(msg)
 
     # model, schema, serializer disabled should also succeed
     handled_model, status = message_model_handler(message=msg, schema=None, model_handler=None, serializer=None)
@@ -55,7 +55,7 @@ def test_message_to_model_handler_success() -> None:
 
 def test_model_to_message_handler_success() -> None:
     msg = b"""{"good": "json"}"""
-    data_model = GenericMessage.parse_raw(msg)
+    data_model = GenericMessage.model_validate_json(msg)
     ser = JsonSerialization()
     model_handler = PydanticModelHandler()
 

@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Type, TypeVar
 
-from pydantic import BaseModel, Extra, parse_obj_as
+from pydantic import BaseModel, ConfigDict, TypeAdapter
 
 from volley.models.base import BaseModelHandler
 
@@ -12,11 +12,11 @@ class PydanticModelHandler(BaseModelHandler):
 
     def construct(self, message: Dict[str, Any], schema: Type[BaseModelType]) -> BaseModelType:
         """coverts a dict to a Pydantic model"""
-        return schema.parse_obj(message)
+        return schema.model_validate(message)
 
     def deconstruct(self, model: BaseModelType) -> Dict[str, Any]:
         """converts a pydantic model to a dict"""
-        return model.dict()
+        return model.model_dump()
 
 
 class PydanticParserModelHandler(BaseModelHandler):
@@ -24,11 +24,11 @@ class PydanticParserModelHandler(BaseModelHandler):
 
     def construct(self, message: bytes, schema: Type[BaseModelType]) -> BaseModelType:
         """coverts bytes to a Pydantic model"""
-        return schema.parse_raw(message)
+        return schema.model_validate_json(message)
 
     def deconstruct(self, model: BaseModelType) -> bytes:
         """converts a pydantic model to bytes"""
-        return model.json().encode("utf-8")
+        return model.model_dump_json().encode("utf-8")
 
 
 class PydanticListParser(BaseModelHandler):
@@ -36,11 +36,12 @@ class PydanticListParser(BaseModelHandler):
 
     def construct(self, message: List[Any], schema: Type[BaseModelType]) -> List[BaseModelType]:
         """coverts a dict to a Pydantic model"""
-        return parse_obj_as(List[schema], message)  # type: ignore
+        Adapter = TypeAdapter(type=List[schema])  # type: ignore
+        return Adapter.validate_python(message)
 
     def deconstruct(self, model: List[BaseModelType]) -> List[Dict[str, Any]]:
         """converts a pydantic model to a dict"""
-        return [m.dict() for m in model]
+        return [m.model_dump() for m in model]
 
 
 class GenericMessage(BaseModel):
@@ -48,8 +49,7 @@ class GenericMessage(BaseModel):
     Serves as a flexible data model. Accepts extra attributes and provides no type validation.
     """
 
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
 
 class QueueMessage(BaseModel):
@@ -58,5 +58,5 @@ class QueueMessage(BaseModel):
         used for deleting or markng a message as success after post-processing
     """
 
-    message_context: Any
-    message: Any
+    message_context: Any = None
+    message: Any = None

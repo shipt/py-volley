@@ -6,7 +6,7 @@ from copy import deepcopy
 from enum import Enum, auto
 from typing import Any, Dict, Optional, Type, Union
 
-from pydantic import BaseModel, root_validator, validator
+from pydantic import BaseModel, field_validator, model_validator
 
 from volley.config import get_configs
 from volley.connectors.base import BaseConsumer, BaseProducer
@@ -23,16 +23,15 @@ class ConnectionType(Enum):
 
 
 class Profile(BaseModel):
-
     connection_type: ConnectionType
     # dot path to the object, or the object itself
-    consumer: Optional[Union[str, Type[BaseConsumer]]]
-    producer: Optional[Union[str, Type[BaseProducer]]]
-    model_handler: Optional[Union[str, Type[BaseModelHandler]]]
-    data_model: Optional[Union[str, type]]
-    serializer: Optional[Union[str, Type[BaseSerialization]]]
+    consumer: Optional[Union[str, Type[BaseConsumer]]] = None
+    producer: Optional[Union[str, Type[BaseProducer]]] = None
+    model_handler: Optional[Union[str, Type[BaseModelHandler]]] = None
+    data_model: Optional[Union[str, type]] = None
+    serializer: Optional[Union[str, Type[BaseSerialization]]] = None
 
-    @validator("model_handler", "data_model", "serializer")
+    @field_validator("model_handler", "data_model", "serializer")
     @classmethod
     def validate_nullable(cls, value: Optional[str]) -> Optional[str]:
         """Ensures str or None types parse as `None`
@@ -43,7 +42,7 @@ class Profile(BaseModel):
         else:
             return None
 
-    @root_validator
+    @model_validator(mode="before")
     @classmethod
     def validate_connectors(cls, values: Dict[str, Any]) -> Any:
         if values.get("producer") is None and values["connection_type"] == ConnectionType.PRODUCER:
@@ -52,7 +51,7 @@ class Profile(BaseModel):
             raise ValueError("Invalid Profile. Must provide a consumer for input queues.")
         return values
 
-    @root_validator
+    @model_validator(mode="before")
     @classmethod
     def validate_handler(cls, values: Dict[str, Any]) -> Any:
         """Volley cannot construct data into a data model without a model handler
@@ -101,6 +100,6 @@ def construct_profiles(queue_configs: Dict[str, Dict[str, Any]]) -> Dict[str, Pr
                 f"`{profile_requested}` is not a valid profile name. "
                 f"Available profiles: `{list(supported_profiles.keys())}`"
             )
-        constructed_profiles[q_name] = Profile.parse_obj(this_profile)
+        constructed_profiles[q_name] = Profile.model_validate(this_profile)
 
     return constructed_profiles

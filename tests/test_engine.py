@@ -36,10 +36,10 @@ def test_component_success(mock_consumer: MagicMock, mock_producer: MagicMock) -
         dead_letter_queue="dead-letter-queue",
         metrics_port=None,
     )
-    input_msg = json.dumps(InputMessage.schema()["examples"][0]).encode("utf-8")
+    input_msg = json.dumps(InputMessage.model_json_schema()["examples"][0]).encode("utf-8")
     mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=input_msg)
 
-    output_msg = OutputMessage.parse_obj(OutputMessage.schema()["examples"][0])
+    output_msg = OutputMessage.model_validate(OutputMessage.model_json_schema()["examples"][0])
     # component returns "just none"
 
     @eng.stream_app
@@ -65,7 +65,7 @@ def test_component_return_none(mock_consumer: MagicMock, mock_producer: MagicMoc
         dead_letter_queue="dead-letter-queue",
         metrics_port=None,
     )
-    msg = json.dumps(InputMessage.schema()["examples"][0]).encode("utf-8")
+    msg = json.dumps(InputMessage.model_json_schema()["examples"][0]).encode("utf-8")
     mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=msg)
 
     # component returns "just none"
@@ -123,9 +123,9 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
 
     @eng.stream_app
     def hello_world(msg: GenericMessage) -> List[Tuple[str, GenericMessage]]:
-        msg_dict = msg.dict()
+        msg_dict = msg.model_dump()
         unique_val = msg_dict["uuid"]
-        out = GenericMessage(hello="world", unique_val=unique_val)
+        out = GenericMessage(hello="world", unique_val=unique_val)  # type: ignore
         return [("comp_1", out)]
 
     # must not raise any exceptions
@@ -138,8 +138,7 @@ def test_rsmq_component(mock_rsmq: MagicMock) -> None:
 @patch("volley.connectors.confluent.Producer", MagicMock())
 @patch("volley.connectors.confluent.Consumer")
 def test_init_from_dict(mock_consumer: MagicMock, config_dict: Dict[str, Dict[str, str]]) -> None:
-
-    data = InputMessage.schema()["examples"][0]
+    data = InputMessage.model_json_schema()["examples"][0]
     msg = json.dumps(data).encode("utf-8")
     mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=msg)
     input_queue = "input-topic"
@@ -193,7 +192,7 @@ def test_null_serializer_fail(
     """
     config_dict["input-topic"]["serializer"] = "disabled"
 
-    data = InputMessage.schema()["examples"][0]
+    data = InputMessage.model_json_schema()["examples"][0]
     msg = json.dumps(data).encode("utf-8")
     mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=msg)
     input_queue = "input-topic"
@@ -216,7 +215,7 @@ def test_null_serializer_fail(
         func()
 
     assert "Failed model construction" in caplog.text
-    assert "pydantic.error_wrappers.ValidationError" in caplog.text
+    assert "pydantic_core._pydantic_core.ValidationError" in caplog.text
     assert "failed producing message to" not in caplog.text
     eng.shutdown()
 
@@ -280,7 +279,7 @@ def test_engine_configuration_failures(mock_rsmq: MagicMock) -> None:
 
     @eng.stream_app
     def bad_return_queue(msg: GenericMessage) -> List[Tuple[str, GenericMessage]]:  # pylint: disable=W0613
-        out = GenericMessage(hello="world")
+        out = GenericMessage(hello="world")  # type: ignore
         return [("DOES_NOT_EXIST", out)]
 
     # trying to return a message to a queue that does not exist
@@ -346,7 +345,7 @@ def test_fail_produce(mock_rsmq: MagicMock, mocked_fail: MagicMock) -> None:
 
     @eng.stream_app
     def func(msg: GenericMessage) -> Any:  # pylint: disable=W0613
-        out = GenericMessage(hello="world")
+        out = GenericMessage(hello="world")  # type: ignore
         return [("comp_1", out)]
 
     func()
@@ -442,7 +441,7 @@ def test_wild_dlq_error(mock_handler: MagicMock, mock_rsmq: MagicMock, caplog: L
 @patch("volley.connectors.confluent.Consumer")
 def test_runtime_connector_configs(mock_consumer: MagicMock, config_dict: Dict[str, Dict[str, str]]) -> None:
     """test wrapped func can return variable length tuples"""
-    data = InputMessage.schema()["examples"][0]
+    data = InputMessage.model_json_schema()["examples"][0]
     msg = json.dumps(data).encode("utf-8")
     mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=msg)
     input_queue = "input-topic"
@@ -456,7 +455,7 @@ def test_runtime_connector_configs(mock_consumer: MagicMock, config_dict: Dict[s
         metrics_port=None,
     )
 
-    m = GenericMessage(hello="world")
+    m = GenericMessage(hello="world")  # type: ignore
 
     # define function the returns producer runtime configs
     @eng.stream_app
@@ -527,17 +526,17 @@ def test_pass_msg_ctx(
         dead_letter_queue="dead-letter-queue",
         metrics_port=None,
     )
-    input_msg = json.dumps(InputMessage.schema()["examples"][0]).encode("utf-8")
+    input_msg = json.dumps(InputMessage.model_json_schema()["examples"][0]).encode("utf-8")
     kafka_msg = KafkaMessage(topic="localhost.kafka.input", msg=input_msg)
     mock_message = lambda x: kafka_msg  # noqa
     mock_consumer.return_value.poll = mock_message
 
-    output_msg = OutputMessage.parse_obj(OutputMessage.schema()["examples"][0])
+    output_msg = OutputMessage.model_validate(OutputMessage.model_json_schema()["examples"][0])
     # component returns "just none"
 
     @eng.stream_app
     def func(msg: Any, msg_ctx: Any) -> List[Tuple[str, OutputMessage]]:
-        assert msg == InputMessage.parse_raw(input_msg)
+        assert msg == InputMessage.model_validate_json(input_msg)
         assert isinstance(msg_ctx, KafkaMessage)
         return [("output-topic", output_msg)]
 

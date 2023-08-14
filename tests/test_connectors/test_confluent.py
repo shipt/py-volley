@@ -255,7 +255,7 @@ def test_downstream_failure_shutdown(
         metrics_port=None,
     )
 
-    input_msg = json.dumps(InputMessage.schema()["examples"][0]).encode("utf-8")
+    input_msg = json.dumps(InputMessage.model_json_schema()["examples"][0]).encode("utf-8")
     mock_consumer.return_value.poll = lambda x: KafkaMessage(topic="localhost.kafka.input", msg=input_msg)
 
     # for simplicity, make it a synchronous producer
@@ -264,11 +264,11 @@ def test_downstream_failure_shutdown(
     mock_producer.return_value.produce = lambda *args, **kwargs: False
 
     # dummy output object to try to produce
-    output_msg = OutputMessage.parse_obj(OutputMessage.schema()["examples"][0])
+    output_msg = OutputMessage.model_validate(OutputMessage.model_json_schema()["examples"][0])
 
     @eng.stream_app
     def func(msg: Any) -> List[Tuple[str, OutputMessage]]:
-        print(msg.json())
+        print(msg.model_dump_json())
         return [("redis_queue", output_msg)]
 
     # function should run then exit

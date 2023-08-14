@@ -77,7 +77,7 @@ def main(msg: Queue1Message) -> Union[List[Tuple[str, BaseModel, Dict[str, str]]
     _ = {"height": 1.1, "weight": 1.2}
     logger.info("Go Low")
     socket.send(msgpack.dumps(_))
-    result = BMI.parse_obj(msgpack.loads(socket.recv()))
+    result = BMI.model_validate(msgpack.loads(socket.recv()))
     logger.info(f"result: {result}")
 
     """adds one to a value"""
@@ -92,15 +92,15 @@ def main(msg: Queue1Message) -> Union[List[Tuple[str, BaseModel, Dict[str, str]]
 
     if random_value > 10:
         recycled_msg = InputMessage(request_id=req_id, list_of_values=[max_plus_jiggle], msg_counter=msg_count + 1)
-        logger.info(f"Recycling - {recycled_msg.dict()}")
+        logger.info(f"Recycling - {recycled_msg.model_dump()}")
         return [("input-topic", recycled_msg)]
 
     # we didn't meet the random recycle threshold, so continue forward
     output_msg = OutputMessage(request_id=req_id, max_plus=max_plus_jiggle)
     pg_msg = PostgresMessage(request_id=req_id, max_plus=max_plus_jiggle)
 
-    logger.info(output_msg.dict())
-    logger.info(pg_msg.dict())
+    logger.info(output_msg.model_dump())
+    logger.info(pg_msg.model_dump())
     return [("postgres_queue", pg_msg), ("output-topic", output_msg, {"key": "partitionKeyOne"})]  # type: ignore
 
 

@@ -15,7 +15,7 @@ packages = [{ include = "volley" }]
 [tool.poetry.dependencies]
 python = "^3.8.1"
 prometheus-client = "^0"
-pydantic = "^1.8.2"
+pydantic = "^2.1.0"
 PyYAML = "^6.0.0"
 orjson = "^3.6.4"
 msgpack = "^1.0.3"

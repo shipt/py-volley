@@ -4,7 +4,7 @@
 ## Overview
 Model handlers live between serialization and the application and handle converting data to a model that your application is expecting to consume. Post processing from the application, they convert data to a format which can be serialized by a serialization handler. Model handlers can handle both serialization and model construction if serialization is disabled in configuration by setting `serializer: None|disabled`. 
 
-`PydanticModelHandler` calls `.parse_obj()` on the user provided Pydantic model, which takes in a `dict` then validates the data and creates the instance of the Pydantic model.
+`PydanticModelHandler` calls `.model_validate()` on the user provided Pydantic model, which takes in a `dict` then validates the data and creates the instance of the Pydantic model.
 
 `PydanticParserModelHandler` calls `.parse_raw()` on the user provided Pydantic model, which takes in `str|bytes` and parses to json before validating and creating and instance of the Pydantic model.
 
@@ -47,7 +47,7 @@ config = {
 When Volley uses the `PydanticModelHandler` to construct an instance of `myIncomingData` using the raw incoming message data. `PydanticModelHandler.construct()` is called with `myIncomingData` and the incoming `message` (deserialized to dict from orjson). This effectively becomes the following operation:
 
 ```python
-incoming_model = myModel.parse_obj(message)
+incoming_model = myModel.model_validate(message)
 ```
 `incoming_model: myModel` is passed to the application for processing.
 

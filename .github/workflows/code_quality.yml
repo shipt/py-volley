@@ -27,7 +27,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: "poetry"
       - run: make setup.project
-      - run: make lints.ci
+      - run: make lints
 
   unit-test:
     needs: Lints

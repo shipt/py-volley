@@ -52,9 +52,12 @@ test.clean:
 	-docker compose down
 	-docker images -a | grep ${PROJECT} | awk '{print $3}' | xargs docker rmi
 	-docker image prune -f
+
 test.integration: run.datastores run.components
 	docker-compose up --exit-code-from int-tests --build int-tests
-test.unit: setup
+
+# When running locallyrun `make setup` before running `make.test` the first time
+test.unit:
 	poetry run pytest -s \
 			--ignore=tests/integration_tests \
 			--cov=./ \

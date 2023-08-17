@@ -21,5 +21,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: "poetry"
+      - run: make setup.project
       - run: make publish
       - run: make publish.docs

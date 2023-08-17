@@ -56,7 +56,7 @@ test.clean:
 test.integration: run.datastores run.components
 	docker-compose up --exit-code-from int-tests --build int-tests
 
-# When running locallyrun `make setup` before running `make.test` the first time
+# When running locally: run `make setup` before running `make.test` the first time
 test.unit:
 	poetry run pytest -s \
 			--ignore=tests/integration_tests \

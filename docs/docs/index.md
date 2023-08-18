@@ -3,17 +3,10 @@
 
 Volley is a lightweight and highly configurable message stream processor for Python.
 
-<a href="https://drone.shipt.com/shipt/py-volley" target="_blank">
-    <img src="https://drone.shipt.com/api/badges/shipt/py-volley/status.svg?ref=refs/heads/main" alt="Test">
-</a>
-<a href="https://sonarqube.shipt.com/dashboard?id=shipt_py-volley_AYImTs5MsYUjTdFQ7Awt" target="_blank">
-    <img src="https://sonarqube.shipt.com/api/project_badges/measure?project=shipt_py-volley_AYImTs5MsYUjTdFQ7Awt&metric=coverage&token=squ_e98968a6b1bce0281e001fd0e70e538f6228b47f" alt="Test">
-</a>
-
 **Repository**: [https://github.com/shipt/volley](https://github.com/shipt/volley)
 
 
-Use Volley to quickly build lightweight message queue processing microservices. Write your applications and add a few lines of code to integrate with technologies like Kafka. Volley has built in connectors for [Confluent Kafka](https://github.com/confluentinc/confluent-kafka-python) and [Redis Simple Message Queue](https://github.com/mlasevich/PyRSMQ). It also provides serialization implementations in [MessagePack](https://github.com/msgpack/msgpack-python) and [orjson](https://github.com/ijl/orjson), as well as data validation with [Pydantic](https://github.com/samuelcolvin/pydantic) and [Prometheus](https://github.com/prometheus/client_python) metrics.
+Use Volley to quickly build lightweight message queue processing microservices. Write your applications and add a few lines of code to integrate with technologies like kafka and redis. Volley has built in connectors for [Confluent Kafka](https://github.com/confluentinc/confluent-kafka-python) and [Redis Simple Message Queue](https://github.com/mlasevich/PyRSMQ). It also provides serialization implementations in [MessagePack](https://github.com/msgpack/msgpack-python) and [orjson](https://github.com/ijl/orjson), as well as data validation with [Pydantic](https://github.com/samuelcolvin/pydantic) and [Prometheus](https://github.com/prometheus/client_python) metrics.
 
 
 ## Example

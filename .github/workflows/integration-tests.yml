@@ -74,25 +74,3 @@ jobs:
       #     REDIS_HOST: redis
       #     REDIS_PORT: 6379
       #     KAFKA_BROKERS: kafka:9092
-
-  unit-test:
-    needs: lints
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.10", "3.11"]
-        poetry-version: ["1.5.1"]
-        os: [ubuntu, macos]
-
-    runs-on: ${{ matrix.os }}-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install poetry
-        run: pip3 install poetry==${{ matrix.poetry-version }}
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: "poetry"
-      - run: make setup.project
-      - run: make test.unit

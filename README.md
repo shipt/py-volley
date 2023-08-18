@@ -8,10 +8,6 @@ Volley handles a number of operations that need to happen before and after proce
 
 All of Volley's major operations (connectors, serializers, data validation/model handling) can be extended with plugins, and comes with built in support for queues-like technologies [Apache Kafka](https://kafka.apache.org/) and [RSMQ](https://github.com/mlasevich/PyRSMQ) (Redis Simple Message Queue). There is a plugin built for a Postgres queue in our [examples](./example/plugins/my_plugin.py).
 
-
-
-
-
 # Installation
 
 Requires Python >= 3.8

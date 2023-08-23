@@ -1,2 +1,3 @@
 poetry 1.4.2
 python 3.9.16
+gitleaks 8.18.0

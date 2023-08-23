@@ -2,7 +2,7 @@
 name = "py_volley"
 version = "1.2.0"
 description = "Pluggable message queueing for Python"
-authors = ["ask-machine-learning <shipt@shipt.com>"]
+authors = ["Shipt <shipt@shipt.com>"]
 readme = "README.md"
 
 packages = [{ include = "volley" }]

@@ -1,0 +1,26 @@
+name: publish
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+        poetry-version: ["1.5.1"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: install poetry
+        run: pip install poetry==${{ matrix.poetry-version }}
+
+      - name: set up python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "poetry"
+      - run: make setup.project
+      - run: make publish
+      - run: make publish.docs

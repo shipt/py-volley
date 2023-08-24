@@ -6,8 +6,8 @@ import importlib
 from pathlib import Path
 from typing import Any, Dict, Optional, Type, Union
 
+import yaml
 from pydantic import BaseModel
-from yaml import Loader, load
 
 from volley.connectors.base import BaseConsumer, BaseProducer
 from volley.models.base import BaseModelHandler
@@ -20,12 +20,9 @@ def load_yaml(file_path: Union[str, Path]) -> Dict[str, Any]:
     """loads a yaml to dict from Path object
     Raises FileNotFoundError
     """
-    if isinstance(file_path, str):
-        path = Path(file_path)
-    else:
-        path = file_path
+    path = Path(file_path) if isinstance(file_path, str) else file_path
     with path.open() as f:
-        cfg: Dict[str, Any] = load(f, Loader=Loader)
+        cfg: Dict[str, Any] = yaml.safe_load(f)
     return cfg
 
 

@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import time
 from typing import Dict, List, Tuple
 
 from confluent_kafka import Message
@@ -20,12 +19,10 @@ eng = Engine(
 
 
 async def fun1() -> None:
-    time.sleep(0.5)
     logger.info("one")
 
 
 async def fun2() -> None:
-    time.sleep(0.5)
     logger.info("two")
 
 

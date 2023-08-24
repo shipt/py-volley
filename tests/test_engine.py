@@ -291,7 +291,7 @@ def test_engine_configuration_failures(mock_rsmq: MagicMock) -> None:
 
     @eng2.stream_app
     def bad_return_type(msg: GenericMessage) -> Any:  # pylint: disable=W0613
-        out = dict(hello="world")
+        out = {"hello": "world"}
         return [("comp_1", out)]
 
     # trying to return a message to a queue of the wrong type

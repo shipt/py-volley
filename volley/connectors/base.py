@@ -62,6 +62,7 @@ class BaseProducer(ABC):
             message_context (Any): Context for the consumed message.
                 Often a message id, or a Kafka Message object.
                 Used for Producer callbacks to consumer.
+            kwargs (Any): additional passthru args
 
         Returns:
             bool: status of the produce operation

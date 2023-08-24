@@ -4,9 +4,9 @@ INTRO_COMPOSE=example/intro/docker-compose.yml
 
 format.black:
 	poetry run black ${SOURCE_OBJECTS}
-format.isort:
-	poetry run isort --atomic ${SOURCE_OBJECTS}
-format: format.black format.isort
+format.ruff:
+	poetry run ruff check --silent --fix --exit-zero ${SOURCE_OBJECTS}
+format: format.ruff format.black
 
 intro.start:
 	docker compose -f ${INTRO_COMPOSE} up -d kafka redis && sleep 10
@@ -15,19 +15,15 @@ intro.start:
 intro.stop:
 	docker compose -f ${INTRO_COMPOSE} down
 
-lints.format.check:
+lints.format_check:
 	poetry run black --check ${SOURCE_OBJECTS}
-	poetry run isort --check-only ${SOURCE_OBJECTS}
-lints.flake8:
-	poetry run flake8 --ignore=DAR,E203,W503 ${SOURCE_OBJECTS}
-lints.flake8.strict:
-	poetry run flake8 ${SOURCE_OBJECTS}
+lints.ruff:
+	poetry run ruff check ${SOURCE_OBJECTS}
 lints.mypy:
 	poetry run mypy ${SOURCE_OBJECTS}
 lints.pylint:
 	poetry run pylint --rcfile pyproject.toml ${SOURCE_OBJECTS}
-lints: lints.flake8 lints.format.check lints.mypy lints.pylint
-lints.strict: lints.pylint lints.flake8.strict lints.mypy lints.format.check
+lints: lints.format_check lints.ruff lints.mypy lints.pylint
 
 setup: setup.sysdeps setup.python setup.project
 setup.project:

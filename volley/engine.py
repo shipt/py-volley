@@ -133,7 +133,7 @@ class Engine:
 
         @run_async
         @wraps(func)
-        async def run_component() -> None:
+        async def run_component() -> None:  # noqa: C901
             if self.metrics_port is not None:
                 serve_metrics(port=self.metrics_port)
 
@@ -168,7 +168,7 @@ class Engine:
                     # if no messages, handle poll interval
                     # TODO: this should be dynamic with some sort of backoff
                     logger.debug("No messages - sleeping POLL_INTERVAL=%s", self.poll_interval_seconds)
-                    time.sleep(self.poll_interval_seconds)
+                    time.sleep(self.poll_interval_seconds)  # noqa: ASYNC101
                     continue
 
                 # typing for producing

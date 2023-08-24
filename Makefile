@@ -15,7 +15,7 @@ intro.start:
 intro.stop:
 	docker compose -f ${INTRO_COMPOSE} down
 
-lints.format_check:
+lints.format.check:
 	poetry run black --check ${SOURCE_OBJECTS}
 lints.ruff:
 	poetry run ruff check ${SOURCE_OBJECTS}
@@ -23,7 +23,7 @@ lints.mypy:
 	poetry run mypy ${SOURCE_OBJECTS}
 lints.pylint:
 	poetry run pylint --rcfile pyproject.toml ${SOURCE_OBJECTS}
-lints: lints.format_check lints.ruff lints.mypy lints.pylint
+lints: lints.format.check lints.ruff lints.pylint lints.mypy
 
 setup: setup.sysdeps setup.python setup.project
 setup.project:

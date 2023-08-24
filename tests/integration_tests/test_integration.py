@@ -36,10 +36,7 @@ def consume_messages(consumer: Consumer, num_expected: int, serialize: bool = Tr
             logger.error(message.error())
         else:
             _msg = message.value().decode("utf-8")
-            if serialize:
-                msg = json.loads(_msg)
-            else:
-                msg = _msg
+            msg = json.loads(_msg) if serialize else _msg
             consumed_messages.append(msg)
             if num_expected == len(consumed_messages):
                 break
@@ -336,10 +333,7 @@ def test_kafka_kafka_worker(int_test_producer: Producer, int_test_consumer: Cons
     # (single partition in the test topic)
     consumer = Consumer({"group.id": CONSUMER_GROUP, "bootstrap.servers": environment.brokers})
     _offset = consumer.committed([TopicPartition(input_topic, 0)])[0].offset
-    if _offset < 0:
-        starting_offset = 0
-    else:
-        starting_offset = _offset
+    starting_offset = 0 if _offset < 0 else _offset
 
     # create some unique request id for tracking
     test_messages = 3
@@ -382,22 +376,22 @@ def test_kafka_kafka_worker(int_test_producer: Producer, int_test_consumer: Cons
 def test_redis_to_kafka(int_test_consumer: Consumer, environment: Environment) -> None:
     """consumes from redis, produce async to kafka, deletes w/ callback"""
 
-    input = redis_kafka_eng.queue_map[redis_kafka_eng.input_queue].value
-    output = redis_kafka_eng.queue_map[redis_kafka_eng.output_queues[0]].value
+    inval = redis_kafka_eng.queue_map[redis_kafka_eng.input_queue].value
+    outval = redis_kafka_eng.queue_map[redis_kafka_eng.output_queues[0]].value
 
     assert redis_kafka_eng.killer.kill_now is False
 
     # subscribe the topic the app will publish to
-    int_test_consumer.assign([TopicPartition(topic=output, partition=0, offset=OFFSET_END)])
-    int_test_consumer.subscribe([output])
+    int_test_consumer.assign([TopicPartition(topic=outval, partition=0, offset=OFFSET_END)])
+    int_test_consumer.subscribe([outval])
 
     r = redis.Redis(host=environment.redis_host)
 
     # make sure the queue is empty
-    queue = RedisSMQ(host=environment.redis_host, qname=input)
+    queue = RedisSMQ(host=environment.redis_host, qname=inval)
     queue.deleteQueue().exceptions(False).execute()
 
-    _producer = RSMQProducer(host=environment.redis_host, queue_name=input)
+    _producer = RSMQProducer(host=environment.redis_host, queue_name=inval)
 
     # start redis_kafka_worker in thread
     app_thread = Thread(target=redis_test_app, daemon=True)
@@ -410,7 +404,7 @@ def test_redis_to_kafka(int_test_consumer: Consumer, environment: Environment) -
     data = InputMessage.model_json_schema()["examples"][0]
     for req_id in request_ids:
         data["request_id"] = req_id
-        _producer.produce(queue_name=input, message=json.dumps(data).encode("utf-8"))
+        _producer.produce(queue_name=inval, message=json.dumps(data).encode("utf-8"))
 
     consumed_messages = consume_messages(int_test_consumer, num_expected=test_messages, serialize=True)
 
@@ -432,4 +426,4 @@ def test_redis_to_kafka(int_test_consumer: Consumer, environment: Environment) -
     assert len(request_ids) == len(conusumed_ids)
 
     # all messages should have been deleted
-    assert r.zcard(f"rsmq:{input}") == 0
+    assert r.zcard(f"rsmq:{inval}") == 0

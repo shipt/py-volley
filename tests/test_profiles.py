@@ -33,7 +33,7 @@ def test_non_exist_profile_init(config_dict: Dict[str, Dict[str, Any]]) -> None:
 def test_construct_producer_profiles() -> None:
     """verify all supported configurations are valid producer"""
     all_profiles = get_configs()["profiles"]
-    for p, p_config in all_profiles.items():
+    for _, p_config in all_profiles.items():
         p_config["connection_type"] = ConnectionType.PRODUCER
     profile_map: Dict[str, Profile] = construct_profiles(all_profiles)
 
@@ -46,7 +46,7 @@ def test_construct_producer_profiles() -> None:
 def test_construct_consumer_profiles() -> None:
     """verify all supported configurations are valid consumers"""
     all_profiles = get_configs()["profiles"]
-    for p, p_config in all_profiles.items():
+    for _, p_config in all_profiles.items():
         p_config["connection_type"] = ConnectionType.CONSUMER
     profile_map: Dict[str, Profile] = construct_profiles(all_profiles)
 

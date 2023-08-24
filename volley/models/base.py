@@ -117,10 +117,7 @@ def model_message_handler(
 
         # convert data model to raw type
         start = time()
-        if model_handler is not None:
-            raw = model_handler.deconstruct(data_model)
-        else:
-            raw = data_model
+        raw = model_handler.deconstruct(data_model) if model_handler is not None else data_model
         duration = time() - start
         PROCESS_TIME.labels("deconstruct").observe(duration)
 

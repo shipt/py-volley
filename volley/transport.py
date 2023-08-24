@@ -47,7 +47,7 @@ def produce_handler(
         try:
             out_queue = queue_map[qname]
         except KeyError as e:
-            raise KeyError(f"App not configured for output queue {e}")
+            raise KeyError("App not configured for output queue") from e
 
         # prepare and validate output message
         if out_queue.data_model is not None and not isinstance(component_msg, out_queue.data_model):

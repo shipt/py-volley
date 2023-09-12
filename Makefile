@@ -19,11 +19,14 @@ lints.format.check:
 	poetry run black --check ${SOURCE_OBJECTS}
 lints.ruff:
 	poetry run ruff check ${SOURCE_OBJECTS}
-lints.mypy:
-	poetry run mypy ${SOURCE_OBJECTS}
 lints.pylint:
 	poetry run pylint --rcfile pyproject.toml ${SOURCE_OBJECTS}
-lints: lints.format.check lints.ruff lints.pylint lints.mypy
+lints.gitleaks:
+	poetry run gitleaks detect --log-level debug -v
+	poetry run gitleaks protect --log-level debug -v
+lints.mypy:
+	poetry run mypy ${SOURCE_OBJECTS}
+lints: lints.format.check lints.ruff lints.pylint lints.gitleaks lints.mypy
 
 setup: setup.sysdeps setup.python setup.project
 setup.project:

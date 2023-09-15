@@ -27,6 +27,7 @@ lints.gitleaks:
 lints.mypy:
 	poetry run mypy ${SOURCE_OBJECTS}
 lints: lints.format.check lints.ruff lints.pylint lints.gitleaks lints.mypy
+lints.ci: lints.format.check lints.ruff lints.pylint lints.mypy
 
 setup: setup.sysdeps setup.python setup.project
 setup.project:

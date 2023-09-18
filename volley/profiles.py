@@ -6,7 +6,7 @@ from copy import deepcopy
 from enum import Enum, auto
 from typing import Any, Dict, Optional, Type, Union
 
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from volley.config import get_configs
 from volley.connectors.base import BaseConsumer, BaseProducer
@@ -72,6 +72,8 @@ class Profile(BaseModel):
                 "Invalid Profile. Must provide both or none of model_handler|data_model"
                 f"{data_model=} -- {model_handler=}"
             )
+
+    model_config = ConfigDict(protected_namespaces=())
 
 
 def construct_profiles(queue_configs: Dict[str, Dict[str, Any]]) -> Dict[str, Profile]:

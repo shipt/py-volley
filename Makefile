@@ -83,6 +83,7 @@ stop:
 	docker compose down --remove-orphans
 
 publish:
-	poetry publish
+	poetry publish --build
+
 publish.docs: setup.project
 	cd docs && poetry run mkdocs gh-deploy --force

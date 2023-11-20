@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py_volley"
-version = "1.2.2"
+version = "1.2.3"
 description = "Pluggable message queueing for Python"
 authors = ["Shipt <shipt@shipt.com>"]
 readme = "README.md"
